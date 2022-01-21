@@ -1,0 +1,65 @@
+{
+    "name": "faustoq/laravel-flatpack",
+    "description": "Flat pack: Administration panel for Laravel, ready to assemble.",
+    "keywords": [
+        "laravel-flatpack",
+        "laravel",
+        "flatpack",
+        "administration",
+        "admin",
+        "panel"
+    ],
+    "homepage": "https://github.com/faustoq/laravel-flatpack",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Fausto Quaggia",
+            "email": "fausto.quaggia@gmail.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.0",
+        "illuminate/contracts": "^8.73",
+        "illuminate/support": "^8.80"
+    },
+    "require-dev": {
+        "nunomaduro/collision": "^5.10",
+        "nunomaduro/larastan": "^1.0",
+        "orchestra/testbench": "^6.22",
+        "pestphp/pest": "^1.21",
+        "pestphp/pest-plugin-laravel": "^1.1",
+        "phpstan/extension-installer": "^1.1",
+        "phpstan/phpstan-deprecation-rules": "^1.0",
+        "phpstan/phpstan-phpunit": "^1.0",
+        "phpunit/phpunit": "^9.5",
+        "spatie/laravel-ray": "^1.26"
+    },
+    "autoload": {
+        "psr-4": {
+            "Faustoq\\Flatpack\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Faustoq\\Flatpack\\Tests\\": "tests"
+        }
+    },
+    "scripts": {
+        "analyse": "vendor/bin/phpstan analyse",
+        "test": "vendor/bin/pest",
+        "test-coverage": "vendor/bin/pest coverage"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Faustoq\\Flatpack\\FlatpackServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
