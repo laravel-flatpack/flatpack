@@ -1,4 +1,4 @@
-# Laravel Flat Pack
+![Image of package](.github/package-cover.png)
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/faustoq/laravel-flatpack.svg?style=flat-square)](https://packagist.org/packages/faustoq/laravel-flatpack)
 [![GitHub Tests Action Status](https://img.shields.io/github/workflow/status/faustoq/laravel-flatpack/run-tests?label=tests)](https://github.com/faustoq/laravel-flatpack/actions?query=workflow%3Arun-tests+branch%3Amain)
