@@ -19,6 +19,8 @@ class FlatpackServiceProvider extends ServiceProvider
 
         $this->loadViewsFrom(__DIR__ . '/../resources/views', 'flatpack');
 
+        $this->loadRoutesFrom(__DIR__ . '/routes/flatpack.php');
+
         if ($this->app->runningInConsole()) {
             $this->commands([
                 FlatpackCommand::class,

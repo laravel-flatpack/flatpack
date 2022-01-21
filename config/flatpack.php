@@ -4,4 +4,6 @@
 
 return [
 
+    'prefix' => 'flatpack',
+
 ];
