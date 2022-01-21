@@ -24,6 +24,7 @@
         "illuminate/support": "^8.80"
     },
     "require-dev": {
+        "damianopetrungaro/php-commitizen": "^0.2.0",
         "nunomaduro/collision": "^5.10",
         "nunomaduro/larastan": "^1.0",
         "orchestra/testbench": "^6.22",
@@ -48,7 +49,8 @@
     "scripts": {
         "analyse": "vendor/bin/phpstan analyse",
         "test": "vendor/bin/pest",
-        "test-coverage": "vendor/bin/pest coverage"
+        "test-coverage": "vendor/bin/pest coverage",
+        "commit": "vendor/bin/php-commitizen commit"
     },
     "config": {
         "sort-packages": true
