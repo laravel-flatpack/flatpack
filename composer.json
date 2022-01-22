@@ -20,7 +20,8 @@
     ],
     "require": {
         "php": "^8.0",
-        "illuminate/contracts": "^8.73"
+        "illuminate/contracts": "^8.73",
+        "symfony/yaml": "^5.0"
     },
     "require-dev": {
         "damianopetrungaro/php-commitizen": "^0.2.0",

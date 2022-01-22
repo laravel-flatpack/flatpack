@@ -8,8 +8,8 @@ class ListController extends Controller
 {
     public function index(Request $request, $entity)
     {
-        dump($entity);
+        dump($entity, $request->model);
 
-        return view('flatpack::home');
+        return view('flatpack::list');
     }
 }

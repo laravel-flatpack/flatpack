@@ -8,8 +8,8 @@ class FormController extends Controller
 {
     public function index(Request $request, $entity, $id = null)
     {
-        dump($entity, $id);
+        dump($entity, $id, $request->model);
 
-        return view('flatpack::home');
+        return view('flatpack::form');
     }
 }

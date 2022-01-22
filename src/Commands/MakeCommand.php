@@ -35,7 +35,7 @@ class MakeCommand extends Command
      */
     public function handle()
     {
-        $this->line("\n");
+        $this->line("\n 📦 Flat pack \n");
 
         if ($this->option('force')) {
             $this->warn("Force option enabled, will overwrite existing files\n");
