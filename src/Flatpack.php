@@ -9,7 +9,7 @@ class Flatpack
     /**
      * Get the model class name by the entity name.
      *
-     * @param  string $entity
+     * @param  string $name
      * @return string
      */
     public static function modelName($name = ''): string
@@ -20,7 +20,7 @@ class Flatpack
     /**
      * Get the model class by the entity name.
      *
-     * @param  string $entity
+     * @param  string $name
      * @return string
      */
     public static function guessModelClass($name = ''): string
@@ -45,7 +45,7 @@ class Flatpack
     /**
      * Get the entity name by the model class name.
      *
-     * @param  string $entity
+     * @param  string $name
      * @return string
      */
     public static function entityName($name = ''): string

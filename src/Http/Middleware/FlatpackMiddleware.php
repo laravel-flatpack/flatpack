@@ -76,14 +76,19 @@ class FlatpackMiddleware
     /**
      * Validate route parameters.
      *
-     * @return array
+     * @param \Illuminate\Http\Request  $request
+     * @return void
      */
     private function validate(Request $request)
     {
         $route = $request->route();
 
-        if ($route->parameters() === [] && $route->action['as'] === 'flatpack.home') {
-            return true;
+        if (!$route instanceof \Illuminate\Routing\Route) {
+            abort(404, 'Route not found.');
+        }
+
+        if ($route->parameters() === [] && $route->getAction('as') === 'flatpack.home') {
+            return;
         }
 
         $options = $this->options;
@@ -94,7 +99,7 @@ class FlatpackMiddleware
                 ->toArray()
         );
 
-        $entity = $request->route()->parameter('entity');
+        $entity = $route->parameter('entity');
         if (!in_array($entity, $allowedValues)) {
             abort(404, "Entity '{$entity}' not found.");
         }
