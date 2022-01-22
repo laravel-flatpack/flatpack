@@ -2,12 +2,12 @@
 
 namespace Faustoq\Flatpack;
 
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\ServiceProvider;
 use Faustoq\Flatpack\Commands\MakeCommand;
 use Faustoq\Flatpack\Commands\MakeFormCommand;
 use Faustoq\Flatpack\Commands\MakeListCommand;
 use Faustoq\FlatPack\Http\Middleware\FlatpackMiddleware;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\ServiceProvider;
 
 class FlatpackServiceProvider extends ServiceProvider
 {

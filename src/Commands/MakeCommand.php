@@ -3,7 +3,6 @@
 namespace Faustoq\Flatpack\Commands;
 
 use Illuminate\Console\Command;
-use Symfony\Component\Console\Input\InputArgument;
 
 class MakeCommand extends Command
 {
