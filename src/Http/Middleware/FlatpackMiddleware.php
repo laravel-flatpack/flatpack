@@ -105,7 +105,7 @@ class FlatpackMiddleware
         }
 
         $modelClass = Flatpack::guessModelClass($entity);
-        if (!class_exists($modelClass)) {
+        if (! class_exists($modelClass)) {
             abort(404, "Model class '{$modelClass}' not found.");
         }
 
