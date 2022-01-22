@@ -3,6 +3,7 @@
 namespace Faustoq\Flatpack;
 
 use Faustoq\Flatpack\Commands\FlatpackCommand;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
 class FlatpackServiceProvider extends ServiceProvider
@@ -19,7 +20,7 @@ class FlatpackServiceProvider extends ServiceProvider
 
         $this->loadViewsFrom(__DIR__ . '/../resources/views', 'flatpack');
 
-        $this->loadRoutesFrom(__DIR__ . '/routes/flatpack.php');
+        $this->registerRoutes();
 
         if ($this->app->runningInConsole()) {
             $this->commands([
@@ -31,5 +32,20 @@ class FlatpackServiceProvider extends ServiceProvider
     public function register()
     {
         $this->mergeConfigFrom(__DIR__ . '/../config/flatpack.php', 'flatpack');
+    }
+
+    protected function registerRoutes()
+    {
+        Route::group($this->routeConfiguration(), function () {
+            $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
+        });
+    }
+
+    protected function routeConfiguration()
+    {
+        return [
+            'prefix' => config('flatpack.prefix', 'backend'),
+            'middleware' => config('flatpack.middleware'),
+        ];
     }
 }

@@ -4,6 +4,8 @@
 
 return [
 
-    'prefix' => 'flatpack',
+    'prefix' => 'backend',
+
+    'middleware' => \Faustoq\Flatpack\Http\Middleware\FlatpackMiddleware::class,
 
 ];

@@ -68,7 +68,7 @@ This command will create two files:
 
 Let's check the result:
 
-[http://localhost/flatpack/posts](http://localhost/flatpack/posts)
+[http://localhost/backend/posts](http://localhost/backend/posts)
 
 Now start assembling, grab the generated files and define how they should look!
 
