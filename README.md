@@ -9,9 +9,15 @@
 
 **Yet another Laravel Administration Panel?**
 
-Flat Pack is the quickest and simpliest solution to create fast multi-purpose user interfaces. Out of the box, it provides a rich stack of components, ready to assemble.
+Flat Pack is the quickest and simplest solution to create fast multi-purpose user interfaces. Out of the box, it provides a rich stack of crafted components, ready to assemble.
 
-Simply create flatpack composition files with `make:flatpack` command and start building!
+With Flat Pack you can:
+
+-   Quickly create CRUD interfaces for your app's models.
+-   Customise the interfaces with simple and declarative yaml files.
+-   Build a complete and dynamic administration panel for your site in few seconds.
+
+... simply create flatpack composition files with one command and start building!
 
 ---
 
@@ -26,20 +32,100 @@ composer require faustoq/laravel-flatpack
 Publish the config file with:
 
 ```bash
+
+# Copy configuration file /config/flatpack.php
+
 php artisan vendor:publish --tag="config"
+
 ```
 
 Publish the compiled assets:
 
 ```bash
+
+# Copy compiled assets /public/flatpack.js and /public/flatpack.css
+
 php artisan vendor:publish --tag="public"
+
 ```
 
 ## Usage
 
+Generate the flatpack composition files for App\Models\Post model...
+
 ```bash
-php artisan make:flatpack User
+
+# Generate the flatpack composition files for App\Models\Post model...
+
+php artisan make:flatpack Post
+
 ```
+
+This command will create two files:
+
+-   A form template `/flatpack/posts/form.yaml`, that defines the layout composition of your posts form.
+-   A list template `/flatpack/posts/list.yaml`, that defines the layout composition of your posts table with pagination.
+
+Let's check the result:
+
+[http://localhost/flatpack/posts](http://localhost/flatpack/posts)
+
+Now start assembling, grab the generated files and define how they should look!
+
+## Forms
+
+Example of generated file `/flatpack/posts/form.yaml`
+
+```yaml
+form:
+    name:
+        label: Name
+        type: text
+
+    description:
+        label: Description
+        type: textarea
+
+    created_at:
+        label: Created
+        type: datetimepicker
+
+    updated_at:
+        label: Updated
+        type: datetimepicker
+```
+
+## Lists
+
+Example of generated `/flatpack/posts/list.yaml`
+
+```yaml
+list:
+    id:
+        label: ID
+        sortable: true
+        searchable: true
+    name:
+        label: Name
+        sortable: true
+        searchable: true
+
+    created_at:
+        label: Created
+        type: datetime
+        format: "Y-m-d H:i:s"
+        sortable: true
+
+    updated_at:
+        label: Updated
+        type: datetime
+        format: "Y-m-d H:i:s"
+        sortable: true
+```
+
+You can edit the yaml composition files by mapping your model's attributes with components of differnt types and features.
+
+[Check out the Documentation](DOCUMENTATION.md)
 
 ## Changelog
 
