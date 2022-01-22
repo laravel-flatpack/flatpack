@@ -1,0 +1,18 @@
+# =======================================
+#  {{ model }} Form Definition
+# =======================================
+
+form:
+  id:
+    label: ID
+    readonly: true
+
+  created_at:
+    label: Created
+    type: datetimepicker
+    span: 1
+
+  updated_at:
+    label: Updated
+    type: datetimepicker
+    span: 1

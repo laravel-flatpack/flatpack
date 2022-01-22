@@ -2,9 +2,12 @@
 
 namespace Faustoq\Flatpack;
 
-use Faustoq\Flatpack\Commands\FlatpackCommand;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use Faustoq\Flatpack\Commands\MakeCommand;
+use Faustoq\Flatpack\Commands\MakeFormCommand;
+use Faustoq\Flatpack\Commands\MakeListCommand;
+use Faustoq\FlatPack\Http\Middleware\FlatpackMiddleware;
 
 class FlatpackServiceProvider extends ServiceProvider
 {
@@ -18,13 +21,15 @@ class FlatpackServiceProvider extends ServiceProvider
             __DIR__ . '/../config/flatpack.php' => config_path('flatpack.php'),
         ], 'config');
 
-        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'flatpack');
+        $this->registerViews();
 
         $this->registerRoutes();
 
         if ($this->app->runningInConsole()) {
             $this->commands([
-                FlatpackCommand::class,
+                MakeFormCommand::class,
+                MakeListCommand::class,
+                MakeCommand::class,
             ]);
         }
     }
@@ -32,6 +37,11 @@ class FlatpackServiceProvider extends ServiceProvider
     public function register()
     {
         $this->mergeConfigFrom(__DIR__ . '/../config/flatpack.php', 'flatpack');
+    }
+
+    protected function registerViews()
+    {
+        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'flatpack');
     }
 
     protected function registerRoutes()
@@ -45,7 +55,7 @@ class FlatpackServiceProvider extends ServiceProvider
     {
         return [
             'prefix' => config('flatpack.prefix', 'backend'),
-            'middleware' => config('flatpack.middleware'),
+            'middleware' => config('flatpack.middleware', FlatpackMiddleware::class),
         ];
     }
 }
