@@ -95,12 +95,12 @@ class FlatpackMiddleware
         );
 
         $entity = $request->route()->parameter('entity');
-        if (!in_array($entity, $allowedValues)) {
+        if (! in_array($entity, $allowedValues)) {
             abort(404, "Entity '{$entity}' not found.");
         }
 
         $modelClass = Flatpack::guessModelClass($entity);
-        if (!class_exists($modelClass)) {
+        if (! class_exists($modelClass)) {
             abort(404, "Model class '{$modelClass}' not found.");
         }
 
