@@ -83,7 +83,7 @@ class FlatpackMiddleware
     {
         $route = $request->route();
 
-        if (!$route instanceof \Illuminate\Routing\Route) {
+        if (! $route instanceof \Illuminate\Routing\Route) {
             abort(404, 'Route not found.');
         }
 
@@ -100,7 +100,7 @@ class FlatpackMiddleware
         );
 
         $entity = $route->parameter('entity');
-        if (!in_array($entity, $allowedValues)) {
+        if (! in_array($entity, $allowedValues)) {
             abort(404, "Entity '{$entity}' not found.");
         }
 
