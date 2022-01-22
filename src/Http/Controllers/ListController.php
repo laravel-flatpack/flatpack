@@ -9,6 +9,7 @@ class ListController extends Controller
     public function index(Request $request, $entity)
     {
         dump($entity);
+
         return view('flatpack::home');
     }
 }
