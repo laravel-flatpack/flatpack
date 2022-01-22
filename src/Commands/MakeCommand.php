@@ -52,6 +52,6 @@ class MakeCommand extends Command
             '--force' => $this->option('force'),
         ]);
 
-        $this->line("\nDone!");
+        $this->line("\nDone!\n");
     }
 }
