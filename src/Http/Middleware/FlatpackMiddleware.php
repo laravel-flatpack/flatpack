@@ -1,6 +1,6 @@
 <?php
 
-namespace Faustoq\FlatPack\Http\Middleware;
+namespace Faustoq\Flatpack\Http\Middleware;
 
 use Illuminate\Http\Request;
 

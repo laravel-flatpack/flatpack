@@ -127,7 +127,6 @@ class BaseCommand extends GeneratorCommand
     /**
      * Guess the model name from the Factory name or return a default model name.
      *
-     * @param  string  $name
      * @return string|null
      */
     protected function guessModelName()

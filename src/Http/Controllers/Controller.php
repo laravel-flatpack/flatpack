@@ -1,6 +1,6 @@
 <?php
 
-namespace Faustoq\FlatPack\Http\Controllers;
+namespace Faustoq\Flatpack\Http\Controllers;
 
 use Illuminate\Routing\Controller as BaseController;
 
