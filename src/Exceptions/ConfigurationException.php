@@ -1,0 +1,20 @@
+<?php
+namespace Faustoq\Flatpack\Exceptions;
+
+use Exception;
+use Facade\IgnitionContracts\Solution;
+use Facade\IgnitionContracts\BaseSolution;
+use Facade\IgnitionContracts\ProvidesSolution;
+
+class ConfigurationException extends Exception implements ProvidesSolution
+{
+    /** @return  \Facade\IgnitionContracts\Solution */
+    public function getSolution(): Solution
+    {
+        return BaseSolution::create('Your Flatpack configuration is missing.')
+            ->setSolutionDescription('Generate your first Flatpack template using `php artisan make:flatpack`')
+            ->setDocumentationLinks([
+                'Package documentation' => 'https://github.com/faustoq/laravel-flatpack',
+            ]);
+    }
+}

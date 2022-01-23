@@ -2,9 +2,11 @@
 
 namespace Faustoq\Flatpack;
 
+use Facade\IgnitionContracts\SolutionProviderRepository;
 use Faustoq\Flatpack\Commands\MakeCommand;
 use Faustoq\Flatpack\Commands\MakeFormCommand;
 use Faustoq\Flatpack\Commands\MakeListCommand;
+use Faustoq\Flatpack\Exceptions\Solutions\GenerateFlatpackSolution;
 use Faustoq\Flatpack\Http\Middleware\FlatpackMiddleware;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
@@ -14,24 +16,22 @@ class FlatpackServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->publishes([
-            __DIR__ . '/public' => public_path('vendor/flatpack'),
+            __DIR__ . '/../public' => public_path('flatpack'),
         ], 'public');
 
         $this->publishes([
             __DIR__ . '/../config/flatpack.php' => config_path('flatpack.php'),
         ], 'config');
 
+        $this->commands([
+            MakeFormCommand::class,
+            MakeListCommand::class,
+            MakeCommand::class,
+        ]);
+
         $this->registerViews();
-
         $this->registerRoutes();
-
-        if ($this->app->runningInConsole()) {
-            $this->commands([
-                MakeFormCommand::class,
-                MakeListCommand::class,
-                MakeCommand::class,
-            ]);
-        }
+        $this->registerSolutions();
     }
 
     public function register()
@@ -49,6 +49,12 @@ class FlatpackServiceProvider extends ServiceProvider
         Route::group($this->routeConfiguration(), function () {
             $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
         });
+    }
+
+    protected function registerSolutions()
+    {
+        $this->app->make(SolutionProviderRepository::class)
+            ->registerSolutionProvider(GenerateFlatpackSolution::class);
     }
 
     protected function routeConfiguration()

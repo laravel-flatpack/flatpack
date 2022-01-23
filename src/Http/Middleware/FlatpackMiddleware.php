@@ -2,6 +2,9 @@
 
 namespace Faustoq\Flatpack\Http\Middleware;
 
+use Faustoq\Flatpack\Exceptions\ConfigurationException;
+use Faustoq\Flatpack\Exceptions\EntityNotFoundException;
+use Faustoq\Flatpack\Exceptions\ModelNotFoundException;
 use Faustoq\Flatpack\Flatpack;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
@@ -45,9 +48,13 @@ class FlatpackMiddleware
     private function loadFlatpack()
     {
         $path = app()->basePath(config('flatpack.directory', 'flatpack'));
-        $config = $this->loadYamlConfigFiles($path);
 
-        return $config;
+        if (!File::isDirectory($path)) {
+            // abort(400, 'Flatpack directory not found.');
+            throw new ConfigurationException('Flatpack directory not found.');
+        }
+
+        return $this->loadYamlConfigFiles($path);
     }
 
     /**
@@ -100,13 +107,14 @@ class FlatpackMiddleware
         );
 
         $entity = $route->parameter('entity');
-        if (! in_array($entity, $allowedValues)) {
-            abort(404, "Entity '{$entity}' not found.");
+        $modelClass = Flatpack::guessModelClass($entity);
+
+        if (! class_exists($modelClass)) {
+            throw new ModelNotFoundException("Model '{$modelClass}' not found.", $entity, $modelClass);
         }
 
-        $modelClass = Flatpack::guessModelClass($entity);
-        if (! class_exists($modelClass)) {
-            abort(404, "Model class '{$modelClass}' not found.");
+        if (! in_array($entity, $allowedValues)) {
+            throw new EntityNotFoundException("Entity '{$entity}' not found.", $entity, $modelClass);
         }
 
         $request->model = $modelClass;
