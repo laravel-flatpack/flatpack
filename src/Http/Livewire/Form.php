@@ -47,7 +47,7 @@ class Form extends Component
 
         $this->bindFieldsToModel();
 
-        if (!method_exists($this->model, $method)) {
+        if (! method_exists($this->model, $method)) {
             throw new \Exception("Action not found: $method");
         }
 
@@ -60,7 +60,7 @@ class Form extends Component
 
         $this->emit('notify', [
             "type" => "success",
-            'message' => "The {$entity} has been updated."
+            'message' => "The {$entity} has been updated.",
         ]);
 
         if ($redirect) {
@@ -98,7 +98,7 @@ class Form extends Component
     private function goBack()
     {
         $this->emit('redirect', [
-            'url' => route('flatpack.index', $this->entity)
+            'url' => route('flatpack.index', $this->entity),
         ]);
     }
 }

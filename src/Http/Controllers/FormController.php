@@ -15,8 +15,8 @@ class FormController extends Controller
 
         $entry = $modelClass::find($id);
 
-        if (!$entry) {
-            $entry = new $modelClass;
+        if (! $entry) {
+            $entry = new $modelClass();
         }
 
         return view('flatpack::detail', [
