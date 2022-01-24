@@ -19,8 +19,7 @@ class Table extends DataTableComponent
     public bool $reorderEnabled = false;
 
     public array $bulkActions = [
-        'activate' => 'Activate',
-        'deactivate' => 'Deactivate',
+        'delete' => 'Delete',
     ];
 
     protected string $tableName = '';
@@ -29,9 +28,7 @@ class Table extends DataTableComponent
      * Component props.
      */
     public $model;
-
     public $entity;
-
     public $composition = [];
 
     public function columns(): array
@@ -82,7 +79,7 @@ class Table extends DataTableComponent
                 'rowView' => $this->rowView(),
                 'filtersView' => $this->filtersView(),
                 'customFilters' => $this->filters(),
-                'rows' => $this->rows,
+                'rows' => $this->getRowsProperty(),
                 'modalsView' => $this->modalsView(),
             ]);
     }

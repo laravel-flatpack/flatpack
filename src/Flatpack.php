@@ -80,7 +80,7 @@ class Flatpack
      * Get the template files for the given entity.
      *
      * @param  string $entity
-     * @return string
+     * @return array
      */
     public static function getTemplates($entity)
     {
@@ -102,7 +102,7 @@ class Flatpack
      *
      * @param  string $entity
      * @param  string $template
-     * @return string
+     * @return array
      */
     public static function getTemplateComposition($entity, $template = 'list.yaml')
     {
