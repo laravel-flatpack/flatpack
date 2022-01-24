@@ -1,4 +1,5 @@
 <?php
+
 namespace Faustoq\Flatpack\Traits;
 
 use Illuminate\Support\Arr;
