@@ -2,14 +2,21 @@
 
 namespace Faustoq\Flatpack\Http\Controllers;
 
+use Faustoq\Flatpack\Flatpack;
 use Illuminate\Http\Request;
 
 class ListController extends Controller
 {
     public function index(Request $request, $entity)
     {
-        dump($entity, $request->model);
+        $modelClass = $request->model;
 
-        return view('flatpack::list');
+        $composition = Flatpack::getTemplateComposition($entity, 'list.yaml');
+
+        return view('flatpack::list', [
+                'composition' => $composition,
+                'entity' => $entity,
+                'model' => $modelClass,
+            ]);
     }
 }

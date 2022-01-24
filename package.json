@@ -1,0 +1,40 @@
+{
+    "name": "laravel-flatpack",
+    "version": "1.0.0",
+    "description": "Flat pack: Administration panel for Laravel, ready to assemble.",
+    "main": "tailwind.config.js",
+    "directories": {
+        "test": "tests"
+    },
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "dev": "npm run development",
+        "development": "mix",
+        "watch": "mix watch",
+        "watch-poll": "mix watch -- --watch-options-poll=1000",
+        "hot": "mix watch --hot",
+        "prod": "npm run production",
+        "production": "mix --production"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/faustoq/laravel-flatpack.git"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/faustoq/laravel-flatpack/issues"
+    },
+    "homepage": "https://github.com/faustoq/laravel-flatpack",
+    "devDependencies": {
+        "@tailwindcss/aspect-ratio": "^0.4.0",
+        "@tailwindcss/forms": "^0.4.0",
+        "@tailwindcss/line-clamp": "^0.3.1",
+        "@tailwindcss/typography": "^0.5.0",
+        "autoprefixer": "^10.4.2",
+        "laravel-mix": "^6.0.41",
+        "postcss": "^8.4.5",
+        "tailwindcss": "^3.0.15"
+    }
+}

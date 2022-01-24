@@ -1,2 +1,5 @@
-<h1>Form</h1>
-<p>Form page</p>
+@extends('flatpack::layout')
+
+@section('content')
+    <p>Form page.</p>
+@endsection

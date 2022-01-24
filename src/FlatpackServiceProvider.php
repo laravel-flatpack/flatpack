@@ -5,9 +5,11 @@ namespace Faustoq\Flatpack;
 use Faustoq\Flatpack\Commands\MakeCommand;
 use Faustoq\Flatpack\Commands\MakeFormCommand;
 use Faustoq\Flatpack\Commands\MakeListCommand;
+use Faustoq\Flatpack\Http\Livewire\Table;
 use Faustoq\Flatpack\Http\Middleware\FlatpackMiddleware;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use Livewire\Livewire;
 
 class FlatpackServiceProvider extends ServiceProvider
 {
@@ -51,7 +53,7 @@ class FlatpackServiceProvider extends ServiceProvider
 
     protected function registerComponents()
     {
-        //
+        Livewire::component('flatpack.table', Table::class);
     }
 
     protected function routeConfiguration()

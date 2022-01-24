@@ -1,2 +1,6 @@
-<h1>Home</h1>
-<p>hello world</p>
+@extends('flatpack::layout')
+
+@section('content')
+    <h1 class="text-lg font-bold">Home</h1>
+    <p>Homepage content.</p>
+@endsection

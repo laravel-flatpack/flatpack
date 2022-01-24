@@ -21,10 +21,11 @@
     "require": {
         "php": "^8.0",
         "illuminate/contracts": "^8.73",
+        "livewire/livewire": "^2.6",
+        "rappasoft/laravel-livewire-tables": "^1.22",
         "symfony/yaml": "^5.0"
     },
     "require-dev": {
-        "damianopetrungaro/php-commitizen": "^0.2.0",
         "nunomaduro/collision": "^5.10",
         "nunomaduro/larastan": "^1.0",
         "orchestra/testbench": "^6.0",
