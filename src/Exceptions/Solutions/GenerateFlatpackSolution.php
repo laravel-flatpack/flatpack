@@ -2,9 +2,8 @@
 
 namespace Faustoq\Flatpack\Exceptions\Solutions;
 
-use Illuminate\Support\Facades\Artisan;
 use Facade\IgnitionContracts\RunnableSolution;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Artisan;
 
 class GenerateFlatpackSolution implements RunnableSolution
 {

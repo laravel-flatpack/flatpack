@@ -12,7 +12,7 @@ use Symfony\Component\Yaml\Yaml;
 
 class Flatpack
 {
-    const GLOBAL_OPTIONS_KEY = '_flatpack_global';
+    public const GLOBAL_OPTIONS_KEY = '_flatpack_global';
 
     /**
      * Get the model class name by the entity name.
@@ -69,9 +69,10 @@ class Flatpack
     public static function getDirectory(): string
     {
         $path = base_path(config('flatpack.directory', 'flatpack'));
-        if (!File::isDirectory($path)) {
+        if (! File::isDirectory($path)) {
             throw new ConfigurationException('Flatpack directory not found.');
         }
+
         return $path;
     }
 
@@ -89,7 +90,7 @@ class Flatpack
             $templates = self::loadYamlConfigFiles(self::getDirectory());
         }
 
-        if (!isset($templates[$entity])) {
+        if (! isset($templates[$entity])) {
             throw new EntityNotFoundException("Entity '{$entity}' not found.", $entity, self::modelName($entity));
         }
 
@@ -107,7 +108,7 @@ class Flatpack
     {
         $templates = self::getTemplates($entity);
 
-        if (!isset($templates[$template])) {
+        if (! isset($templates[$template])) {
             throw new TemplateNotFoundException("Template '{$template}' not found.", $entity, self::modelName($entity));
         }
 

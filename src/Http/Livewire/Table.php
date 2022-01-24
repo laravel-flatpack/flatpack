@@ -5,7 +5,6 @@ namespace Faustoq\Flatpack\Http\Livewire;
 use Illuminate\Database\Eloquent\Builder;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
 use Rappasoft\LaravelLivewireTables\Views\Column;
-use Rappasoft\LaravelLivewireTables\Views\Filter;
 
 class Table extends DataTableComponent
 {
@@ -20,7 +19,7 @@ class Table extends DataTableComponent
     public bool $reorderEnabled = false;
 
     public array $bulkActions = [
-        'activate'   => 'Activate',
+        'activate' => 'Activate',
         'deactivate' => 'Deactivate',
     ];
 

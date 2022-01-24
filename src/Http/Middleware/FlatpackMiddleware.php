@@ -8,7 +8,6 @@ use Faustoq\Flatpack\Exceptions\ModelNotFoundException;
 use Faustoq\Flatpack\Flatpack;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
-use Symfony\Component\Yaml\Yaml;
 
 class FlatpackMiddleware
 {
@@ -44,7 +43,7 @@ class FlatpackMiddleware
     {
         $path = Flatpack::getDirectory();
 
-        if (!File::isDirectory($path)) {
+        if (! File::isDirectory($path)) {
             throw new ConfigurationException('Flatpack directory not found.');
         }
 

@@ -26,7 +26,7 @@ class FlatpackServiceProvider extends ServiceProvider
         $this->commands([
             MakeFormCommand::class,
             MakeListCommand::class,
-            MakeCommand::class
+            MakeCommand::class,
         ]);
 
         $this->registerViews();

@@ -1,10 +1,11 @@
 <?php
+
 namespace Faustoq\Flatpack\Exceptions;
 
 use Exception;
-use Facade\IgnitionContracts\Solution;
 use Facade\IgnitionContracts\BaseSolution;
 use Facade\IgnitionContracts\ProvidesSolution;
+use Facade\IgnitionContracts\Solution;
 
 class ModelNotFoundException extends Exception implements ProvidesSolution
 {
