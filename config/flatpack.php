@@ -19,4 +19,13 @@ return [
      */
     'middleware' => \Faustoq\Flatpack\Http\Middleware\FlatpackMiddleware::class,
 
+    /**
+     * Cache yaml composition templates.
+     */
+    'cache' => [
+        'enabled' => false,
+        'key' => 'flatpack.templates',
+        'lifetime' => 60,
+    ],
+
 ];

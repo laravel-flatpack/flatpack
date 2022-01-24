@@ -2,11 +2,9 @@
 
 namespace Faustoq\Flatpack;
 
-use Facade\IgnitionContracts\SolutionProviderRepository;
 use Faustoq\Flatpack\Commands\MakeCommand;
 use Faustoq\Flatpack\Commands\MakeFormCommand;
 use Faustoq\Flatpack\Commands\MakeListCommand;
-use Faustoq\Flatpack\Exceptions\Solutions\GenerateFlatpackSolution;
 use Faustoq\Flatpack\Http\Middleware\FlatpackMiddleware;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
@@ -26,12 +24,12 @@ class FlatpackServiceProvider extends ServiceProvider
         $this->commands([
             MakeFormCommand::class,
             MakeListCommand::class,
-            MakeCommand::class,
+            MakeCommand::class
         ]);
 
         $this->registerViews();
         $this->registerRoutes();
-        $this->registerSolutions();
+        $this->registerComponents();
     }
 
     public function register()
@@ -51,10 +49,9 @@ class FlatpackServiceProvider extends ServiceProvider
         });
     }
 
-    protected function registerSolutions()
+    protected function registerComponents()
     {
-        $this->app->make(SolutionProviderRepository::class)
-            ->registerSolutionProvider(GenerateFlatpackSolution::class);
+        //
     }
 
     protected function routeConfiguration()

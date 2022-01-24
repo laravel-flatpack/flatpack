@@ -41,10 +41,10 @@ class GenerateFlatpackSolution implements RunnableSolution
 
     public function getSolutionDescription(): string
     {
-        $directory = config('flatpack.directory');
+        $directory = base_path(config('flatpack.directory', 'flatpack'));
 
         return "Check that {$this->model} model exists and create the required
-            files in `/{$directory}/{$this->entity}`.";
+            files in `{$directory}/{$this->entity}`.";
     }
 
     public function getRunParameters(): array

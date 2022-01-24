@@ -13,11 +13,6 @@ use Symfony\Component\Yaml\Yaml;
 class FlatpackMiddleware
 {
     /**
-     * Flatpack global options.
-     */
-    protected $globalOptionsKey = '_flatpack_global';
-
-    /**
      * Flatpack template composition files options.
      */
     protected $options = [];
@@ -47,37 +42,13 @@ class FlatpackMiddleware
      */
     private function loadFlatpack()
     {
-        $path = app()->basePath(config('flatpack.directory', 'flatpack'));
+        $path = Flatpack::getDirectory();
 
         if (!File::isDirectory($path)) {
-            // abort(400, 'Flatpack directory not found.');
             throw new ConfigurationException('Flatpack directory not found.');
         }
 
-        return $this->loadYamlConfigFiles($path);
-    }
-
-    /**
-     * Load all YAML config files in the given path.
-     *
-     * @return array
-     */
-    private function loadYamlConfigFiles($path)
-    {
-        $files = collect(File::allFiles($path));
-        $config = [];
-        foreach ($files as $file) {
-            $path = $file->getPathname();
-            $entity = $file->getRelativePath();
-            $file = $file->getFilename();
-
-            $view = Yaml::parseFile($path);
-            $key = empty($entity) ? $this->globalOptionsKey : $entity;
-
-            $config[$key][$file] = $view;
-        }
-
-        return $config;
+        return Flatpack::loadYamlConfigFiles($path);
     }
 
     /**
@@ -98,11 +69,9 @@ class FlatpackMiddleware
             return;
         }
 
-        $options = $this->options;
-
         $allowedValues = array_values(
-            collect(array_keys($options))
-                ->filter(fn ($key) => $key !== $this->globalOptionsKey)
+            collect(array_keys($this->options))
+                ->filter(fn ($key) => $key !== Flatpack::GLOBAL_OPTIONS_KEY)
                 ->toArray()
         );
 

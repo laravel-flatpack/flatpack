@@ -6,7 +6,7 @@ use Facade\IgnitionContracts\Solution;
 use Facade\IgnitionContracts\ProvidesSolution;
 use Faustoq\Flatpack\Exceptions\Solutions\GenerateFlatpackSolution;
 
-class EntityNotFoundException extends Exception implements ProvidesSolution
+class TemplateNotFoundException extends Exception implements ProvidesSolution
 {
     private $entity;
     private $model;
