@@ -1,5 +1,5 @@
 <div class="flex flex-col py-10 gap-10 w-full">
-    <div class="flex flex-row justify-between items-center w-full">
+    <div class="flex flex-row justify-between items-start gap-5 w-full">
         <x-flatpack::form.header :elements="$header" :fields="$fields" />
         <x-flatpack::form.toolbar :elements="$toolbar" />
     </div>

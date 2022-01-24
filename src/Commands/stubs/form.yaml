@@ -2,7 +2,7 @@
 #  {{ model }} Form Definition
 # =======================================
 
-form:
+fields:
   id:
     label: ID
     readonly: true

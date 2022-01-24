@@ -28,7 +28,7 @@ class Form extends Component
         return view('flatpack::components.form', [
             'header' => $this->getComposition('header'),
             'toolbar' => $this->getComposition('toolbar'),
-            'form' => $this->getComposition('form'),
+            'form' => $this->getComposition('fields'),
             'sidebar' => $this->getComposition('sidebar'),
         ]);
     }
@@ -82,7 +82,8 @@ class Form extends Component
     private function bindModelToFields()
     {
         $fields = array_merge(
-            $this->getComposition('form'),
+            $this->getComposition('header'),
+            $this->getComposition('fields'),
             $this->getComposition('sidebar')
         );
 
