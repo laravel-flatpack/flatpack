@@ -35,7 +35,7 @@ class Table extends DataTableComponent
     {
         $columns = [];
 
-        foreach ($this->composition['list'] ?? [] as $attribute => $options) {
+        foreach ($this->composition['columns'] ?? [] as $attribute => $options) {
             $label = $options['label'] ?? $attribute;
             $column = Column::make($label, $attribute);
 

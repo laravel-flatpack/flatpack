@@ -1,4 +1,7 @@
 /* Flatpack version 1.0.0 */
+@import "./components/button";
+@import "./components/layout";
+@import "./components/navbar";
 
 @tailwind base;
 @tailwind components;
@@ -8,9 +11,6 @@
   display: none;
 }
 
-.button {
-  @apply block px-5 py-2 bg-black text-white rounded-md mx-1;
-}
-.button:hover {
-  @apply bg-gray-800;
+body {
+  @apply bg-gray-900;
 }
