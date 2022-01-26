@@ -77,7 +77,7 @@ Now start assembling, grab the generated files and define how they should look!
 Example of generated file `/flatpack/posts/form.yaml`
 
 ```yaml
-form:
+fields:
     name:
         label: Name
         type: text
@@ -100,7 +100,7 @@ form:
 Example of generated `/flatpack/posts/list.yaml`
 
 ```yaml
-list:
+columns:
     id:
         label: ID
         sortable: true

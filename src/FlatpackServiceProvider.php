@@ -8,6 +8,7 @@ use Faustoq\Flatpack\Commands\MakeListCommand;
 use Faustoq\Flatpack\Http\Livewire\Form;
 use Faustoq\Flatpack\Http\Livewire\Table;
 use Faustoq\Flatpack\Http\Middleware\FlatpackMiddleware;
+use Faustoq\Flatpack\View\Components\Layout;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
@@ -31,8 +32,9 @@ class FlatpackServiceProvider extends ServiceProvider
         ]);
 
         $this->registerViews();
-        $this->registerRoutes();
+        $this->registerViewComponents();
         $this->registerComponents();
+        $this->registerRoutes();
     }
 
     public function register()
@@ -43,6 +45,13 @@ class FlatpackServiceProvider extends ServiceProvider
     protected function registerViews()
     {
         $this->loadViewsFrom(__DIR__ . '/../resources/views', 'flatpack');
+    }
+
+    protected function registerViewComponents()
+    {
+        $this->loadViewComponentsAs('flatpack', [
+            Layout::class,
+        ]);
     }
 
     protected function registerRoutes()

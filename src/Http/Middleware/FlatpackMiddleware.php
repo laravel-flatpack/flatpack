@@ -75,14 +75,15 @@ class FlatpackMiddleware
         );
 
         $entity = $route->parameter('entity');
+        $modelName = Flatpack::modelName($entity);
         $modelClass = Flatpack::guessModelClass($entity);
 
         if (! class_exists($modelClass)) {
-            throw new ModelNotFoundException("Model '{$modelClass}' not found.", $entity, $modelClass);
+            throw new ModelNotFoundException("Model '{$modelClass}' not found.", $entity, $modelName);
         }
 
         if (! in_array($entity, $allowedValues)) {
-            throw new EntityNotFoundException("Entity '{$entity}' not found.", $entity, $modelClass);
+            throw new EntityNotFoundException("Entity '{$entity}' not found.", $entity, $modelName);
         }
 
         $request->model = $modelClass;

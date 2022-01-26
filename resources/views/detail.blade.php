@@ -1,9 +1,7 @@
-@extends('flatpack::layout')
-
-@section('content')
+<x-flatpack-layout>
     <livewire:flatpack.form
         :model="$model"
         :entity="$entity"
         :entry="$entry"
         :composition="$composition" />
-@endsection
+</x-flatpack-layout>
