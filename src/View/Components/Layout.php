@@ -19,28 +19,28 @@ class Layout extends Component
             'home' => [
                 'title' => 'Home',
                 'url' => route('flatpack.home'),
-                'icon' => 'grid_view'
+                'icon' => 'grid_view',
             ],
             'new' => [
                 'title' => 'Create new post',
                 'url' => route('flatpack.form', ['entity' => 'posts', 'id' => 'create']),
                 'type' => 'button',
-                'icon' => 'add_box'
+                'icon' => 'add_box',
             ],
             'posts' => [
                 'title' => 'Posts',
                 'url' => route('flatpack.list', ['entity' => 'posts']),
-                'icon' => 'push_pin'
+                'icon' => 'push_pin',
             ],
             'categories' => [
                 'title' => 'Categories',
                 'url' => route('flatpack.list', ['entity' => 'categories']),
-                'icon' => 'label'
+                'icon' => 'label',
             ],
             'tags' => [
                 'title' => 'Tags',
                 'url' => route('flatpack.list', ['entity' => 'tags']),
-                'icon' => 'tag'
+                'icon' => 'tag',
             ],
         ];
     }
