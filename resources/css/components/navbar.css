@@ -1,0 +1,24 @@
+.navbar {
+  @apply sticky top-0 z-50 h-screen w-20 justify-center items-start bg-gray-800 text-white py-2;
+  @apply hidden lg:flex;
+}
+
+.navbar-rail-wrapper {
+  @apply flex flex-col w-20 h-full justify-between list-none;
+}
+
+.navbar-rail-wrapper .navbar-rail {
+  @apply flex flex-col items-center list-none text-center;
+}
+
+.navbar-rail-wrapper .navbar-rail .navbar-items {
+  @apply list-none flex flex-col gap-2;
+}
+
+.navbar-rail-wrapper .navbar-rail-bottom {
+  @apply flex flex-col items-center list-none text-center;
+}
+
+.top-bar-wrapper {
+  @apply sticky top-0 z-40 w-full h-16 bg-gray-700 py-2 px-5 flex flex-row justify-between items-center;
+}

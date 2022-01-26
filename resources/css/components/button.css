@@ -1,0 +1,6 @@
+.button {
+  @apply block px-5 py-2 bg-black text-white rounded-md;
+}
+.button:hover {
+  @apply bg-gray-800;
+}

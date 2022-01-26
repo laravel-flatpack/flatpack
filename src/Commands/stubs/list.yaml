@@ -2,7 +2,7 @@
 #  {{ model }} List Definition
 # =======================================
 
-list:
+columns:
   id:
     label: ID
     sortable: true
