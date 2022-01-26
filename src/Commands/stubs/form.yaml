@@ -2,6 +2,13 @@
 #  {{ model }} Form Definition
 # =======================================
 
+toolbar:
+  save:
+    type: button
+    label: Save
+    action: save
+    shortcut: s
+
 fields:
   id:
     label: ID
