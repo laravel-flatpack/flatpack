@@ -17,48 +17,25 @@
             <ul class="navbar-rail-wrapper">
                 <li class="navbar-rail">
                     <ul class="navbar-items">
+                        @foreach ($navigation as $item)
                         <li>
-                            <a href="#" class="text-gray-300 hover:text-white block">
-                                <x-flatpack::icon icon="grid_view" />
+                            <a href="{{ $item['url'] ?? '#' }}" class="text-gray-300 hover:text-white block {{ ($item['type'] ?? '') === 'button' ? 'bg-gray-900 my-8' : '' }}">
+                                <x-flatpack::icon icon="{{ $item['icon'] ?? '' }}" />
                                 <span></span>
                             </a>
                         </li>
-                        <li>
-                            <a href="#" class="text-gray-300 hover:text-white bg-gray-900 block my-8">
-                                <x-flatpack::icon icon="add_box" />
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#" class="text-gray-300 hover:text-white block">
-                                <x-flatpack::icon icon="push_pin" />
-                                <span></span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#" class="text-gray-300 hover:text-white block">
-                                <x-flatpack::icon icon="label" />
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#" class="text-gray-300 hover:text-white block">
-                                <x-flatpack::icon icon="tag" />
-                            </a>
-                        </li>
+                        @endforeach
                     </ul>
                 </li>
                 <li class="navbar-rail-bottom">
-                    <ul class="navbar-items">
-                        <li>
-                            <a href="#" class="text-gray-300 hover:text-white block">
-                                <x-flatpack::icon icon="manage_accounts" />
-                            </a>
-                        </li>
+                    {{-- TODO: add navbar bottom items --}}
+                    {{-- <ul class="navbar-items">
                         <li>
                             <a href="#" class="text-gray-300 hover:text-white block">
                                 <x-flatpack::icon icon="settings" />
                             </a>
                         </li>
-                    </ul>
+                    </ul> --}}
                 </li>
             </ul>
         </aside>
