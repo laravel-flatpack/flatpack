@@ -6,7 +6,7 @@
     <div class="flex flex-row w-full">
         <div class="grid grid-cols-2 w-full max-w-5xl mx-auto">
             @foreach ($form ?? [] as $key => $options)
-                <x-flatpack::form.field
+                <x-flatpack::form-field
                     :key="$key"
                     :value="$fields[$key] ?? null"
                     :type="Arr::get($options, 'type', 'text')"
@@ -24,7 +24,7 @@
         @if (isset($sidebar) && count($sidebar) > 0)
         <div class="w-1/4">
             @foreach ($sidebar as $key => $options)
-                <x-flatpack::form.field
+                <x-flatpack::form-field
                     :key="$key"
                     :value="$fields[$key] ?? null"
                     :type="Arr::get($options, 'type', 'text')"
