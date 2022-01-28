@@ -116,7 +116,7 @@ class Form extends Component
         $this->emit('redirect', [
             'url' => route('flatpack.form', [
                 'entity' => $this->entity,
-                'id' => $this->entry->id
+                'id' => $this->entry->id,
             ]),
         ]);
     }

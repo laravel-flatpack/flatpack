@@ -54,7 +54,7 @@ class Table extends DataTableComponent
                 $invisible = true;
             }
 
-            if (!$invisible) {
+            if (! $invisible) {
                 $column->selected();
             }
 
