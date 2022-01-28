@@ -23,7 +23,7 @@ return [
             "label" => "Save",
             "action" => "save",
             "shortcut" => "s",
-        ]
+        ],
     ],
     "fields" => [
         "body" => [
@@ -41,6 +41,6 @@ return [
             "label" => "Updated",
             "type" => "datetimepicker",
             "span" => 1,
-        ]
-    ]
+        ],
+    ],
 ];

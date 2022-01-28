@@ -41,7 +41,7 @@ class FlatpackMiddleware
 
         // Append flatpack mappings to the request.
         $request->flatpack = [
-            $this->entity => $this->modelClass
+            $this->entity => $this->modelClass,
         ];
 
         return $next($request);
