@@ -15,6 +15,7 @@ class Form extends Component
     public $model;
     public $entity;
     public $entry;
+    public $formType;
 
     protected $listeners = ['editorjs-save:flatpack-editor' => 'saveEditorState'];
 
@@ -42,7 +43,9 @@ class Form extends Component
     {
         // Cancel action
         if ($method === 'cancel') {
-            return $this->goBack();
+            return redirect()->route('flatpack.list', [
+                'entity' => $this->entity,
+            ]);
         }
 
         // Validate form fields
@@ -55,11 +58,20 @@ class Form extends Component
         }
 
         // Calling the model's method
+
         $this->entry->{$method}();
 
-        $entity = class_basename($this->model);
+        // Redirect to edit form after create
+        if ($this->formType === 'create') {
+            return redirect()->route('flatpack.form', [
+                'entity' => $this->entity,
+                'id' => $this->entry->id,
+            ]);
+        }
 
         $this->bindModelToFields();
+
+        $entity = class_basename($this->model);
 
         $this->emit('notify', [
             "type" => "success",
@@ -97,6 +109,16 @@ class Form extends Component
                 $this->fields[$key] = optional($this->entry)->{$key};
             }
         }
+    }
+
+    private function goToEditForm()
+    {
+        $this->emit('redirect', [
+            'url' => route('flatpack.form', [
+                'entity' => $this->entity,
+                'id' => $this->entry->id
+            ]),
+        ]);
     }
 
     private function goBack()

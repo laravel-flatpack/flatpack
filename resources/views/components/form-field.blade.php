@@ -7,5 +7,7 @@
         @include('flatpack::includes.input-type-datepicker')
         @include('flatpack::includes.input-type-datetimepicker')
         @include('flatpack::includes.input-type-text')
+        @include('flatpack::includes.input-type-email')
+        @include('flatpack::includes.input-type-password')
     </div>
 </div>
