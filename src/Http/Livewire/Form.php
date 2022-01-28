@@ -87,7 +87,8 @@ class Form extends Component
     {
         foreach ($this->fields as $key => $options) {
             if ((isset($options['disabled']) && $options['disabled']) ||
-                (isset($options['readonly']) && $options['readonly'])) {
+                (isset($options['readonly']) && $options['readonly']) ||
+                $this->fields[$key] === null) {
                 continue;
             }
             $this->entry->{$key} = $this->fields[$key];
