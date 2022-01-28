@@ -1,16 +1,3 @@
-@props([
-    'key' => null,
-    'label' => null,
-    'placeholder' => '',
-    'span' => 'full',
-    'type' => 'text',
-    'options' => [],
-    'items' => [],
-    'readonly' => false,
-    'disabled' => false,
-    'required' => false,
-    'value' => null
-])
 <div class="flex flex-row justify-start items-center {{ ($span == '2' || $span === 'full') ? 'col-span-full' : 'col-span-1' }}">
     <div class="flex flex-col justify-start items-start w-full p-2 {{ $disabled ? 'opacity-50' : '' }}">
         @include('flatpack::includes.input-label')
