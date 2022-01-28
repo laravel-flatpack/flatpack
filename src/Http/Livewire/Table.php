@@ -12,6 +12,8 @@ class Table extends DataTableComponent
 
     public bool $columnSelect = true;
 
+    public bool $rememberColumnSelection = true;
+
     public string $defaultSortColumn = 'id';
 
     public string $defaultSortDirection = 'DESC';
@@ -36,6 +38,7 @@ class Table extends DataTableComponent
         $columns = [];
 
         foreach ($this->composition['columns'] ?? [] as $attribute => $options) {
+            $invisible = false;
             $label = $options['label'] ?? $attribute;
             $column = Column::make($label, $attribute);
 
@@ -45,6 +48,14 @@ class Table extends DataTableComponent
 
             if (isset($options['searchable']) && $options['searchable']) {
                 $column->searchable();
+            }
+
+            if (isset($options['invisible']) && $options['invisible']) {
+                $invisible = true;
+            }
+
+            if (!$invisible) {
+                $column->selected();
             }
 
             $columns[] = $column;
