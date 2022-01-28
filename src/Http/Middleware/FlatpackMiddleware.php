@@ -2,12 +2,10 @@
 
 namespace Faustoq\Flatpack\Http\Middleware;
 
-use Faustoq\Flatpack\Exceptions\ConfigurationException;
 use Faustoq\Flatpack\Exceptions\EntityNotFoundException;
 use Faustoq\Flatpack\Exceptions\ModelNotFoundException;
-use Faustoq\Flatpack\Flatpack;
+use Faustoq\Flatpack\Facades\Flatpack;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\File;
 
 class FlatpackMiddleware
 {
@@ -15,6 +13,16 @@ class FlatpackMiddleware
      * Flatpack template composition files options.
      */
     protected $options = [];
+
+    /**
+     * Entity name.
+     */
+    protected $entity;
+
+    /**
+     * Model class name.
+     */
+    protected $modelClass;
 
     /**
      * Handle an incoming request.
@@ -26,28 +34,17 @@ class FlatpackMiddleware
     public function handle(Request $request, \Closure $next)
     {
         // Load and cache the flatpack template composition files.
-        $this->options = $this->loadFlatpack();
+        $this->options = Flatpack::loadComposition()->getComposition();
 
         // Validate the current request.
         $this->validate($request);
 
+        // Append flatpack mappings to the request.
+        $request->flatpack = [
+            $this->entity => $this->modelClass
+        ];
+
         return $next($request);
-    }
-
-    /**
-     * Load Flatpack template composition files.
-     *
-     * @return array
-     */
-    private function loadFlatpack()
-    {
-        $path = Flatpack::getDirectory();
-
-        if (! File::isDirectory($path)) {
-            throw new ConfigurationException('Flatpack directory not found.');
-        }
-
-        return Flatpack::loadYamlConfigFiles($path);
     }
 
     /**
@@ -65,27 +62,27 @@ class FlatpackMiddleware
         }
 
         if ($route->parameters() === [] && $route->getAction('as') === 'flatpack.home') {
-            return;
+            return true;
         }
 
         $allowedValues = array_values(
             collect(array_keys($this->options))
-                ->filter(fn ($key) => $key !== Flatpack::GLOBAL_OPTIONS_KEY)
+                ->filter(fn ($key) => $key !== '_flatpack_global')
                 ->toArray()
         );
 
-        $entity = $route->parameter('entity');
-        $modelName = Flatpack::modelName($entity);
-        $modelClass = Flatpack::guessModelClass($entity);
+        $this->entity = $route->parameter('entity');
+        $modelName = Flatpack::modelName($this->entity);
+        $this->modelClass = Flatpack::guessModelClass($this->entity);
 
-        if (! class_exists($modelClass)) {
-            throw new ModelNotFoundException("Model '{$modelClass}' not found.", $entity, $modelName);
+        if (! class_exists($this->modelClass)) {
+            throw new ModelNotFoundException("Model '{$this->modelClass}' not found.", $this->entity, $modelName);
         }
 
-        if (! in_array($entity, $allowedValues)) {
-            throw new EntityNotFoundException("Entity '{$entity}' not found.", $entity, $modelName);
+        if (! in_array($this->entity, $allowedValues)) {
+            throw new EntityNotFoundException("Entity '{$this->entity}' not found.", $this->entity, $modelName);
         }
 
-        $request->model = $modelClass;
+        return true;
     }
 }

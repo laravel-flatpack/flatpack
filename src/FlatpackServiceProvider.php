@@ -7,7 +7,6 @@ use Faustoq\Flatpack\Commands\MakeFormCommand;
 use Faustoq\Flatpack\Commands\MakeListCommand;
 use Faustoq\Flatpack\Http\Livewire\Form;
 use Faustoq\Flatpack\Http\Livewire\Table;
-use Faustoq\Flatpack\Http\Middleware\FlatpackMiddleware;
 use Faustoq\Flatpack\View\Components\Layout;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
@@ -40,6 +39,10 @@ class FlatpackServiceProvider extends ServiceProvider
     public function register()
     {
         $this->mergeConfigFrom(__DIR__ . '/../config/flatpack.php', 'flatpack');
+
+        $this->app->bind('flatpack', function ($app) {
+            return new Flatpack();
+        });
     }
 
     protected function registerViews()
@@ -71,7 +74,9 @@ class FlatpackServiceProvider extends ServiceProvider
     {
         return [
             'prefix' => config('flatpack.prefix', 'backend'),
-            'middleware' => config('flatpack.middleware', FlatpackMiddleware::class),
+            'middleware' => config('flatpack.middleware', [
+                \Faustoq\Flatpack\Http\Middleware\FlatpackMiddleware::class,
+            ]),
         ];
     }
 }

@@ -5,27 +5,25 @@
 return [
 
     /**
-     * Flatpack route prefix.
-     */
-    'prefix' => 'backend',
-
-    /**
      * The directory where the Flatpack templates are stored.
      */
     'directory' => 'flatpack',
 
     /**
-     * Middleware to be applied to all routes.
+     * Flatpack route prefix.
      */
-    'middleware' => \Faustoq\Flatpack\Http\Middleware\FlatpackMiddleware::class,
+    'prefix' => 'backend',
+
+    /**
+     * Middlewares to be applied to all flatpack routes.
+     */
+    'middleware' => [
+        \Faustoq\Flatpack\Http\Middleware\FlatpackMiddleware::class,
+    ],
 
     /**
      * Cache yaml composition templates.
      */
-    'cache' => [
-        'enabled' => false,
-        'key' => 'flatpack.templates',
-        'lifetime' => 60,
-    ],
+    'cache' => false,
 
 ];

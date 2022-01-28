@@ -45,6 +45,9 @@ class Form extends Component
             return $this->goBack();
         }
 
+        // Validate form fields
+        // $this->entry->flatpackValidate();
+
         $this->bindFieldsToModel();
 
         if (! method_exists($this->model, $method)) {
