@@ -44,16 +44,6 @@ class Flatpack
     }
 
     /**
-     * Get Flatpack files.
-     *
-     * @return \Symfony\Component\Finder\SplFileInfo[]
-     */
-    public function getFiles()
-    {
-        return $this->files;
-    }
-
-    /**
      * Load composition data and return Flatpack instance.
      *
      * @return self
