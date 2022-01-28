@@ -28,7 +28,7 @@ class FormController extends Controller
             'entity' => $entity,
             'entry' => $entry,
             'composition' => $composition,
-            'formType' => $formType
+            'formType' => $formType,
         ]);
     }
 }
