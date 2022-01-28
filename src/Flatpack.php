@@ -5,14 +5,138 @@ namespace Faustoq\Flatpack;
 use Faustoq\Flatpack\Exceptions\ConfigurationException;
 use Faustoq\Flatpack\Exceptions\EntityNotFoundException;
 use Faustoq\Flatpack\Exceptions\TemplateNotFoundException;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Symfony\Component\Yaml\Yaml;
 
 class Flatpack
 {
-    public const GLOBAL_OPTIONS_KEY = '_flatpack_global';
+    /**
+     * The configuration files path.
+     *
+     * @var string
+     */
+    protected $path;
+
+    /**
+     * The configuration files.
+     *
+     * @var \Symfony\Component\Finder\SplFileInfo[]
+     */
+    protected $files;
+
+    /**
+     * The configuration data.
+     *
+     * @var array
+     */
+    protected $composition;
+
+    /**
+     * Create a new Flatpack class instance.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        $this->composition = [];
+        $this->path = $this->getDirectory();
+    }
+
+    /**
+     * Get Flatpack files.
+     *
+     * @return \Symfony\Component\Finder\SplFileInfo[]
+     */
+    public function getFiles()
+    {
+        return $this->files;
+    }
+
+    /**
+     * Load composition data and return Flatpack instance.
+     *
+     * @return self
+     */
+    public function loadComposition()
+    {
+        // TODO: cache the composition data.
+
+        $this->files = $this->loadCompositionFiles();
+
+        $composition = $this->parseCompositionFiles();
+
+        $this->setComposition($composition);
+
+        return $this;
+    }
+
+    /**
+     * Set composition data.
+     *
+     * @return void
+     */
+    private function setComposition($value)
+    {
+        $this->composition = $value;
+    }
+
+    /**
+     * Get composition data.
+     *
+     * @return array
+     */
+    public function getComposition()
+    {
+        return $this->composition;
+    }
+
+    /**
+     * Load Flatpack composition Yaml files.
+     *
+     * @return \Symfony\Component\Finder\SplFileInfo[]
+     */
+    protected function loadCompositionFiles()
+    {
+        $files = collect(File::allFiles($this->path));
+
+        $files = $files->filter(function ($file) {
+            return $file->getExtension() === 'yaml';
+        });
+
+        return $files;
+    }
+
+    /**
+     * Parse Flatpack composition Yaml files and return the data.
+     *
+     * @return array
+     */
+    protected function parseCompositionFiles()
+    {
+        $config = [];
+
+        foreach ($this->files as $file) {
+            $entity = $file->getRelativePath();
+
+            $key = empty($entity) ? '_flatpack_global' : $entity;
+
+            $config[$key][$file->getFilename()] = Yaml::parseFile($file->getPathname());
+        }
+
+        return $config;
+    }
+
+    /**
+     * Get the entity name by the model class name.
+     *
+     * @param  string $name
+     * @return string
+     */
+    public function entityName($name = ''): string
+    {
+        return Str::lower(Str::plural($name));
+    }
 
     /**
      * Get the model class name by the entity name.
@@ -20,7 +144,7 @@ class Flatpack
      * @param  string $name
      * @return string
      */
-    public static function modelName($name = ''): string
+    public function modelName($name = ''): string
     {
         return Str::studly(Str::singular($name));
     }
@@ -31,44 +155,39 @@ class Flatpack
      * @param  string $name
      * @return string
      */
-    public static function guessModelClass($name = ''): string
+    public function guessModelClass($name = ''): string
     {
-        $modelClass = 'App\\' . self::modelName($name);
+        $modelClass = 'App\\' . $this->modelName($name);
 
         if (class_exists($modelClass)) {
             return $modelClass;
         }
 
         if (is_dir(app_path('Models/'))) {
-            $modelClass = 'App\\Models\\' . self::modelName($name);
+            $modelClass = 'App\\Models\\' . $this->modelName($name);
 
             if (class_exists($modelClass)) {
                 return $modelClass;
             }
         }
 
-        return self::modelName($name);
-    }
-
-    /**
-     * Get the entity name by the model class name.
-     *
-     * @param  string $name
-     * @return string
-     */
-    public static function entityName($name = ''): string
-    {
-        return Str::lower(Str::plural($name));
+        return $this->modelName($name);
     }
 
     /**
      * Get the directory path of the Flatpack templates.
      *
+     * @throws ConfigurationException
      * @return string
      */
-    public static function getDirectory(): string
+    public function getDirectory(): string
     {
+        if (config('app.env') == 'testing') {
+            return __DIR__ . '/../tests/__mocks__';
+        }
+
         $path = base_path(config('flatpack.directory', 'flatpack'));
+
         if (! File::isDirectory($path)) {
             throw new ConfigurationException('Flatpack directory not found.');
         }
@@ -82,19 +201,13 @@ class Flatpack
      * @param  string $entity
      * @return array
      */
-    public static function getTemplates($entity)
+    private function getTemplates($entity)
     {
-        $templates = Cache::get(config('flatpack.cache.key', 'flatpack.templates'), []);
-
-        if ($templates === [] || false === config('flatpack.cache.enabled', true)) {
-            $templates = self::loadYamlConfigFiles(self::getDirectory());
+        if (! isset($this->composition[$entity])) {
+            throw new EntityNotFoundException("Entity '{$entity}' not found.", $entity, $this->modelName($entity));
         }
 
-        if (! isset($templates[$entity])) {
-            throw new EntityNotFoundException("Entity '{$entity}' not found.", $entity, self::modelName($entity));
-        }
-
-        return $templates[$entity];
+        return $this->composition[$entity];
     }
 
     /**
@@ -104,46 +217,18 @@ class Flatpack
      * @param  string $template
      * @return array
      */
-    public static function getTemplateComposition($entity, $template = 'list.yaml')
+    public function getTemplateComposition($entity, $template = 'list.yaml')
     {
-        $templates = self::getTemplates($entity);
+        $templates = $this->getTemplates($entity);
 
         if (! isset($templates[$template])) {
-            throw new TemplateNotFoundException("Template '{$template}' not found.", $entity, self::modelName($entity));
+            throw new TemplateNotFoundException(
+                "Template '{$template}' not found.",
+                $entity,
+                $this->modelName($entity)
+            );
         }
 
         return $templates[$template];
-    }
-
-    /**
-     * Load all YAML config files in the given path.
-     *
-     * @return array
-     */
-    public static function loadYamlConfigFiles($path)
-    {
-        $files = collect(File::allFiles($path));
-        $config = [];
-
-        foreach ($files as $file) {
-            if ($file->getExtension() !== 'yaml') {
-                continue;
-            }
-
-            $path = $file->getPathname();
-            $entity = $file->getRelativePath();
-            $file = $file->getFilename();
-
-            $view = Yaml::parseFile($path);
-
-            $key = empty($entity) ? self::GLOBAL_OPTIONS_KEY : $entity;
-
-            $config[$key][$file] = $view;
-        }
-
-        // TODO: Save to Cache...
-
-
-        return $config;
     }
 }

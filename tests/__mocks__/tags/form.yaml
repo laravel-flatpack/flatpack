@@ -1,0 +1,25 @@
+# =======================================
+#  Tag Form Definition
+# =======================================
+
+toolbar:
+  save:
+    type: button
+    label: Save
+    action: save
+    shortcut: s
+
+fields:
+  id:
+    label: ID
+    readonly: true
+
+  created_at:
+    label: Created
+    type: datetimepicker
+    span: 1
+
+  updated_at:
+    label: Updated
+    type: datetimepicker
+    span: 1

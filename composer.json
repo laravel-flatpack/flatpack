@@ -27,7 +27,6 @@
     },
     "require-dev": {
         "nunomaduro/collision": "^5.10",
-        "nunomaduro/larastan": "^1.0",
         "orchestra/testbench": "^6.0",
         "pestphp/pest": "^1.21",
         "pestphp/pest-plugin-laravel": "^1.1",
@@ -48,10 +47,8 @@
         }
     },
     "scripts": {
-        "analyse": "vendor/bin/phpstan analyse",
         "test": "vendor/bin/pest",
-        "test-coverage": "vendor/bin/pest coverage",
-        "commit": "vendor/bin/php-commitizen commit"
+        "test-coverage": "vendor/bin/pest coverage"
     },
     "config": {
         "sort-packages": true
@@ -60,7 +57,10 @@
         "laravel": {
             "providers": [
                 "Faustoq\\Flatpack\\FlatpackServiceProvider"
-            ]
+            ],
+            "aliases": {
+                "Flatpack": "Faustoq\\Flatpack\\Facades\\Flatpack"
+            }
         }
     },
     "minimum-stability": "dev",
