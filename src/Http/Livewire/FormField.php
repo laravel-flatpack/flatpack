@@ -16,6 +16,8 @@ class FormField extends Component
 
     public $type = 'text';
 
+    public $form = ['create', 'edit'];
+
     public $options = [];
 
     public $items = [];
@@ -30,6 +32,16 @@ class FormField extends Component
 
     public function render()
     {
+        dump($this->value);
+        dump($this->form);
+
         return view('flatpack::components.form-field');
+    }
+
+    public function setValue($value)
+    {
+        $this->value = $value;
+
+        return $this;
     }
 }

@@ -3,5 +3,7 @@
         :model="$model"
         :entity="$entity"
         :entry="$entry"
-        :composition="$composition" />
+        :composition="$composition"
+        :formType="$formType"
+        />
 </x-flatpack-layout>

@@ -40,7 +40,7 @@ class FlatpackMiddleware
         $this->validate($request);
 
         // Append flatpack mappings to the request.
-        $request->flatpack = [
+        $request->flatpackMappings = [
             $this->entity => $this->modelClass,
         ];
 

@@ -9,7 +9,7 @@ class ListController extends Controller
 {
     public function index(Request $request, $entity)
     {
-        $modelClass = $request->flatpack[$entity];
+        $modelClass = $request->flatpackMappings[$entity];
         $composition = Flatpack::loadComposition()->getTemplateComposition($entity, 'list.yaml');
 
         return view('flatpack::list', [

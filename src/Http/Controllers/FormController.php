@@ -9,11 +9,18 @@ class FormController extends Controller
 {
     public function index(Request $request, $entity, $id = null)
     {
-        $modelClass = $request->flatpack[$entity];
-        $composition = Flatpack::loadComposition()->getTemplateComposition($entity, 'form.yaml');
+        $modelClass = $request->flatpackMappings[$entity];
+
+        $composition = Flatpack::loadComposition()
+                        ->getTemplateComposition($entity, 'form.yaml');
+
         $entry = $modelClass::find($id);
+
+        $formType = 'edit';
+
         if (! $entry) {
             $entry = new $modelClass();
+            $formType = 'create';
         }
 
         return view('flatpack::detail', [
@@ -21,6 +28,7 @@ class FormController extends Controller
             'entity' => $entity,
             'entry' => $entry,
             'composition' => $composition,
+            'formType' => $formType
         ]);
     }
 }
