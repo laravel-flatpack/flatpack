@@ -1,0 +1,5 @@
+@import "notyf/notyf.min.css";
+
+.notyf .notyf__toast {
+  max-width: none;
+}
