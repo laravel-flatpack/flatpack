@@ -1,5 +1,7 @@
 /* Flatpack version 1.0.0 */
+@import "./components/box";
 @import "./components/button";
+@import "./components/form";
 @import "./components/layout";
 @import "./components/navbar";
 @import "./components/notify";

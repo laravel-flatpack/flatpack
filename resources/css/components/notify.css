@@ -1,5 +1,6 @@
 @import "notyf/notyf.min.css";
 
 .notyf .notyf__toast {
+  @apply rounded-md;
   max-width: none;
 }
