@@ -9,25 +9,21 @@ const configuration = {
   types: [
     {
       type: "warning",
-      background: "orange",
-      icon: {
-        className: "material-icons",
-        tagName: "i",
-        text: "warning",
-      },
+      background: "#fbbf24",
+      dismissible: true,
     },
     {
       type: "success",
-      background: "green",
+      background: "#22c55e",
     },
     {
       type: "error",
-      background: "indianred",
+      background: "#f43f5e",
       dismissible: true,
     },
     {
       type: "info",
-      background: "blue",
+      background: "#60a5fa",
       dismissible: true,
     },
   ],
