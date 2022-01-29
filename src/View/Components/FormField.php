@@ -2,12 +2,15 @@
 
 namespace Faustoq\Flatpack\View\Components;
 
+use Faustoq\Flatpack\Traits\WithRelationships;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Arr;
 use Illuminate\View\Component;
 
 class FormField extends Component implements Arrayable
 {
+    use WithRelationships;
+
     /**
      * Form field name.
      *
@@ -58,6 +61,13 @@ class FormField extends Component implements Arrayable
     public $items = [];
 
     /**
+     * Relationship type.
+     *
+     * @var mixed
+     */
+    public $relationshipType = null;
+
+    /**
      * Readonly field.
      *
      * @var bool
@@ -97,14 +107,14 @@ class FormField extends Component implements Arrayable
      *
      * @param string $key
      * @param array $options
-     * @param \Illuminate\Database\Eloquent\Model $model
+     * @param \Illuminate\Database\Eloquent\Model $entry
      * @return void
      */
-    public function __construct(string $key, array $options = [], $model = null)
+    public function __construct(string $key, array $options = [], $entry = null)
     {
         $this->key = $key;
         $this->options = $options;
-        $this->model = $model;
+        $this->entry = $entry;
 
         $this->initProps();
     }
@@ -116,7 +126,13 @@ class FormField extends Component implements Arrayable
 
     public function setValue($value)
     {
-        $this->currentValue = $value;
+        if ($value instanceof \Illuminate\Database\Eloquent\Collection) {
+            $this->currentValue = $value->pluck('id')->toArray();
+        } elseif ($value instanceof \Illuminate\Database\Eloquent\Model) {
+            $this->currentValue = $value->getKey();
+        } else {
+            $this->currentValue = $value;
+        }
 
         return $this;
     }
@@ -140,18 +156,13 @@ class FormField extends Component implements Arrayable
             $this->items = $this->getOption('items', []);
         }
         // Relation props
-        if ($this->type === 'relation' && method_exists($this->model, $this->key)) {
-            $relation = $this->model->{$this->key}();
+        if ($this->type === 'relation') {
+            $field = $this->getOption('relation', $this->key);
+            $display = $this->getOption('display', 'name');
 
-            if ($relation instanceof \Illuminate\Database\Eloquent\Relations\BelongsTo) {
-                $initialValue = optional($this->model->{$this->key})->{$relation->getOwnerKeyName()};
-
-                $this->setValue($initialValue);
-
-                $this->items = $relation->getRelated()->get()->pluck(
-                    $this->getOption('display', 'name'),
-                    $relation->getOwnerKeyName()
-                );
+            if ($this->isRelationship($field)) {
+                $this->relationshipType = $this->getRelationshipType($field);
+                $this->items = $this->getRelationshipItems($field, $display);
             }
         }
     }

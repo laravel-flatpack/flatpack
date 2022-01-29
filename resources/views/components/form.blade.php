@@ -9,7 +9,7 @@
                 <x-flatpack-form-field
                     :key="$key"
                     :options="$options"
-                    :model="$entry"
+                    :entry="$entry"
                 />
             @endforeach
         </div>
@@ -19,6 +19,7 @@
                 <x-flatpack-form-field
                     :key="$key"
                     :options="$options"
+                    :entry="$entry"
                 />
             @endforeach
         </div>

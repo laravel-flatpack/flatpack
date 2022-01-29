@@ -1057,6 +1057,12 @@ select {
 .-ml-px {
   margin-left: -1px;
 }
+.mb-2 {
+  margin-bottom: 0.5rem;
+}
+.mb-1 {
+  margin-bottom: 0.25rem;
+}
 .block {
   display: block;
 }
@@ -1684,6 +1690,9 @@ body {
 }
 .focus\:ring-opacity-50:focus {
   --tw-ring-opacity: 0.5;
+}
+.focus\:ring-offset-0:focus {
+  --tw-ring-offset-width: 0px;
 }
 .active\:bg-gray-50:active {
   --tw-bg-opacity: 1;
