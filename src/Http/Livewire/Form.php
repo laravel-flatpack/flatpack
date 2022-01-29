@@ -3,12 +3,12 @@
 namespace Faustoq\Flatpack\Http\Livewire;
 
 use Faustoq\Flatpack\Traits\WithComposition;
-use Faustoq\Flatpack\View\Components\FormField;
+use Faustoq\Flatpack\Traits\WithRelationships;
 use Livewire\Component;
 
 class Form extends Component
 {
-    use WithComposition;
+    use WithComposition, WithRelationships;
 
     /**
      * Form fields.
@@ -18,35 +18,48 @@ class Form extends Component
     public $fields = [];
 
     /**
-     * Form relations.
-     *
-     * @var array
-     */
-    public $relations = [];
-
-    /**
      * Form field components.
      *
      * @var array
      */
     public $formFields = [];
 
-    /** Component props. */
+    /**
+     * Model class name.
+     *
+     * @var string
+     */
     public $model;
+
+    /**
+     * Entity name.
+     *
+     * @var string
+     */
     public $entity;
+
+    /**
+     * Model instance.
+     *
+     * @var \Illuminate\Database\Eloquent\Model
+     */
     public $entry;
+
+    /**
+     * Form type.
+     *
+     * @var string
+     */
     public $formType;
 
+    /**
+     * Livewire component listeners.
+     */
     protected $listeners = ['editorjs-save:flatpack-editor' => 'saveEditorState'];
 
     public function mount()
     {
         $this->bindModelToFields();
-    }
-
-    private function getFieldComponent($field, $options)
-    {
-        return new FormField($field, $options, $this->fields[$field] ?? null);
     }
 
     public function render()
@@ -59,10 +72,10 @@ class Form extends Component
         ]);
     }
 
-    public function saveEditorState($editorJsonData)
-    {
-        $this->fields['body'] = $editorJsonData;
-    }
+    // public function saveEditorState($editorJsonData)
+    // {
+    //     $this->fields['body'] = $editorJsonData;
+    // }
 
     public function action($method, $redirect = false)
     {
@@ -83,7 +96,6 @@ class Form extends Component
         }
 
         // Calling the model's method
-
         $this->entry->{$method}();
 
         // Redirect to edit form after create
@@ -93,6 +105,8 @@ class Form extends Component
                 'id' => $this->entry->id,
             ]);
         }
+
+        $this->entry->refresh();
 
         $this->bindModelToFields();
 
@@ -108,17 +122,37 @@ class Form extends Component
         }
     }
 
+    private function bindModelToFields()
+    {
+        $fields = $this->getCompositionFields();
+
+        foreach ($fields as $key => $options) {
+            if ($this->entry->$key instanceof \Illuminate\Support\Carbon) {
+                $this->fields[$key] = $this->entry->$key->format('Y-m-d\TH:i:s');
+            } elseif ($this->entry->$key instanceof \Illuminate\Database\Eloquent\Collection) {
+                $this->fields[$key] = $this->entry->$key->pluck('id')->toArray();
+            } elseif ($this->entry->$key instanceof \Illuminate\Database\Eloquent\Model) {
+                $this->fields[$key] = $this->entry->$key->getKey();
+            } else {
+                $this->fields[$key] = $this->entry->$key;
+            }
+        }
+    }
+
     private function bindFieldsToModel()
     {
-        $modelRelations = array_keys($this->entry->getRelations());
         foreach ($this->fields as $key => $options) {
             if ((isset($options['disabled']) && $options['disabled']) ||
                 (isset($options['readonly']) && $options['readonly']) ||
-                in_array($key, $modelRelations) ||
                 $this->fields[$key] === null) {
                 continue;
             }
-            $this->entry->{$key} = $this->fields[$key];
+
+            if ($this->isRelationship($key)) {
+                $this->syncRelationship($key);
+            } else {
+                $this->entry->{$key} = $this->fields[$key];
+            }
         }
     }
 
@@ -129,19 +163,6 @@ class Form extends Component
             $this->getComposition('fields'),
             $this->getComposition('sidebar')
         );
-    }
-
-    private function bindModelToFields()
-    {
-        $fields = $this->getCompositionFields();
-
-        foreach ($fields as $key => $options) {
-            if ($this->entry->$key instanceof \Illuminate\Support\Carbon) {
-                $this->fields[$key] = $this->entry->$key->format('Y-m-d\TH:i:s');
-            } else {
-                $this->fields[$key] = optional($this->entry)->{$key};
-            }
-        }
     }
 
     private function goToEditForm()
