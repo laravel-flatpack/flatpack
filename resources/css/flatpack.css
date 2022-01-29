@@ -2,6 +2,7 @@
 @import "./components/button";
 @import "./components/layout";
 @import "./components/navbar";
+@import "./components/notify";
 
 @tailwind base;
 @tailwind components;

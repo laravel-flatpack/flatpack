@@ -110,11 +110,11 @@ class Form extends Component
 
         $this->bindModelToFields();
 
-        $entity = class_basename($this->model);
+        $entity = strtolower(class_basename($this->model));
 
         $this->emit('notify', [
             "type" => "success",
-            'message' => "The {$entity} has been updated.",
+            'message' => "The {$entity} has been saved.",
         ]);
 
         if ($redirect) {
