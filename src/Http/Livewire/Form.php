@@ -3,13 +3,33 @@
 namespace Faustoq\Flatpack\Http\Livewire;
 
 use Faustoq\Flatpack\Traits\WithComposition;
+use Faustoq\Flatpack\View\Components\FormField;
 use Livewire\Component;
 
 class Form extends Component
 {
     use WithComposition;
 
+    /**
+     * Form fields.
+     *
+     * @var array
+     */
     public $fields = [];
+
+    /**
+     * Form relations.
+     *
+     * @var array
+     */
+    public $relations = [];
+
+    /**
+     * Form field components.
+     *
+     * @var array
+     */
+    public $formFields = [];
 
     /** Component props. */
     public $model;
@@ -22,6 +42,11 @@ class Form extends Component
     public function mount()
     {
         $this->bindModelToFields();
+    }
+
+    private function getFieldComponent($field, $options)
+    {
+        return new FormField($field, $options, $this->fields[$field] ?? null);
     }
 
     public function render()
@@ -49,7 +74,7 @@ class Form extends Component
         }
 
         // Validate form fields
-        // $this->entry->flatpackValidate();
+        // $this->validate();
 
         $this->bindFieldsToModel();
 
@@ -85,9 +110,11 @@ class Form extends Component
 
     private function bindFieldsToModel()
     {
+        $modelRelations = array_keys($this->entry->getRelations());
         foreach ($this->fields as $key => $options) {
             if ((isset($options['disabled']) && $options['disabled']) ||
                 (isset($options['readonly']) && $options['readonly']) ||
+                in_array($key, $modelRelations) ||
                 $this->fields[$key] === null) {
                 continue;
             }
@@ -95,13 +122,18 @@ class Form extends Component
         }
     }
 
-    private function bindModelToFields()
+    protected function getCompositionFields()
     {
-        $fields = array_merge(
+        return array_merge(
             $this->getComposition('header'),
             $this->getComposition('fields'),
             $this->getComposition('sidebar')
         );
+    }
+
+    private function bindModelToFields()
+    {
+        $fields = $this->getCompositionFields();
 
         foreach ($fields as $key => $options) {
             if ($this->entry->$key instanceof \Illuminate\Support\Carbon) {
