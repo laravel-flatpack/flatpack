@@ -6,8 +6,8 @@ use Faustoq\Flatpack\Commands\MakeCommand;
 use Faustoq\Flatpack\Commands\MakeFormCommand;
 use Faustoq\Flatpack\Commands\MakeListCommand;
 use Faustoq\Flatpack\Http\Livewire\Form;
-use Faustoq\Flatpack\Http\Livewire\FormField;
 use Faustoq\Flatpack\Http\Livewire\Table;
+use Faustoq\Flatpack\View\Components\FormField;
 use Faustoq\Flatpack\View\Components\Layout;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
@@ -25,15 +25,11 @@ class FlatpackServiceProvider extends ServiceProvider
             __DIR__ . '/../config/flatpack.php' => config_path('flatpack.php'),
         ], 'config');
 
-        $this->commands([
-            MakeFormCommand::class,
-            MakeListCommand::class,
-            MakeCommand::class,
-        ]);
 
+        $this->registerCommands();
         $this->registerViews();
         $this->registerViewComponents();
-        $this->registerComponents();
+        $this->registerLivewireComponents();
         $this->registerRoutes();
     }
 
@@ -46,15 +42,12 @@ class FlatpackServiceProvider extends ServiceProvider
         });
     }
 
-    protected function registerViews()
+    protected function registerCommands()
     {
-        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'flatpack');
-    }
-
-    protected function registerViewComponents()
-    {
-        $this->loadViewComponentsAs('flatpack', [
-            Layout::class,
+        $this->commands([
+            MakeFormCommand::class,
+            MakeListCommand::class,
+            MakeCommand::class,
         ]);
     }
 
@@ -65,11 +58,23 @@ class FlatpackServiceProvider extends ServiceProvider
         });
     }
 
-    protected function registerComponents()
+    protected function registerLivewireComponents()
     {
         Livewire::component('flatpack.table', Table::class);
         Livewire::component('flatpack.form', Form::class);
-        Livewire::component('flatpack.form-field', FormField::class);
+    }
+
+    protected function registerViewComponents()
+    {
+        $this->loadViewComponentsAs('flatpack', [
+            Layout::class,
+            FormField::class,
+        ]);
+    }
+
+    protected function registerViews()
+    {
+        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'flatpack');
     }
 
     protected function routeConfiguration()

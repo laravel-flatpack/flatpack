@@ -9,8 +9,8 @@
         {{ $required ? 'required' : '' }}
         {{ $readonly ? 'readonly' : '' }}
     >
-        @foreach($items as $option => $value)
-            <option value="{{ $key }}">{{ $value }}</option>
+        @foreach($items as $value => $label)
+            <option value="{{ $value }}">{{ $label }}</option>
         @endforeach
     </select>
 </div>

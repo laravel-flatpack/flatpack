@@ -9,5 +9,7 @@
         @include('flatpack::includes.input-type-text')
         @include('flatpack::includes.input-type-email')
         @include('flatpack::includes.input-type-password')
+        @include('flatpack::includes.input-type-select')
+        @include('flatpack::includes.input-type-relation')
     </div>
 </div>
