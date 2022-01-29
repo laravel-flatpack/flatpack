@@ -17,9 +17,9 @@
     ];
     $sizeClass = $sizes[$size] ?? 'text-xl';
 @endphp
-<div class="flex justify-start items-center w-full my-2 gap-4">
+<div class="flex justify-start items-center w-full gap-4">
     @if (!empty($label))
-        <label class="flex text-sm uppercase font-bold pl-3 text-gray-500">{{ $label }}</label>
+        <label class="flex text-sm uppercase font-bold text-gray-500">{{ $label }}</label>
     @endif
     @if ($type === 'editable')
         <input
@@ -34,6 +34,6 @@
             {{ $readonly ? 'readonly' : '' }}
         />
     @else
-        <div class="w-full {{ $sizeClass }} px-3 py-2 text-gray-800">{{ $value ?? '-' }}</div>
+        <div class="w-full {{ $sizeClass }} py-2 text-gray-800">{{ $value ?? '-' }}</div>
     @endif
 </div>

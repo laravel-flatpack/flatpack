@@ -125,7 +125,7 @@ class Form extends Component
 
     private function bindModelToFields()
     {
-        $fields = $this->getCompositionFields();
+        $fields = $this->getFormFields();
 
         foreach ($fields as $key => $options) {
             if ($this->entry->$key instanceof \Illuminate\Support\Carbon) {
@@ -155,15 +155,6 @@ class Form extends Component
                 $this->entry->{$key} = $this->fields[$key];
             }
         }
-    }
-
-    protected function getCompositionFields()
-    {
-        return array_merge(
-            $this->getComposition('header'),
-            $this->getComposition('fields'),
-            $this->getComposition('sidebar')
-        );
     }
 
     private function goToEditForm()
