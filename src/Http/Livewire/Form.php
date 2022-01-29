@@ -8,7 +8,8 @@ use Livewire\Component;
 
 class Form extends Component
 {
-    use WithComposition, WithRelationships;
+    use WithComposition;
+    use WithRelationships;
 
     /**
      * Form fields.
