@@ -23,14 +23,16 @@ const suggestionItemTemplate = (tagData) => `
   </div>
   `;
 
-const taginput = (input, values) => {
+const taginput = (key, input, values, addNewEntries = false) => {
   var tagify = new Tagify(input, {
     tagTextProp: "name",
-    enforceWhitelist: true,
+    enforceWhitelist: !addNewEntries,
+    whitelist: values,
     skipInvalid: false,
+    editTags: false,
     dropdown: {
-      closeOnSelect: false,
-      enabled: 0,
+      closeOnSelect: true,
+      maxItems: 3,
       classname: "input-tags-list",
       searchKeys: ["name", "value"],
     },
@@ -40,25 +42,37 @@ const taginput = (input, values) => {
       tag: tagTemplate,
       dropdownItem: suggestionItemTemplate,
     },
-    whitelist: values,
   });
 
-  // listen to dropdown events
-  // tagify.on("dropdown:show dropdown:updated", onDropdownShow);
-  function onDropdownShow(e) {
-    var dropdownContentElm = e.detail.tagify.DOM.dropdown.content;
-  }
+  // Add new tag
+  tagify.on("add", (e) => {
+    setTimeout(() => {
+      const { data, tagify, index } = e?.detail;
+      const { whitelist } = tagify;
+      const isNew =
+        whitelist.map((item) => `${item.value}`).indexOf(data.value) === -1;
 
-  if (tagify?.DOM?.originalInput) {
-    // listen to "change" events on the "original" input/textarea element
-    tagify.DOM.originalInput.addEventListener("change", onTagsChange);
-    function onTagsChange(e) {
-      const { name, value } = e.target;
-      const key = name.replace("fields.", "");
+      if (isNew) {
+        // Create new model
+        Livewire.emit(`flatpack-taginput:new-tag`, key, data.value);
+        // Add to whitelist and sync value
+        Livewire.on(`flatpack-taginput:new-tag-created:${key}`, (value) => {
+          const newTag = { value: value, name: `${data.name}` };
+          // Update whitelist
+          whitelist.push(newTag);
+          // Update tag value
+          tagify.replaceTag(tagify.getTagElms()[index], newTag);
+        });
+      }
+    }, 0);
+  });
 
-      Livewire.emit("flatpack-taginput-change", key, value);
-    }
-  }
+  // listen to "change" events on the "original" input/textarea element
+  tagify.DOM.originalInput.addEventListener("change", (e) => {
+    const { name, value } = e.target;
+    const key = name.replace("fields.", "");
+    Livewire.emit("flatpack-taginput:change", key, value);
+  });
 
   return tagify;
 };
