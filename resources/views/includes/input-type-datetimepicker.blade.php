@@ -1,4 +1,4 @@
-@if (strtolower($type ?? '' ?? '') === 'datetimepicker')
+@if (strtolower($type ?? '') === 'datetimepicker')
 <div class="w-full flex rounded-md shadow-sm mt-1">
     <input
         wire:model.stop="fields.{{ $key }}"

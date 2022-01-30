@@ -1,6 +1,6 @@
 @props(['elements' => [], 'fields' => []])
 
-<div class="flex flex-row my-2 pl-10">
+<div class="flex flex-row my-2 pl-10 gap-4">
     @foreach ($elements ?? [] as $key => $element)
     @if (isset($element['action']))
         <button
