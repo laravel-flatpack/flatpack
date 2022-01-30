@@ -156,7 +156,7 @@ class FormField extends Component implements Arrayable
             $this->items = $this->getOption('items', []);
         }
         // Relation props
-        if ($this->type === 'relation') {
+        if (in_array($this->type, [ 'relation', 'select', 'taginput' ])) {
             $field = $this->getOption('relation', $this->key);
             $display = $this->getOption('display', 'name');
 

@@ -1,3 +1,4 @@
 import notify from "./notify";
+import taginput from "./taginput";
 
-export { notify };
+export { notify, taginput };

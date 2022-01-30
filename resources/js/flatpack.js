@@ -1,5 +1,5 @@
 // Flatpack version: 1.0.0
-import { notify } from "./components";
+import { notify, taginput } from "./components";
 
 window.livewire.on("redirect", ({ message, url }) => {
   notify(message);
@@ -11,3 +11,6 @@ window.livewire.on("redirect", ({ message, url }) => {
 window.livewire.on("notify", (event) => {
   notify(event);
 });
+
+// Flatpack global object
+window.Flatpack = { taginput };

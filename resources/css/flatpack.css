@@ -5,6 +5,7 @@
 @import "./components/layout";
 @import "./components/navbar";
 @import "./components/notify";
+@import "./components/tagify";
 
 @tailwind base;
 @tailwind components;
