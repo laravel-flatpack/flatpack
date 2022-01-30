@@ -11,5 +11,6 @@
         @include('flatpack::includes.input-type-password')
         @include('flatpack::includes.input-type-select')
         @include('flatpack::includes.input-type-relation')
+        @include('flatpack::includes.input-tags')
     </div>
 </div>

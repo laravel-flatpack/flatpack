@@ -56,7 +56,10 @@ class Form extends Component
     /**
      * Livewire component listeners.
      */
-    protected $listeners = ['editorjs-save:flatpack-editor' => 'saveEditorState'];
+    protected $listeners = [
+        // 'editorjs-save:flatpack-editor' => 'saveEditorState',
+        'flatpack-taginput-change' => 'saveTagInputState',
+    ];
 
     public function mount()
     {
@@ -73,10 +76,44 @@ class Form extends Component
         ]);
     }
 
-    // public function saveEditorState($editorJsonData)
+    public function saveTagInputState($key, $data)
+    {
+        $this->fields[$key] = explode(',', $data);
+    }
+
+    // public function saveEditorState($data)
     // {
-    //     $this->fields['body'] = $editorJsonData;
+    //     $this->fields['body'] = $data;
     // }
+
+    public function save()
+    {
+        // $this->validate();
+
+        // Assign model properties
+        $this->bindFieldsToModel();
+
+        $this->entry->save();
+
+        // Save relationships
+        $this->syncFieldsToRelations();
+
+        // Redirect to edit form after create
+        if ($this->formType === 'create') {
+            return redirect()->route('flatpack.form', [
+                'entity' => $this->entity,
+                'id' => $this->entry->id,
+            ]);
+        }
+
+        // Bind refreshed model to fields
+        $this->bindModelToFields();
+
+        $this->emit('notify', [
+            "type" => "success",
+            'message' => class_basename($this->entry) . " saved.",
+        ]);
+    }
 
     public function action($method, $redirect = false)
     {
@@ -87,40 +124,46 @@ class Form extends Component
             ]);
         }
 
-        // Validate form fields
-        // $this->validate();
-
-        $this->bindFieldsToModel();
+        if ($method === 'save') {
+            return $this->save();
+        }
 
         if (! method_exists($this->model, $method)) {
             throw new \Exception("Action not found: $method");
         }
 
-        // Calling the model's method
-        $this->entry->{$method}();
+        // $this->validate();
 
-        // Redirect to edit form after create
-        if ($this->formType === 'create') {
-            return redirect()->route('flatpack.form', [
-                'entity' => $this->entity,
-                'id' => $this->entry->id,
-            ]);
-        }
+        // Assign model properties
+        // $this->bindFieldsToModel();
 
-        $this->entry->refresh();
+        // // Calling the model's method
+        // $this->entry->{$method}();
 
-        $this->bindModelToFields();
+        // // Save relationships
+        // if ($method === 'save') {
+        //     $this->syncFieldsToRelations();
 
-        $entity = class_basename($this->model);
+        //     // Redirect to edit form after create
+        //     if ($this->formType === 'create') {
+        //         return redirect()->route('flatpack.form', [
+        //             'entity' => $this->entity,
+        //             'id' => $this->entry->id,
+        //         ]);
+        //     }
+        // }
 
-        $this->emit('notify', [
-            "type" => "success",
-            'message' => "{$entity} saved.",
-        ]);
+        // // Bind refreshed model to fields
+        // $this->bindModelToFields();
 
-        if ($redirect) {
-            return $this->goBack();
-        }
+        // $this->emit('notify', [
+        //     "type" => "success",
+        //     'message' => class_basename($this->entry) . " updated.",
+        // ]);
+
+        // if ($redirect) {
+        //     return $this->goBack();
+        // }
     }
 
     private function bindModelToFields()
@@ -145,18 +188,29 @@ class Form extends Component
         foreach ($this->fields as $key => $options) {
             if ((isset($options['disabled']) && $options['disabled']) ||
                 (isset($options['readonly']) && $options['readonly']) ||
+                $this->isRelationship($key) ||
                 $this->fields[$key] === null) {
                 continue;
             }
 
-            if ($this->isRelationship($key)) {
-                $this->syncRelationship($key);
-            } else {
-                $this->entry->{$key} = $this->fields[$key];
-            }
+            $this->entry->{$key} = $this->fields[$key];
         }
     }
 
+    private function syncFieldsToRelations()
+    {
+        foreach ($this->fields as $key => $options) {
+            if ((isset($options['disabled']) && $options['disabled']) ||
+                (isset($options['readonly']) && $options['readonly']) ||
+                !$this->isRelationship($key)) {
+                continue;
+            }
+
+            $this->syncRelationship($key);
+        }
+        $this->entry->save();
+        $this->entry->refresh();
+    }
     private function goToEditForm()
     {
         $this->emit('redirect', [
