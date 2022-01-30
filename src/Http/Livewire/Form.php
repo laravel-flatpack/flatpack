@@ -4,6 +4,7 @@ namespace Faustoq\Flatpack\Http\Livewire;
 
 use Faustoq\Flatpack\Traits\WithComposition;
 use Faustoq\Flatpack\Traits\WithRelationships;
+use Illuminate\Support\Arr;
 use Livewire\Component;
 
 class Form extends Component
@@ -58,7 +59,8 @@ class Form extends Component
      */
     protected $listeners = [
         // 'editorjs-save:flatpack-editor' => 'saveEditorState',
-        'flatpack-taginput-change' => 'saveTagInputState',
+        'flatpack-taginput:change' => 'saveTagInputState',
+        'flatpack-taginput:new-tag' => 'createRelatedTag',
     ];
 
     public function mount()
@@ -79,6 +81,28 @@ class Form extends Component
     public function saveTagInputState($key, $data)
     {
         $this->fields[$key] = explode(',', $data);
+    }
+
+    public function createRelatedTag($key, $data)
+    {
+        try {
+            $fields = $this->getFormFields();
+            $nameField = Arr::get($fields, "$key.relation.display", "title");
+
+            $created = $this->createRelationship(
+                $key,
+                $nameField,
+                $data
+            );
+
+            $this->emit("flatpack-taginput:new-tag-created:{$key}", $created);
+            //
+        } catch (\Exception $e) {
+            $this->emit('notify', [
+                'type' => 'error',
+                'message' => $e->getMessage(),
+            ]);
+        }
     }
 
     // public function saveEditorState($data)
@@ -185,7 +209,9 @@ class Form extends Component
 
     private function bindFieldsToModel()
     {
-        foreach ($this->fields as $key => $options) {
+        $fields = $this->getFormFields();
+
+        foreach ($fields as $key => $options) {
             if ((isset($options['disabled']) && $options['disabled']) ||
                 (isset($options['readonly']) && $options['readonly']) ||
                 $this->isRelationship($key) ||
@@ -199,7 +225,9 @@ class Form extends Component
 
     private function syncFieldsToRelations()
     {
-        foreach ($this->fields as $key => $options) {
+        $fields = $this->getFormFields();
+
+        foreach ($fields as $key => $options) {
             if ((isset($options['disabled']) && $options['disabled']) ||
                 (isset($options['readonly']) && $options['readonly']) ||
                 !$this->isRelationship($key)) {
@@ -211,6 +239,7 @@ class Form extends Component
         $this->entry->save();
         $this->entry->refresh();
     }
+
     private function goToEditForm()
     {
         $this->emit('redirect', [

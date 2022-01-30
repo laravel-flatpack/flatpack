@@ -4,13 +4,21 @@ namespace Faustoq\Flatpack\Traits;
 
 trait WithRelationships
 {
+    /**
+     * The model instance.
+     *
+     * @var \Illuminate\Database\Eloquent\Model
+     */
+    public $entry;
+
+    /**
+     * Get relationship method.
+     *
+     * @var mixed
+     */
     private function relation($key)
     {
-        if ($this->isRelationship($key)) {
-            return $this->entry->{$key}();
-        }
-
-        return null;
+        return ($this->isRelationship($key)) ? $this->entry->{$key}() : null;
     }
 
     /**
@@ -38,17 +46,27 @@ trait WithRelationships
             );
         }
 
-
         return $values;
     }
 
-    /**
-     * The model instance.
-     *
-     * @var \Illuminate\Database\Eloquent\Model
-     */
-    public $entry;
+    protected function createRelationship($key, $name = 'name', $value = null)
+    {
+        $relation = $this->relation($key);
+        $relatedClass = get_class($relation->getRelated());
+        $model = new $relatedClass;
+        $model->{$name} = $value;
+        $model->save();
 
+        return $model->getKey();
+    }
+
+    /**
+     * Sync field relationship.
+     *
+     * @param string $key
+     * @param bool $canCreate
+     * @return void
+     */
     protected function syncRelationship($key)
     {
         $relation = $this->relation($key);
@@ -135,6 +153,11 @@ trait WithRelationships
         return false;
     }
 
+    /**
+     * List of allowed relationships.
+     *
+     * @return array
+     */
     private function allowedRelationships()
     {
         return [

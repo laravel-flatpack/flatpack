@@ -7,3 +7,8 @@
 .notyf .notyf__toast .notyf__wrapper {
   @apply px-0 py-4;
 }
+
+.notyf .notyf__ripple {
+  width: 100vw;
+  min-width: 800px;
+}

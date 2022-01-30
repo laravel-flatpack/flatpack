@@ -1,7 +1,7 @@
 import { Notyf } from "notyf";
 
 const configuration = {
-  duration: 3000,
+  duration: 4000,
   position: {
     x: "center",
     y: "bottom",

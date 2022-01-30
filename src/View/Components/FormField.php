@@ -68,6 +68,13 @@ class FormField extends Component implements Arrayable
     public $relationshipType = null;
 
     /**
+     * Can create new related items.
+     *
+     * @var mixed
+     */
+    public $canCreate = false;
+
+    /**
      * Readonly field.
      *
      * @var bool
@@ -155,14 +162,17 @@ class FormField extends Component implements Arrayable
         if ($this->type === 'select') {
             $this->items = $this->getOption('items', []);
         }
+
         // Relation props
         if (in_array($this->type, [ 'relation', 'select', 'taginput' ])) {
-            $field = $this->getOption('relation', $this->key);
-            $display = $this->getOption('display', 'name');
+            $field = $this->getOption('relation.name', $this->key);
+            $display = $this->getOption('relation.display', 'name');
+            $canCreate = $this->getOption('relation.make', false);
 
             if ($this->isRelationship($field)) {
                 $this->relationshipType = $this->getRelationshipType($field);
                 $this->items = $this->getRelationshipItems($field, $display);
+                $this->canCreate = $canCreate;
             }
         }
     }
