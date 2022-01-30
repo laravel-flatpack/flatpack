@@ -202,7 +202,7 @@ class Form extends Component
         foreach ($this->fields as $key => $options) {
             if ((isset($options['disabled']) && $options['disabled']) ||
                 (isset($options['readonly']) && $options['readonly']) ||
-                !$this->isRelationship($key)) {
+                ! $this->isRelationship($key)) {
                 continue;
             }
 
@@ -211,6 +211,7 @@ class Form extends Component
         $this->entry->save();
         $this->entry->refresh();
     }
+
     private function goToEditForm()
     {
         $this->emit('redirect', [
