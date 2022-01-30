@@ -5,7 +5,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <link rel="stylesheet" href="{{ asset('flatpack/fonts/inter.css') }}" />
     <link rel="stylesheet" href="{{ asset('flatpack/css/flatpack.css') }}" />
     <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.8.2/dist/alpine.min.js" defer></script>
     <script src="https://cdn.ckeditor.com/ckeditor5/30.0.0/classic/ckeditor.js" defer></script>
