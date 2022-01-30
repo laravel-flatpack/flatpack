@@ -1,4 +1,4 @@
-@if (strtolower($type ?? '' ?? '') === 'blockeditor')
+@if (strtolower($type ?? '') === 'blockeditor')
 @php
 $editor = $value;
 @endphp

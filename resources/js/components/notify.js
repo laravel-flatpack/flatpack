@@ -1,7 +1,7 @@
 import { Notyf } from "notyf";
 
 const configuration = {
-  duration: 2000,
+  duration: 3000,
   position: {
     x: "center",
     y: "bottom",
@@ -10,21 +10,19 @@ const configuration = {
     {
       type: "warning",
       background: "#fbbf24",
-      dismissible: true,
     },
     {
       type: "success",
       background: "#22c55e",
+      duration: 2000,
     },
     {
       type: "error",
       background: "#f43f5e",
-      dismissible: true,
     },
     {
       type: "info",
       background: "#60a5fa",
-      dismissible: true,
     },
   ],
 };

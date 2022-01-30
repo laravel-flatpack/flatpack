@@ -4,3 +4,6 @@
   @apply rounded-md;
   max-width: none;
 }
+.notyf .notyf__toast .notyf__wrapper {
+  @apply px-0 py-4;
+}

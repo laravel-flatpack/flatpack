@@ -1,4 +1,4 @@
-<div class="flex flex-col gap-10 w-full">
+<div class="flex flex-col gap-10 w-full min-h-screen">
     <div class="flex flex-row justify-between items-start gap-5 w-full">
         <x-flatpack::form.header :elements="$header" :fields="$fields" />
         <x-flatpack::form.toolbar :elements="$toolbar" />

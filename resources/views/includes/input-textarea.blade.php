@@ -1,4 +1,4 @@
-@if (strtolower($type ?? '' ?? '') === 'textarea')
+@if (strtolower($type ?? '') === 'textarea')
 <div class="w-full flex rounded-md shadow-sm mt-1">
     <textarea
         wire:model.stop="fields.{{ $key }}"
