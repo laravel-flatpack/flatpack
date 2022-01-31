@@ -244,7 +244,7 @@ class Form extends Component
     private function goBack()
     {
         return $this->redirectTo(route('flatpack.index', [
-            'entity' => $this->entity
+            'entity' => $this->entity,
         ]));
     }
 
