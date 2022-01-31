@@ -1,3 +1,6 @@
 .form-fieldset {
   @apply grid grid-cols-2 w-full max-w-5xl mx-auto;
 }
+.sidebar-fieldset {
+  @apply grid grid-cols-1 w-full max-w-5xl mx-auto;
+}

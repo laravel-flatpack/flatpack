@@ -1,13 +1,14 @@
 // Flatpack version: 1.0.0
 import { notify, taginput } from "./components";
 
-window.livewire.on("redirect", ({ message, url }) => {
-  notify(message);
+// Flatpack redirects
+window.livewire.on("redirect", ({ url }) => {
   setTimeout(() => {
     window.location.href = url;
   }, 1000);
 });
 
+// Flatpack notifications
 window.livewire.on("notify", (event) => {
   notify(event);
 });
