@@ -63,7 +63,7 @@ trait WithRelationships
     {
         $relation = $this->relation($key);
         $relatedClass = get_class($relation->getRelated());
-        $model = new $relatedClass;
+        $model = new $relatedClass();
         $model->{$name} = $value;
         $model->save();
 
