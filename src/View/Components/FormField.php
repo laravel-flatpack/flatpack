@@ -131,19 +131,6 @@ class FormField extends Component implements Arrayable
         return view('flatpack::components.form-field');
     }
 
-    public function setValue($value)
-    {
-        if ($value instanceof \Illuminate\Database\Eloquent\Collection) {
-            $this->currentValue = $value->pluck('id')->toArray();
-        } elseif ($value instanceof \Illuminate\Database\Eloquent\Model) {
-            $this->currentValue = $value->getKey();
-        } else {
-            $this->currentValue = $value;
-        }
-
-        return $this;
-    }
-
     /**
      * Dynamically initialize component props based on the options.
      */
