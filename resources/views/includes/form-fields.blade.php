@@ -23,7 +23,7 @@
             @if (Arr::has($options, 'group'))
             <div class="flex justify-between items-center cursor-pointer" @click="open = !open">
                 <div>{{ $options['group'] }}</div>
-                <span x-show="!open"><x-flatpack::icon icon="expand_more" /></span>
+                <span x-cloak x-show="!open"><x-flatpack::icon icon="expand_more" /></span>
                 <span x-show="open"><x-flatpack::icon icon="expand_less" /></span>
             </div>
             @endif
