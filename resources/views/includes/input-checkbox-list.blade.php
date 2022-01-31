@@ -1,7 +1,7 @@
 <div class="w-full">
-<ul class="list-none w-full max-h-80 overflow-y-scroll bg-gray-200">
+<ul class="list-none w-full max-h-60 overflow-y-scroll bg-gray-200 shadow-inner py-1">
     @foreach ($items as $optionValue => $display)
-    <li class="my-2">
+    <li class="mx-3 my-2">
         <label class="flex justify-start items-start cursor-pointer">
             <input
                 type="checkbox"

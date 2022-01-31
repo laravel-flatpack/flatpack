@@ -21,10 +21,10 @@
 
         @if ($loop->first || $groupFirst)
             @if (Arr::has($options, 'group'))
-            <div class="flex justify-between items-center cursor-pointer" @click="open = !open">
-                <div>{{ $options['group'] }}</div>
-                <span x-cloak x-show="!open"><x-flatpack::icon icon="expand_more" /></span>
-                <span x-show="open"><x-flatpack::icon icon="expand_less" /></span>
+            <div class="flex justify-between items-center cursor-pointer pl-2 text-gray-500" @click="open = !open">
+                <div class="font-bold text-xs uppercase">{{ $options['group'] }}</div>
+                <span x-cloak x-show="!open"><x-flatpack::icon icon="expand_more" size="small" /></span>
+                <span x-show="open"><x-flatpack::icon icon="expand_less" size="small" /></span>
             </div>
             @endif
             <div x-show="open" class="{{ $fieldset }}">
