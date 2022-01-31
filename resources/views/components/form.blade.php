@@ -4,7 +4,7 @@
         <x-flatpack::form.toolbar :elements="$toolbar" />
     </div>
     <div class="flex flex-col lg:flex-row w-full gap-5">
-        <div class="flex flex-col flex-grow mb-6">
+        <div class="flex flex-col flex-grow">
             @include('flatpack::includes.form-fields', [
                 'fieldset' => 'form-fieldset',
                 'fields' => $form
