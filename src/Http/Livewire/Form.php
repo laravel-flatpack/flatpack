@@ -110,46 +110,11 @@ class Form extends Component
     //     $this->fields['body'] = $data;
     // }
 
-    public function save()
-    {
-        // $this->validate();
-
-        // Assign model properties
-        $this->bindFieldsToModel();
-
-        $this->entry->save();
-
-        // Save relationships
-        $this->syncFieldsToRelations();
-
-        // Redirect to edit form after create
-        if ($this->formType === 'create') {
-            return redirect()->route('flatpack.form', [
-                'entity' => $this->entity,
-                'id' => $this->entry->id,
-            ]);
-        }
-
-        // Bind refreshed model to fields
-        $this->bindModelToFields();
-
-        $this->emit('notify', [
-            "type" => "success",
-            'message' => class_basename($this->entry) . " saved.",
-        ]);
-    }
-
-    public function action($method, $redirect = false)
+    public function action($method = 'save', $redirect = false)
     {
         // Cancel action
         if ($method === 'cancel') {
-            return redirect()->route('flatpack.list', [
-                'entity' => $this->entity,
-            ]);
-        }
-
-        if ($method === 'save') {
-            return $this->save();
+            return $this->goBack();
         }
 
         if (! method_exists($this->model, $method)) {
@@ -159,37 +124,54 @@ class Form extends Component
         // $this->validate();
 
         // Assign model properties
-        // $this->bindFieldsToModel();
+        $this->bindFieldsToModel();
 
-        // // Calling the model's method
-        // $this->entry->{$method}();
+        try {
+            // Call model method
+            $this->entry->{$method}();
 
-        // // Save relationships
-        // if ($method === 'save') {
-        //     $this->syncFieldsToRelations();
+            // Save relationships
+            $this->syncFieldsToRelations();
 
-        //     // Redirect to edit form after create
-        //     if ($this->formType === 'create') {
-        //         return redirect()->route('flatpack.form', [
-        //             'entity' => $this->entity,
-        //             'id' => $this->entry->id,
-        //         ]);
-        //     }
-        // }
+            // Bind refreshed model to fields
+            $this->bindModelToFields();
 
-        // // Bind refreshed model to fields
-        // $this->bindModelToFields();
+            // Redirect to edit form after create
+            $this->notifySuccess(class_basename($this->entry) . " saved.");
 
-        // $this->emit('notify', [
-        //     "type" => "success",
-        //     'message' => class_basename($this->entry) . " updated.",
-        // ]);
+            if ($this->formType === 'create') {
+                return $this->goToEditForm();
+            }
 
-        // if ($redirect) {
-        //     return $this->goBack();
-        // }
+            if ($redirect) {
+                return $this->goBack();
+            }
+        } catch (\Exception $e) {
+            $this->notifyError($e);
+        }
     }
 
+    private function notifySuccess($message)
+    {
+        $this->emit('notify', [
+            "type" => "success",
+            'message' => $message,
+        ]);
+    }
+
+    private function notifyError($error)
+    {
+        return $this->emit('notify', [
+            "type" => "error",
+            'message' => $error,
+        ]);
+    }
+
+    /**
+     * Bind model to fields.
+     *
+     * @return void
+     */
     private function bindModelToFields()
     {
         $fields = $this->getFormFields();
@@ -198,7 +180,8 @@ class Form extends Component
             if ($this->entry->$key instanceof \Illuminate\Support\Carbon) {
                 $this->fields[$key] = $this->entry->$key->format('Y-m-d\TH:i:s');
             } elseif ($this->entry->$key instanceof \Illuminate\Database\Eloquent\Collection) {
-                $this->fields[$key] = $this->entry->$key->pluck('id')->toArray();
+                $id = optional($this->relation($key))->getRelatedKeyName();
+                $this->fields[$key] = $this->entry->$key->pluck($id)->toArray();
             } elseif ($this->entry->$key instanceof \Illuminate\Database\Eloquent\Model) {
                 $this->fields[$key] = $this->entry->$key->getKey();
             } else {
@@ -207,6 +190,11 @@ class Form extends Component
         }
     }
 
+    /**
+     * Bind fields to model.
+     *
+     * @return void
+     */
     private function bindFieldsToModel()
     {
         $fields = $this->getFormFields();
@@ -223,6 +211,11 @@ class Form extends Component
         }
     }
 
+    /**
+     * Sync fields to relationships.
+     *
+     * @return void
+     */
     private function syncFieldsToRelations()
     {
         $fields = $this->getFormFields();
@@ -230,7 +223,7 @@ class Form extends Component
         foreach ($fields as $key => $options) {
             if ((isset($options['disabled']) && $options['disabled']) ||
                 (isset($options['readonly']) && $options['readonly']) ||
-                ! $this->isRelationship($key)) {
+                $this->isRelationship($key) === false) {
                 continue;
             }
 
@@ -242,18 +235,23 @@ class Form extends Component
 
     private function goToEditForm()
     {
-        $this->emit('redirect', [
-            'url' => route('flatpack.form', [
-                'entity' => $this->entity,
-                'id' => $this->entry->id,
-            ]),
-        ]);
+        return $this->redirectTo(route('flatpack.form', [
+            'entity' => $this->entity,
+            'id' => $this->entry->id,
+        ]));
     }
 
     private function goBack()
     {
-        $this->emit('redirect', [
-            'url' => route('flatpack.index', $this->entity),
+        return $this->redirectTo(route('flatpack.index', [
+            'entity' => $this->entity
+        ]));
+    }
+
+    private function redirectTo($url)
+    {
+        return $this->emit('redirect', [
+            'url' => $url,
         ]);
     }
 }

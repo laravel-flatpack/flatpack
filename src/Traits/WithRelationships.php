@@ -16,7 +16,7 @@ trait WithRelationships
      *
      * @var mixed
      */
-    private function relation($key)
+    protected function relation($key)
     {
         return ($this->isRelationship($key)) ? $this->entry->{$key}() : null;
     }
@@ -24,22 +24,24 @@ trait WithRelationships
     /**
      * Get the items to populate relationship select.
      *
+     * @param string $key - the relationship key.
+     * @param string $display - the display column
      * @return array
      */
-    protected function getRelationshipItems($field, $display = 'name')
+    protected function getRelationshipItems($key, $display = 'name')
     {
         $values = [];
 
-        $relation = $this->relation($field);
+        $relation = $this->relation($key);
 
-        if ($this->getRelationshipType($field) === 'belongsToMany') {
+        if ($this->getRelationshipType($key) === 'belongsToMany') {
             $values = $relation->getRelated()->get()->pluck(
                 $display,
                 $relation->getRelatedKeyName()
             );
         }
 
-        if ($this->getRelationshipType($field) === 'belongsTo') {
+        if ($this->getRelationshipType($key) === 'belongsTo') {
             $values = $relation->getRelated()->get()->pluck(
                 $display,
                 $relation->getOwnerKeyName()
@@ -49,6 +51,14 @@ trait WithRelationships
         return $values;
     }
 
+    /**
+     * Create a new related model instance.
+     *
+     * @param $key
+     * @param $name
+     * @param $value
+     * @return mixed
+     */
     protected function createRelationship($key, $name = 'name', $value = null)
     {
         $relation = $this->relation($key);
@@ -64,7 +74,6 @@ trait WithRelationships
      * Sync field relationship.
      *
      * @param string $key
-     * @param bool $canCreate
      * @return void
      */
     protected function syncRelationship($key)
