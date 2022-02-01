@@ -3,7 +3,7 @@
         <x-flatpack::form.header :elements="$header" :fields="$fields" />
         <x-flatpack::form.toolbar :elements="$toolbar" />
     </div>
-    <div class="flex flex-col lg:flex-row w-full gap-5">
+    <div class="flex flex-col lg:flex-row w-full gap-6">
         <div class="form-main">
             @include('flatpack::includes.form-fields', [
                 'fieldset' => 'form-fieldset',
