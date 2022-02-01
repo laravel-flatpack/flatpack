@@ -1,3 +1,4 @@
+@if (in_array(strtolower($type), ['relation','multiselect']))
 <div class="w-full">
 <ul class="list-none w-full max-h-60 overflow-y-scroll bg-gray-200 shadow-inner py-1">
     @foreach ($items as $optionValue => $display)
@@ -23,3 +24,4 @@
 </div>
 @endif
 </div>
+@endif

@@ -16,13 +16,16 @@
   flex: 1;
   min-width: 80px;
 }
+.form-field .form-field-elements .form-field-input {
+  @apply block w-full border-gray-300 rounded-md shadow-sm transition duration-150 ease-in-out focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50;
+}
 
 .form-fieldset {
-  @apply grid grid-cols-2 gap-5 w-full max-w-5xl mx-auto my-2;
+  @apply grid grid-cols-2 gap-5 w-full max-w-6xl my-2 mx-auto;
 }
 
 .sidebar-fieldset {
-  @apply grid grid-cols-1 gap-5 w-full max-w-5xl mx-auto my-2;
+  @apply grid grid-cols-1 gap-5 w-full max-w-6xl my-2 mx-auto;
 }
 .sidebar-fieldset .form-field {
   @apply flex flex-col;
