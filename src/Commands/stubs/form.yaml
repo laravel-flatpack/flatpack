@@ -9,7 +9,7 @@ toolbar:
     action: save
     shortcut: s
 
-fields:
+main:
   id:
     label: ID
     readonly: true

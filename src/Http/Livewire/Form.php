@@ -73,7 +73,7 @@ class Form extends Component
         return view('flatpack::components.form', [
             'header' => $this->getComposition('header'),
             'toolbar' => $this->getComposition('toolbar'),
-            'form' => $this->getComposition('fields'),
+            'main' => $this->getMainComposition(),
             'sidebar' => $this->getComposition('sidebar'),
         ]);
     }

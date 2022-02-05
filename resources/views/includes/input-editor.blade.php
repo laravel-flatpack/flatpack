@@ -7,7 +7,7 @@
             wire:key="fields-{{ $key }}"
             x-data x-init="
             ClassicEditor
-            .create($refs.fields{{ $key }})
+            .create($refs.fields_{{ $key }})
             .then(function(editor){
                 editor.model.document.on('change:data', () => {
                     @this.set('fields.{{ $key }}', editor.getData())
@@ -15,7 +15,7 @@
             })
             .catch( error => {
                 console.error( error );
-            } );" x-ref="fields{{ $key }}">
+            } );" x-ref="fields_{{ $key }}">
         </textarea>
     </div>
 </div>
