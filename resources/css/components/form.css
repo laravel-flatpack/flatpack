@@ -1,9 +1,10 @@
 .form-main {
-  @apply flex flex-col flex-grow;
+  @apply flex flex-col flex-grow max-w-6xl mx-auto;
 }
 .form-sidebar {
   @apply w-full lg:w-1/3 xl:w-1/4;
   min-width: 320px;
+  max-width: 360px;
 }
 
 .form-field {

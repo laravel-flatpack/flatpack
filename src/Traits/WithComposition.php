@@ -13,6 +13,17 @@ trait WithComposition
         return Arr::get($this->composition, $value, []);
     }
 
+    protected function getMainComposition()
+    {
+        $main = $this->getComposition('main');
+
+        if (empty($main)) {
+            $main = $this->getComposition('fields');
+        }
+
+        return $main;
+    }
+
     protected function getCompositionFields($composition)
     {
         $fields = [];
@@ -38,7 +49,7 @@ trait WithComposition
     {
         return array_merge(
             $this->getCompositionFields($this->getComposition('header')),
-            $this->getCompositionFields($this->getComposition('fields')),
+            $this->getCompositionFields($this->getMainComposition()),
             $this->getCompositionFields($this->getComposition('sidebar'))
         );
     }

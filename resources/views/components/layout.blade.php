@@ -7,8 +7,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <link rel="stylesheet" href="{{ asset('flatpack/fonts/inter.css') }}" />
     <link rel="stylesheet" href="{{ asset('flatpack/css/flatpack.css') }}" />
-    <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.8.2/dist/alpine.min.js" defer></script>
-    <script src="https://cdn.ckeditor.com/ckeditor5/30.0.0/classic/ckeditor.js" defer></script>
+    <script src="https://unpkg.com/alpinejs@3.8.1/dist/cdn.min.js" defer></script>
     @livewireStyles
 </head>
 <body>
@@ -51,6 +50,7 @@
     </div>
     @livewireScripts
     <script src="{{ asset('flatpack/js/flatpack.js') }}"></script>
+    <script src="https://cdn.ckeditor.com/ckeditor5/30.0.0/classic/ckeditor.js"></script>
     <script src="https://unpkg.com/@nextapps-be/livewire-sortablejs@0.1.1/dist/livewire-sortable.js"></script>
 </body>
 </html>
