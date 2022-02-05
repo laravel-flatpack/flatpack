@@ -4,6 +4,7 @@
     @foreach ($elements ?? [] as $key => $element)
     @if (isset($element['action']))
         <button
+            wire:loading.attr="disabled"
             wire:click="action('{{ Arr::get($element, 'action') }}', {{ Arr::get($element, 'close', '0') }})"
             class="button {{ Arr::get($element, 'hidden', false) ? 'hidden' : '' }}">
             <span class="whitespace-nowrap">{{ Arr::get($element, 'label') }}</span>

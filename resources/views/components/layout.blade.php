@@ -18,7 +18,7 @@
                     <ul class="navbar-items">
                         @foreach ($navigation as $item)
                         <li>
-                            <a href="{{ $item['url'] ?? '#' }}" class="text-gray-300 hover:text-white block {{ ($item['type'] ?? '') === 'button' ? 'bg-gray-900 my-8' : '' }}">
+                            <a href="{{ $item['url'] ?? '#' }}" class="text-gray-300 hover:text-white block {{ ($item['type'] ?? '') === 'featured' ? 'bg-gray-900 my-8' : '' }}">
                                 <x-flatpack::icon icon="{{ $item['icon'] ?? '' }}" />
                                 <span></span>
                             </a>
