@@ -1,10 +1,9 @@
 .form-main {
-  @apply flex flex-col flex-grow max-w-6xl mx-auto;
+  @apply flex flex-col flex-grow w-full lg:w-3/4 max-w-6xl mx-auto;
 }
 .form-sidebar {
-  @apply w-full lg:w-1/3 xl:w-1/4;
+  @apply w-full lg:w-1/4 lg:max-w-sm;
   min-width: 320px;
-  max-width: 360px;
 }
 
 .form-field {
@@ -36,4 +35,7 @@
 }
 .sidebar-fieldset .form-field .form-field-elements label {
   @apply text-left pr-2 m-0;
+}
+.sidebar-fieldset .form-field .form-field-elements .form-field-input {
+  @apply text-sm;
 }

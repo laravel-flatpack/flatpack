@@ -68,6 +68,7 @@ class Flatpack
      */
     private function setComposition($value)
     {
+        ksort($value);
         $this->composition = $value;
     }
 
@@ -109,7 +110,7 @@ class Flatpack
         foreach ($this->files as $file) {
             $entity = $file->getRelativePath();
 
-            $key = empty($entity) ? '_flatpack_global' : $entity;
+            $key = empty($entity) ? '__global__' : $entity;
 
             $config[$key][$file->getFilename()] = Yaml::parseFile($file->getPathname());
         }

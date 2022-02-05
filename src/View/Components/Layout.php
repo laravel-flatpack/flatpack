@@ -2,11 +2,16 @@
 
 namespace Faustoq\Flatpack\View\Components;
 
+use Faustoq\Flatpack\Facades\Flatpack;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use Illuminate\View\Component;
 
 class Layout extends Component
 {
-    public $navigation;
+    public $template = [];
+
+    public $navigation = [];
 
     /**
      * Create a new component instance.
@@ -15,34 +20,9 @@ class Layout extends Component
      */
     public function __construct()
     {
-        $this->navigation = [
-            'home' => [
-                'title' => 'Home',
-                'url' => route('flatpack.home'),
-                'icon' => 'grid_view',
-            ],
-            'new' => [
-                'title' => 'Create new post',
-                'url' => route('flatpack.form', ['entity' => 'posts', 'id' => 'create']),
-                'type' => 'button',
-                'icon' => 'add_box',
-            ],
-            'posts' => [
-                'title' => 'Posts',
-                'url' => route('flatpack.list', ['entity' => 'posts']),
-                'icon' => 'push_pin',
-            ],
-            'categories' => [
-                'title' => 'Categories',
-                'url' => route('flatpack.list', ['entity' => 'categories']),
-                'icon' => 'label',
-            ],
-            'tags' => [
-                'title' => 'Tags',
-                'url' => route('flatpack.list', ['entity' => 'tags']),
-                'icon' => 'tag',
-            ],
-        ];
+        $this->setTemplateComposition();
+
+        $this->navigation = Arr::get($this->template, 'sidebar');
     }
 
     /**
@@ -53,5 +33,56 @@ class Layout extends Component
     public function render()
     {
         return view('flatpack::components.layout');
+    }
+
+    /**
+     * Set the template with Flatpack composition.
+     *
+     * @return void
+     */
+    private function setTemplateComposition()
+    {
+        try {
+            $layout = Flatpack::getTemplateComposition('__global__', 'layout.yaml');
+        } catch (\Exception $e) {
+            $layout = [];
+        }
+
+        if (empty($layout)) {
+            $layout = $this->defaultLayout();
+        }
+
+        $this->template = array_merge($this->template, $layout);
+    }
+
+    /**
+     * Get the default layout.
+     *
+     * @return array
+     */
+    private function defaultLayout()
+    {
+        $composition = Flatpack::getComposition();
+        $layout = [
+            'sidebar' => collect($composition)
+                ->filter(function ($item, $key) {
+                    return $key !== '__global__';
+                })
+                ->map(function ($item, $key) {
+                    return [
+                        "url" => route('flatpack.list', ['entity' => $key]),
+                        "title" => Str::ucfirst($key),
+                        "icon" => "folder",
+                    ];
+                })
+                ->prepend([
+                    'title' => 'Home',
+                    'url' => route('flatpack.home'),
+                    'icon' => 'grid_view',
+                ], 'home')
+                ->toArray(),
+        ];
+
+        return $layout;
     }
 }

@@ -67,7 +67,7 @@ class FlatpackMiddleware
 
         $allowedValues = array_values(
             collect(array_keys($this->options))
-                ->filter(fn ($key) => $key !== '_flatpack_global')
+                ->filter(fn ($key) => $key !== '__global__')
                 ->toArray()
         );
 
