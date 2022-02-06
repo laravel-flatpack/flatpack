@@ -47,11 +47,11 @@ class FormField extends Component implements Arrayable
     public $type = 'text';
 
     /**
-     * Forms where the field is used.
+     * Field errors.
      *
      * @var array
      */
-    public $forms = ['create', 'edit'];
+    public $fieldErrors = [];
 
     /**
      * Field items (for select, radio, checkbox).
@@ -103,13 +103,6 @@ class FormField extends Component implements Arrayable
     public $currentValue = null;
 
     /**
-     * Field errors.
-     *
-     * @var array
-     */
-    public $fieldErrors = [];
-
-    /**
      * Field options.
      *
      * @var array
@@ -125,12 +118,18 @@ class FormField extends Component implements Arrayable
      * @param array $fieldErrors
      * @return void
      */
-    public function __construct(string $key, array $options = [], $entry = null, $fieldErrors = [])
-    {
+    public function __construct(
+        $key,
+        $options = [],
+        $entry = null,
+        $fieldErrors = [],
+        $formType = 'create'
+    ) {
         $this->key = $key;
         $this->options = $options;
         $this->entry = $entry;
         $this->fieldErrors = $fieldErrors;
+        $this->formType = $formType;
 
         $this->initProps();
     }
@@ -208,7 +207,6 @@ class FormField extends Component implements Arrayable
             'placeholder' => $this->placeholder,
             'span' => $this->span,
             'type' => $this->type,
-            'forms' => $this->forms,
             'items' => $this->items,
             'readonly' => $this->readonly,
             'disabled' => $this->disabled,

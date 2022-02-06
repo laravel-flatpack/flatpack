@@ -6,13 +6,43 @@ use Illuminate\Support\Arr;
 
 trait WithComposition
 {
+    /**
+     * Array representation of the view.
+     *
+     * @var array
+     */
     public $composition = [];
 
-    protected function getComposition($value)
+    /**
+     * Form type.
+     *
+     * @var string
+     */
+    public $formType;
+
+    /**
+     * Get composition by key.
+     *
+     * @param  string  $key
+     * @return array
+     */
+    protected function getComposition($key)
     {
-        return Arr::get($this->composition, $value, []);
+        $composition = Arr::get($this->composition, $key, []);
+
+        return collect($composition)->filter(function ($item) {
+            return in_array(
+                $this->formType,
+                collect(Arr::get($item, 'form', ['create', 'edit']))->toArray()
+            );
+        })->toArray();
     }
 
+    /**
+     * Get the main composition.
+     *
+     * @return array
+     */
     protected function getMainComposition()
     {
         $main = $this->getComposition('main');
@@ -24,6 +54,12 @@ trait WithComposition
         return $main;
     }
 
+    /**
+     * Recursively get all the form fields in a composition.
+     *
+     * @param  array  $composition
+     * @return array
+     */
     protected function getCompositionFields($composition)
     {
         $fields = [];
@@ -45,6 +81,11 @@ trait WithComposition
         return $fields;
     }
 
+    /**
+     * Get all the form fields.
+     *
+     * @return array
+     */
     protected function getFormFields()
     {
         return array_merge(

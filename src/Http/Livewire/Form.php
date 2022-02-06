@@ -6,6 +6,7 @@ use Faustoq\Flatpack\Traits\WithComposition;
 use Faustoq\Flatpack\Traits\WithFormValidation;
 use Faustoq\Flatpack\Traits\WithRelationships;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 
@@ -93,6 +94,11 @@ class Form extends Component
         $this->fields[$key] = explode(',', $data);
     }
 
+    /**
+     * Tag input related model creation.
+     *
+     * @return void
+     */
     public function createRelatedTag($key, $data)
     {
         try {
@@ -105,13 +111,12 @@ class Form extends Component
                 $data
             );
 
-            $this->emit("flatpack-taginput:new-tag-created:{$key}", $created);
-            //
+            $this->emit(
+                "flatpack-taginput:new-tag-created:{$key}",
+                $created
+            );
         } catch (\Exception $e) {
-            $this->emit('notify', [
-                'type' => 'error',
-                'message' => $e->getMessage(),
-            ]);
+            $this->notifyError($e->getMessage());
         }
     }
 
@@ -218,6 +223,7 @@ class Form extends Component
         foreach ($fields as $key => $options) {
             if ((isset($options['disabled']) && $options['disabled']) ||
                 (isset($options['readonly']) && $options['readonly']) ||
+                Str::contains($key, '_confirmation') ||
                 $this->isRelationship($key) ||
                 $this->fields[$key] === null) {
                 continue;
