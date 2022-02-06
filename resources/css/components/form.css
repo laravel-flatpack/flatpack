@@ -57,10 +57,10 @@
   @apply flex gap-2 justify-start items-center cursor-pointer;
 }
 .editable-heading .input-field-placeholder {
-  @apply border-b-2 border-solid border-transparent py-2;
+  @apply border-b-2 border-solid border-transparent py-2 text-left;
 }
 .editable-heading .edit-button {
-  @apply inline-flex gap-2 p-0 m-0 border border-transparent text-sm text-gray-700 opacity-50;
+  @apply inline-flex gap-2 p-0 m-0 border border-transparent text-sm text-gray-700 opacity-30;
 }
 .editable-heading:hover .edit-button {
   @apply opacity-100;
