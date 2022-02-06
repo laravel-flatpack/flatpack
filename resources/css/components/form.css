@@ -29,7 +29,7 @@
 }
 
 .header-fieldset {
-  @apply grid grid-cols-1 w-full max-w-6xl my-2;
+  @apply grid grid-cols-1 w-full max-w-6xl my-0;
 }
 .header-fieldset .form-field .form-field-elements label {
   @apply text-left pr-2 m-0;
