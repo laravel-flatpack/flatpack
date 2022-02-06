@@ -96,11 +96,18 @@ class FormField extends Component implements Arrayable
     public $required = false;
 
     /**
+     * Field size.
+     *
+     * @var string
+     */
+    public $size = 'base';
+
+    /**
      * Field current value.
      *
      * @var string|null
      */
-    public $currentValue = null;
+    public $value = null;
 
     /**
      * Field options.
@@ -116,6 +123,7 @@ class FormField extends Component implements Arrayable
      * @param array $options
      * @param \Illuminate\Database\Eloquent\Model $entry
      * @param array $fieldErrors
+     * @param string $formType
      * @return void
      */
     public function __construct(
@@ -152,6 +160,8 @@ class FormField extends Component implements Arrayable
         $this->required = $this->getOption('required', false);
         $this->disabled = $this->getOption('disabled', false);
         $this->readonly = $this->getOption('readonly', false);
+        $this->value = $this->getOption('value', $this->entry->{$this->key});
+        $this->size = $this->getOption('size', 'base');
 
         // Select props
         if ($this->type === 'select') {

@@ -13,6 +13,9 @@
         @include('flatpack::includes.input-type-multiselect')
         @include('flatpack::includes.input-type-relation')
         @include('flatpack::includes.input-tags')
+        @include('flatpack::includes.button')
+        @include('flatpack::includes.heading')
+        @include('flatpack::includes.editable')
     </div>
     @include('flatpack::includes.input-errors')
 </div>

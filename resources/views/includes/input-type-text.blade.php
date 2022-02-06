@@ -5,6 +5,7 @@
     id="fields-{{ $key }}"
     type="text"
     placeholder="{{ $placeholder ?? '' }}"
+    autocomplete="{{ $autocomplete ?? 'off' }}"
     class="form-field-input"
     {{ $disabled ? 'disabled' : '' }}
     {{ $required ? 'required' : '' }}
