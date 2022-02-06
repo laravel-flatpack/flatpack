@@ -4,3 +4,7 @@
 .button:hover {
   @apply bg-gray-800;
 }
+
+.button.primary {
+  @apply bg-purple-500;
+}

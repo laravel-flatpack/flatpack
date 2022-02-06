@@ -13,14 +13,11 @@
     @foreach ($options as $tab => $tabOptions)
         <div x-show="openTab === {{ $loop->index }}" class="box form-fieldset">
             @foreach (Arr::get($tabOptions, 'fields', []) as $key => $fieldOptions)
-                @php
-                $fieldErrors = Arr::get($formErrors, $key, []);
-                @endphp
                 <x-flatpack-form-field
                     :key="$key"
                     :options="$fieldOptions"
                     :entry="$entry"
-                    :fieldErrors="$fieldErrors"
+                    :fieldErrors="Arr::get($formErrors, $key, [])"
                 />
             @endforeach
         </div>

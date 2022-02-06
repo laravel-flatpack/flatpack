@@ -66,6 +66,13 @@ class Form extends Component
     public $formType;
 
     /**
+     * Field types excluded from validation and binding.
+     *
+     * @var array
+     */
+    private $excludedTypes = ['button', 'label', 'heading'];
+
+    /**
      * Livewire component listeners.
      */
     protected $listeners = [
@@ -221,8 +228,9 @@ class Form extends Component
         $fields = $this->getFormFields();
 
         foreach ($fields as $key => $options) {
-            if ((isset($options['disabled']) && $options['disabled']) ||
-                (isset($options['readonly']) && $options['readonly']) ||
+            if ((isset($options['type']) && in_array($options['type'], $this->excludedTypes)) ||
+                (isset($options['disabled']) && $options['disabled'] === true) ||
+                (isset($options['readonly']) && $options['readonly'] === true) ||
                 Str::contains($key, '_confirmation') ||
                 $this->isRelationship($key) ||
                 $this->fields[$key] === null) {

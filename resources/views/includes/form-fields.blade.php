@@ -3,9 +3,6 @@
     $groupFirst = true;
 @endphp
 @foreach ($fields as $key => $options)
-    @php
-    $fieldErrors = Arr::get($formErrors, $key, []);
-    @endphp
     @if ($key === 'tabs')
         @include('flatpack::includes.tabs', ['formErrors' => $formErrors])
     @else
@@ -37,7 +34,7 @@
             :key="$key"
             :options="$options"
             :entry="$entry"
-            :fieldErrors="$fieldErrors"
+            :fieldErrors="Arr::get($formErrors, $key, [])"
         />
 
         @php

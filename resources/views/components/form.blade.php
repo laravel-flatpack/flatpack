@@ -1,6 +1,11 @@
-<div class="flex flex-col gap-4 w-full min-h-screen">
-    <div class="flex flex-row justify-between items-start gap-5 w-full">
-        <x-flatpack::form.header :elements="$header" :fields="$fields" />
+<div class="flex flex-col gap-10 w-full min-h-screen">
+    <div class="flex flex-row justify-between items-start gap-5 w-full my-2">
+        @include('flatpack::includes.form-header', [
+            'fieldset' => 'header-fieldset',
+            'elements' => $header,
+            'fields' => $fields,
+            'formErrors' => $formErrors,
+        ])
         <x-flatpack::form.toolbar :elements="$toolbar" />
     </div>
     <div class="flex flex-col lg:flex-row w-full gap-6">
