@@ -3,8 +3,11 @@
     $groupFirst = true;
 @endphp
 @foreach ($fields as $key => $options)
+    @php
+    $fieldErrors = Arr::get($formErrors, $key, []);
+    @endphp
     @if ($key === 'tabs')
-        @include('flatpack::includes.tabs')
+        @include('flatpack::includes.tabs', ['formErrors' => $formErrors])
     @else
         @if ($loop->first)
             <div x-data="{ open: true }" class="box">
@@ -34,6 +37,7 @@
             :key="$key"
             :options="$options"
             :entry="$entry"
+            :fieldErrors="$fieldErrors"
         />
 
         @php
