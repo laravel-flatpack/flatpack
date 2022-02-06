@@ -30,7 +30,13 @@ class Layout extends Component
      */
     public function render()
     {
-        return view('flatpack::components.layout');
+        $current = Arr::first(array_keys(request()->flatpackMappings));
+        $current = empty($current) ? 'home' : $current;
+
+        return view('flatpack::components.layout', [
+            'current' => $current,
+            'navigation' => $this->navigation,
+        ]);
     }
 
     /**
