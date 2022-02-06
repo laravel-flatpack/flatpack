@@ -1,5 +1,5 @@
 @if (strtolower($type ?? '') === 'editable')
-<div x-cloak x-data="{ editing: false }" class="w-full max-w-6xl">
+<div x-cloak x-data="{ editing: false, placeholder: '{{ $placeholder }}' }" class="w-full max-w-6xl">
     <button
         x-show="!editing"
         @click="editing=true; setTimeout(() => { $refs.editableInput.focus(); $refs.editableInput.select(); }, 10);"
@@ -35,8 +35,12 @@
             x-show="editing"
             x-ref="editableInput"
             @keyup.escape="editing=false; setTimeout(() => { $refs.editableInput.value = $refs.editableText.innerText; }, 10);"
-            @keyup.enter="editing=false; setTimeout(() => { $refs.editableText.innerText = $refs.editableInput.value; }, 10);"
-            @blur="editing=false; setTimeout(() => { $refs.editableText.innerText = $refs.editableInput.value; }, 10);"
+            @keyup.enter="editing=false; setTimeout(() => {
+                $refs.editableText.innerText = ($refs.editableInput.value !== '' ? $refs.editableInput.value : placeholder);
+            }, 10);"
+            @blur="editing=false; setTimeout(() => {
+                $refs.editableText.innerText = ($refs.editableInput.value !== '' ? $refs.editableInput.value : placeholder);
+            }, 10);"
             wire:model.stop="fields.{{ $key }}"
             wire:key="fields-{{ $key }}"
             id="editable-{{ $key }}"
@@ -56,7 +60,7 @@
             <div @click="editing=false; setTimeout(() => { $refs.editableInput.value = $refs.editableText.innerText; }, 10);">
                 <x-flatpack::icon icon="cancel" size="small" />
             </div>
-            <div @click="editing=false; setTimeout(() => { $refs.editableText.innerText = $refs.editableInput.value; }, 10);">
+            <div @click="editing=false; setTimeout(() => { $refs.editableText.innerText = ($refs.editableInput.value !== '' ? $refs.editableInput.value : placeholder); }, 10);">
                 <x-flatpack::icon icon="check" size="small" />
             </div>
         </span>

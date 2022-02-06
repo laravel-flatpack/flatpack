@@ -1,4 +1,4 @@
-<div x-cloak x-data class="flex flex-col gap-10 w-full min-h-screen">
+<div x-cloak x-data class="flex flex-col gap-5 w-full min-h-screen">
     <div class="flex flex-row justify-between items-start gap-5 w-full my-2">
         @include('flatpack::includes.form-header', [
             'fieldset' => 'header-fieldset',
