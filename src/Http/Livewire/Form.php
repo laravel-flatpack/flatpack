@@ -179,7 +179,7 @@ class Form extends Component
         return $this->emit('notify', [
             "type" => "error",
             "message" => $error,
-            "errors" => $errors
+            "errors" => $errors,
         ]);
     }
 
