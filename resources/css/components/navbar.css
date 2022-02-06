@@ -1,18 +1,31 @@
 .navbar {
-  @apply sticky top-0 z-50 h-screen w-20 justify-center items-start bg-gray-800 text-white py-2;
-  @apply hidden lg:flex;
+  @apply hidden lg:flex sticky top-0 z-50;
+  @apply h-screen w-full min-w-full lg:w-80 lg:min-w-fit justify-start items-start;
+  @apply bg-gray-800 text-white py-2;
+}
+.navbar.is-minimized {
+  @apply lg:w-20 lg:justify-center lg:items-start;
+}
+.navbar.is-minimized .navbar-item-text {
+  @apply hidden;
 }
 
 .navbar-rail-wrapper {
-  @apply flex flex-col w-20 h-full justify-between list-none;
+  @apply flex flex-col w-full h-full justify-between list-none;
 }
 
 .navbar-rail-wrapper .navbar-rail {
-  @apply flex flex-col items-center list-none text-center;
+  @apply flex flex-col items-center list-none text-center w-full;
 }
 
 .navbar-rail-wrapper .navbar-rail .navbar-items {
-  @apply list-none flex flex-col gap-2;
+  @apply list-none flex flex-col gap-2 w-full px-3;
+}
+.navbar-rail-wrapper .navbar-rail .navbar-items li {
+  @apply w-full;
+}
+.navbar-rail-wrapper .navbar-rail .navbar-items li a {
+  @apply flex justify-start items-center w-full gap-2 p-1;
 }
 
 .navbar-rail-wrapper .navbar-rail-bottom {
