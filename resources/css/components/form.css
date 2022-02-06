@@ -28,12 +28,21 @@
   @apply grid grid-cols-2 gap-5 w-full max-w-6xl my-2 mx-auto;
 }
 
+.header-fieldset {
+  @apply grid grid-cols-1 w-full max-w-6xl my-2;
+}
+.header-fieldset .form-field .form-field-elements label {
+  @apply text-left pr-2 m-0;
+  min-width: fit-content;
+}
+
 .sidebar-fieldset {
   @apply grid grid-cols-1 gap-5 w-full max-w-6xl my-2 mx-auto;
 }
 .sidebar-fieldset .form-field {
   @apply flex flex-col;
 }
+.header-fieldset .form-field .form-field-elements,
 .sidebar-fieldset .form-field .form-field-elements {
   @apply flex flex-row w-full gap-2 justify-start items-center;
 }
@@ -42,4 +51,20 @@
 }
 .sidebar-fieldset .form-field .form-field-elements .form-field-input {
   @apply text-sm;
+}
+
+.editable-heading {
+  @apply flex gap-2 justify-start items-center cursor-pointer;
+}
+.editable-heading .input-field-placeholder {
+  @apply border-b-2 border-solid border-transparent py-2;
+}
+.editable-heading .edit-button {
+  @apply inline-flex gap-2 p-0 m-0 border border-transparent text-sm text-gray-700 opacity-50;
+}
+.editable-heading:hover .edit-button {
+  @apply opacity-100;
+}
+.editable-heading:hover .input-field-placeholder {
+  @apply hover:border-dashed hover:border-gray-400;
 }
