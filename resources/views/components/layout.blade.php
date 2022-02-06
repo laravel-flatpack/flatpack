@@ -11,8 +11,15 @@
     @livewireStyles
 </head>
 <body>
-    <div class="layout-wrapper">
-        <aside class="navbar">
+    <div
+        x-cloak
+        x-data="{
+            navbarMini: localStorage.getItem('navbarMini') === 'true'
+        }"
+        x-init="$watch('navbarMini', val => localStorage.setItem('navbarMini', val))"
+        class="layout-wrapper"
+    >
+        <aside class="navbar" x-bind:class="{ 'is-minimized': navbarMini }">
             <ul class="navbar-rail-wrapper">
                 <li class="navbar-rail">
                     <ul class="navbar-items">
@@ -26,7 +33,7 @@
                                     'text-gray-400' => ($key !== $current),
                                 ])}}>
                                 <x-flatpack::icon icon="{{ $item['icon'] ?? '' }}" />
-                                <span class="hidden">{{ $item['title'] }}</span>
+                                <span class="navbar-item-text">{{ $item['title'] }}</span>
                             </a>
                         </li>
                         @endforeach
@@ -46,7 +53,15 @@
         </aside>
         <main class="main-content">
             <div class="top-bar-wrapper">
-                <div>Breadcrumbs</div>
+                <div class="flex gap-5 justify-start items-center text-gray-300">
+                    <button @click="navbarMini = !navbarMini">
+                        <div x-show="!navbarMini"><x-flatpack::icon icon="menu_open" /></div>
+                        <div x-show="navbarMini"><x-flatpack::icon icon="menu" /></div>
+                    </button>
+                    <div>
+                        {{--Breadcrumbs--}}
+                    </div>
+                </div>
                 <div class="text-white"><x-flatpack::icon icon="notifications" /></div>
             </div>
             <div class="container px-5 py-5 mx-auto">
