@@ -1,5 +1,5 @@
 <div class="form-field {{ ($span == 2 || $span === 'full') ? 'col-span-full' : 'col-span-1' }}">
-    <div class="form-field-elements {{ $disabled ? 'opacity-60' : 'opacity-100' }}">
+    <div {{ $attributes->class(["form-field-elements", "opacity-60" => $disabled, "has-errors" => !empty($fieldErrors)]) }}>
         @include('flatpack::includes.input-label')
         @include('flatpack::includes.input-blockeditor')
         @include('flatpack::includes.input-editor')
@@ -14,4 +14,5 @@
         @include('flatpack::includes.input-type-relation')
         @include('flatpack::includes.input-tags')
     </div>
+    @include('flatpack::includes.input-errors')
 </div>

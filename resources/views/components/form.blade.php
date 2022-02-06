@@ -7,14 +7,16 @@
         <div class="form-main">
             @include('flatpack::includes.form-fields', [
                 'fieldset' => 'form-fieldset',
-                'fields' => $main
+                'fields' => $main,
+                'formErrors' => $formErrors,
             ])
         </div>
         @if (isset($sidebar) && count($sidebar) > 0)
         <div class="form-sidebar">
             @include('flatpack::includes.form-fields', [
                 'fieldset' => 'sidebar-fieldset',
-                'fields' => $sidebar
+                'fields' => $sidebar,
+                'formErrors' => $formErrors,
             ])
         </div>
         @endif

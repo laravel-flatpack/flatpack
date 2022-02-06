@@ -17,10 +17,22 @@
 </ul>
 @if ($canCreate)
 <div class="mt-4">
-    <button
-        class="button bg-gray-100 text-black">
-        <span class="whitespace-nowrap">Create new {{ Str::singular($key) }}</span>
-    </button>
+    <div x-data="{ visible: false }">
+        <div x-show="visible === true" x-cloak>
+            @include('flatpack::includes.modal', [
+                'title' => 'Create New ' . Str::singular($key),
+                'button' => 'Create',
+                'buttonClass' => 'bg-indigo-600 text-white',
+                'buttonIcon' => 'plus',
+                'modalId' => 'create-new-'. $key
+            ])
+        </div>
+        <button
+            @click="visible = !visible"
+            class="button bg-gray-100 text-black">
+            <span class="whitespace-nowrap">Create new {{ Str::singular($key) }}</span>
+        </button>
+    </div>
 </div>
 @endif
 </div>

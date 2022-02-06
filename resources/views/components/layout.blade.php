@@ -20,7 +20,7 @@
                         <li>
                             <a href="{{ $item['url'] ?? '#' }}" class="text-gray-300 hover:text-white block {{ ($item['type'] ?? '') === 'featured' ? 'bg-gray-900 my-8' : '' }}">
                                 <x-flatpack::icon icon="{{ $item['icon'] ?? '' }}" />
-                                <span></span>
+                                <span class="hidden">{{ $item['title'] }}</span>
                             </a>
                         </li>
                         @endforeach

@@ -3,14 +3,17 @@
 namespace Faustoq\Flatpack\Http\Livewire;
 
 use Faustoq\Flatpack\Traits\WithComposition;
+use Faustoq\Flatpack\Traits\WithFormValidation;
 use Faustoq\Flatpack\Traits\WithRelationships;
 use Illuminate\Support\Arr;
+use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 
 class Form extends Component
 {
     use WithComposition;
     use WithRelationships;
+    use WithFormValidation;
 
     /**
      * Form fields.
@@ -25,6 +28,13 @@ class Form extends Component
      * @var array
      */
     public $formFields = [];
+
+    /**
+     * Form field errors.
+     *
+     * @var array
+     */
+    public $formErrors = [];
 
     /**
      * Model class name.
@@ -117,16 +127,18 @@ class Form extends Component
             return $this->goBack();
         }
 
-        if (! method_exists($this->model, $method)) {
-            throw new \Exception("Action not found: $method");
-        }
-
-        // $this->validate();
-
-        // Assign model properties
-        $this->bindFieldsToModel();
-
         try {
+            if (! method_exists($this->model, $method)) {
+                throw new \Exception("Action not found: $method");
+            }
+
+            $this->formErrors = [];
+
+            $this->validateForm($this->fields, $this->getFormFields());
+
+            // Assign model properties
+            $this->bindFieldsToModel();
+
             // Call model method
             $this->entry->{$method}();
 
@@ -146,8 +158,11 @@ class Form extends Component
             if ($redirect) {
                 return $this->goBack();
             }
+        } catch (ValidationException $e) {
+            $this->formErrors = $e->errors();
+            $this->notifyError($e->getMessage(), $this->formErrors);
         } catch (\Exception $e) {
-            $this->notifyError($e);
+            $this->notifyError($e->getMessage());
         }
     }
 
@@ -155,15 +170,16 @@ class Form extends Component
     {
         $this->emit('notify', [
             "type" => "success",
-            'message' => $message,
+            "message" => $message,
         ]);
     }
 
-    private function notifyError($error)
+    private function notifyError($error, $errors = [])
     {
         return $this->emit('notify', [
             "type" => "error",
-            'message' => $error,
+            "message" => $error,
+            "errors" => $errors
         ]);
     }
 

@@ -10,7 +10,6 @@ use Illuminate\View\Component;
 class Layout extends Component
 {
     public $template = [];
-
     public $navigation = [];
 
     /**
@@ -21,8 +20,7 @@ class Layout extends Component
     public function __construct()
     {
         $this->setTemplateComposition();
-
-        $this->navigation = Arr::get($this->template, 'sidebar');
+        $this->setNavigation('sidebar');
     }
 
     /**
@@ -53,6 +51,11 @@ class Layout extends Component
         }
 
         $this->template = array_merge($this->template, $layout);
+    }
+
+    private function setNavigation($navigation)
+    {
+        $this->navigation = Arr::get($this->template, $navigation, []);
     }
 
     /**

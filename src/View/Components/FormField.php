@@ -103,6 +103,13 @@ class FormField extends Component implements Arrayable
     public $currentValue = null;
 
     /**
+     * Field errors.
+     *
+     * @var array
+     */
+    public $fieldErrors = [];
+
+    /**
      * Field options.
      *
      * @var array
@@ -115,13 +122,15 @@ class FormField extends Component implements Arrayable
      * @param string $key
      * @param array $options
      * @param \Illuminate\Database\Eloquent\Model $entry
+     * @param array $fieldErrors
      * @return void
      */
-    public function __construct(string $key, array $options = [], $entry = null)
+    public function __construct(string $key, array $options = [], $entry = null, $fieldErrors = [])
     {
         $this->key = $key;
         $this->options = $options;
         $this->entry = $entry;
+        $this->fieldErrors = $fieldErrors;
 
         $this->initProps();
     }
