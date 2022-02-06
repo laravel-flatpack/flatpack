@@ -4,8 +4,8 @@
     <meta charset="utf-8">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <link rel="stylesheet" href="{{ asset('flatpack/fonts/inter.css') }}" />
+    <link rel="stylesheet" href="{{ asset('flatpack/fonts/icons.css') }}" />
     <link rel="stylesheet" href="{{ asset('flatpack/css/flatpack.css') }}" />
     <script src="https://unpkg.com/alpinejs@3.8.1/dist/cdn.min.js" defer></script>
     @livewireStyles
