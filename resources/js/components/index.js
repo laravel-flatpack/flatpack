@@ -1,4 +1,5 @@
+import navbar from "./navbar";
 import notify from "./notify";
 import taginput from "./taginput";
 
-export { notify, taginput };
+export { navbar, notify, taginput };
