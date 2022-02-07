@@ -1,14 +1,1 @@
-@import "notyf/notyf.min.css";
-
-.notyf .notyf__toast {
-  @apply rounded-md;
-  max-width: none;
-}
-.notyf .notyf__toast .notyf__wrapper {
-  @apply px-0 py-4;
-}
-
-.notyf .notyf__ripple {
-  width: 100vw;
-  min-width: 800px;
-}
+@import "toastify-js/src/toastify.css";
