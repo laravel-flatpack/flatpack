@@ -2,6 +2,7 @@
 @import "./components/box";
 @import "./components/button";
 @import "./components/form";
+@import "./components/input";
 @import "./components/layout";
 @import "./components/navbar";
 @import "./components/notify";

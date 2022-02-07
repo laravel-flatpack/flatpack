@@ -1,0 +1,6 @@
+input:disabled::-webkit-calendar-picker-indicator {
+  display: none;
+}
+input[type="datetime-local" i]::-webkit-calendar-picker-indicator {
+  margin-inline-start: 0px;
+}

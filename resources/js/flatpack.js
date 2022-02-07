@@ -1,5 +1,6 @@
 // Flatpack version: 1.0.0
-import { notify, taginput } from "./components";
+import { notify, taginput, navbar } from "./components";
+import { getSetting, setSetting, isActive } from "./helpers";
 
 // Flatpack redirects
 window.livewire.on("redirect", ({ url }) => {
@@ -14,4 +15,12 @@ window.livewire.on("notify", (event) => {
 });
 
 // Flatpack global object
-window.Flatpack = { taginput };
+window.Flatpack = {
+  taginput,
+  navbar: navbar(),
+  settings: {
+    get: getSetting,
+    set: setSetting,
+    is: isActive,
+  },
+};

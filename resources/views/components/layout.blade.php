@@ -14,13 +14,11 @@
 <body>
     <div
         x-cloak
-        x-data="{
-            navbarMini: localStorage.getItem('navbarMini') === 'true'
-        }"
-        x-init="$watch('navbarMini', val => localStorage.setItem('navbarMini', val))"
+        x-data="{navbar: Flatpack.navbar.minimized}"
+        x-init="$watch('navbar', value => Flatpack.navbar.set(value))"
         class="layout-wrapper"
     >
-        <aside class="navbar" x-bind:class="{ 'is-minimized': navbarMini }">
+        <aside class="navbar" x-bind:class="{ 'is-minimized': navbar }">
             <ul class="navbar-rail-wrapper">
                 <li class="navbar-rail">
                     <ul class="navbar-items">
@@ -44,20 +42,23 @@
                     {{-- TODO: add navbar bottom items --}}
                     {{-- <ul class="navbar-items">
                         <li>
-                            <a href="#" class="text-gray-300 hover:text-white block">
+                            <a href="#" class="block text-gray-300 hover:text-white">
                                 <x-flatpack::icon icon="settings" />
                             </a>
                         </li>
                     </ul> --}}
                 </li>
             </ul>
+            <button @click="navbar = !navbar" class="navbar-close">
+                <x-flatpack::icon icon="close" />
+            </button>
         </aside>
         <main class="main-content">
             <div class="top-bar-wrapper">
-                <div class="flex gap-5 justify-start items-center text-gray-300">
-                    <button @click="navbarMini = !navbarMini">
-                        <div x-show="!navbarMini"><x-flatpack::icon icon="menu_open" /></div>
-                        <div x-show="navbarMini"><x-flatpack::icon icon="menu" /></div>
+                <div class="flex items-center justify-start gap-5 text-gray-300">
+                    <button @click="navbar = !navbar">
+                        <div x-show="!navbar"><x-flatpack::icon icon="menu_open" /></div>
+                        <div x-show="navbar"><x-flatpack::icon icon="menu" /></div>
                     </button>
                     <div>
                         {{--Breadcrumbs--}}
