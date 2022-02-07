@@ -40,6 +40,6 @@
     },
     "dependencies": {
         "@yaireo/tagify": "^4.9.5",
-        "notyf": "^3.10.0"
+        "toastify-js": "^1.11.2"
     }
 }
