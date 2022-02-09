@@ -4,7 +4,7 @@ export const isMobile = () =>
   );
 
 export const isMediumScreen = () =>
-  window.matchMedia("only screen and (max-width: 1024px)").matches;
+  window.matchMedia("only screen and (max-width: 1192px)").matches;
 
 export const isSmallScreen = () =>
   window.matchMedia("only screen and (max-width: 728px)").matches;
