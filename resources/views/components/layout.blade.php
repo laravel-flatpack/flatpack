@@ -26,8 +26,8 @@
                         <li>
                             <a href="{{ $item['url'] ?? '#' }}"
                                 {{ $attributes->class([
-                                    'hover:text-white block',
-                                    'bg-gray-900 my-8' => ($item['type'] ?? '') === 'featured',
+                                    'navbar-menu-item hover:text-white block',
+                                    'bg-gray-900 my-8 rounded-md' => ($item['type'] ?? '') === 'featured',
                                     'text-white' => ($key === $current),
                                     'text-gray-400' => ($key !== $current),
                                 ])}}>
@@ -38,15 +38,34 @@
                         @endforeach
                     </ul>
                 </li>
-                <li class="navbar-rail-bottom">
-                    {{-- TODO: add navbar bottom items --}}
-                    {{-- <ul class="navbar-items">
+                <li class="navbar-rail navbar-rail-bottom">
+                    <ul class="mb-2 navbar-items">
                         <li>
-                            <a href="#" class="block text-gray-300 hover:text-white">
-                                <x-flatpack::icon icon="settings" />
-                            </a>
+                            {{-- Options dropdown --}}
+                            <div x-data="{open: false}" class="relative">
+                                <button @click="open = !open" aria-expanded="true" aria-haspopup="true" class="block text-gray-400 navbar-menu-item hover:text-white">
+                                    <x-flatpack::icon icon="settings" />
+                                    <span class="navbar-item-text">Settings</span>
+                                </button>
+                                <div x-show="open" @click.away="open = false" class="absolute w-56 mt-2 text-left origin-top-right bg-white rounded-md shadow-lg te bottom-14 ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
+                                    <div class="py-1" role="none">
+                                        <div class="block px-4 py-2 text-sm" role="menuitem" tabindex="-1" id="menu-item-0">
+                                            <div class="flex justify-start">
+                                                <div class="form-switch">
+                                                    <input onchange="alert('coming soon!')" class="h-5 align-top bg-gray-300 bg-no-repeat bg-contain border-0 rounded-full shadow-sm appearance-none cursor-pointer form-check-input w-9 focus:outline-none" type="checkbox" role="switch">
+                                                    <label class="inline-block ml-4 text-gray-700 form-check-label" for="flexSwitchCheckDefault">Dark mode</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="pb-2 mt-2 border-t"></div>
+                                        <a href="https://github.com/faustoq/laravel-flatpack" target="_blank" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-1">Support</a>
+                                        <a href="https://github.com/faustoq/laravel-flatpack/blob/main/LICENSE.md" target="_blank" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-2">License</a>
+                                    </div>
+                                </div>
+                            </div>
+                            {{-- /Options dropdown --}}
                         </li>
-                    </ul> --}}
+                    </ul>
                 </li>
             </ul>
             <button @click="navbar = !navbar" class="navbar-close">
@@ -64,7 +83,24 @@
                         {{--Breadcrumbs--}}
                     </div>
                 </div>
-                <div class="text-white"><x-flatpack::icon icon="notifications" /></div>
+                <div class="flex gap-4 text-white">
+                    <div class="flex items-center justify-center has-tooltip">
+                        <span class="px-3 py-1 mt-20 text-sm text-gray-100 bg-gray-900 rounded shadow-lg tooltip">Preview</span>
+                        <a href="/" target="_blank" class="text-gray-400 hover:text-white">
+                            <x-flatpack::icon icon="radio_button_checked" />
+                        </a>
+                    </div>
+                    <div x-data="{open: false}" class="relative">
+                        <button @click="open = !open" aria-expanded="true" aria-haspopup="true" class="text-gray-400 hover:text-white">
+                            <x-flatpack::icon icon="account_circle" />
+                        </button>
+                        <div x-show="open" @click.away="open = false" class="absolute right-0 w-56 mt-2 text-left origin-top-right bg-white rounded-md shadow-lg top-10 ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
+                            <div class="py-1" role="none">
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1">Logout</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="container px-5 py-5 mx-auto">
                 {{ $slot }}

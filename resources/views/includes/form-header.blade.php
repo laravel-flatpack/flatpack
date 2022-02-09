@@ -1,4 +1,4 @@
-<div class="w-full flex flex-col gap-2 {{ $fieldset }}">
+<div class="w-full max-w-5xl flex flex-col gap-2 {{ $fieldset }}">
 @foreach ($elements as $key => $fieldOptions)
     <x-flatpack-form-field
         :key="$key"
