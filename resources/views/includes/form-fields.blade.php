@@ -1,10 +1,14 @@
+<div>
 @php
     $group = null;
     $groupFirst = true;
 @endphp
 @foreach ($fields as $key => $options)
     @if ($key === 'tabs')
-        @include('flatpack::includes.tabs', ['formErrors' => $formErrors])
+        @include('flatpack::includes.tabs', [
+            'options' => $options,
+            'formErrors' => $formErrors
+        ])
     @else
         @if ($loop->first)
             <div x-data="{ open: true }" class="box">
@@ -21,8 +25,8 @@
 
         @if ($loop->first || $groupFirst)
             @if (Arr::has($options, 'group'))
-            <div class="flex justify-between items-center cursor-pointer text-gray-500" @click="open = !open">
-                <div class="font-bold text-xs uppercase">{{ $options['group'] }}</div>
+            <div class="flex items-center justify-between text-gray-500 cursor-pointer" @click="open = !open">
+                <div class="text-xs font-bold uppercase">{{ $options['group'] }}</div>
                 <span x-cloak x-show="!open"><x-flatpack::icon icon="expand_more" size="small" /></span>
                 <span x-show="open"><x-flatpack::icon icon="expand_less" size="small" /></span>
             </div>
@@ -47,3 +51,4 @@
 
     @endif
 @endforeach
+</div>

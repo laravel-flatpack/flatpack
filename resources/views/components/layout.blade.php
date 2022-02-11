@@ -20,39 +20,23 @@
     >
         <aside class="navbar" x-bind:class="{ 'is-minimized': navbar }">
             <ul class="navbar-rail-wrapper">
-                <li class="navbar-rail">
-                    <ul class="navbar-items">
-                        @foreach ($navigation as $key => $item)
-                        <li>
-                            <a href="{{ $item['url'] ?? '#' }}"
-                                {{ $attributes->class([
-                                    'navbar-menu-item hover:text-white block',
-                                    'bg-gray-900 my-8 rounded-md' => ($item['type'] ?? '') === 'featured',
-                                    'text-white' => ($key === $current),
-                                    'text-gray-400' => ($key !== $current),
-                                ])}}>
-                                <x-flatpack::icon icon="{{ $item['icon'] ?? '' }}" />
-                                <span class="navbar-item-text">{{ $item['title'] }}</span>
-                            </a>
-                        </li>
-                        @endforeach
-                    </ul>
+                <li class="navbar-group">
+                    <x-flatpack::navbar :navigation="$navigation" :current="$current" />
                 </li>
-                <li class="navbar-rail navbar-rail-bottom">
-                    <ul class="mb-2 navbar-items">
+                <li class="navbar-group navbar-rail-bottom">
+                    <ul class="navbar-items">
                         <li>
-                            {{-- Options dropdown --}}
                             <div x-data="{open: false}" class="relative">
-                                <button @click="open = !open" aria-expanded="true" aria-haspopup="true" class="block text-gray-400 navbar-menu-item hover:text-white">
+                                <button @click="open = !open" aria-expanded="true" aria-haspopup="true" class="navbar-menu-item">
                                     <x-flatpack::icon icon="settings" />
                                     <span class="navbar-item-text">Settings</span>
                                 </button>
-                                <div x-show="open" @click.away="open = false" class="absolute w-56 mt-2 text-left origin-top-right bg-white rounded-md shadow-lg te bottom-14 ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
+                                <div x-show="open" @click.away="open = false" class="absolute w-56 mt-2 text-left origin-top-right bg-white rounded-md shadow-lg te bottom-10 ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
                                     <div class="py-1" role="none">
                                         <div class="block px-4 py-2 text-sm" role="menuitem" tabindex="-1" id="menu-item-0">
                                             <div class="flex justify-start">
                                                 <div class="form-switch">
-                                                    <input onchange="alert('coming soon!')" class="h-5 align-top bg-gray-300 bg-no-repeat bg-contain border-0 rounded-full shadow-sm appearance-none cursor-pointer form-check-input w-9 focus:outline-none" type="checkbox" role="switch">
+                                                    <input onchange="Flatpack.toggleDarkMode()" class="h-5 align-top bg-gray-300 bg-no-repeat bg-contain border-0 rounded-full shadow-sm appearance-none cursor-pointer form-check-input w-9 focus:outline-none" type="checkbox" role="switch">
                                                     <label class="inline-block ml-4 text-gray-700 form-check-label" for="flexSwitchCheckDefault">Dark mode</label>
                                                 </div>
                                             </div>
@@ -63,7 +47,6 @@
                                     </div>
                                 </div>
                             </div>
-                            {{-- /Options dropdown --}}
                         </li>
                     </ul>
                 </li>
@@ -94,7 +77,7 @@
                         <button @click="open = !open" aria-expanded="true" aria-haspopup="true" class="text-gray-400 hover:text-white">
                             <x-flatpack::icon icon="account_circle" />
                         </button>
-                        <div x-show="open" @click.away="open = false" class="absolute right-0 w-56 mt-2 text-left origin-top-right bg-white rounded-md shadow-lg top-10 ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
+                        <div x-show="open" @click.away="open = false" class="absolute right-0 w-40 mt-2 text-left origin-top-right bg-white rounded-md shadow-lg top-8 ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
                             <div class="py-1" role="none">
                                 <a href="#" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1">Logout</a>
                             </div>

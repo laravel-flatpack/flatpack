@@ -16,6 +16,10 @@ window.livewire.on("notify", (event) => {
 
 // Flatpack global object
 window.Flatpack = {
+  toggleDarkMode: () => {
+    const { document } = window;
+    document.documentElement.classList.toggle("dark");
+  },
   taginput,
   navbar: navbar(),
   settings: {
