@@ -1,8 +1,8 @@
 @if (strtolower($type ?? '') === 'editor')
-<div wire:ignore class="flex justify-center items-start w-full border rounded-md shadow-sm mt-1">
-    <div class="prose w-full max-w-full">
+<div wire:ignore class="flex items-start justify-center w-full mt-1 border-0 border-gray-300 rounded-md">
+    <div class="w-full max-w-full prose">
         <textarea
-            class="input-editor block w-full mx-auto resize-none border-gray-300 rounded-md shadow-sm transition duration-150 ease-in-out"
+            class="block w-full mx-auto transition duration-150 ease-in-out border-gray-300 resize-none input-editor"
             wire:model.stop="fields.{{ $key }}"
             wire:key="fields-{{ $key }}"
             x-data x-init="

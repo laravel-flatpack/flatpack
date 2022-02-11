@@ -3,8 +3,8 @@
     'size' => 'medium'
 ])
 
-<div {{ $attributes->class([
+<span {{ $attributes->class([
     'material-icons',
-    'text-xl' => $size === 'small',
+    'text-base' => $size === 'small',
     'text-3xl' => $size === 'large',
-]) }}>{{ $icon }}</div>
+]) }}>{{ $icon }}</span>

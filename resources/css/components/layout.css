@@ -1,14 +1,8 @@
 .layout-wrapper {
-  @apply flex flex-row w-full bg-gray-200;
+  @apply flex flex-row w-full bg-gray-200 dark:bg-gray-900;
 }
 
 .main-content {
   @apply flex flex-col w-full;
   max-width: 100%;
-}
-
-@media (min-width: 1280px) {
-  .main-content {
-    max-width: calc(100% - 5rem);
-  }
 }

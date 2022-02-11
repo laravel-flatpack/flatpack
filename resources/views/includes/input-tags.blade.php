@@ -6,18 +6,21 @@
     // Covert items to array of tags {value:1, name: 'foo'}
     $tags = [];
     foreach ($items as $optionValue => $display) {
-        $tags[] = ['value' => $optionValue, 'name' => $display, 'exists' => true ];
+        $tags[] = [
+            'value' => $optionValue,
+            'name' => $display,
+            'exists' => true
+        ];
     }
     $items = json_encode($tags);
 @endphp
 <script>
     document.addEventListener("DOMContentLoaded", () => {
-        Flatpack.taginput(
-            '{{ $key }}',
-            document.getElementById('fields-{{ $key }}'),
-            JSON.parse(@js($items)),
-            @js($canCreate)
-        );
+        const el = document.getElementById('fields-{{ $key }}');
+        const data = JSON.parse(@js($items));
+
+        // Initialize the tags plugin
+        Flatpack.taginput('{{ $key }}', el, data, @js($canCreate));
     });
 </script>
 @endif

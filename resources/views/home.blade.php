@@ -15,7 +15,7 @@
                         <span class="px-2 py-1 font-mono text-xs bg-gray-300 rounded">home.yaml</span>
                     </li>
                     <li>
-                        <span>🔧</span>
+                        <span>👷</span>
                         <span>Copy, paste and save the following template.</span>
                         <pre class="p-2 my-3 font-mono text-xs text-gray-600 bg-gray-300 rounded">
 # =======================================
@@ -23,9 +23,10 @@
 # =======================================
 
 blocks:
-  users:
-    label: Users
-    value: total
+  posts:
+    label: Posts
+    type: totals
+    value: count
 
 </pre>
                     </li>

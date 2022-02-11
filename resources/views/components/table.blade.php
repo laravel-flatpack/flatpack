@@ -34,7 +34,7 @@
                     </div>
                 </div>
 
-                @include('livewire-tables::tailwind.includes.table')
+                @include('flatpack::includes.table.table')
                 @include('livewire-tables::tailwind.includes.pagination')
             </div>
         </div>
