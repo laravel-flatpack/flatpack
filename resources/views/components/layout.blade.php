@@ -33,7 +33,7 @@
                                 </button>
                                 <div x-show="open" @click.away="open = false" class="absolute w-56 mt-2 text-left origin-top-right bg-white rounded-md shadow-lg te bottom-10 ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
                                     <div class="py-1" role="none">
-                                        <div class="block px-4 py-2 text-sm" role="menuitem" tabindex="-1" id="menu-item-0">
+                                        {{-- <div class="block px-4 py-2 text-sm" role="menuitem" tabindex="-1" id="menu-item-0">
                                             <div class="flex justify-start">
                                                 <div class="form-switch">
                                                     <input onchange="Flatpack.toggleDarkMode()" class="h-5 align-top bg-gray-300 bg-no-repeat bg-contain border-0 rounded-full shadow-sm appearance-none cursor-pointer form-check-input w-9 focus:outline-none" type="checkbox" role="switch">
@@ -41,7 +41,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="pb-2 mt-2 border-t"></div>
+                                        <div class="pb-2 mt-2 border-t"></div> --}}
                                         <a href="https://github.com/faustoq/laravel-flatpack" target="_blank" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-1">Support</a>
                                         <a href="https://github.com/faustoq/laravel-flatpack/blob/main/LICENSE.md" target="_blank" class="block px-4 py-2 text-sm text-gray-700" role="menuitem" tabindex="-1" id="menu-item-2">License</a>
                                     </div>

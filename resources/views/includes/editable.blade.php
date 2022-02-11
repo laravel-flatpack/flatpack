@@ -16,7 +16,7 @@
             {{ empty($value) ? $placeholder : $value }}
         </span>
         <span class="edit-button">
-            <x-flatpack::icon icon="edit" size="small" />
+            <x-flatpack::icon icon="edit" size="{{ $size }}" />
         </span>
     </button>
     <label

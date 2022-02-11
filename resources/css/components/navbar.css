@@ -1,10 +1,11 @@
 .navbar {
   @apply fixed top-0 z-50 flex xl:sticky;
-  @apply items-start justify-start w-64 h-screen max-w-xs min-w-full sm:min-w-fit;
+  @apply items-start justify-start w-full h-screen;
   @apply py-2 text-white bg-gray-800;
+  max-width: 256px;
 }
 .navbar .navbar-item-text {
-  @apply w-full pr-2 overflow-hidden text-sm text-left whitespace-nowrap text-ellipsis;
+  @apply w-full pr-2 overflow-hidden text-base text-left whitespace-nowrap text-ellipsis;
   max-width: 166px;
 }
 .navbar.is-minimized {
@@ -15,18 +16,18 @@
 }
 
 .navbar .navbar-close {
-  @apply absolute top-0 right-0 mx-4 my-3 xl:hidden;
+  @apply absolute right-0 mx-4 my-3 top-2 xl:hidden;
 }
 
 .navbar .navbar-rail-wrapper {
-  @apply flex flex-col justify-between w-full h-full px-4 list-none;
+  @apply flex flex-col justify-between w-full h-full px-4 pb-4 list-none;
   min-width: auto;
 }
 .navbar .navbar-rail-wrapper .navbar-group {
   @apply flex flex-col items-center w-full text-center list-none;
 }
 .navbar .navbar-rail-wrapper .navbar-group .navbar-items {
-  @apply flex flex-col w-full gap-3 my-1 list-none;
+  @apply flex flex-col w-full gap-4 my-1 list-none;
 }
 .navbar .navbar-items li {
   @apply flex items-center justify-start w-full;
@@ -35,7 +36,7 @@
   @apply flex items-center justify-start w-full gap-3 px-3 py-1 text-gray-400 hover:text-white;
 }
 .navbar .navbar-items .navbar-menu-item.is-pinned {
-  @apply w-full py-3 mb-5 bg-gray-900 rounded-md hover:bg-gray-700;
+  @apply w-full py-3 mb-4 bg-gray-900 rounded-md hover:bg-gray-700;
 }
 .navbar .navbar-items .navbar-menu-item.is-active {
   @apply text-white;
@@ -45,7 +46,7 @@
 }
 
 .navbar .navbar-items .navbar-logo {
-  @apply inline-block w-auto mb-5 cursor-pointer;
+  @apply inline-block w-auto mb-4 cursor-pointer;
 }
 .navbar .navbar-items .navbar-logo svg * {
   @apply fill-gray-400;
