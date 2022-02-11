@@ -115,12 +115,12 @@ class Table extends DataTableComponent
             },
             'image' => function ($value) {
                 return view('flatpack::includes.table.cells.image', [
-                    'src' => $value
+                    'src' => $value,
                 ]);
             },
             'boolean' => function ($value) {
                 return view('flatpack::includes.table.cells.boolean', [
-                    'boolean' => $value
+                    'boolean' => $value,
                 ]);
             },
         ];
