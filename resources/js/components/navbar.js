@@ -1,6 +1,7 @@
 import {
   isActive,
   isMobile,
+  isLargeScreen,
   isMediumScreen,
   isSmallScreen,
   setSetting,
@@ -8,7 +9,8 @@ import {
 
 const navbar = () => {
   const navbarSetting = isActive("navbar");
-  const desktop = !isMobile() && !isSmallScreen() && !isMediumScreen();
+  const desktop =
+    !isMobile() && !isSmallScreen() && !isMediumScreen() && isLargeScreen();
 
   return {
     minimized: desktop ? navbarSetting : "true",

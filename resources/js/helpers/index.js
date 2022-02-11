@@ -1,4 +1,9 @@
-import { isMobile, isMediumScreen, isSmallScreen } from "./device";
+import {
+  isMobile,
+  isLargeScreen,
+  isMediumScreen,
+  isSmallScreen,
+} from "./device";
 import { getSetting, setSetting, isActive } from "./settings";
 
 export {
@@ -6,6 +11,7 @@ export {
   setSetting,
   isActive,
   isMobile,
-  isSmallScreen,
+  isLargeScreen,
   isMediumScreen,
+  isSmallScreen,
 };

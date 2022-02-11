@@ -84,11 +84,6 @@ class Layout extends Component
                         "icon" => "folder",
                     ];
                 })
-                ->prepend([
-                    'title' => 'Home',
-                    'url' => route('flatpack.home'),
-                    'icon' => 'grid_view',
-                ], 'home')
                 ->toArray(),
         ];
 

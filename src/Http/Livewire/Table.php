@@ -3,6 +3,7 @@
 namespace Faustoq\Flatpack\Http\Livewire;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Arr;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
 use Rappasoft\LaravelLivewireTables\Views\Column;
 
@@ -38,7 +39,6 @@ class Table extends DataTableComponent
         $columns = [];
 
         foreach ($this->composition['columns'] ?? [] as $attribute => $options) {
-            $invisible = false;
             $label = $options['label'] ?? $attribute;
             $column = Column::make($label, $attribute);
 
@@ -50,13 +50,11 @@ class Table extends DataTableComponent
                 $column->searchable();
             }
 
-            if (isset($options['invisible']) && $options['invisible']) {
-                $invisible = true;
-            }
-
-            if (! $invisible) {
+            if (! (isset($options['invisible']) && $options['invisible'])) {
                 $column->selected();
             }
+
+            $column->format($this->formatColumn($options));
 
             $columns[] = $column;
         }
@@ -87,11 +85,46 @@ class Table extends DataTableComponent
         return view('flatpack::components.table')
             ->with([
                 'columns' => $this->columns(),
+                'searchableColumns' => $this->getSearchableColumns(),
                 'rowView' => $this->rowView(),
                 'filtersView' => $this->filtersView(),
                 'customFilters' => $this->filters(),
                 'rows' => $this->getRowsProperty(),
                 'modalsView' => $this->modalsView(),
             ]);
+    }
+
+    /**
+     * Format column.
+     *
+     * @param array $options
+     * @return string
+     */
+    private function formatColumn($options)
+    {
+        $type = Arr::get($options, 'type', 'default');
+
+        $format = Arr::get($options, 'format', 'Y-m-d H:i:s');
+
+        $map = [
+            'default' => function ($value) {
+                return $value;
+            },
+            'datetime' => function ($value) use ($format) {
+                return method_exists($value, 'format') ? $value->format($format) : $value;
+            },
+            'image' => function ($value) {
+                return view('flatpack::includes.table.cells.image', [
+                    'src' => $value
+                ]);
+            },
+            'boolean' => function ($value) {
+                return view('flatpack::includes.table.cells.boolean', [
+                    'boolean' => $value
+                ]);
+            },
+        ];
+
+        return $map[$type] ?? $map['default'];
     }
 }
