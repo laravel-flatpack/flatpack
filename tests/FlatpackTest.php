@@ -28,13 +28,25 @@ it('loads and returns the composition', function () {
     expect($composition)->toBeArray();
 });
 
-it('gets a template composition by entity', function () {
+it('gets a template form composition by entity', function () {
     $flatpack = Flatpack::loadComposition();
     expect($flatpack)->toBeInstanceOf(Faustoq\Flatpack\Flatpack::class);
 
     $composition = $flatpack->getTemplateComposition('posts', 'form.yaml');
 
-    $snapshot = require_once(__DIR__ . '/__snapshots__/posts.php');
+    $snapshot = require_once(__DIR__ . '/__snapshots__/posts-form.php');
+
+    expect($composition)->toBeArray();
+    expect($composition)->toMatchArray($snapshot);
+});
+
+it('gets a template list composition by entity', function () {
+    $flatpack = Flatpack::loadComposition();
+    expect($flatpack)->toBeInstanceOf(Faustoq\Flatpack\Flatpack::class);
+
+    $composition = $flatpack->getTemplateComposition('posts', 'list.yaml');
+
+    $snapshot = require_once(__DIR__ . '/__snapshots__/posts-list.php');
 
     expect($composition)->toBeArray();
     expect($composition)->toMatchArray($snapshot);
