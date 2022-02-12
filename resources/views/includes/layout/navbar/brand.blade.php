@@ -1,8 +1,3 @@
-@props([
-    'navigation' => [],
-    'current' => null
-])
-
 <ul class="navbar-items">
     <li>
         <a href="/{{ config('flatpack.prefix', 'backend') }}" class="navbar-logo {{ $current === 'home' ? 'current' : '' }}">
@@ -11,16 +6,4 @@
             </svg>
         </a>
     </li>
-    @foreach ($navigation as $key => $item)
-    <li>
-        <x-flatpack::navbar.item
-            :key="$key"
-            :icon="Arr::get($item, 'icon')"
-            :title="Arr::get($item, 'title', '')"
-            :url="Arr::get($item, 'url', '#')"
-            :type="Arr::get($item, 'type')"
-            :current="($key === $current)"
-        />
-    </li>
-    @endforeach
 </ul>
