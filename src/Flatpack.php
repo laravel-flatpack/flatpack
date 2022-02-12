@@ -175,7 +175,7 @@ class Flatpack
      */
     public function getDirectory(): string
     {
-        if (config('app.env') == 'testing') {
+        if (config('app.env') === 'testing') {
             return __DIR__ . '/../tests/__mocks__';
         }
 
