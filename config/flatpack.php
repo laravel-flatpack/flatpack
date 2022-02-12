@@ -18,6 +18,7 @@ return [
      * Middlewares to be applied to all flatpack routes.
      */
     'middleware' => [
+        'auth',
         \Faustoq\Flatpack\Http\Middleware\FlatpackMiddleware::class,
     ],
 
