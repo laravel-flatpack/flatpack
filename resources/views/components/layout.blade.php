@@ -67,12 +67,6 @@
                     </div>
                 </div>
                 <div class="flex gap-4 text-white">
-                    <div class="flex items-center justify-center has-tooltip">
-                        <span class="px-3 py-1 mt-20 text-sm text-gray-100 bg-gray-900 rounded shadow-lg tooltip">Preview</span>
-                        <a href="/" target="_blank" class="text-gray-400 hover:text-white">
-                            <x-flatpack::icon icon="radio_button_checked" />
-                        </a>
-                    </div>
                     <div x-data="{open: false}" class="relative">
                         <button @click="open = !open" aria-expanded="true" aria-haspopup="true" class="text-gray-400 hover:text-white">
                             <x-flatpack::icon icon="account_circle" />
@@ -91,8 +85,9 @@
         </main>
     </div>
     @livewireScripts
-    <script src="{{ asset('flatpack/js/flatpack.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.ckeditor.com/ckeditor5/30.0.0/classic/ckeditor.js"></script>
     <script src="https://unpkg.com/@nextapps-be/livewire-sortablejs@0.1.1/dist/livewire-sortable.js"></script>
+    <script src="{{ asset('flatpack/js/flatpack.js') }}"></script>
 </body>
 </html>
