@@ -80,7 +80,7 @@ class FlatpackServiceProvider extends ServiceProvider
     protected function routeConfiguration()
     {
         $middleware = collect(config('flatpack.middleware', [
-            \Faustoq\Flatpack\Http\Middleware\FlatpackMiddleware::class
+            \Faustoq\Flatpack\Http\Middleware\FlatpackMiddleware::class,
         ]))->prepend('web')->toArray();
 
         return [
