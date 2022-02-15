@@ -5,7 +5,6 @@ namespace Faustoq\Flatpack\Http\Livewire;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Arr;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
-use Rappasoft\LaravelLivewireTables\Views\Column;
 
 class Table extends DataTableComponent
 {
@@ -55,6 +54,10 @@ class Table extends DataTableComponent
             }
 
             $column->format($this->formatColumn($options));
+
+            if ((isset($options['type']) && $options['type'] === 'image')) {
+                $column->addClass('table-image-column');
+            }
 
             $columns[] = $column;
         }

@@ -1,0 +1,27 @@
+# =======================================
+#  Post List Definition
+# =======================================
+
+columns:
+  title:
+    label: Title
+    sortable: true
+    searchable: true
+
+  is_online:
+    label: Online
+    type: boolean
+    sortable: false
+
+  created_at:
+    label: Created
+    type: datetime
+    format: "M d, Y  h:i a"
+    sortable: true
+    invisible: true
+
+  updated_at:
+    label: Updated
+    type: datetime
+    format: "M d, Y  h:i a"
+    sortable: true
