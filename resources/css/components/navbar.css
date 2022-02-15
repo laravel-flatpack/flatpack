@@ -46,7 +46,7 @@
 }
 
 .navbar .navbar-items .navbar-logo {
-  @apply inline-block w-auto mb-4 cursor-pointer;
+  @apply inline-block w-auto mb-5 cursor-pointer;
 }
 .navbar .navbar-items .navbar-logo svg * {
   @apply fill-gray-400;

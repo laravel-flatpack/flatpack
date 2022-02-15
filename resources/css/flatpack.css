@@ -24,6 +24,10 @@
   @apply z-50 visible;
 }
 
+.table-image-column {
+  @apply w-32;
+}
+
 body {
   @apply bg-gray-900;
 }

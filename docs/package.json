@@ -1,0 +1,23 @@
+{
+    "name": "laravel-flatpack-docs",
+    "version": "0.0.1",
+    "description": "Administration panel for Laravel, ready to assemble.",
+    "main": "index.js",
+    "authors": {
+        "name": "Fausto Quaggia",
+        "email": "fausto.quaggia@gmail.com"
+    },
+    "repository": "https://github.com/faustoq/laravel-flatpack-docs/Flatpack",
+    "scripts": {
+        "dev": "vuepress dev src",
+        "build": "vuepress build src"
+    },
+    "license": "MIT",
+    "devDependencies": {
+        "vuepress": "^1.5.3",
+        "vuepress-plugin-smooth-scroll": "^0.0.10"
+    },
+    "dependencies": {
+        "@centerforopenscience/markdown-it-video": "^1.0.0"
+    }
+}
