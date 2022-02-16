@@ -2,8 +2,8 @@
   scroll-behavior: smooth;
 
   // brand colors
-  --c-brand: #2f2e42;
-  --c-brand-light: #4d4b6b;
+  --c-brand: #4d4b6b;
+  --c-brand-light: #2f2e42;
 
   // background colors
   --c-bg: #ffffff;
@@ -173,5 +173,23 @@ table {
   .features {
     margin-top: 5rem !important;
     margin-bottom: 5rem !important;
+  }
+}
+
+.video-container {
+  position: relative;
+  padding-bottom: 56.25%;
+  padding-top: 30px;
+  height: 0;
+  overflow: hidden;
+
+  iframe,
+  object,
+  embed {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
   }
 }

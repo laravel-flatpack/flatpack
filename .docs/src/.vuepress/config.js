@@ -1,5 +1,3 @@
-const { description } = require("../../package");
-
 module.exports = {
   lang: "en-US",
   title: "Flatpack",
@@ -56,8 +54,12 @@ module.exports = {
     },
   },
 
-  /**
-   * Apply plugins，ref：https://v1.vuepress.vuejs.org/zh/plugin/
-   */
   plugins: ["@vuepress/plugin-search"],
+
+  markdown: {
+    code: {
+      lineNumbers: false,
+    },
+    html: true,
+  },
 };

@@ -2,8 +2,6 @@
 home: true
 heroImage: /flatpack-logo.png
 tagline: Administration panel for Laravel, ready to assemble.
-actionText: Quick Start
-actionLink: /documentation/
 actions:
     - text: Quick Start
       link: /#quick-start
@@ -21,7 +19,7 @@ features:
 footer: MIT Licensed | Copyright © 2022-present Fausto Quaggia
 ---
 
-@[youtube](https://youtu.be/OrxmtDw4pVI)
+<div class="video-container"><iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/OrxmtDw4pVI" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
 
 # Quick start
 
@@ -44,4 +42,4 @@ php artisan make:flatpack Post
 ## Documentation
 
 Learn how to customize list and form templates.
-[Read more](documentation)
+[Read more](/guide/)
