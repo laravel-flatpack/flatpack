@@ -1,23 +1,9 @@
 const { description } = require("../../package");
 
 module.exports = {
-  base: "/",
-
-  /**
-   * Ref：https://v1.vuepress.vuejs.org/config/#title
-   */
+  lang: "en-US",
   title: "Flatpack",
-
-  /**
-   * Ref：https://v1.vuepress.vuejs.org/config/#description
-   */
-  description: description,
-
-  /**
-   * Extra tags to be injected to the page HTML `<head>`
-   *
-   * ref：https://v1.vuepress.vuejs.org/config/#head
-   */
+  description: "Administration panel for Laravel, ready to assemble.",
   head: [
     ["meta", { name: "theme-color", content: "#1F2937" }],
     ["meta", { name: "apple-mobile-web-app-capable", content: "yes" }],
@@ -27,22 +13,20 @@ module.exports = {
     ],
   ],
 
-  /**
-   * Theme configuration, here is the default theme configuration for VuePress.
-   *
-   * ref：https://v1.vuepress.vuejs.org/theme/default-theme-config.html
-   */
+  theme: "@vuepress/theme-default",
+
   themeConfig: {
+    darkMode: false,
     repo: "",
     editLinks: false,
     docsDir: "",
     editLinkText: "",
     lastUpdated: false,
     logo: "/flatpack-logo.png",
-    nav: [
+    navbar: [
       {
-        text: "Documentation",
-        link: "/documentation/",
+        text: "Guide",
+        link: "/guide/",
       },
       {
         text: "Reference",
@@ -54,9 +38,9 @@ module.exports = {
       },
     ],
     sidebar: {
-      "/documentation/": [
+      "/guide/": [
         {
-          title: "Documentation",
+          title: "Guide",
           collapsable: false,
           children: ["", "using-vue"],
         },
@@ -75,11 +59,5 @@ module.exports = {
   /**
    * Apply plugins，ref：https://v1.vuepress.vuejs.org/zh/plugin/
    */
-  plugins: ["vuepress-plugin-smooth-scroll"],
-
-  markdown: {
-    plugins: {
-      "@centerforopenscience/markdown-it-video": {},
-    },
-  },
+  plugins: ["@vuepress/plugin-search"],
 };

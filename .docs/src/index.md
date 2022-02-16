@@ -4,6 +4,13 @@ heroImage: /flatpack-logo.png
 tagline: Administration panel for Laravel, ready to assemble.
 actionText: Quick Start
 actionLink: /documentation/
+actions:
+    - text: Quick Start
+      link: /#quick-start
+      type: primary
+    - text: Learn More
+      link: /guide/
+      type: secondary
 features:
     - title: Ready
       details: Flatpack ships with a rich set of pre-built components ready to be assembled.
@@ -11,6 +18,7 @@ features:
       details: Start generating a yaml configuration file and setup a complete admin UI in seconds.
     - title: Easy
       details: Form validation, relations, custom actions, table search, sorting, and much more.
+footer: MIT Licensed | Copyright © 2022-present Fausto Quaggia
 ---
 
 @[youtube](https://youtu.be/OrxmtDw4pVI)
@@ -35,9 +43,5 @@ php artisan make:flatpack Post
 
 ## Documentation
 
-Learn how to customize table and form templates composition and fields.
+Learn how to customize list and form templates.
 [Read more](documentation)
-
-::: slot footer
-MIT Licensed | Copyright © 2022-present [Fausto Quaggia](https://github.com/faustoq)
-:::

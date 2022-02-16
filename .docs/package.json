@@ -7,17 +7,14 @@
         "name": "Fausto Quaggia",
         "email": "fausto.quaggia@gmail.com"
     },
-    "repository": "https://github.com/faustoq/laravel-flatpack-docs/Flatpack",
+    "repository": "https://github.com/faustoq/laravel-flatpack/docs",
     "scripts": {
         "dev": "vuepress dev src",
         "build": "vuepress build src"
     },
     "license": "MIT",
     "devDependencies": {
-        "vuepress": "^1.5.3",
-        "vuepress-plugin-smooth-scroll": "^0.0.10"
-    },
-    "dependencies": {
-        "@centerforopenscience/markdown-it-video": "^1.0.0"
+        "@vuepress/plugin-search": "^2.0.0-beta.35",
+        "vuepress": "next"
     }
 }
