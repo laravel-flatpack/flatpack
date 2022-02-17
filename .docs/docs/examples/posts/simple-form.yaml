@@ -1,0 +1,22 @@
+fields:
+  title:
+    type: text
+    label: Title
+    placeholder: Post Title
+    rules: required|string
+
+  description:
+    type: textarea
+    label: Description
+
+  created_at:
+    type: datetimepicker
+    label: Created
+    readonly: true
+    span: 1
+
+  updated_at:
+    type: datetimepicker
+    label: Updated
+    readonly: true
+    span: 1

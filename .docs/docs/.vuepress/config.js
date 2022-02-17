@@ -39,8 +39,17 @@ module.exports = {
       "/guide/": [
         {
           title: "Guide",
+          path: "/guide/",
           collapsable: false,
-          children: ["", "using-vue"],
+          children: [
+            "/guide/",
+            "/guide/configuration/",
+            "/guide/authentication/",
+            "/guide/generators/",
+            "/guide/lists/",
+            "/guide/forms/",
+            "/guide/navigation/",
+          ],
         },
       ],
       "/reference/": [
