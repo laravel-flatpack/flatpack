@@ -1568,11 +1568,6 @@ vue@^3.2.28:
     "@vue/server-renderer" "3.2.31"
     "@vue/shared" "3.2.31"
 
-vuepress-plugin-copy-code@^0.0.1:
-  version "0.0.1"
-  resolved "https://registry.yarnpkg.com/vuepress-plugin-copy-code/-/vuepress-plugin-copy-code-0.0.1.tgz#569849f00de8178d5875adc1c11591c82630e6fa"
-  integrity sha512-l47WG+kQK6qujLDkXuftegDOWfuBbgw4oybtdI2G1sbveE3vgbjZWLCHOlCUki9z8IAzcGt6I36ESU/f5dinrw==
-
 vuepress-vite@2.0.0-beta.35:
   version "2.0.0-beta.35"
   resolved "https://registry.yarnpkg.com/vuepress-vite/-/vuepress-vite-2.0.0-beta.35.tgz#22c031289df0a48fea6e41e0be9ecd3fc859401d"

@@ -87,6 +87,11 @@ a {
 table {
   width: 100%;
   display: table;
+  tr {
+    td {
+      vertical-align: text-top;
+    }
+  }
 }
 
 // plugin-back-to-top
@@ -209,10 +214,14 @@ table {
     }
 
     h1 {
-      font-size: 5rem !important;
+      font-size: 4rem !important;
       font-weight: 900 !important;
       margin-top: 0 !important;
       color: #2f2e42 !important;
+
+      @media screen and (min-width: 768px) {
+        font-size: 5rem !important;
+      }
     }
     .description {
       max-width: 100% !important;
