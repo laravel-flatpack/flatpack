@@ -1,3 +1,5 @@
+# /flatpack/posts/form.yaml
+
 fields:
   title:
     type: text

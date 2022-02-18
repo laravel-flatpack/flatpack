@@ -80,6 +80,10 @@ body {
   font-family: "Inter", sans-serif !important;
 }
 
+a {
+  font-weight: 600;
+}
+
 table {
   width: 100%;
   display: table;
@@ -117,6 +121,28 @@ table {
   --pwa-popup-btn-hover-bg-color: var(--c-brand-light);
 }
 
+// columns
+.columns {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  width: 100%;
+  margin: 1rem auto;
+
+  .column {
+    flex: 1;
+    padding: 0 0.5rem;
+
+    ul {
+      margin: 0;
+    }
+  }
+
+  @media screen and (min-width: 768px) {
+    flex-direction: row;
+  }
+}
+
 // plugin-search
 .search-box {
   --search-bg-color: var(--c-bg);
@@ -138,17 +164,40 @@ table {
   }
 }
 
+// shift navbar items after search box
 .navbar-items {
   order: 1;
   margin-left: 1rem;
+}
+
+// responsive video
+.video-container {
+  position: relative;
+  padding-bottom: 56.25%;
+  padding-top: 30px;
+  height: 0;
+  overflow: hidden;
+
+  iframe,
+  object,
+  embed {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
 }
 
 // Sidebar
 .sidebar-heading {
   font-weight: 600 !important;
 }
-.sidebar-link {
-  font-weight: 500 !important;
+.sidebar-item {
+  &.active {
+    font-weight: 600 !important;
+    color: var(--c-text-accent);
+  }
 }
 
 // Homepage
@@ -173,23 +222,5 @@ table {
   .features {
     margin-top: 5rem !important;
     margin-bottom: 5rem !important;
-  }
-}
-
-.video-container {
-  position: relative;
-  padding-bottom: 56.25%;
-  padding-top: 30px;
-  height: 0;
-  overflow: hidden;
-
-  iframe,
-  object,
-  embed {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
   }
 }

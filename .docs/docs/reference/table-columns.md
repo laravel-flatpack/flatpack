@@ -2,39 +2,9 @@
 
 Display a list of records in auto-paginated, sortable and filterable table.
 
-**Example**
-
-```yaml
-# /flatpack/posts/list.yaml
-
-columns:
-    id:
-        label: ID
-        sortable: true
-
-    title:
-        label: Title
-        sortable: true
-        searchable: true
-
-    is_active:
-        label: Active
-        type: boolean
-        sortable: false
-
-    created_at:
-        label: Created
-        type: datetime
-        format: "Y-m-d H:i"
-        sortable: true
-        invisible: true
-
-    updated_at:
-        label: Last edit
-        type: datetime
-        format: "Y-m-d H:i"
-        sortable: true
-```
+::: details View list.yaml example
+@[code](../examples/posts/simple-list.yaml)
+:::
 
 ## Column Options
 

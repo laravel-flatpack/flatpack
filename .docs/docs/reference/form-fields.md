@@ -2,94 +2,97 @@
 
 Display a form with fields mapped to model attributes, define custom actions, validations, etc.
 
-**Example**
+::: details View form.yaml example
+@[code](../examples/posts/advanced-form.yaml)
+:::
+
+## Content slots
+
+An advanced version of `form.yaml` composition can be defined using form content slots:
+
+| Slot        | Description    | Allowed field types            |
+| :---------- | :------------- | :----------------------------- |
+| **header**  | Heading fields | `heading` or `editable`        |
+| **toolbar** | Action buttons | `button` or `link`             |
+| **main**    | Main field set | Any [form field](#form-fields) |
+| **sidebar** | Sidebar fields | Any [form field](#form-fields) |
+
+Example:
+@[code](../examples/form-slots.yaml)
+
+If you don't want to use content slots, you can simply put all your fields under the **fields** definition.
 
 ```yaml
-# /flatpack/posts/form.yaml
-
-header:
-    title:
-        type: heading
-        size: large
-
-toolbar:
-    save:
-        type: button
-        label: Save
-        action: save
-        shortcut: s
-
-main:
-    title:
-        label: Title
-        placeholder: Post title
-        rules: required|string
-
-    slug:
-        label: Slug
-        placeholder: Post title slug
-        span: 1
-
-    category:
-        label: Category
-        type: relation
-        relation:
-            name: category
-            display: name
-        span: 1
-
-    body:
-        label: Post body
-        type: textarea
-        group: more
-
-sidebar:
-    created_at:
-        label: Created
-        type: datetimepicker
-        span: 1
-        group: Info
-
-    updated_at:
-        label: Updated
-        type: datetimepicker
-        span: 1
-        group: Info
+fields:
+    # All form fields in one boxed fieldset
 ```
 
-## Form Slots
+## Form Fields
 
-| Slot      | Description         |
-| :-------- | :------------------ |
-| `header`  | Form headings       |
-| `toolbar` | Form buttons        |
-| `main`    | Main form fieldset  |
-| `sidebar` | Sidebar form fields |
+### Field options
 
-## Form Field Options
+| Option      | Description                                                                                                                      |
+| :---------- | :------------------------------------------------------------------------------------------------------------------------------- |
+| type        | Form field type (see [Field Types](#field-types))                                                                                |
+| label       | Field label text.                                                                                                                |
+| placeholder | Field placeholder text.                                                                                                          |
+| group       | Name of the grouping box to include the field within.                                                                            |
+| span        | `half` for 50% width, `full` for 100% width.                                                                                     |
+| rules       | String of validation rules (uses [Laravel Validation rules](https://laravel.com/docs/8.x/validation#available-validation-rules)) |
 
-| Option      | Description                                                              | Default |
-| :---------- | :----------------------------------------------------------------------- | :------ |
-| type        | Form field type (see [Field Types](#field-types))                        | `text`  |
-| label       | Field label text                                                         | ``      |
-| placeholder | Field placeholder text                                                   | ``      |
-| span        | Field span (Allowed values: `half` for 50% width, `full` for 100% width) | `full`  |
-| group       | Name of the box to include the field within                              | ``      |
+### Field types
 
-## Form Field Types
+<div class="columns"><div class="column">
 
-### Datetime picker
+-   [Text](#text-input)
+-   [Email](#email-input)
+-   [Textarea](#textarea-input)
 
--   Type: `datetimepicker`
+</div><div class="column">
 
-### E-mail input
+-   [Datetime Picker](#datetime-picker)
+-   [Editable](#editable)
+-   [Heading](#heading)
 
--   Type: `email`
+</div><div class="column">
+
+-   [Button](#button)
+-   [Relation](#relation)
+
+</div></div>
 
 ### Text input
 
--   Type: `text`
+`text` - renders a single line text input box. This is the **default type** used if none is specified.
+
+### Email input
+
+`email` - renders a single line email input box.
 
 ### Textarea input
 
--   Type: `textarea`
+`textarea` - renders a textarea input box.
+
+### Datetime picker
+
+`datetimepicker` - renders a datetime picker input box.
+
+### Heading
+
+`heading` - renders a read-only heading field.
+
+### Editable
+
+`editable` - renders a heading that becomes a text input on click.
+
+### Relation
+
+`relation` - renders a list of checkboxes.
+
+### Button
+
+`button` - renders a button.
+
+## Form Validation
+
+form validation

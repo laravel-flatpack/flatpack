@@ -68,15 +68,19 @@ Learn more about all the different types of [Form fields](/reference/form-fields
 
 ## Examples
 
+The following examples showcase a `form.yaml` and `list.yaml` for a Post model. The form uses different input types (text, textarea and date pickers) with individual validation rules and options. The paginated table rendered in the list has some searchable and sortable columns.
+
 ### Form composition
 
 Simple example of a custom `/flatpack/posts/form.yaml`
 @[code](../examples/posts/simple-form.yaml)
+Learn more: [Form reference](/reference/form-fields)
 
 ### List composition
 
 Simple example of a custom `/flatpack/posts/list.yaml`
 @[code](../examples/posts/simple-list.yaml)
+Learn more: [List reference](/reference/table-columns)
 
 ## How it works
 
@@ -105,6 +109,6 @@ fields:
 
 The field `title` above is rendered as a `text` input, mapped to the `title` attribute of the current instance of `Post` (e.g. `$post->title`).
 
-By default, Flatpack does not generates complete forms or tables and does not include any action in the template (**read only**). However, it offers a set of basic actions out of the box, that you just have to assign to a button element: `save`, `delete`, `touch`.
+By default, Flatpack does not generate complete form or table templates, and does not include any action in the templates (**read only**). However, it offers a set of basic actions out of the box, that you just have to assign to a button element: `create`, `save` and `delete`.
 
-Learn more about [Basic Actions](/) and setting up [Custom Actions](/).
+Learn more about [Actions](/) and setting up [Custom Actions](/).

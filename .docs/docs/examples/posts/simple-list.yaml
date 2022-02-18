@@ -1,3 +1,5 @@
+# /flatpack/posts/list.yaml
+
 columns:
   id:
     label: ID
