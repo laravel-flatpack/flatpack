@@ -2,6 +2,8 @@
 
 namespace Faustoq\Flatpack\Http\Livewire;
 
+use Faustoq\Flatpack\Exceptions\ActionNotFoundException;
+use Faustoq\Flatpack\Traits\WithActions;
 use Faustoq\Flatpack\Traits\WithComposition;
 use Faustoq\Flatpack\Traits\WithFormValidation;
 use Faustoq\Flatpack\Traits\WithRelationships;
@@ -12,6 +14,7 @@ use Livewire\Component;
 
 class Form extends Component
 {
+    use WithActions;
     use WithComposition;
     use WithRelationships;
     use WithFormValidation;
@@ -110,7 +113,7 @@ class Form extends Component
     {
         try {
             $fields = $this->getFormFields();
-            $nameField = Arr::get($fields, "$key.relation.display", "title");
+            $nameField = Arr::get($fields, "$key.relation.display", "name");
 
             $created = $this->createRelationship(
                 $key,
@@ -132,42 +135,51 @@ class Form extends Component
     //     $this->fields['body'] = $data;
     // }
 
-    public function action($method = 'save', $redirect = false)
+    public function action($method = 'cancel', $options = [])
     {
         // Cancel action
         if ($method === 'cancel') {
             return $this->goBack();
         }
 
-        try {
-            if (! method_exists($this->model, $method)) {
-                throw new \Exception("Action not found: $method");
-            }
+        $redirect = Arr::get($options, 'redirect', false);
 
+        try {
             $this->formErrors = [];
 
+            // Form validation
             $this->validateForm($this->fields, $this->getFormFields());
 
-            // Assign model properties
+            // Assign fields to model attributes
             $this->bindFieldsToModel();
 
-            // Call model method
-            $this->entry->{$method}();
+            // Get action instance
+            $action = $this->getAction($method)
+                ->setEntry($this->entry)
+                ->setFields($this->fields)
+                ->setRedirect($redirect);
 
-            // Save relationships
-            $this->syncFieldsToRelations();
+            // Execute action
+            $action->run();
 
-            // Bind refreshed model to fields
+            // Action success notification
+            if (method_exists($action, 'getMessage') && $action->isSuccess()) {
+                $this->notifySuccess($action->getMessage());
+            }
+
+            // Action failure
+            if (! $action->isSuccess()) {
+                throw new \Exception('Action failed');
+            }
+
+            // Bind refreshed model attributes to fields
             $this->bindModelToFields();
-
-            // Redirect to edit form after create
-            $this->notifySuccess(class_basename($this->entry) . " saved.");
 
             if ($this->formType === 'create') {
                 return $this->goToEditForm();
             }
 
-            if ($redirect) {
+            if ($action->shouldRedirect()) {
                 return $this->goBack();
             }
         } catch (ValidationException $e) {
@@ -178,23 +190,6 @@ class Form extends Component
         }
     }
 
-    private function notifySuccess($message)
-    {
-        $this->emit('notify', [
-            "type" => "success",
-            "message" => $message,
-        ]);
-    }
-
-    private function notifyError($error, $errors = [])
-    {
-        return $this->emit('notify', [
-            "type" => "error",
-            "message" => $error,
-            "errors" => $errors,
-        ]);
-    }
-
     /**
      * Bind model to fields.
      *
@@ -202,9 +197,7 @@ class Form extends Component
      */
     private function bindModelToFields()
     {
-        $fields = $this->getFormFields();
-
-        foreach ($fields as $key => $options) {
+        foreach ($this->getFormFields() as $key => $options) {
             if ($this->entry->$key instanceof \Illuminate\Support\Carbon) {
                 $this->fields[$key] = $this->entry->$key->format('Y-m-d\TH:i:s');
             } elseif ($this->entry->$key instanceof \Illuminate\Database\Eloquent\Collection) {
@@ -241,41 +234,36 @@ class Form extends Component
         }
     }
 
-    /**
-     * Sync fields to relationships.
-     *
-     * @return void
-     */
-    private function syncFieldsToRelations()
-    {
-        $fields = $this->getFormFields();
-
-        foreach ($fields as $key => $options) {
-            if ((isset($options['disabled']) && $options['disabled']) ||
-                (isset($options['readonly']) && $options['readonly']) ||
-                $this->isRelationship($key) === false) {
-                continue;
-            }
-
-            $this->syncRelationship($key);
-        }
-        $this->entry->save();
-        $this->entry->refresh();
-    }
-
     private function goToEditForm()
     {
-        return $this->redirectTo(route('flatpack.form', [
+        return redirect()->route('flatpack.form', [
             'entity' => $this->entity,
             'id' => $this->entry->id,
-        ]));
+        ]);
     }
 
     private function goBack()
     {
-        return $this->redirectTo(route('flatpack.index', [
+        return $this->redirectTo(route('flatpack.list', [
             'entity' => $this->entity,
         ]));
+    }
+
+    private function notifySuccess($message)
+    {
+        $this->emit('notify', [
+            "type" => "success",
+            "message" => $message,
+        ]);
+    }
+
+    private function notifyError($error, $errors = [])
+    {
+        return $this->emit('notify', [
+            "type" => "error",
+            "message" => $error,
+            "errors" => $errors,
+        ]);
     }
 
     private function redirectTo($url)

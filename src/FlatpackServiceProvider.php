@@ -7,6 +7,7 @@ use Faustoq\Flatpack\Commands\MakeFormCommand;
 use Faustoq\Flatpack\Commands\MakeListCommand;
 use Faustoq\Flatpack\Http\Livewire\Form;
 use Faustoq\Flatpack\Http\Livewire\Table;
+use Faustoq\Flatpack\View\Components\ActionButton;
 use Faustoq\Flatpack\View\Components\FormField;
 use Faustoq\Flatpack\View\Components\Layout;
 use Illuminate\Support\Facades\Route;
@@ -42,6 +43,9 @@ class FlatpackServiceProvider extends ServiceProvider
         });
     }
 
+    /**
+     * Register commands.
+     */
     protected function registerCommands()
     {
         $this->commands([
@@ -51,6 +55,9 @@ class FlatpackServiceProvider extends ServiceProvider
         ]);
     }
 
+    /**
+     * Register routes.
+     */
     protected function registerRoutes()
     {
         Route::group($this->routeConfiguration(), function () {
@@ -58,34 +65,56 @@ class FlatpackServiceProvider extends ServiceProvider
         });
     }
 
+    /**
+     * Register Livewire components.
+     */
     protected function registerLivewireComponents()
     {
         Livewire::component('flatpack.table', Table::class);
         Livewire::component('flatpack.form', Form::class);
     }
 
+    /**
+     * Register Blade view components.
+     */
     protected function registerViewComponents()
     {
         $this->loadViewComponentsAs('flatpack', [
-            Layout::class,
+            ActionButton::class,
             FormField::class,
+            Layout::class,
         ]);
     }
 
+    /**
+     * Register views.
+     */
     protected function registerViews()
     {
         $this->loadViewsFrom(__DIR__ . '/../resources/views', 'flatpack');
     }
 
+    /**
+     * Configure route group.
+     */
     protected function routeConfiguration()
     {
-        $middleware = collect(config('flatpack.middleware', [
-            \Faustoq\Flatpack\Http\Middleware\FlatpackMiddleware::class,
-        ]))->prepend('web')->toArray();
-
         return [
             'prefix' => config('flatpack.prefix', 'backend'),
-            'middleware' => $middleware,
+            'middleware' => $this->getRouteMiddleware(),
         ];
+    }
+
+    /**
+     * Compose the list of middleware to be applied to the routes.
+     */
+    private function getRouteMiddleware()
+    {
+        return collect([\Faustoq\Flatpack\Http\Middleware\FlatpackMiddleware::class])
+            ->prepend(config('flatpack.middleware.before', []))
+            ->push(config('flatpack.middleware.after', []))
+            ->prepend('web')
+            ->flatten()
+            ->toArray();
     }
 }

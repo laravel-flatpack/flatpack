@@ -4,27 +4,62 @@
 
 return [
 
-    /**
-     * The directory where the Flatpack templates are stored.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Directory
+    |--------------------------------------------------------------------------
+    |
+    | The directory where the Flatpack templates are stored, relative to
+    | the application root.
+    |
+    */
     'directory' => 'flatpack',
 
-    /**
-     * Flatpack route prefix.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Route Prefix
+    |--------------------------------------------------------------------------
+    |
+    | Flatpack route prefix.
+    | Example: http://localhost/backend
+    |
+    */
     'prefix' => 'backend',
 
-    /**
-     * Middlewares to be applied to all flatpack routes.
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Middleware
+    |--------------------------------------------------------------------------
+    |
+    | Middleware to be applied to all Flatpack routes.
+    |
+    */
     'middleware' => [
-        'auth',
-        \Faustoq\Flatpack\Http\Middleware\FlatpackMiddleware::class,
+
+        'before' => [
+            // Middleware to be applied before FlatpackMiddleware.
+        ],
+
+        'after' => [
+            // Middleware to be applied after FlatpackMiddleware.
+        ]
     ],
 
-    /**
-     * Cache yaml composition templates.
-     */
-    'cache' => false,
+    /*
+    |--------------------------------------------------------------------------
+    | Actions
+    |--------------------------------------------------------------------------
+    |
+    | Flatpack form or list actions.
+    |
+    */
+    'actions' => [
+
+        'create' => \Faustoq\Flatpack\Actions\Create::class,
+
+        'save' => \Faustoq\Flatpack\Actions\Save::class,
+
+        'delete' => \Faustoq\Flatpack\Actions\Delete::class,
+    ]
 
 ];

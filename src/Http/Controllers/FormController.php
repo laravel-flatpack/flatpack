@@ -11,16 +11,14 @@ class FormController extends Controller
     {
         $modelClass = $request->flatpackMappings[$entity];
 
-        $composition = Flatpack::loadComposition()
-                        ->getTemplateComposition($entity, 'form.yaml');
+        $composition = Flatpack::loadComposition()->getTemplateComposition($entity, 'form.yaml');
 
-        $entry = $modelClass::find($id);
-
-        $formType = 'edit';
-
-        if (! $entry) {
+        if ($id === 'create') {
             $entry = new $modelClass();
             $formType = 'create';
+        } else {
+            $entry = $modelClass::findOrFail($id);
+            $formType = 'edit';
         }
 
         return view('flatpack::detail', [

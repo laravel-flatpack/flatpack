@@ -2,17 +2,20 @@
 
 namespace Faustoq\Flatpack\Http\Livewire;
 
+use Faustoq\Flatpack\Traits\WithActions;
+use Faustoq\Flatpack\Traits\WithComposition;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Arr;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
 
 class Table extends DataTableComponent
 {
+    use WithActions;
+    use WithComposition;
+
     public bool $dumpFilters = false;
 
     public bool $columnSelect = true;
-
-    public bool $rememberColumnSelection = true;
 
     public string $defaultSortColumn = 'id';
 
@@ -20,17 +23,31 @@ class Table extends DataTableComponent
 
     public bool $reorderEnabled = false;
 
-    public array $bulkActions = [
-        'delete' => 'Delete',
-    ];
+    // public array $bulkActions = [
+    //    'delete' => 'Delete',
+    // ];
 
     protected string $tableName = '';
 
     /**
-     * Component props.
+     * Model class name.
+     *
+     * @var string
      */
     public $model;
+
+    /**
+     * Entity name.
+     *
+     * @var string
+     */
     public $entity;
+
+    /**
+     * Layout composition.
+     *
+     * @var array
+     */
     public $composition = [];
 
     public function columns(): array
@@ -83,10 +100,20 @@ class Table extends DataTableComponent
         ]);
     }
 
+    public function action($action, $options = [])
+    {
+        // Get action instance
+        $action = $this->getAction($action);
+
+        // Run action
+        $action->run();
+    }
+
     public function render()
     {
         return view('flatpack::components.table')
             ->with([
+                'toolbar' => $this->getComposition('toolbar'),
                 'columns' => $this->columns(),
                 'searchableColumns' => $this->getSearchableColumns(),
                 'rowView' => $this->rowView(),
@@ -106,7 +133,6 @@ class Table extends DataTableComponent
     private function formatColumn($options)
     {
         $type = Arr::get($options, 'type', 'default');
-
         $format = Arr::get($options, 'format', 'Y-m-d H:i:s');
 
         $map = [
