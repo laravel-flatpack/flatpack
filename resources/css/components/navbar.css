@@ -11,7 +11,8 @@
 .navbar.is-minimized {
   @apply hidden xl:flex xl:w-20 xl:justify-center xl:items-start;
 }
-.navbar.is-minimized .navbar-item-text {
+.navbar.is-minimized .navbar-item-text,
+.navbar.is-minimized .navbar-logo span {
   @apply hidden;
 }
 
@@ -46,7 +47,14 @@
 }
 
 .navbar .navbar-items .navbar-logo {
-  @apply inline-block w-auto mb-5 cursor-pointer;
+  @apply inline-flex flex-row items-center justify-center w-auto mb-5 text-gray-400 cursor-pointer;
+}
+.navbar .navbar-items .navbar-logo.current,
+.navbar .navbar-items .navbar-logo:hover {
+  @apply text-white;
+}
+.navbar .navbar-items .navbar-logo span {
+  @apply pl-2 font-medium;
 }
 .navbar .navbar-items .navbar-logo svg * {
   @apply fill-gray-400;

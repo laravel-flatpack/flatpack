@@ -1,10 +1,9 @@
 .button {
-  @apply block px-5 py-2 bg-black text-white rounded-md;
+  @apply block px-5 py-2 text-gray-900 bg-gray-400 rounded-md;
+}
+.button.primary {
+  @apply text-white bg-gray-900;
 }
 .button:hover {
-  @apply bg-gray-800;
-}
-
-.button.primary {
-  @apply bg-purple-500;
+  @apply text-white bg-gray-800;
 }
