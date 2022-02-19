@@ -2,7 +2,6 @@
 
 namespace Faustoq\Flatpack\Http\Livewire;
 
-use Faustoq\Flatpack\Exceptions\ActionNotFoundException;
 use Faustoq\Flatpack\Traits\WithActions;
 use Faustoq\Flatpack\Traits\WithComposition;
 use Faustoq\Flatpack\Traits\WithFormValidation;
