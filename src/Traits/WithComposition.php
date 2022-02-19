@@ -33,7 +33,12 @@ trait WithComposition
         return collect($composition)->filter(function ($item) {
             return in_array(
                 $this->formType,
-                collect(Arr::get($item, 'form', ['create', 'edit']))->toArray()
+                collect(Arr::get($item, 'form', [
+                    null,
+                    'view',
+                    'create',
+                    'edit'
+                ]))->toArray()
             );
         })->toArray();
     }
