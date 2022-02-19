@@ -37,7 +37,7 @@ trait WithComposition
                     null,
                     'view',
                     'create',
-                    'edit'
+                    'edit',
                 ]))->toArray()
             );
         })->toArray();

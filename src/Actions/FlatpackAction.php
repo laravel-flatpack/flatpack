@@ -64,12 +64,14 @@ class FlatpackAction
     public function success()
     {
         $this->success = true;
+
         return $this;
     }
 
     public function setEntry(Model $model = null)
     {
         $this->entry = $model;
+
         return $this;
     }
 
@@ -81,6 +83,7 @@ class FlatpackAction
     public function setFields(array $fields = [])
     {
         $this->fields = $fields;
+
         return $this;
     }
 
@@ -92,6 +95,7 @@ class FlatpackAction
     public function setRedirect($redirect)
     {
         $this->redirect = $redirect;
+
         return $this;
     }
 
