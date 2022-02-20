@@ -40,6 +40,7 @@
     },
     "dependencies": {
         "@yaireo/tagify": "^4.9.5",
+        "sweetalert2": "^11.4.2",
         "toastify-js": "^1.11.2"
     }
 }
