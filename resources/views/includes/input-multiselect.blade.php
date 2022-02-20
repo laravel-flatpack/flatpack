@@ -1,16 +1,16 @@
 @if (in_array(strtolower($type), ['relation','multiselect']))
 <div class="w-full">
-<ul class="list-none w-full max-h-60 overflow-y-scroll bg-gray-200 shadow-inner py-1">
+<ul class="w-full py-1 overflow-y-scroll list-none bg-gray-200 shadow-inner max-h-60">
     @foreach ($items as $optionValue => $display)
     <li class="mx-3 my-2">
-        <label class="flex justify-start items-start cursor-pointer">
+        <label class="flex items-start justify-start cursor-pointer">
             <input
                 type="checkbox"
                 wire:model="fields.{{ $key }}"
-                class="mt-1 rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-offset-0 focus:ring-indigo-200 focus:ring-opacity-50"
+                class="mt-1 text-indigo-600 border-gray-300 rounded shadow-sm focus:border-indigo-300 focus:ring focus:ring-offset-0 focus:ring-indigo-200 focus:ring-opacity-50"
                 value="{{ $optionValue }}"
                 />
-            <span class="ml-3 w-full overflow-hidden text-ellipsis whitespace-nowrap">{{ $display }}</span>
+            <span class="w-full ml-3 overflow-hidden text-ellipsis whitespace-nowrap">{{ $display }}</span>
         </label>
     </li>
     @endforeach
@@ -19,17 +19,11 @@
 <div class="mt-4">
     <div x-data="{ visible: false }">
         <div x-show="visible === true" x-cloak>
-            @include('flatpack::includes.modal', [
-                'title' => 'Create New ' . Str::singular($key),
-                'button' => 'Create',
-                'buttonClass' => 'bg-indigo-600 text-white',
-                'buttonIcon' => 'plus',
-                'modalId' => 'create-new-'. $key
-            ])
+            {{-- TODO: add a way to add new items --}}
         </div>
         <button
             @click="visible = !visible"
-            class="button bg-gray-100 text-black">
+            class="text-black bg-gray-100 button">
             <span class="whitespace-nowrap">Create new {{ Str::singular($key) }}</span>
         </button>
     </div>

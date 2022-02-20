@@ -82,7 +82,7 @@ class FlatpackServiceProvider extends ServiceProvider
         $this->loadViewComponentsAs('flatpack', [
             ActionButton::class,
             FormField::class,
-            Layout::class,
+            Layout::class
         ]);
     }
 

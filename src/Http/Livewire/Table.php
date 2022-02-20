@@ -23,9 +23,7 @@ class Table extends DataTableComponent
 
     public bool $reorderEnabled = false;
 
-    // public array $bulkActions = [
-    //    'delete' => 'Delete',
-    // ];
+    public array $bulkActions = [];
 
     protected string $tableName = '';
 
@@ -49,6 +47,15 @@ class Table extends DataTableComponent
      * @var array
      */
     public $composition = [];
+
+    public function mount()
+    {
+        foreach ($this->composition['bulk'] ?? [] as $key => $options) {
+            if (isset($options['action'])) {
+                $this->bulkActions[$options['action']] = $options['label'] ?? $key;
+            }
+        }
+    }
 
     public function columns(): array
     {
@@ -102,11 +109,30 @@ class Table extends DataTableComponent
 
     public function action($action, $options = [])
     {
-        // Get action instance
         $action = $this->getAction($action);
-
-        // Run action
         $action->run();
+    }
+
+    public function bulkAction($action)
+    {
+        try {
+            $action = $this->getAction($action)
+                ->setSelectedKeys($this->selectedKeys());
+
+            $action->run();
+
+            $this->selected = [];
+            $this->resetBulk();
+
+            // Action success notification
+            if (method_exists($action, 'getMessage') && $action->isSuccess()) {
+                $this->notifySuccess($action->getMessage());
+            } else {
+                $this->notifySuccess('Done!');
+            }
+        } catch (\Exception $e) {
+            $this->notifyError($e->getMessage());
+        }
     }
 
     public function render()
@@ -155,5 +181,22 @@ class Table extends DataTableComponent
         ];
 
         return $map[$type] ?? $map['default'];
+    }
+
+    private function notifySuccess($message)
+    {
+        $this->emit('notify', [
+            "type" => "success",
+            "message" => $message,
+        ]);
+    }
+
+    private function notifyError($error, $errors = [])
+    {
+        return $this->emit('notify', [
+            "type" => "error",
+            "message" => $error,
+            "errors" => $errors,
+        ]);
     }
 }

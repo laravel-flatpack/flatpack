@@ -6,7 +6,12 @@
             'fields' => $fields,
             'formErrors' => $formErrors,
         ])
-        <x-flatpack::form.toolbar :elements="$toolbar" />
+        @include('flatpack::includes.toolbar', [
+            'elements' => $toolbar,
+            'entity' => $entity,
+            'model' => $model,
+            'formErrors' => $formErrors,
+        ])
     </div>
     <div class="flex flex-col w-full gap-6 lg:flex-row">
         <div class="form-main">

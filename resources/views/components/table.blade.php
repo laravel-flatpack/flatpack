@@ -2,7 +2,11 @@
     <div class="flex flex-row items-center justify-between w-full my-2">
         <h1 class="text-4xl font-bold">{{ Str::ucfirst($entity) }}</h1>
         <div class="flex flex-row items-center justify-end gap-2">
-            <x-flatpack::form.toolbar :elements="$toolbar" />
+            @include('flatpack::includes.toolbar', [
+                'elements' => $toolbar,
+                'entity' => $entity,
+                'model' => $model,
+            ])
         </div>
     </div>
     <div>
