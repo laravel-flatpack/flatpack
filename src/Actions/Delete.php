@@ -27,12 +27,12 @@ class Delete extends FlatpackAction implements FlatpackActionContract
         if ($this->isMultiple) {
             return __(':count :entity deleted.', [
                 'count' => count($this->selected),
-                'entity' => Str::lower(Str::plural($this->entity))
+                'entity' => Str::lower(Str::plural($this->entity)),
             ]);
         }
 
         return __(':entity deleted.', [
-            'entity' => Str::ucfirst(Str::singular($this->entity))
+            'entity' => Str::ucfirst(Str::singular($this->entity)),
         ]);
     }
 
@@ -53,7 +53,7 @@ class Delete extends FlatpackAction implements FlatpackActionContract
      */
     public function handle()
     {
-        if (!$this->isMultiple) {
+        if (! $this->isMultiple) {
             $this->entry->delete();
             $this->setRedirect(true);
         } elseif ($this->selected && is_array($this->selected) && count($this->selected) > 0) {
