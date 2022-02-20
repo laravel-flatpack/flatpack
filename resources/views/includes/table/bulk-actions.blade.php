@@ -43,16 +43,14 @@
             >
                 <div class="bg-white rounded-md shadow-xs dark:bg-gray-700 dark:text-white">
                     <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
-                        @foreach($this->bulkActions as $action => $title)
-                            <button
-                                wire:click="{{ $action }}"
-                                wire:key="bulk-action-{{ $action }}"
-                                type="button"
-                                class="flex items-center block w-full px-4 py-2 space-x-2 text-sm leading-5 text-gray-700 hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:bg-gray-100 focus:text-gray-900 dark:text-white dark:hover:bg-gray-600"
-                                role="menuitem"
-                            >
-                                <span>{{ $title }}</span>
-                            </button>
+                        @foreach($this->composition['bulk'] ?? [] as $key => $options)
+                            <x-flatpack-action-button
+                                method="bulkAction"
+                                key="bulk-action-{{ $key }}"
+                                :options="$options"
+                                :entity="$entity"
+                                :model="$model"
+                            />
                         @endforeach
                     </div>
                 </div>

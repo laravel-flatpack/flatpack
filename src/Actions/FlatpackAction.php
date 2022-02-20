@@ -35,11 +35,25 @@ class FlatpackAction
     public $model;
 
     /**
+     * Selected keys.
+     *
+     * @var array
+     */
+    protected $selected;
+
+    /**
      * Action successfully handled.
      *
      * @var bool
      */
     protected $success;
+
+    /**
+     * Action performed on multiple entries.
+     *
+     * @var bool
+     */
+    protected $isMultiple;
 
     /**
      * Redirect after action.
@@ -68,9 +82,10 @@ class FlatpackAction
         return $this;
     }
 
-    public function setEntry(Model $model = null)
+    public function setEntry(Model $entry = null)
     {
-        $this->entry = $model;
+        $this->entry = $entry;
+        $this->isMultiple = false;
 
         return $this;
     }
@@ -92,6 +107,14 @@ class FlatpackAction
         return $this->fields;
     }
 
+    public function setSelectedKeys($selected)
+    {
+        $this->selected = $selected;
+        $this->isMultiple = true;
+
+        return $this;
+    }
+
     public function setRedirect($redirect)
     {
         $this->redirect = $redirect;
@@ -106,8 +129,9 @@ class FlatpackAction
 
     public function run()
     {
-        $this->handle();
-
-        $this->success();
+        if ($this->authorize()) {
+            $this->handle();
+            $this->success();
+        }
     }
 }
