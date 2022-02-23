@@ -1,5 +1,5 @@
 .form-main {
-  @apply flex flex-col flex-grow w-full lg:w-3/4 max-w-6xl mx-auto;
+  @apply flex flex-col flex-grow w-full max-w-6xl mx-auto lg:w-3/4;
 }
 .form-sidebar {
   @apply w-full lg:w-1/4 lg:max-w-sm;
@@ -7,17 +7,17 @@
 }
 
 .form-field {
-  @apply flex flex-col justify-start items-start;
+  @apply flex flex-col items-start justify-start;
 }
 .form-field .form-field-elements {
-  @apply flex flex-col w-full justify-start items-start;
+  @apply flex flex-col items-start justify-start w-full;
 }
 .form-field .form-field-elements label {
   flex: 1;
   min-width: 80px;
 }
 .form-field .form-field-elements .form-field-input {
-  @apply block w-full border-gray-300 rounded-md shadow-sm transition duration-150 ease-in-out focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50;
+  @apply block w-full transition duration-150 ease-in-out border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50;
 }
 
 .form-field .form-field-elements.has-errors .form-field-input {
@@ -25,42 +25,42 @@
 }
 
 .form-fieldset {
-  @apply grid grid-cols-2 gap-5 w-full max-w-6xl my-2 mx-auto;
+  @apply grid w-full max-w-6xl grid-cols-2 gap-5 mx-auto my-0;
 }
 
 .header-fieldset {
-  @apply grid grid-cols-1 w-full max-w-6xl my-0;
+  @apply grid w-full max-w-6xl grid-cols-1 my-0;
 }
 .header-fieldset .form-field .form-field-elements label {
-  @apply text-left pr-2 m-0;
+  @apply pr-2 m-0 text-left;
   min-width: fit-content;
 }
 
 .sidebar-fieldset {
-  @apply grid grid-cols-1 gap-5 w-full max-w-6xl my-2 mx-auto;
+  @apply grid w-full max-w-6xl grid-cols-1 gap-5 mx-auto my-2;
 }
 .sidebar-fieldset .form-field {
   @apply flex flex-col;
 }
 .header-fieldset .form-field .form-field-elements,
 .sidebar-fieldset .form-field .form-field-elements {
-  @apply flex flex-row w-full gap-2 justify-start items-center;
+  @apply flex flex-row items-center justify-start w-full gap-2;
 }
 .sidebar-fieldset .form-field .form-field-elements label {
-  @apply text-left pr-2 m-0;
+  @apply pr-2 m-0 text-left;
 }
 .sidebar-fieldset .form-field .form-field-elements .form-field-input {
   @apply text-sm;
 }
 
 .editable-heading {
-  @apply flex gap-2 justify-start items-center cursor-pointer;
+  @apply flex items-center justify-start gap-2 cursor-pointer;
 }
 .editable-heading .input-field-placeholder {
-  @apply border-b-2 border-solid border-transparent py-2 text-left;
+  @apply py-2 text-left border-b-2 border-transparent border-solid;
 }
 .editable-heading .edit-button {
-  @apply inline-flex gap-2 p-0 m-0 border border-transparent text-sm text-gray-700 opacity-30;
+  @apply inline-flex gap-2 p-0 m-0 text-sm text-gray-700 border border-transparent opacity-30;
 }
 .editable-heading:hover .edit-button {
   @apply opacity-100;

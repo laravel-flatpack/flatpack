@@ -34,12 +34,22 @@
             <div x-show="open" class="{{ $fieldset }}">
         @endif
 
-        <x-flatpack-form-field
-            :key="$key"
-            :options="$options"
-            :entry="$entry"
-            :fieldErrors="Arr::get($formErrors, $key, [])"
-        />
+        @if (isset($options['type']) && $options['type'] === 'button' && isset($options['action']))
+            <x-flatpack-action-button
+                key="action-{{ $key }}"
+                :options="$options"
+                :entity="$entity"
+                :model="$model"
+                class="self-center w-fit h-fit"
+            />
+        @else
+            <x-flatpack-form-field
+                :key="$key"
+                :options="$options"
+                :entry="$entry"
+                :fieldErrors="Arr::get($formErrors, $key, [])"
+            />
+        @endif
 
         @php
             $group = Arr::get($options, 'group');
