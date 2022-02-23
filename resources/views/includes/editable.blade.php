@@ -46,7 +46,6 @@
             id="editable-{{ $key }}"
             type="text"
             name="{{ $key }}"
-            value="{{ $value }}"
             {{ $attributes->class([
                 'form-field-input',
                 'w-full h-auto p-2',
