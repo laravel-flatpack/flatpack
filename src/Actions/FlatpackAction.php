@@ -2,6 +2,7 @@
 
 namespace Faustoq\Flatpack\Actions;
 
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
 
 class FlatpackAction
@@ -129,9 +130,11 @@ class FlatpackAction
 
     public function run()
     {
-        if ($this->authorize()) {
-            $this->handle();
-            $this->success();
+        if (!$this->authorize()) {
+            throw new AuthorizationException("You are not authorized to perform this action.");
         }
+
+        $this->handle();
+        $this->success();
     }
 }
