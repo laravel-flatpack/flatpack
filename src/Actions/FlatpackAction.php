@@ -130,7 +130,7 @@ class FlatpackAction
 
     public function run()
     {
-        if (!$this->authorize()) {
+        if (! $this->authorize()) {
             throw new AuthorizationException("You are not authorized to perform this action.");
         }
 
