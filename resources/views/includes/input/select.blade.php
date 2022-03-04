@@ -8,7 +8,7 @@
     {{ $required ? 'required' : '' }}
     {{ $readonly ? 'readonly' : '' }}
 >
-    <option>Select an option</option>
+    <option>{{ __('Select an option') }}</option>
 
     @foreach($items as $optionValue => $display)
 
