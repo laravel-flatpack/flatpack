@@ -57,9 +57,16 @@ return [
 
         'create' => \Faustoq\Flatpack\Actions\Create::class,
 
+        'delete' => \Faustoq\Flatpack\Actions\Delete::class,
+
         'save' => \Faustoq\Flatpack\Actions\Save::class,
 
-        'delete' => \Faustoq\Flatpack\Actions\Delete::class,
-    ]
+        'upload' => \Faustoq\Flatpack\Actions\Upload::class,
+    ],
+
+    'storage' => [
+        'disk' => 'public',
+        'path' => 'uploads',
+    ],
 
 ];
