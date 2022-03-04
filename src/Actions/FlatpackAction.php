@@ -29,6 +29,13 @@ class FlatpackAction
     public $fields;
 
     /**
+     * File upload.
+     *
+     * @var \Illuminate\Http\UploadedFile
+     */
+    public $file;
+
+    /**
      * Model class name.
      *
      * @var string
@@ -69,6 +76,13 @@ class FlatpackAction
         $this->model = $modelClass;
         $this->success = false;
         $this->redirect = false;
+    }
+
+    public function withFile($file)
+    {
+        $this->file = $file;
+
+        return $this;
     }
 
     public function isSuccess()
@@ -134,7 +148,10 @@ class FlatpackAction
             throw new AuthorizationException("You are not authorized to perform this action.");
         }
 
-        $this->handle();
+        $result = $this->handle();
+
         $this->success();
+
+        return $result;
     }
 }
