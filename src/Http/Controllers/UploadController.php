@@ -19,7 +19,7 @@ class UploadController extends Controller
 
         if (! $request->hasFile('upload')) {
             return response()->json([
-                'error' => 'No file to upload'
+                'error' => 'No file to upload',
             ]);
         }
 
@@ -32,7 +32,7 @@ class UploadController extends Controller
         $url = $action->run();
 
         return response()->json([
-            'url' => $url
+            'url' => $url,
         ]);
     }
 }
