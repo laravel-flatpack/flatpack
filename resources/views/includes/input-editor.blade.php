@@ -6,8 +6,7 @@
             wire:model.stop="fields.{{ $key }}"
             wire:key="fields-{{ $key }}"
             x-data x-init="
-            ClassicEditor
-            .create($refs.fields_{{ $key }})
+            Flatpack.editor.classic.create($refs.fields_{{ $key }}, Flatpack.editorConfig())
             .then(function(editor){
                 editor.model.document.on('change:data', () => {
                     @this.set('fields.{{ $key }}', editor.getData())

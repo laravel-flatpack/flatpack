@@ -35,13 +35,15 @@
         @endif
 
         @if (isset($options['type']) && $options['type'] === 'button' && isset($options['action']))
-            <x-flatpack-action-button
-                key="action-{{ $key }}"
-                :options="$options"
-                :entity="$entity"
-                :model="$model"
-                class="self-center w-fit h-fit"
-            />
+            <div class="col-span-full @if(Arr::get($options, 'span', 'full') !== 'full') lg:col-span-1 @endif">
+                <x-flatpack-action-button
+                    key="action-{{ $key }}"
+                    :options="$options"
+                    :entity="$entity"
+                    :model="$model"
+                    class="self-center w-fit h-fit"
+                />
+            </div>
         @else
             <x-flatpack-form-field
                 :key="$key"
