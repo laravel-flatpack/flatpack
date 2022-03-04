@@ -32,7 +32,6 @@
     </div>
     @livewireScripts
     <script src="{{ asset('flatpack/js/flatpack.js') }}"></script>
-    <script src="https://cdn.ckeditor.com/ckeditor5/30.0.0/classic/ckeditor.js"></script>
-    <script src="https://unpkg.com/@nextapps-be/livewire-sortablejs@0.1.1/dist/livewire-sortable.js"></script>
+    @yield('scripts')
 </body>
 </html>
