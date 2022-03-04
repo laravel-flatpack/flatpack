@@ -39,6 +39,7 @@
         "tailwindcss": "^3.0.15"
     },
     "dependencies": {
+        "@ckeditor/ckeditor5-build-classic": "^32.0.0",
         "@yaireo/tagify": "^4.9.5",
         "sweetalert2": "^11.4.2",
         "toastify-js": "^1.11.2"
