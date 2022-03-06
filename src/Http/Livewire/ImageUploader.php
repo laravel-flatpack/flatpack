@@ -66,7 +66,7 @@ class ImageUploader extends Component
     /**
      * Multiple mode.
      *
-     * @var boolean
+     * @var bool
      */
     public $multiple;
 
@@ -80,7 +80,7 @@ class ImageUploader extends Component
     /**
      * Max allowed image size in kb.
      *
-     * @var integer
+     * @var int
      */
     public $size;
 
@@ -131,7 +131,7 @@ class ImageUploader extends Component
     {
         $this->rawImages = [];
 
-        if (!$this->multiple) {
+        if (! $this->multiple) {
             $this->images = [];
         }
     }
@@ -139,7 +139,7 @@ class ImageUploader extends Component
     public function updatedRawImages($value)
     {
         $this->validate([
-            'rawImages.*' => "image|mimes:jpeg,png,jpg,gif,svg|max:{$this->size}"
+            'rawImages.*' => "image|mimes:jpeg,png,jpg,gif,svg|max:{$this->size}",
         ]);
 
         $this->prepareImages();
