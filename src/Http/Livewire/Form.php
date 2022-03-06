@@ -78,9 +78,11 @@ class Form extends Component
      * Livewire component listeners.
      */
     protected $listeners = [
-        // 'editorjs-save:flatpack-editor' => 'saveEditorState',
+        'flatpack-imageuploader:updated' => 'saveImageUploaderState',
+        'flatpack-imageuploader:error' => 'showImageUploaderError',
         'flatpack-taginput:change' => 'saveTagInputState',
         'flatpack-taginput:new-tag' => 'createRelatedTag',
+        // 'editorjs-save:flatpack-editor' => 'saveEditorState',
     ];
 
     public function mount()
@@ -98,13 +100,47 @@ class Form extends Component
         ]);
     }
 
-    public function saveTagInputState($key, $data)
+    /**
+     * Save the state of the image uploader.
+     *
+     * @param array $images
+     * @return array
+     */
+    public function saveImageUploaderState($images)
     {
-        $this->fields[$key] = explode(',', $data);
+        dump($images);
+
+        return $images;
     }
 
     /**
-     * Tag input related model creation.
+     * Show the image uploader error.
+     *
+     * @param string $message
+     * @param array $images
+     * @return void
+     */
+    public function showImageUploaderError($message, $images)
+    {
+        $this->notifyError($message);
+    }
+
+    /**
+     * Save TagInput field state.
+     *
+     * @param  string $key Field key.
+     * @param  string $tags Comma separated tags
+     * @return array
+     */
+    public function saveTagInputState($key, $tags)
+    {
+        $this->fields[$key] = explode(',', $tags);
+
+        return $this->fields[$key];
+    }
+
+    /**
+     * TagInput related model creation.
      *
      * @return void
      */
@@ -161,6 +197,10 @@ class Form extends Component
             // Execute action
             $action->run();
 
+            if ($method === 'save') {
+                $this->emit('flatpack-imageuploader:save', $this->entry);
+            }
+
             // Action success notification
             if (method_exists($action, 'getMessage') && $action->isSuccess()) {
                 $this->notifySuccess($action->getMessage());
@@ -174,9 +214,9 @@ class Form extends Component
             // Bind refreshed model attributes to fields
             $this->bindModelToFields();
 
-            if ($this->formType === 'create') {
-                return $this->goToEditForm();
-            }
+            // if ($this->formType === 'create') {
+            //     return $this->goToEditForm();
+            // }
 
             if ($action->shouldRedirect()) {
                 return $this->goBack();
@@ -235,10 +275,10 @@ class Form extends Component
 
     private function goToEditForm()
     {
-        return redirect()->route('flatpack.form', [
+        return $this->redirectTo(route('flatpack.form', [
             'entity' => $this->entity,
             'id' => $this->entry->id,
-        ]);
+        ]));
     }
 
     private function goBack()
@@ -248,6 +288,12 @@ class Form extends Component
         ]));
     }
 
+    /**
+     * Notify success event.
+     *
+     * @param  string $message
+     * @return \Livewire\Event
+     */
     private function notifySuccess($message)
     {
         $this->emit('notify', [
@@ -256,6 +302,13 @@ class Form extends Component
         ]);
     }
 
+    /**
+     * Notify error event.
+     *
+     * @param  string $message
+     * @param  array  $errors
+     * @return \Livewire\Event
+     */
     private function notifyError($error, $errors = [])
     {
         return $this->emit('notify', [
@@ -265,6 +318,12 @@ class Form extends Component
         ]);
     }
 
+    /**
+     * Redirect event.
+     *
+     * @param  string $url
+     * @return \Livewire\Event
+     */
     private function redirectTo($url)
     {
         return $this->emit('redirect', [

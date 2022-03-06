@@ -16,11 +16,11 @@ return [
 
         'create' => \Faustoq\Flatpack\Actions\Create::class,
 
-        'delete' => \Faustoq\Flatpack\Actions\Delete::class,
-
         'save' => \Faustoq\Flatpack\Actions\Save::class,
 
         'upload' => \Faustoq\Flatpack\Actions\Upload::class,
+
+        'delete' => \Faustoq\Flatpack\Actions\Delete::class,
     ],
 
     /*
@@ -80,10 +80,19 @@ return [
         ]
     ],
 
-
-
+    /*
+    |--------------------------------------------------------------------------
+    | File Storage
+    |--------------------------------------------------------------------------
+    |
+    | By default, Flatpack will use the default Laravel file storage.
+    | You can override this by setting your own file storage.
+    |
+    */
     'storage' => [
+
         'disk' => 'public',
+
         'path' => 'uploads',
     ],
 
