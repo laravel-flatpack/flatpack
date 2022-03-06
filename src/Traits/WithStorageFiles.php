@@ -67,7 +67,6 @@ trait WithStorageFiles
         return Storage::disk($disk)->deleteDirectory($directory);
     }
 
-
     /**
      * Get the path based on current entity.
      *
