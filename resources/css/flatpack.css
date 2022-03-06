@@ -3,6 +3,7 @@
 @import "./components/box";
 @import "./components/button";
 @import "./components/form";
+@import "./components/image-uploader";
 @import "./components/input";
 @import "./components/layout";
 @import "./components/navbar";

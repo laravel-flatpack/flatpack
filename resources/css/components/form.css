@@ -37,7 +37,7 @@
 }
 
 .sidebar-fieldset {
-  @apply grid w-full max-w-6xl grid-cols-1 gap-5 mx-auto my-2;
+  @apply grid w-full max-w-6xl grid-cols-1 gap-5 mx-auto my-0;
 }
 .sidebar-fieldset .form-field {
   @apply flex flex-col;
