@@ -53,7 +53,7 @@ const taginput = (key, input, values, addNewEntries = false) => {
         whitelist.map((item) => `${item.value}`).indexOf(data.value) === -1;
 
       if (isNew) {
-        // Create new model
+        // Create new tag Model
         Livewire.emit(`flatpack-taginput:new-tag`, key, data.value);
         // Add to whitelist and sync value
         Livewire.on(`flatpack-taginput:new-tag-created:${key}`, (value) => {

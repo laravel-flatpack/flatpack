@@ -17,10 +17,9 @@
 <script>
     document.addEventListener("DOMContentLoaded", () => {
         const el = document.getElementById('fields-{{ $key }}');
-        const data = JSON.parse(@js($items));
 
         // Initialize the tags plugin
-        Flatpack.taginput('{{ $key }}', el, data, @js($canCreate));
+        Flatpack.taginput('{{ $key }}', el, JSON.parse(@js($items)), @js($canCreate));
     });
 </script>
 @endif
