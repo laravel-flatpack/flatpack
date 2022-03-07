@@ -7,6 +7,27 @@ use Faustoq\Flatpack\Exceptions\ActionNotFoundException;
 trait WithActions
 {
     /**
+     * Model class name.
+     *
+     * @var string
+     */
+    public $model;
+
+    /**
+     * Entity name.
+     *
+     * @var string
+     */
+    public $entity;
+
+    /**
+     * The model instance.
+     *
+     * @var \Illuminate\Database\Eloquent\Model
+     */
+    public $entry;
+
+    /**
      * Initialise and return action class instance.
      *
      * @param  string $action
