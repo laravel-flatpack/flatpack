@@ -9,7 +9,7 @@
             ])
         </div>
     </div>
-    <div>@dump($scopes)</div>
+    {{--<div>@dump($scopes)</div>--}}
     <div>
         <div
             @if (is_numeric($refresh))
