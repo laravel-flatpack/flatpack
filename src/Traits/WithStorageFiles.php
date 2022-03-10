@@ -49,12 +49,10 @@ trait WithStorageFiles
         );
     }
 
-
     protected function getFileName($url)
     {
         return last(explode('/', $url));
     }
-
 
     protected function removeFile($file)
     {
@@ -110,7 +108,7 @@ trait WithStorageFiles
      */
     protected function onlyFilesAlreadyUploaded($files)
     {
-        return collect($files)->filter(fn ($file) => !$this->isFileToUpload($file))->toArray();
+        return collect($files)->filter(fn ($file) => ! $this->isFileToUpload($file))->toArray();
     }
 
     /**
