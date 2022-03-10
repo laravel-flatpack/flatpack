@@ -11,28 +11,33 @@ class UploadController extends Controller
 
     public function store(Request $request, $entity, $id)
     {
-        $this->model = $request->flatpackMappings[$entity];
+        $this->model = $request->flatpack['model'];
 
         $this->entity = $entity;
 
         $this->entry = $this->model::find($id);
 
         if (! $request->hasFile('upload')) {
-            return response()->json([
-                'error' => 'No file to upload',
-            ]);
+            return $this->jsonResponse([ 'error' => 'No file to upload' ]);
         }
 
-        // Get action instance
-        $action = $this->getAction('upload')
-            ->setEntry($this->entry)
-            ->withFile($request->file('upload'));
+        try {
+            $action = $this->getAction('upload')
+                ->setEntry($this->entry)
+                ->addFile($request->file('upload'));
 
-        // Execute action
-        $url = $action->run();
+            $url = $action->run();
+        } catch (\Exception $e) {
+            return $this->jsonResponse([ 'error' => $e->getMessage() ]);
+        }
 
-        return response()->json([
+        return $this->jsonResponse([
             'url' => $url,
         ]);
+    }
+
+    private function jsonResponse($data = [])
+    {
+        return response()->json($data);
     }
 }

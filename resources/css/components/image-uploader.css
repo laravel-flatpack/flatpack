@@ -14,7 +14,7 @@
 }
 
 .image-uploader-container .image-wrapper .single-image {
-  @apply relative flex flex-wrap w-40 h-40 overflow-hidden border border-gray-300 rounded-md bg-gray-50;
+  @apply relative flex flex-wrap w-40 h-40 overflow-hidden bg-black border border-gray-300 rounded-md;
 }
 
 .image-uploader-container:not(.is-multiple).is-preview-full

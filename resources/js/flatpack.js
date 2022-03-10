@@ -3,6 +3,10 @@ import { alert, confirm, notify, navbar } from "./components";
 import { getSetting, setSetting, isActive } from "./helpers";
 
 // Flatpack redirects
+window.livewire.on("updateUrl", (url) => {
+  history.pushState(null, null, url);
+});
+
 window.livewire.on("redirect", ({ url }) => {
   setTimeout(() => {
     window.location.href = url;

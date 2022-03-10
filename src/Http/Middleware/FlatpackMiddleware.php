@@ -40,8 +40,11 @@ class FlatpackMiddleware
         $this->validate($request);
 
         // Append flatpack mappings to the request.
-        $request->flatpackMappings = [
-            $this->entity => $this->modelClass,
+        $request->flatpack = [
+            'entity' => $this->entity,
+            'model' => $this->modelClass,
+            'compositions' => $this->options,
+            'composition' => $this->options[$this->entity],
         ];
 
         return $next($request);
@@ -72,7 +75,9 @@ class FlatpackMiddleware
         );
 
         $this->entity = $route->parameter('entity');
+
         $modelName = Flatpack::modelName($this->entity);
+
         $this->modelClass = Flatpack::guessModelClass($this->entity);
 
         if (! class_exists($this->modelClass)) {
