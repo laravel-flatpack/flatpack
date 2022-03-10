@@ -106,11 +106,11 @@ class Form extends Component
      * @param array $images
      * @return array
      */
-    public function saveImageUploaderState($images)
+    public function saveImageUploaderState($key, $images)
     {
-        dump($images);
+        $this->fields[$key] = $images;
 
-        return $images;
+        return $this->fields[$key];
     }
 
     /**
@@ -170,6 +170,27 @@ class Form extends Component
     //     $this->fields['body'] = $data;
     // }
 
+    private function beforeAction($method)
+    {
+        if ($method === 'save') {
+            $this->emit('flatpack-form:saving', $this->fields, $this->entry, $this->entry->exists);
+        }
+    }
+
+    private function afterAction($method)
+    {
+        if ($method === 'save') {
+            $this->emit('flatpack-form:saved', $this->fields, $this->entry->getKey());
+
+            $this->emit('updateUrl', route('flatpack.form', [
+                'entity' => $this->entity,
+                'id' => $this->entry->getKey(),
+            ]));
+
+            $this->formType = 'edit';
+        }
+    }
+
     public function action($method = 'cancel', $options = [])
     {
         // Cancel action
@@ -195,11 +216,11 @@ class Form extends Component
                 ->setRedirect($redirect);
 
             // Execute action
+            $this->beforeAction($method);
+
             $action->run();
 
-            if ($method === 'save') {
-                $this->emit('flatpack-imageuploader:save', $this->entry);
-            }
+            $this->afterAction($method);
 
             // Action success notification
             if (method_exists($action, 'getMessage') && $action->isSuccess()) {
@@ -213,10 +234,6 @@ class Form extends Component
 
             // Bind refreshed model attributes to fields
             $this->bindModelToFields();
-
-            // if ($this->formType === 'create') {
-            //     return $this->goToEditForm();
-            // }
 
             if ($action->shouldRedirect()) {
                 return $this->goBack();
@@ -236,6 +253,8 @@ class Form extends Component
      */
     private function bindModelToFields()
     {
+        $this->entityId = $this->entry->getKey() ?? 'create';
+
         foreach ($this->getFormFields() as $key => $options) {
             if ($this->entry->$key instanceof \Illuminate\Support\Carbon) {
                 $this->fields[$key] = $this->entry->$key->format('Y-m-d\TH:i:s');
@@ -273,14 +292,11 @@ class Form extends Component
         }
     }
 
-    private function goToEditForm()
-    {
-        return $this->redirectTo(route('flatpack.form', [
-            'entity' => $this->entity,
-            'id' => $this->entry->id,
-        ]));
-    }
-
+    /**
+     * Client-side redirect to the list page.
+     *
+     * @return \Livewire\Event
+     */
     private function goBack()
     {
         return $this->redirectTo(route('flatpack.list', [

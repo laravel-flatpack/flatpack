@@ -85,10 +85,17 @@ class ImageUploader extends Component
     public $size;
 
     /**
+     * List of images to be deleted on save.
+     *
+     * @var array
+     */
+    public $toDelete = [];
+
+    /**
     * Livewire component listeners.
     */
     protected $listeners = [
-        'flatpack-imageuploader:save' => 'handleUpload',
+        'flatpack-form:saved' => 'handleUpload',
     ];
 
     /**
@@ -116,12 +123,12 @@ class ImageUploader extends Component
         $this->rawImages = [];
         $this->images = [];
 
+        $this->previousValue = Arr::wrap($entry->{$name});
+
         foreach ($this->previousValue as $image) {
-            $name = $this->imageName($image);
-            $this->images[$name] = $image;
+            array_push($this->images, $image);
         }
 
-        $this->previousValue = Arr::wrap($entry->{$name});
         $this->size = Arr::get($options, 'maxSize', 2048);
         $this->multiple = Arr::get($options, 'multiple', false);
         $this->preview = Arr::get($options, 'preview', 'auto');
@@ -153,7 +160,7 @@ class ImageUploader extends Component
     public function prepareImages()
     {
         foreach ($this->rawImages as $image) {
-            $this->images[$image->hashName()] = $image;
+            array_push($this->images, $image);
         }
 
         $this->rawImages = [];
@@ -162,38 +169,49 @@ class ImageUploader extends Component
     }
 
     /**
-     * Upload images.
+     * After the form is saved,
+     * refresh local entry instance and upload images.
      *
-     * @param array $entry Serialized array of the model instance.
-     * @return array
+     * @param array $fields Form fields
+     * @param mixed $id Entry id
+     * @return void
      */
-    public function handleUpload($entry)
+    public function handleUpload($fields, $id)
     {
-        $this->entry = $this->model::find($entry['id']);
+        $this->deleteOldFiles();
 
-        return $this->uploadFiles();
+        $this->entry = $this->model::find($id);
+
+        $this->images = $this->uploadFiles();
+
+        $this->entry->{$this->name} = $this->getCurrentValue();
+
+        $this->entry->save();
+
+        return $this->stateUpdated();
     }
 
+    /**
+     * Upload images.
+     *
+     * @return array
+     */
     public function uploadFiles()
     {
-        $files = [];
-
         try {
-            $uploadAction = $this->getAction('upload')
-                ->setEntry($this->entry)
-                ->addFiles($this->images);
+            if (count($this->onlyFilesToUpload($this->images)) > 0) {
+                $images = $this->getAction('upload')
+                    ->setEntry($this->entry)
+                    ->addFiles($this->images)
+                    ->run();
 
-            $files = $uploadAction->run();
+                $this->images = $images;
+            }
         } catch (\Exception $e) {
             $this->notifyError($e->getMessage());
         }
 
-        return $files;
-    }
-
-    private function imageName($url)
-    {
-        return last(explode('/', $url));
+        return $this->images;
     }
 
     /**
@@ -202,17 +220,15 @@ class ImageUploader extends Component
      * @param  string $image
      * @return void
      */
-    public function handleRemoveImage($image)
+    public function handleRemoveImage($index)
     {
-        if ($this->images[$image] instanceof \Livewire\TemporaryUploadedFile) {
-            $this->images[$image]->delete();
+        if ($this->images[$index] instanceof \Livewire\TemporaryUploadedFile) {
+            $this->images[$index]->delete();
         } else {
-            $this->removeFile($image);
+            $this->toDelete[] = $this->images[$index];
         }
 
-        unset($this->images[$image]);
-
-        $this->emitUp('flatpack-imageuploader:remove', $image);
+        unset($this->images[$index]);
 
         return $this->stateUpdated();
     }
@@ -224,7 +240,13 @@ class ImageUploader extends Component
      */
     public function getCurrentValue()
     {
-        return array_values($this->images);
+        $value = $this->onlyFilesAlreadyUploaded($this->images);
+
+        if ($this->multiple) {
+            return $value;
+        }
+
+        return collect($value)->first();
     }
 
     /**
@@ -244,7 +266,7 @@ class ImageUploader extends Component
      */
     public function stateUpdated()
     {
-        $this->emit('flatpack-imageuploader:updated', $this->getCurrentValue());
+        $this->emit('flatpack-imageuploader:updated', $this->name, $this->getCurrentValue());
     }
 
     /**
@@ -260,5 +282,19 @@ class ImageUploader extends Component
     public function render()
     {
         return view('flatpack::components.image-uploader');
+    }
+
+    /**
+     * Delete files from storage.
+     *
+     * @return void
+     */
+    private function deleteOldFiles()
+    {
+        foreach ($this->toDelete as $file) {
+            $this->removeFile($file);
+        }
+
+        $this->toDelete = [];
     }
 }

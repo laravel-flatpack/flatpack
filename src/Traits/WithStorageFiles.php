@@ -8,6 +8,13 @@ use Illuminate\Support\Str;
 trait WithStorageFiles
 {
     /**
+     * Files to upload.
+     *
+     * @var array
+     */
+    public $files;
+
+    /**
      * Combine path and filename.
      *
      * @param  string  $path
@@ -42,10 +49,17 @@ trait WithStorageFiles
         );
     }
 
+
+    protected function getFileName($url)
+    {
+        return last(explode('/', $url));
+    }
+
+
     protected function removeFile($file)
     {
         $disk = $this->getStorageDisk();
-        $filename = $this->combinePath($this->getStoragePath(), $file);
+        $filename = $this->combinePath($this->getStoragePath(), $this->getFileName($file));
 
         $exists = Storage::disk($disk)->exists($filename);
 
@@ -74,8 +88,75 @@ trait WithStorageFiles
      */
     private function getEntityPath()
     {
-        $id = $this->entry->getKey();
+        return "{$this->entity}/" . $this->entry->getKey();
+    }
 
-        return "{$this->entity}/{$id}/{$this->name}";
+    /**
+     * Return only the files that are not uploaded yet.
+     *
+     * @param  array  $files
+     * @return array
+     */
+    protected function onlyFilesToUpload($files)
+    {
+        return collect($files)->filter(fn ($file) => $this->isFileToUpload($file))->toArray();
+    }
+
+    /**
+     * Return only the files that are already uploaded.
+     *
+     * @param  string  $file
+     * @return bool
+     */
+    protected function onlyFilesAlreadyUploaded($files)
+    {
+        return collect($files)->filter(fn ($file) => !$this->isFileToUpload($file))->toArray();
+    }
+
+    /**
+     * Check if the file is to be uploaded.
+     *
+     * @param  mixed  $file
+     * @return bool
+     */
+    private function isFileToUpload($file)
+    {
+        return $file instanceof \Livewire\TemporaryUploadedFile;
+    }
+
+    /**
+     * Upload action files and return the final urls.
+     *
+     * @return array
+     */
+    protected function uploadFiles()
+    {
+        $filesToUpload = $this->onlyFilesToUpload($this->files);
+
+        $uploaded = $this->onlyFilesAlreadyUploaded($this->files);
+
+        foreach ($filesToUpload as $file) {
+            $uploaded[] = $this->uploadFile($file);
+        }
+
+        return $uploaded;
+    }
+
+    /**
+     * Upload a file to storage.
+     *
+     * @param  \Illuminate\Http\UploadedFile  $file
+     * @return string
+     */
+    private function uploadFile($file)
+    {
+        $disk = $this->getStorageDisk();
+
+        $path = Storage::disk($disk)->putFile(
+            $this->getStoragePath(),
+            $file
+        );
+
+        return Storage::disk($disk)->url($path);
     }
 }

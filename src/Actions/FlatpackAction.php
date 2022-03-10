@@ -84,6 +84,7 @@ class FlatpackAction
         $this->success = false;
         $this->redirect = false;
         $this->files = [];
+        $this->selected = [];
     }
 
     public function addFile($file)
