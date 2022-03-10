@@ -23,7 +23,7 @@ class Create extends FlatpackAction implements FlatpackActionContract
      */
     public function handle()
     {
-        redirect()->route('flatpack.form', [
+        return redirect()->route('flatpack.form', [
             'entity' => $this->entity,
             'id' => 'create',
         ]);

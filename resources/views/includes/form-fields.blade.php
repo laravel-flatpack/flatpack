@@ -44,6 +44,16 @@
                     class="self-center w-fit h-fit"
                 />
             </div>
+        @elseif (isset($options['type']) && $options['type'] === 'image-upload')
+            <div class="col-span-full @if (Arr::get($options, 'span', 'full') !== 'full') lg:col-span-1 @endif">
+                <livewire:flatpack.image-uploader
+                    :name="$key"
+                    :options="$options"
+                    :entity="$entity"
+                    :model="$model"
+                    :entry="$entry"
+                />
+            </div>
         @else
             <x-flatpack-form-field
                 :key="$key"

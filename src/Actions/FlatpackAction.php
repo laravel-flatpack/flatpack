@@ -29,11 +29,12 @@ class FlatpackAction
     public $fields;
 
     /**
-     * File upload.
+     * Files to upload.
+     * \Illuminate\Http\UploadedFile
      *
-     * @var \Illuminate\Http\UploadedFile
+     * @var array
      */
-    public $file;
+    public $files;
 
     /**
      * Model class name.
@@ -70,17 +71,32 @@ class FlatpackAction
      */
     protected $redirect;
 
+    /**
+     * FlatpackAction constructor.
+     *
+     * @param string $entity
+     * @param string $modelClass
+     */
     public function __construct(string $entity, string $modelClass)
     {
         $this->entity = $entity;
         $this->model = $modelClass;
         $this->success = false;
         $this->redirect = false;
+        $this->files = [];
+        $this->selected = [];
     }
 
-    public function withFile($file)
+    public function addFile($file)
     {
-        $this->file = $file;
+        $this->files[] = $file;
+
+        return $this;
+    }
+
+    public function addFiles($files)
+    {
+        $this->files = array_merge($this->files, $files);
 
         return $this;
     }
@@ -142,10 +158,16 @@ class FlatpackAction
         return $this->isSuccess() && $this->redirect;
     }
 
+    /**
+     * Execute action by calling the handle method.
+     *
+     * @throws \Illuminate\Auth\Access\AuthorizationException
+     * @return void
+     */
     public function run()
     {
         if (! $this->authorize()) {
-            throw new AuthorizationException("You are not authorized to perform this action.");
+            throw new AuthorizationException(__("You are not authorized to perform this action."));
         }
 
         $result = $this->handle();

@@ -78,9 +78,11 @@ class Form extends Component
      * Livewire component listeners.
      */
     protected $listeners = [
-        // 'editorjs-save:flatpack-editor' => 'saveEditorState',
+        'flatpack-imageuploader:updated' => 'saveImageUploaderState',
+        'flatpack-imageuploader:error' => 'showImageUploaderError',
         'flatpack-taginput:change' => 'saveTagInputState',
         'flatpack-taginput:new-tag' => 'createRelatedTag',
+        // 'editorjs-save:flatpack-editor' => 'saveEditorState',
     ];
 
     public function mount()
@@ -98,13 +100,47 @@ class Form extends Component
         ]);
     }
 
-    public function saveTagInputState($key, $data)
+    /**
+     * Save the state of the image uploader.
+     *
+     * @param array $images
+     * @return array
+     */
+    public function saveImageUploaderState($key, $images)
     {
-        $this->fields[$key] = explode(',', $data);
+        $this->fields[$key] = $images;
+
+        return $this->fields[$key];
     }
 
     /**
-     * Tag input related model creation.
+     * Show the image uploader error.
+     *
+     * @param string $message
+     * @param array $images
+     * @return void
+     */
+    public function showImageUploaderError($message, $images)
+    {
+        $this->notifyError($message);
+    }
+
+    /**
+     * Save TagInput field state.
+     *
+     * @param  string $key Field key.
+     * @param  string $tags Comma separated tags
+     * @return array
+     */
+    public function saveTagInputState($key, $tags)
+    {
+        $this->fields[$key] = explode(',', $tags);
+
+        return $this->fields[$key];
+    }
+
+    /**
+     * TagInput related model creation.
      *
      * @return void
      */
@@ -134,6 +170,27 @@ class Form extends Component
     //     $this->fields['body'] = $data;
     // }
 
+    private function beforeAction($method)
+    {
+        if ($method === 'save') {
+            $this->emit('flatpack-form:saving', $this->fields, $this->entry, $this->entry->exists);
+        }
+    }
+
+    private function afterAction($method)
+    {
+        if ($method === 'save') {
+            $this->emit('flatpack-form:saved', $this->fields, $this->entry->getKey());
+
+            $this->emit('updateUrl', route('flatpack.form', [
+                'entity' => $this->entity,
+                'id' => $this->entry->getKey(),
+            ]));
+
+            $this->formType = 'edit';
+        }
+    }
+
     public function action($method = 'cancel', $options = [])
     {
         // Cancel action
@@ -159,7 +216,11 @@ class Form extends Component
                 ->setRedirect($redirect);
 
             // Execute action
+            $this->beforeAction($method);
+
             $action->run();
+
+            $this->afterAction($method);
 
             // Action success notification
             if (method_exists($action, 'getMessage') && $action->isSuccess()) {
@@ -173,10 +234,6 @@ class Form extends Component
 
             // Bind refreshed model attributes to fields
             $this->bindModelToFields();
-
-            if ($this->formType === 'create') {
-                return $this->goToEditForm();
-            }
 
             if ($action->shouldRedirect()) {
                 return $this->goBack();
@@ -196,6 +253,8 @@ class Form extends Component
      */
     private function bindModelToFields()
     {
+        $this->entityId = $this->entry->getKey() ?? 'create';
+
         foreach ($this->getFormFields() as $key => $options) {
             if ($this->entry->$key instanceof \Illuminate\Support\Carbon) {
                 $this->fields[$key] = $this->entry->$key->format('Y-m-d\TH:i:s');
@@ -233,14 +292,11 @@ class Form extends Component
         }
     }
 
-    private function goToEditForm()
-    {
-        return redirect()->route('flatpack.form', [
-            'entity' => $this->entity,
-            'id' => $this->entry->id,
-        ]);
-    }
-
+    /**
+     * Client-side redirect to the list page.
+     *
+     * @return \Livewire\Event
+     */
     private function goBack()
     {
         return $this->redirectTo(route('flatpack.list', [
@@ -248,6 +304,12 @@ class Form extends Component
         ]));
     }
 
+    /**
+     * Notify success event.
+     *
+     * @param  string $message
+     * @return \Livewire\Event
+     */
     private function notifySuccess($message)
     {
         $this->emit('notify', [
@@ -256,6 +318,13 @@ class Form extends Component
         ]);
     }
 
+    /**
+     * Notify error event.
+     *
+     * @param  string $message
+     * @param  array  $errors
+     * @return \Livewire\Event
+     */
     private function notifyError($error, $errors = [])
     {
         return $this->emit('notify', [
@@ -265,6 +334,12 @@ class Form extends Component
         ]);
     }
 
+    /**
+     * Redirect event.
+     *
+     * @param  string $url
+     * @return \Livewire\Event
+     */
     private function redirectTo($url)
     {
         return $this->emit('redirect', [
