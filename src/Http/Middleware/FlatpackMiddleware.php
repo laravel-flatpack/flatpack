@@ -43,7 +43,7 @@ class FlatpackMiddleware
         $request->flatpack = [
             'entity' => $this->entity,
             'model' => $this->modelClass,
-            'compositions' => $this->options
+            'compositions' => $this->options,
         ];
 
         return $next($request);
