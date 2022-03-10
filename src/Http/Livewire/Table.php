@@ -13,6 +13,8 @@ class Table extends DataTableComponent
     use WithActions;
     use WithComposition;
 
+    public $refresh = 'keep-alive';
+
     public bool $dumpFilters = false;
 
     public bool $columnSelect = true;
@@ -116,8 +118,7 @@ class Table extends DataTableComponent
     public function bulkAction($action)
     {
         try {
-            $action = $this->getAction($action)
-                ->setSelectedKeys($this->selectedKeys());
+            $action = $this->getAction($action)->setSelectedKeys($this->selectedKeys());
 
             $action->run();
 
@@ -139,6 +140,7 @@ class Table extends DataTableComponent
     {
         return view('flatpack::components.table')
             ->with([
+                'scopes' => $this->getComposition('scopes'),
                 'toolbar' => $this->getComposition('toolbar'),
                 'columns' => $this->columns(),
                 'searchableColumns' => $this->getSearchableColumns(),

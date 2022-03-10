@@ -14,7 +14,6 @@
         @include('flatpack::includes.input.relation')
         @include('flatpack::includes.input.tags')
         @include('flatpack::includes.input.editable')
-        @include('flatpack::includes.button')
         @include('flatpack::includes.heading')
     </div>
     @include('flatpack::includes.input.errors')

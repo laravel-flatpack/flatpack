@@ -182,7 +182,7 @@ class Form extends Component
         if ($method === 'save') {
             $this->emit('flatpack-form:saved', $this->fields, $this->entry->getKey());
 
-            $this->emit('updateUrl', route('flatpack.form', [
+            $this->emit('update_url', route('flatpack.form', [
                 'entity' => $this->entity,
                 'id' => $this->entry->getKey(),
             ]));
@@ -325,11 +325,11 @@ class Form extends Component
      * @param  array  $errors
      * @return \Livewire\Event
      */
-    private function notifyError($error, $errors = [])
+    private function notifyError($message, $errors = [])
     {
         return $this->emit('notify', [
             "type" => "error",
-            "message" => $error,
+            "message" => $message,
             "errors" => $errors,
         ]);
     }
@@ -342,8 +342,6 @@ class Form extends Component
      */
     private function redirectTo($url)
     {
-        return $this->emit('redirect', [
-            'url' => $url,
-        ]);
+        return $this->emit('redirect', $url);
     }
 }
