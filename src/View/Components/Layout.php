@@ -30,7 +30,7 @@ class Layout extends Component
      */
     public function render()
     {
-        $current = Arr::first(array_keys(request()->flatpackMappings));
+        $current = request()->flatpack['entity'] ?? null;
         $current = empty($current) ? 'home' : $current;
 
         return view('flatpack::components.layout', [

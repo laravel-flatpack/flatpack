@@ -1,0 +1,50 @@
+.image-uploader-container {
+  @apply flex flex-col items-center justify-center w-full gap-4 py-1;
+}
+
+.image-uploader-container .image-wrapper {
+  @apply flex flex-wrap w-full gap-3;
+}
+
+.image-uploader-container .image-wrapper .single-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  overflow: hidden;
+}
+
+.image-uploader-container .image-wrapper .single-image {
+  @apply relative flex flex-wrap w-40 h-40 overflow-hidden bg-black border border-gray-300 rounded-md;
+}
+
+.image-uploader-container:not(.is-multiple).is-preview-full
+  .image-wrapper
+  .single-image {
+  @apply w-full;
+}
+
+.image-uploader-container .image-wrapper .single-image > button {
+  @apply absolute flex items-center justify-center w-8 h-8 p-1 border border-transparent rounded-md cursor-pointer opacity-90 right-1 top-1;
+  @apply text-gray-800 bg-gray-200 hover:bg-gray-50 hover:text-gray-700;
+}
+
+.image-uploader-container .image-wrapper .single-image label {
+  @apply absolute bottom-0 left-0 px-2 py-1 text-xs text-white break-words break-all bg-black border border-transparent bg-opacity-60;
+}
+
+.image-uploader-container .input-wrapper {
+  @apply relative z-10 block w-full text-gray-400 ease-in-out border border-gray-300 border-dashed rounded-md shadow-sm hover:text-gray-500 hover:border-gray-500 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50;
+}
+
+.image-uploader-container .input-wrapper input {
+  @apply relative z-50 block w-full h-full p-10 opacity-0 cursor-pointer max-h-32;
+  box-sizing: border-box;
+}
+
+.image-uploader-container .input-wrapper .drop-zone {
+  @apply absolute top-0 bottom-0 left-0 right-0 flex items-center justify-center text-center;
+}
+
+.image-uploader-container .input-wrapper .drop-zone p {
+  @apply text-sm text-inherit;
+}

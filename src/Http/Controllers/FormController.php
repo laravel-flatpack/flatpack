@@ -9,7 +9,7 @@ class FormController extends Controller
 {
     public function index(Request $request, $entity, $id = null)
     {
-        $modelClass = $request->flatpackMappings[$entity];
+        $modelClass = $request->flatpack['model'];
 
         $composition = Flatpack::loadComposition()->getTemplateComposition($entity, 'form.yaml');
 

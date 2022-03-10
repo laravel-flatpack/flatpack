@@ -3,10 +3,12 @@
 namespace Faustoq\Flatpack\Actions;
 
 use Faustoq\Flatpack\Contracts\FlatpackActionContract;
-use Illuminate\Support\Facades\Storage;
+use Faustoq\Flatpack\Traits\WithStorageFiles;
 
 class Upload extends FlatpackAction implements FlatpackActionContract
 {
+    use WithStorageFiles;
+
     /**
      * Action authorization.
      *
@@ -20,21 +22,14 @@ class Upload extends FlatpackAction implements FlatpackActionContract
     /**
      * Handle action.
      *
-     * @return void
+     * @return array
      */
     public function handle()
     {
-        if (! $this->file) {
+        if (! count($this->files)) {
             return;
         }
 
-        $disk = config('flatpack.storage.disk', 'public');
-
-        $path = Storage::disk($disk)->putFile(
-            config('flatpack.storage.path', 'uploads'),
-            $this->file
-        );
-
-        return Storage::disk($disk)->url($path);
+        return $this->uploadFiles();
     }
 }

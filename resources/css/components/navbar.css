@@ -56,12 +56,12 @@
 .navbar .navbar-items .navbar-logo span {
   @apply pl-2 font-medium;
 }
-.navbar .navbar-items .navbar-logo svg * {
-  @apply fill-gray-400;
+.navbar .navbar-items .navbar-logo {
+  @apply text-gray-400 fill-gray-400;
 }
-.navbar .navbar-items .navbar-logo.current svg *,
-.navbar .navbar-items .navbar-logo:hover svg * {
-  @apply fill-white;
+.navbar .navbar-items .navbar-logo.current,
+.navbar .navbar-items .navbar-logo:hover {
+  @apply text-white;
 }
 
 .top-bar-wrapper {
