@@ -1,3 +1,18 @@
+<div class="flex flex-row items-center justify-center gap-2">
+@if ($scope === 'onlyTrashed')
+    <x-flatpack-action-button
+        key="action-empty-trash"
+        :options="[
+            'action' => 'empty-trash',
+            'confirm' => true,
+            'label' => __('Empty Trash'),
+            'style' => 'danger',
+            'size' => 'small'
+        ]"
+        :entity="$entity"
+        :model="$model"
+    />
+@endif
 @if ($this->showBulkActionsDropdown && (
     ($paginationEnabled && (($selectPage && $rows->total() > $rows->count()) ||
     count($selected))) ||
@@ -43,18 +58,29 @@
             >
                 <div class="bg-white rounded-md shadow-xs dark:bg-gray-700 dark:text-white">
                     <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
-                        @foreach($this->composition['bulk'] ?? [] as $key => $options)
+                        @if ($scope === 'onlyTrashed')
                             <x-flatpack-action-button
-                                method="bulkAction"
-                                key="bulk-action-{{ $key }}"
-                                :options="$options"
-                                :entity="$entity"
-                                :model="$model"
-                            />
-                        @endforeach
+                                    method="bulkAction"
+                                    key="bulk-action-restore"
+                                    :options="['action'=>'restore', 'confirm' => true, 'label' => __('Restore')]"
+                                    :entity="$entity"
+                                    :model="$model"
+                                />
+                        @else
+                            @foreach($this->composition['bulk'] ?? [] as $key => $options)
+                                <x-flatpack-action-button
+                                    method="bulkAction"
+                                    key="bulk-action-{{ $key }}"
+                                    :options="$options"
+                                    :entity="$entity"
+                                    :model="$model"
+                                />
+                            @endforeach
+                        @endif
                     </div>
                 </div>
             </div>
         </div>
     </div>
 @endif
+</div>

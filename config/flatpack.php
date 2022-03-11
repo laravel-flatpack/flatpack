@@ -21,6 +21,10 @@ return [
         'upload' => \Faustoq\Flatpack\Actions\Upload::class,
 
         'delete' => \Faustoq\Flatpack\Actions\Delete::class,
+
+        'restore' => \Faustoq\Flatpack\Actions\Restore::class,
+
+        'empty-trash' => \Faustoq\Flatpack\Actions\EmptyTrash::class,
     ],
 
     /*

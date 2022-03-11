@@ -13,8 +13,6 @@ class Table extends DataTableComponent
     use WithActions;
     use WithComposition;
 
-    public $refresh = 'keep-alive';
-
     public bool $dumpFilters = false;
 
     public bool $columnSelect = true;
@@ -28,6 +26,12 @@ class Table extends DataTableComponent
     public array $bulkActions = [];
 
     protected string $tableName = '';
+
+    protected $queryString = [
+        'filters' => ['except' => null],
+        'sorts' => ['except' => null],
+        'scope' => ['except' => 'default'],
+    ];
 
     /**
      * Model class name.
@@ -49,6 +53,13 @@ class Table extends DataTableComponent
      * @var array
      */
     public $composition = [];
+
+    /**
+     * Query scope.
+     *
+     * @var null|string
+     */
+    public $scope = 'default';
 
     public function mount()
     {
@@ -98,21 +109,55 @@ class Table extends DataTableComponent
 
     public function query(): Builder
     {
-        return $this->model::query();
+        return $this->scopeQuery($this->scope);
+    }
+
+    public function scopeQuery($scope = 'default'): Builder
+    {
+        $query = $this->model::query();
+
+        try {
+            if (! empty($scope) && $scope !== 'default') {
+                return $query->{$scope}();
+            }
+        } catch (\Exception $e) {
+            // if query scope is not found, do nothing
+        }
+
+        return $query;
+    }
+
+    public function updatedScope($value)
+    {
+        $this->selected = [];
+        $this->resetBulk();
     }
 
     public function getTableRowUrl($row): string
     {
+        if ($this->isTrashed($row)) {
+            return false;
+        }
+
         return route('flatpack.form', [
             'entity' => $this->entity,
             'id' => $row->id,
         ]);
     }
 
+    public function isTrashed($row): bool
+    {
+        return method_exists($row, 'trashed') && $row->trashed();
+    }
+
     public function action($action, $options = [])
     {
-        $action = $this->getAction($action);
-        $action->run();
+        try {
+            $action = $this->getAction($action);
+            $action->run();
+        } catch (\Exception $e) {
+            $this->notifyError($e->getMessage());
+        }
     }
 
     public function bulkAction($action)

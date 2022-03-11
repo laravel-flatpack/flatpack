@@ -1,7 +1,7 @@
 <button
     wire:key="{{ $key }}"
     {{ $attributes->class([
-        'button text-lg font-medium lg:text-base lg:font-normal',
+        'button text-md font-medium lg:text-sm',
         $style,
         'hidden' => $hidden,
     ]) }}
