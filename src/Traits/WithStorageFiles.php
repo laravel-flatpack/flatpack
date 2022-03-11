@@ -146,7 +146,7 @@ trait WithStorageFiles
      * @param  \Illuminate\Http\UploadedFile  $file
      * @return string
      */
-    private function uploadFile($file)
+    protected function uploadFile($file)
     {
         $disk = $this->getStorageDisk();
 
