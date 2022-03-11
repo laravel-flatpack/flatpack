@@ -32,7 +32,7 @@ class EmptyTrash extends FlatpackAction implements FlatpackActionContract
     public function getConfirmationMessage()
     {
         return __('Are you sure you want to permanently delete these :entity?', [
-            'entity' => Str::plural($this->entity)
+            'entity' => Str::plural($this->entity),
         ]);
     }
 
