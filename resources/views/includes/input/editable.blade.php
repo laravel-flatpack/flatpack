@@ -1,5 +1,5 @@
 @if (strtolower($type ?? '') === 'editable')
-<div x-cloak x-data="{ editing: false, placeholder: '{{ $placeholder }}' }" class="w-full">
+<div wire:ignore x-cloak x-data="{ editing: false, placeholder: '{{ $placeholder }}' }" class="w-full">
     <button
         x-show="!editing"
         @click="editing=true; setTimeout(() => { $refs.editableInput.focus(); $refs.editableInput.select(); }, 10);"
