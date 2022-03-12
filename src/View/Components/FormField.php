@@ -114,7 +114,7 @@ class FormField extends Component implements Arrayable
      *
      * @var array
      */
-    private $options = [];
+    public $options = [];
 
     /**
      * Create a new FormField instance.
@@ -142,6 +142,11 @@ class FormField extends Component implements Arrayable
         $this->initProps();
     }
 
+    /**
+     * Render the component.
+     *
+     * @return \Illuminate\View\View
+     */
     public function render()
     {
         return view('flatpack::components.form-field');
@@ -150,9 +155,8 @@ class FormField extends Component implements Arrayable
     /**
      * Dynamically initialize component props based on the options.
      */
-    private function initProps(): void
+    protected function initProps(): void
     {
-        // Common props
         $this->type = $this->getOption('type', 'text');
         $this->label = $this->getOption('label', '');
         $this->placeholder = $this->getOption('placeholder', '');
@@ -161,24 +165,20 @@ class FormField extends Component implements Arrayable
         $this->disabled = $this->getOption('disabled', false);
         $this->readonly = $this->getOption('readonly', false);
         $this->value = $this->getOption('value', $this->entry->{$this->key});
+        $this->items = $this->getOption('items', []);
         $this->size = $this->getOption('size', 'base');
 
-        // Select props
-        if ($this->type === 'select') {
-            $this->items = $this->getOption('items', []);
-        }
-
-        // Relation props
         if (in_array($this->type, [ 'relation', 'select', 'taginput' ])) {
-            $field = $this->getOption('relation.name', $this->key);
-            $display = $this->getOption('relation.display', 'name');
-            $canCreate = $this->getOption('relation.make', false);
+            $this->initRelationship();
+        }
+    }
 
-            if ($this->isRelationship($field)) {
-                $this->relationshipType = $this->getRelationshipType($field);
-                $this->items = $this->getRelationshipItems($field, $display);
-                $this->canCreate = $canCreate;
-            }
+    protected function initRelationship(): void
+    {
+        $key = $this->getOption('relation.name', $this->key);
+
+        if ($this->isRelationship($key)) {
+            $this->relationshipType = $this->getRelationshipType($key);
         }
     }
 
@@ -189,7 +189,7 @@ class FormField extends Component implements Arrayable
      * @param mixed $default
      * @return mixed
      */
-    private function getOption($key, $default = null)
+    public function getOption($key, $default = null)
     {
         return Arr::get($this->options, $key, $default);
     }

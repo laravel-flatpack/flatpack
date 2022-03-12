@@ -10,7 +10,10 @@ use Faustoq\Flatpack\Http\Livewire\ImageUploader;
 use Faustoq\Flatpack\Http\Livewire\Table;
 use Faustoq\Flatpack\View\Components\ActionButton;
 use Faustoq\Flatpack\View\Components\FormField;
+use Faustoq\Flatpack\View\Components\InputField;
 use Faustoq\Flatpack\View\Components\Layout;
+use Faustoq\Flatpack\View\Components\Modal;
+use Faustoq\Flatpack\View\Components\RelationField;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
@@ -84,7 +87,10 @@ class FlatpackServiceProvider extends ServiceProvider
         $this->loadViewComponentsAs('flatpack', [
             ActionButton::class,
             FormField::class,
+            InputField::class,
+            RelationField::class,
             Layout::class,
+            Modal::class,
         ]);
     }
 
