@@ -1,6 +1,6 @@
 @if (in_array(strtolower($type), ['relation','multiselect']))
 <div class="w-full">
-    <ul class="w-full py-1 overflow-y-scroll list-none bg-gray-200 shadow-inner max-h-60">
+    <ul class="w-full py-1 overflow-y-scroll list-none bg-gray-200 rounded-sm shadow-inner max-h-60">
         @foreach ($items as $optionValue => $display)
         <li class="mx-3 my-2">
             <label class="flex items-start justify-start cursor-pointer">
@@ -16,21 +16,14 @@
         @endforeach
     </ul>
     @if ($canCreate)
-    <div class="mt-4" x-data="{ visible: false }">
+    <div class="mt-4" x-data="{ visible: false }" x-on:close-modal.window="visible = false">
         <div x-show="visible === true" x-cloak>
             <x-flatpack-modal title="Create new {{ Str::singular($key) }}">
-                @dump($fields)
-
-                <x-slot name="footer">
-                    <button
-                        wire:click="createRelation('{{ $key }}', @js($fields)); visible = !visible;"
-                        class="button sm:ml-3 sm:w-auto primary"
-                        type="button">{{ __('Save') }}</button>
-                    <button
-                        @click="visible = !visible"
-                        class="mt-2 button sm:mt-0 sm:ml-3 sm:w-auto"
-                        type="button">{{ __('Cancel') }}</button>
-                </x-slot>
+                <livewire:flatpack.create-relation
+                    :key="$key.'_create'"
+                    :composition="['fields' => $formFields]"
+                    :model="$relationshipModel"
+                />
             </x-flatpack-modal>
         </div>
         <button

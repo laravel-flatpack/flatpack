@@ -68,6 +68,13 @@ class FormField extends Component implements Arrayable
     public $relationshipType = null;
 
     /**
+     * Relationship model.
+     *
+     * @var \Illuminate\Database\Eloquent\Model|null
+     */
+    public $relationshipModel;
+
+    /**
      * Can create new related items.
      *
      * @var mixed

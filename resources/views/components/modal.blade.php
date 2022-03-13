@@ -11,18 +11,11 @@
                     <x-flatpack::icon icon="close" size="small" />
                 </span>
             </div>
-            <div class="p-4 bg-white">
-                <div class="sm:flex sm:items-start">
-                    <div class="mt-3 text-center sm:mt-0 sm:text-left">
-                        {{ $slot }}
-                    </div>
+            <div class="bg-white">
+                <div class="text-left">
+                    {{ $slot }}
                 </div>
             </div>
-            @if (!empty($footer))
-            <footer {{ $footer->attributes->class(['px-4 py-3 bg-gray-50 sm:flex sm:flex-row-reverse']) }}>
-                {{ $footer }}
-            </footer>
-            @endif
         </div>
     </div>
 </div>
