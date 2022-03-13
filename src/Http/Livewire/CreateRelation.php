@@ -53,7 +53,7 @@ class CreateRelation extends Component
 
     public function mount()
     {
-        $this->entry = new $this->model;
+        $this->entry = new $this->model();
 
         $this->formFields = $this->getFormFields();
 
@@ -65,7 +65,7 @@ class CreateRelation extends Component
     public function render()
     {
         return view('flatpack::components.create-relation', [
-            'main' => $this->getMainComposition()
+            'main' => $this->getMainComposition(),
         ]);
     }
 
