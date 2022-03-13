@@ -42,7 +42,9 @@ class UploadAdapter {
     xhr.addEventListener("load", () => {
       const response = xhr.response;
 
-      console.log("response", response);
+      if (response.error) {
+        window.Flatpack.notify({ message: response.error, type: "error" });
+      }
 
       if (!response || response.error) {
         return reject(

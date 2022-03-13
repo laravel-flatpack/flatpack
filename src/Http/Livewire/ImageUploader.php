@@ -129,7 +129,7 @@ class ImageUploader extends Component
             array_push($this->images, $image);
         }
 
-        $this->size = Arr::get($options, 'maxSize', 2048);
+        $this->size = Arr::get($options, 'maxSize', 5120);
         $this->multiple = Arr::get($options, 'multiple', false);
         $this->preview = Arr::get($options, 'preview', 'auto');
     }
@@ -281,7 +281,21 @@ class ImageUploader extends Component
 
     public function render()
     {
+        $this->cleanUp();
+
         return view('flatpack::components.image-uploader');
+    }
+
+    /**
+     * Remove input files if validation failed.
+     *
+     * @return void
+     */
+    private function cleanUp()
+    {
+        if ($this->getErrorBag()->has('rawImages.*')) {
+            $this->rawImages = [];
+        }
     }
 
     /**

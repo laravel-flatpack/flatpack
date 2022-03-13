@@ -119,7 +119,7 @@ trait WithStorageFiles
      */
     private function isFileToUpload($file)
     {
-        return $file instanceof \Livewire\TemporaryUploadedFile;
+        return $file instanceof \Livewire\TemporaryUploadedFile || $file instanceof \Illuminate\Http\UploadedFile;
     }
 
     /**
