@@ -54,6 +54,13 @@
                     :entry="$entry"
                 />
             </div>
+        @elseif (isset($options['type']) && in_array($options['type'], ['block-editor', 'blockeditor']))
+            <livewire:flatpack.block-editor
+                :editor-id="$key"
+                :value="$entry->{$key}"
+                :read-only="false"
+                class="w-full"
+            />
         @else
             <x-flatpack-form-field
                 :key="$key"
