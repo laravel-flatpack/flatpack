@@ -5,6 +5,7 @@ namespace Faustoq\Flatpack;
 use Faustoq\Flatpack\Commands\MakeCommand;
 use Faustoq\Flatpack\Commands\MakeFormCommand;
 use Faustoq\Flatpack\Commands\MakeListCommand;
+use Faustoq\Flatpack\Http\Livewire\BlockEditor;
 use Faustoq\Flatpack\Http\Livewire\CreateRelation;
 use Faustoq\Flatpack\Http\Livewire\Form;
 use Faustoq\Flatpack\Http\Livewire\ImageUploader;
@@ -79,6 +80,7 @@ class FlatpackServiceProvider extends ServiceProvider
         Livewire::component('flatpack.form', Form::class);
         Livewire::component('flatpack.create-relation', CreateRelation::class);
         Livewire::component('flatpack.image-uploader', ImageUploader::class);
+        Livewire::component('flatpack.block-editor', BlockEditor::class);
     }
 
     /**

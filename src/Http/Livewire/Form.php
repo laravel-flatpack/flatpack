@@ -79,11 +79,12 @@ class Form extends Component
      * Livewire component listeners.
      */
     protected $listeners = [
-        'flatpack-relation:updated' => 'render',
+        'flatpack-editor:save' => 'saveEditorState',
         'flatpack-imageuploader:updated' => 'saveImageUploaderState',
         'flatpack-imageuploader:error' => 'showImageUploaderError',
         'flatpack-taginput:change' => 'saveTagInputState',
         'flatpack-taginput:create' => 'createRelatedEntity',
+        'flatpack-relation:updated' => 'render',
     ];
 
     public function mount()
@@ -127,6 +128,20 @@ class Form extends Component
     }
 
     /**
+     * Save the state of the block-editor.
+     *
+     * @param string $key
+     * @param array $data
+     * @return array
+     */
+    public function saveEditorState($key, $data)
+    {
+        $this->fields[$key] = json_encode($data);
+
+        return $this->fields[$key];
+    }
+
+    /**
      * Save TagInput field state.
      *
      * @param  string $key Field key.
@@ -162,11 +177,6 @@ class Form extends Component
             $this->notifyError($e->getMessage());
         }
     }
-
-    // public function saveEditorState($data)
-    // {
-    //     $this->fields['body'] = $data;
-    // }
 
     private function beforeAction($method)
     {

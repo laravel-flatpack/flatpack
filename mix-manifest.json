@@ -2,5 +2,6 @@
     "/public/js/flatpack.js": "/public/js/flatpack.js",
     "/public/js/form-components.js": "/public/js/form-components.js",
     "/public/js/list-components.js": "/public/js/list-components.js",
+    "/public/js/editorjs.js": "/public/js/editorjs.js",
     "/public/css/flatpack.css": "/public/css/flatpack.css"
 }

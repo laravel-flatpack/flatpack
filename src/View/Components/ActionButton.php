@@ -83,9 +83,9 @@ class ActionButton extends Component
     /**
      * Button style.
      *
-     * @var bool
+     * @var string
      */
-    public $style;
+    public $style = '';
 
     /**
      * ActionButton constructor.
@@ -93,15 +93,24 @@ class ActionButton extends Component
      * @param string $entity - Entity name
      * @param string $model - Model class name
      * @param array $options - Button options
+     * @param string $style - Button style
+     * @param string $method - Action method name
      * @return void
      */
-    public function __construct($key, $entity, $model, $options = [], $method = 'action')
-    {
+    public function __construct(
+        $key,
+        $entity,
+        $model,
+        $options = [],
+        $style = '',
+        $method = 'action'
+    ) {
         $this->key = $key;
         $this->entity = $entity;
         $this->model = $model;
         $this->options = $options;
         $this->method = $method;
+        $this->style = $style;
         $this->confirmationMessage = 'Are you sure you want to proceed?';
 
         $this->initProps();
@@ -132,7 +141,7 @@ class ActionButton extends Component
         $this->label = $this->getOption('label', '');
         $this->confirm = $this->getOption('confirm', false);
         $this->hidden = $this->getOption('hidden', false);
-        $this->style = $this->getOption('style', '', [
+        $this->style = $this->getOption('style', $this->style, [
             'primary',
             'secondary',
             'info',
