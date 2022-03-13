@@ -83,7 +83,7 @@ class Form extends Component
         'flatpack-imageuploader:updated' => 'saveImageUploaderState',
         'flatpack-imageuploader:error' => 'showImageUploaderError',
         'flatpack-taginput:change' => 'saveTagInputState',
-        'flatpack-taginput:create' => 'createRelatedEntity'
+        'flatpack-taginput:create' => 'createRelatedEntity',
     ];
 
     public function mount()
