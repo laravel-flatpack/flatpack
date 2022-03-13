@@ -31,6 +31,8 @@ class BlockEditor extends EditorJS
 
     public $downloadDisk;
 
+    public $uploadPath;
+
     public $logLevel;
 
     public function mount(
@@ -43,10 +45,6 @@ class BlockEditor extends EditorJS
         $uploadDisk = null,
         $downloadDisk = null
     ) {
-        if (is_null($placeholder)) {
-            $placeholder = config('livewire-editorjs.default_placeholder', 'Start typing...');
-        }
-
         if (is_string($value)) {
             $value = json_decode($value, true);
         }
@@ -59,8 +57,8 @@ class BlockEditor extends EditorJS
         $this->placeholder = ! empty($placeholder) ? $placeholder : __('Start typing...');
         $this->uploadDisk = config('flatpack.storage.disk', 'public');
         $this->downloadDisk = config('flatpack.storage.disk', 'public');
-
-        $this->logLevel = config('livewire-editorjs.editorjs_log_level');
+        $this->uploadPath = config('flatpack.storage.path', 'uploads');
+        $this->logLevel = "ERROR";
     }
 
     public function completedImageUpload(string $uploadedFileName, string $eventName, $fileName = null)
