@@ -27,7 +27,7 @@ class UploadController extends Controller
 
         if (! $request->hasFile('upload')) {
             return $this->jsonResponse([
-                'error' => 'No file to upload'
+                'error' => 'No file to upload',
             ]);
         }
 
@@ -38,7 +38,7 @@ class UploadController extends Controller
                 ->run();
         } catch (\Exception $e) {
             return $this->jsonResponse([
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
 
