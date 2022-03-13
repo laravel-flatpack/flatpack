@@ -99,7 +99,7 @@ class CreateRelation extends Component
 
     private function save()
     {
-        $this->entry = new $this->model;
+        $this->entry = new $this->model();
 
         foreach ($this->formFields as $key => $options) {
             $this->entry->{$key} = $this->fields[$key] ?? null;
