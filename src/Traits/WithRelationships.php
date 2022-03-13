@@ -21,6 +21,11 @@ trait WithRelationships
         return ($this->isRelationship($key)) ? $this->entry->{$key}() : null;
     }
 
+    protected function getRelationshipModel($key)
+    {
+        return optional($this->relation($key))->getRelated()::class;
+    }
+
     /**
      * Get the items to populate relationship select.
      *

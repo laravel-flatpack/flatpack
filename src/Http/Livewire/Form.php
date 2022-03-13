@@ -4,10 +4,10 @@ namespace Faustoq\Flatpack\Http\Livewire;
 
 use Faustoq\Flatpack\Traits\WithActions;
 use Faustoq\Flatpack\Traits\WithComposition;
+use Faustoq\Flatpack\Traits\WithFormFields;
 use Faustoq\Flatpack\Traits\WithFormValidation;
 use Faustoq\Flatpack\Traits\WithRelationships;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 
@@ -16,6 +16,7 @@ class Form extends Component
     use WithActions;
     use WithComposition;
     use WithRelationships;
+    use WithFormFields;
     use WithFormValidation;
 
     /**
@@ -78,6 +79,7 @@ class Form extends Component
      * Livewire component listeners.
      */
     protected $listeners = [
+        'flatpack-relation:updated' => 'updateRelation',
         'flatpack-imageuploader:updated' => 'saveImageUploaderState',
         'flatpack-imageuploader:error' => 'showImageUploaderError',
         'flatpack-taginput:change' => 'saveTagInputState',
@@ -98,6 +100,11 @@ class Form extends Component
             'main' => $this->getMainComposition(),
             'sidebar' => $this->getComposition('sidebar'),
         ]);
+    }
+
+    public function updateRelation()
+    {
+        $this->notifySuccess('Relation updated successfully.');
     }
 
     /**
@@ -137,6 +144,22 @@ class Form extends Component
         $this->fields[$key] = explode(',', $tags);
 
         return $this->fields[$key];
+    }
+
+    public function createRelated($key, $model, $data, $formFields)
+    {
+        try {
+            dd($key, $model, $data, $formFields);
+
+            $this->validateForm($data, $formFields);
+
+            dd($key, $model, $data, $formFields);
+        } catch (ValidationException $e) {
+            $this->formErrors["$key.create"] = $e->errors();
+            $this->notifyError($e->getMessage(), $e->errors());
+        } catch (\Exception $e) {
+            $this->notifyError($e->getMessage());
+        }
     }
 
     /**
@@ -180,6 +203,8 @@ class Form extends Component
     private function afterAction($method)
     {
         if ($method === 'save') {
+            $this->entityId = $this->entry->getKey() ?? 'create';
+
             $this->emit('flatpack-form:saved', $this->fields, $this->entry->getKey());
 
             $this->emit('update_url', route('flatpack.form', [
@@ -243,52 +268,6 @@ class Form extends Component
             $this->notifyError($e->getMessage(), $this->formErrors);
         } catch (\Exception $e) {
             $this->notifyError($e->getMessage());
-        }
-    }
-
-    /**
-     * Bind model to fields.
-     *
-     * @return void
-     */
-    private function bindModelToFields()
-    {
-        $this->entityId = $this->entry->getKey() ?? 'create';
-
-        foreach ($this->getFormFields() as $key => $options) {
-            if ($this->entry->$key instanceof \Illuminate\Support\Carbon) {
-                $this->fields[$key] = $this->entry->$key->format('Y-m-d\TH:i:s');
-            } elseif ($this->entry->$key instanceof \Illuminate\Database\Eloquent\Collection) {
-                $id = optional($this->relation($key))->getRelatedKeyName();
-                $this->fields[$key] = $this->entry->$key->pluck($id)->toArray();
-            } elseif ($this->entry->$key instanceof \Illuminate\Database\Eloquent\Model) {
-                $this->fields[$key] = $this->entry->$key->getKey();
-            } else {
-                $this->fields[$key] = $this->entry->$key;
-            }
-        }
-    }
-
-    /**
-     * Bind fields to model.
-     *
-     * @return void
-     */
-    private function bindFieldsToModel()
-    {
-        $fields = $this->getFormFields();
-
-        foreach ($fields as $key => $options) {
-            if ((isset($options['type']) && in_array($options['type'], $this->excludedTypes)) ||
-                (isset($options['disabled']) && $options['disabled'] === true) ||
-                (isset($options['readonly']) && $options['readonly'] === true) ||
-                Str::contains($key, '_confirmation') ||
-                $this->isRelationship($key) ||
-                $this->fields[$key] === null) {
-                continue;
-            }
-
-            $this->entry->{$key} = $this->fields[$key];
         }
     }
 

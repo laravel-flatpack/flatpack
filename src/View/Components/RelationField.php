@@ -26,11 +26,18 @@ class RelationField extends FormField
     public $items = [];
 
     /**
-     * Form fields to create a new relation.
+     * Form fields values.
      *
-     * @return array
+     * @var array
      */
     public $fields = [];
+
+    /**
+     * Form fields composition.
+     *
+     * @var array
+     */
+    public $formFields = [];
 
     /**
      * Field options.
@@ -57,14 +64,18 @@ class RelationField extends FormField
     {
         $field = $this->getOption('relation.name', $this->key);
         $display = $this->getOption('relation.display', 'name');
-        $canCreate = $this->getOption('relation.make', false);
+        $this->canCreate = $this->getOption('relation.make', false);
 
         $this->relationshipType = $this->getRelationshipType($field);
+        $this->relationshipModel = $this->getRelationshipModel($this->key);
         $this->items = $this->getRelationshipItems($field, $display);
-        $this->canCreate = $canCreate;
 
-        if ($canCreate) {
-            $this->fields = $this->getOption('relation.fields', []);
+        if ($this->canCreate) {
+            $this->formFields = $this->getOption('relation.fields', []);
+
+            foreach ($this->formFields as $key => $options) {
+                $this->fields[$key] = null;
+            }
         }
     }
 
