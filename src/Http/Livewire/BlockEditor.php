@@ -3,10 +3,10 @@
 namespace Faustoq\Flatpack\Http\Livewire;
 
 use Faustoq\Flatpack\Traits\WithActions;
-use Maxeckel\LivewireEditorjs\Http\Livewire\EditorJS;
 use Illuminate\Support\Facades\Storage;
 use Livewire\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
+use Maxeckel\LivewireEditorjs\Http\Livewire\EditorJS;
 
 class BlockEditor extends EditorJS
 {
@@ -56,7 +56,7 @@ class BlockEditor extends EditorJS
         $this->class = $class;
         $this->style = $style;
         $this->readOnly = $readOnly;
-        $this->placeholder = !empty($placeholder) ? $placeholder : __('Start typing...');
+        $this->placeholder = ! empty($placeholder) ? $placeholder : __('Start typing...');
         $this->uploadDisk = config('flatpack.storage.disk', 'public');
         $this->downloadDisk = config('flatpack.storage.disk', 'public');
 
