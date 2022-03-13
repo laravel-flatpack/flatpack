@@ -44,6 +44,9 @@ const notifications = {
     }).showToast(),
 };
 
-const notify = ({ message, type = "info" }) => notifications[type](message);
+const notify = ({ message, type = "info" }) => {
+  if (!message) return;
+  notifications[type](message);
+};
 
 export default notify;
