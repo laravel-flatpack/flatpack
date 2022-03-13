@@ -7,7 +7,7 @@ const initEventListeners = () => {
     window.livewire.on(event, eventListeners[event]);
   });
 
-  window.livewire.onError((error) => onErrorAction(error));
+  // window.livewire.onError((error) => onErrorAction(error));
 };
 
 export default initEventListeners;

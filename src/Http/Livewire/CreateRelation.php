@@ -72,19 +72,16 @@ class CreateRelation extends Component
     public function create()
     {
         try {
-            $this->formErrors = [];
+            $this->clearErrors();
 
             $this->validateForm($this->fields, $this->formFields);
 
-            foreach ($this->formFields as $key => $options) {
-                $this->entry->{$key} = $this->fields[$key] ?? null;
-            }
+            $this->save();
 
-            $this->entry->save();
-
-            $this->fields = [];
+            $this->clearForm();
 
             $this->emitUp('flatpack-relation:updated');
+
             $this->dispatchBrowserEvent('close-modal');
         } catch (ValidationException $e) {
             $this->formErrors = $e->errors();
@@ -93,10 +90,31 @@ class CreateRelation extends Component
 
     public function cancel()
     {
-        $this->fields = [];
+        $this->clearErrors();
 
-        $this->formErrors = [];
+        $this->clearForm();
 
         $this->dispatchBrowserEvent('close-modal');
+    }
+
+    private function save()
+    {
+        $this->entry = new $this->model;
+
+        foreach ($this->formFields as $key => $options) {
+            $this->entry->{$key} = $this->fields[$key] ?? null;
+        }
+
+        $this->entry->save();
+    }
+
+    private function clearErrors()
+    {
+        $this->formErrors = [];
+    }
+
+    private function clearForm()
+    {
+        $this->fields = [];
     }
 }
