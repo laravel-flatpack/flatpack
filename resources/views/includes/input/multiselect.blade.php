@@ -16,8 +16,8 @@
         @endforeach
     </ul>
     @if ($canCreate)
-    <div class="mt-4" x-data="{ visible: false }" x-on:close-modal.window="visible = false">
-        <div x-show="visible === true" x-cloak>
+    <div class="mt-4" x-data="{ visible: false, toggle() { this.visible = ! this.visible } }" x-on:close-modal.window="toggle()">
+        <div x-show="visible" x-cloak x-ref="modal">
             <x-flatpack-modal title="Create new {{ Str::singular($key) }}">
                 <livewire:flatpack.create-relation
                     :key="$key.'_create'"
@@ -27,7 +27,7 @@
             </x-flatpack-modal>
         </div>
         <button
-            @click="visible = !visible"
+            @click="toggle(); setTimeout(() => $refs.modal.querySelector('.form-field-input').focus(), 300);"
             class="text-black bg-gray-100 button">
             <span class="whitespace-nowrap">{{ __("Create new :entity", ["entity" => Str::singular($key)]) }}</span>
         </button>

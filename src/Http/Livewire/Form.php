@@ -79,12 +79,11 @@ class Form extends Component
      * Livewire component listeners.
      */
     protected $listeners = [
-        'flatpack-relation:updated' => 'updateRelation',
+        'flatpack-relation:updated' => 'render',
         'flatpack-imageuploader:updated' => 'saveImageUploaderState',
         'flatpack-imageuploader:error' => 'showImageUploaderError',
         'flatpack-taginput:change' => 'saveTagInputState',
-        'flatpack-taginput:new-tag' => 'createRelatedTag',
-        // 'editorjs-save:flatpack-editor' => 'saveEditorState',
+        'flatpack-taginput:create' => 'createRelatedEntity'
     ];
 
     public function mount()
@@ -100,11 +99,6 @@ class Form extends Component
             'main' => $this->getMainComposition(),
             'sidebar' => $this->getComposition('sidebar'),
         ]);
-    }
-
-    public function updateRelation()
-    {
-        $this->notifySuccess('Relation updated successfully.');
     }
 
     /**
@@ -146,28 +140,12 @@ class Form extends Component
         return $this->fields[$key];
     }
 
-    public function createRelated($key, $model, $data, $formFields)
-    {
-        try {
-            dd($key, $model, $data, $formFields);
-
-            $this->validateForm($data, $formFields);
-
-            dd($key, $model, $data, $formFields);
-        } catch (ValidationException $e) {
-            $this->formErrors["$key.create"] = $e->errors();
-            $this->notifyError($e->getMessage(), $e->errors());
-        } catch (\Exception $e) {
-            $this->notifyError($e->getMessage());
-        }
-    }
-
     /**
-     * TagInput related model creation.
+     * Related model creation.
      *
      * @return void
      */
-    public function createRelatedTag($key, $data)
+    public function createRelatedEntity($key, $data)
     {
         try {
             $fields = $this->getFormFields();
@@ -179,10 +157,7 @@ class Form extends Component
                 $data
             );
 
-            $this->emit(
-                "flatpack-taginput:new-tag-created:{$key}",
-                $created
-            );
+            $this->emit("flatpack-form:related-entity-created:{$key}", $created);
         } catch (\Exception $e) {
             $this->notifyError($e->getMessage());
         }
