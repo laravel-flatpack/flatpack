@@ -1,11 +1,12 @@
-<form class="flex flex-col w-full" wire:submit.prevent="create">
+<form class="flex flex-col w-full mb-0" wire:submit.prevent="create">
     <div class="compact-fieldset">
     @foreach ($main as $key => $options)
         <x-flatpack-form-field
             :key="$key"
             :options="$options"
             :entry="$entry"
-            :fieldErrors="Arr::get($formErrors, $key, [])"
+            :model="$model"
+            :fieldErrors="getErrors($formErrors, $key)"
         />
     @endforeach
     </div>

@@ -1,4 +1,3 @@
-@include('flatpack::includes.input.blockeditor')
 @include('flatpack::includes.input.editor')
 @include('flatpack::includes.input.textarea')
 @include('flatpack::includes.input.datepicker')
