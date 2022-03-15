@@ -12,6 +12,27 @@ class FormField extends Component implements Arrayable
     use WithRelationships;
 
     /**
+     * Entity name.
+     *
+     * @var string
+     */
+    public $entity;
+
+    /**
+     * Model instance.
+     *
+     * @var \Illuminate\Database\Eloquent\Model
+     */
+    public $entry;
+
+    /**
+     * Model class name.
+     *
+     * @var string
+     */
+    public $model;
+
+    /**
      * Form field name.
      *
      * @var string
@@ -61,25 +82,11 @@ class FormField extends Component implements Arrayable
     public $items = [];
 
     /**
-     * Relationship type.
+     * Relation options.
      *
      * @var mixed
      */
-    public $relationshipType = null;
-
-    /**
-     * Relationship model.
-     *
-     * @var \Illuminate\Database\Eloquent\Model|null
-     */
-    public $relationshipModel;
-
-    /**
-     * Can create new related items.
-     *
-     * @var mixed
-     */
-    public $canCreate = false;
+    public $relation = false;
 
     /**
      * Readonly field.
@@ -128,6 +135,8 @@ class FormField extends Component implements Arrayable
      *
      * @param string $key
      * @param array $options
+     * @param string $entity
+     * @param string $model
      * @param \Illuminate\Database\Eloquent\Model $entry
      * @param array $fieldErrors
      * @param string $formType
@@ -136,12 +145,16 @@ class FormField extends Component implements Arrayable
     public function __construct(
         $key,
         $options = [],
+        $entity = '',
+        $model = '',
         $entry = null,
         $fieldErrors = [],
         $formType = 'create'
     ) {
         $this->key = $key;
         $this->options = $options;
+        $this->entity = $entity;
+        $this->model = $model;
         $this->entry = $entry;
         $this->fieldErrors = $fieldErrors;
         $this->formType = $formType;
@@ -171,12 +184,12 @@ class FormField extends Component implements Arrayable
         $this->required = $this->getOption('required', false);
         $this->disabled = $this->getOption('disabled', false);
         $this->readonly = $this->getOption('readonly', false);
-        $this->value = $this->getOption('value', $this->entry->{$this->key});
+        $this->value = $this->getOption('value', optional($this->entry)->{$this->key});
         $this->items = $this->getOption('items', []);
         $this->size = $this->getOption('size', 'base');
 
         if (in_array($this->type, [ 'relation', 'select', 'taginput' ])) {
-            $this->initRelationship();
+            $this->relation = $this->getOption('relation', false);
         }
     }
 
