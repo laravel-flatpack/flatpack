@@ -1,83 +1,45 @@
 <div>
-@php
-    $group = null;
-    $groupFirst = true;
-@endphp
-@foreach ($fields as $key => $options)
-    @if ($key === 'tabs')
-        @include('flatpack::includes.tabs', [
-            'options' => $options,
-            'formErrors' => $formErrors
-        ])
-    @else
-        @if ($loop->first)
-            <div x-data="{ open: true }" class="box">
+@foreach (groupComposition($fields) as $group)
+    @foreach ($group as $key => $options)
+
+        @if ($key === 'tabs')
+
+            @include('flatpack::includes.tabs', [
+                'options' => $options,
+                'formErrors' => $formErrors
+            ])
+
         @else
-            @if ($group !== Arr::get($options, 'group'))
-                    </div>
-                </div>
+
+            @if ($loop->first)
                 <div x-data="{ open: true }" class="box">
-                @php $groupFirst = true @endphp
-            @else
-                @php $groupFirst = false @endphp
             @endif
-        @endif
 
-        @if ($loop->first || $groupFirst)
-            @if (Arr::has($options, 'group'))
-            <div class="flex items-center justify-between text-gray-500 cursor-pointer" @click="open = !open">
-                <div class="text-xs font-bold uppercase">{{ $options['group'] }}</div>
-                <span x-cloak x-show="!open"><x-flatpack::icon icon="expand_more" size="small" /></span>
-                <span x-show="open"><x-flatpack::icon icon="expand_less" size="small" /></span>
-            </div>
+            @if ($loop->first && getOption($options, 'group') !== null)
+                <div class="flex items-center justify-between text-gray-500 cursor-pointer" @click="open = !open">
+                    <div class="text-xs font-bold uppercase">{{ getOption($options, 'group') }}</div>
+                    <span x-cloak x-show="!open"><x-flatpack::icon icon="expand_more" size="small" /></span>
+                    <span x-cloak x-show="open"><x-flatpack::icon icon="expand_less" size="small" /></span>
+                </div>
             @endif
+
             <div x-show="open" class="{{ $fieldset }}">
-        @endif
-
-        @if (isset($options['type']) && $options['type'] === 'button' && isset($options['action']))
-            <div class="col-span-full @if(Arr::get($options, 'span', 'full') !== 'full') lg:col-span-1 @endif">
-                <x-flatpack-action-button
-                    key="action-{{ $key }}"
-                    :options="$options"
-                    :entity="$entity"
-                    :model="$model"
-                    class="self-center w-fit h-fit"
-                />
-            </div>
-        @elseif (isset($options['type']) && $options['type'] === 'image-upload')
-            <div class="col-span-full @if (Arr::get($options, 'span', 'full') !== 'full') lg:col-span-1 @endif">
-                <livewire:flatpack.image-uploader
-                    :name="$key"
+                <x-flatpack-form-field
+                    :key="$key"
                     :options="$options"
                     :entity="$entity"
                     :model="$model"
                     :entry="$entry"
+                    :fieldErrors="getErrors($formErrors, $key)"
                 />
             </div>
-        @elseif (isset($options['type']) && in_array($options['type'], ['block-editor', 'blockeditor']))
-            <livewire:flatpack.block-editor
-                :editor-id="$key"
-                :value="$entry->{$key}"
-                :read-only="false"
-                class="w-full"
-            />
-        @else
-            <x-flatpack-form-field
-                :key="$key"
-                :options="$options"
-                :entry="$entry"
-                :fieldErrors="Arr::get($formErrors, $key, [])"
-            />
-        @endif
 
-        @php
-            $group = Arr::get($options, 'group');
-        @endphp
-        @if ($loop->last)
+            @if($loop->last)
                 </div>
-            </div>
+            @endif
+
         @endif
 
-    @endif
+    @endforeach
 @endforeach
 </div>

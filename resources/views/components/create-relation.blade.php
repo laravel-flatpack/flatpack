@@ -5,7 +5,8 @@
             :key="$key"
             :options="$options"
             :entry="$entry"
-            :fieldErrors="Arr::get($formErrors, $key, [])"
+            :model="$model"
+            :fieldErrors="getErrors($formErrors, $key)"
         />
     @endforeach
     </div>

@@ -1,10 +1,12 @@
 <div class="w-full max-w-5xl flex flex-col gap-2 {{ $fieldset }}">
-@foreach ($elements as $key => $fieldOptions)
+@foreach ($elements as $key => $options)
     <x-flatpack-form-field
         :key="$key"
-        :options="$fieldOptions"
+        :options="$options"
         :entry="$entry"
-        :fieldErrors="Arr::get($formErrors, $key, [])"
+        :model="$model"
+        :entry="$entry"
+        :fieldErrors="getErrors($formErrors, $key)"
     />
 @endforeach
 </div>
