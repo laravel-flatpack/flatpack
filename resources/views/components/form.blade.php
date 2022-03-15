@@ -18,6 +18,8 @@
             @include('flatpack::includes.form-fields', [
                 'fieldset' => 'form-fieldset',
                 'fields' => $main,
+                'entity' => $entity,
+                'model' => $model,
                 'formErrors' => $formErrors,
             ])
         </div>
@@ -26,6 +28,8 @@
             @include('flatpack::includes.form-fields', [
                 'fieldset' => 'sidebar-fieldset',
                 'fields' => $sidebar,
+                'entity' => $entity,
+                'model' => $model,
                 'formErrors' => $formErrors,
             ])
         </div>

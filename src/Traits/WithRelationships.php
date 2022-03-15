@@ -23,7 +23,13 @@ trait WithRelationships
 
     protected function getRelationshipModel($key)
     {
-        return optional($this->relation($key))->getRelated()::class;
+        $relation = $this->relation($key);
+
+        if (! $relation) {
+            return null;
+        }
+
+        return $relation->getRelated()::class;
     }
 
     /**
@@ -157,6 +163,10 @@ trait WithRelationships
      */
     protected function isRelationship($key)
     {
+        if (! $this->entry) {
+            return false;
+        }
+
         if (method_exists($this->entry, $key)) {
             return in_array(
                 get_class($this->entry->{$key}()),

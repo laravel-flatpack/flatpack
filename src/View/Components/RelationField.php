@@ -2,7 +2,7 @@
 
 namespace Faustoq\Flatpack\View\Components;
 
-class RelationField extends FormField
+class RelationField extends InputField
 {
     /**
      * Form field name.
@@ -47,15 +47,36 @@ class RelationField extends FormField
     public $options = [];
 
     /**
-     * Show relationship creation button and form.
+     * Relationship type.
+     *
+     * @var mixed
+     */
+    public $relationshipType = null;
+
+    /**
+     * Relationship model.
+     *
+     * @var \Illuminate\Database\Eloquent\Model|null
+     */
+    public $relationshipModel;
+
+    /**
+     * Create a new related model instance.
      *
      * @var bool
      */
     public $canCreate = false;
 
-    public function __construct($key, $options = [], $entry = null)
-    {
-        parent::__construct($key, $options, $entry);
+    public function __construct(
+        $key,
+        $options,
+        $entity = '',
+        $model = '',
+        $entry = null,
+        $fieldErrors = [],
+        $formType = 'create'
+    ) {
+        parent::__construct($key, $options, $entity, $model, $entry, $fieldErrors, $formType);
 
         $this->initRelationshipProps();
     }

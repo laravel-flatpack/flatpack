@@ -20,7 +20,6 @@
         <div x-show="visible" x-cloak x-ref="modal">
             <x-flatpack-modal title="Create new {{ Str::singular($key) }}">
                 <livewire:flatpack.create-relation
-                    :key="$key.'_create'"
                     :composition="['fields' => $formFields]"
                     :model="$relationshipModel"
                 />

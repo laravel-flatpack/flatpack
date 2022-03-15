@@ -1,3 +1,3 @@
-@if(!empty($label))
-<label class="block font-bold text-xs uppercase text-gray-600 mb-1 overflow-hidden text-ellipsis whitespace-nowrap">{{ $label }}</label>
+@if(!empty($label) && $type !== 'button')
+<label class="block mb-1 overflow-hidden text-xs font-bold text-gray-600 uppercase text-ellipsis whitespace-nowrap">{{ $label }}</label>
 @endif
