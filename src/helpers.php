@@ -35,6 +35,8 @@ if (! function_exists('getErrors')) {
 if (! function_exists('groupComposition')) {
     /**
      * Return an array of fields grouped by "group" option.
+     * Only consecutive fields with the same "group" option
+     * will be grouped together.
      *
      * @param  array  $fields
      * @return array
