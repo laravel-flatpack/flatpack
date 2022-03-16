@@ -1,4 +1,5 @@
-.form-main {
+.form-main,
+.form-header {
   @apply flex flex-col flex-grow w-full max-w-6xl mx-auto lg:w-3/4;
 }
 
@@ -42,7 +43,7 @@
 
 .header-fieldset,
 .sidebar-fieldset {
-  @apply grid w-full max-w-5xl grid-cols-1 gap-5 ml-0 my-0;
+  @apply grid w-full max-w-6xl grid-cols-1 gap-5 ml-0 my-0;
 }
 
 .compact-fieldset {

@@ -1,2 +1,2 @@
-@include('flatpack::includes.input.relation')
-@include('flatpack::includes.input.tags')
+@include('flatpack::includes.form-field.input.relation')
+@include('flatpack::includes.form-field.input.tags')
