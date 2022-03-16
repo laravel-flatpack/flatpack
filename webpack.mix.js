@@ -1,4 +1,5 @@
 const mix = require("laravel-mix");
+const tailwindcss = require("tailwindcss");
 
 /*
  |--------------------------------------------------------------------------
@@ -14,6 +15,7 @@ mix
   .js("resources/js/form-components.js", "public/js")
   .js("resources/js/list-components.js", "public/js")
   .js("resources/js/components/editor/editorjs.js", "public/js")
-  .postCss("resources/css/flatpack.css", "public/css", [
-    require("tailwindcss"),
-  ]);
+  .sass("resources/sass/flatpack.scss", "public/css")
+  .options({
+    postCss: [tailwindcss("./tailwind.config.js")],
+  });

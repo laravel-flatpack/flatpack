@@ -1,5 +1,10 @@
-<div {{ $attributes->class(["form-field col-span-full", "lg:col-span-1" => $span !== "full"]) }}>
-    <div {{ $attributes->class([ "form-field-elements", "opacity-60" => $disabled, "has-errors" => !empty($fieldErrors) ]) }}>
+<div {{ $attributes->class(["form-field col-span-full", "lg:col-span-1" => $span !== "full" ]) }}>
+    <div {{ $attributes->class([
+        "form-field-elements",
+        "opacity-60" => $disabled,
+        "has-label" => !empty($label),
+        "has-errors" => !empty($fieldErrors)
+    ]) }}>
 
         @include('flatpack::includes.input.label')
 
@@ -45,8 +50,8 @@
 
         @endif
 
-    </div>
+        @include('flatpack::includes.input.errors')
 
-    @include('flatpack::includes.input.errors')
+    </div>
 
 </div>

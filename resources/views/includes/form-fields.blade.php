@@ -22,13 +22,13 @@
         @endif
 
             <x-flatpack-form-field
-                    :key="$key"
-                    :options="$options"
-                    :entity="$entity"
-                    :model="$model"
-                    :entry="$entry"
-                    :fieldErrors="getErrors($formErrors, $key)"
-                />
+                :key="$key"
+                :options="$options"
+                :entity="$entity"
+                :model="$model"
+                :entry="$entry"
+                :fieldErrors="getErrors($formErrors, $key)"
+            />
 
         @if($loop->last)
                 </div>

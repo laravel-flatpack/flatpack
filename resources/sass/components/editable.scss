@@ -1,0 +1,15 @@
+.editable-heading {
+  @apply flex items-center justify-start gap-2 cursor-pointer;
+}
+.editable-heading .input-field-placeholder {
+  @apply py-2 text-left border-b-2 border-transparent border-solid;
+}
+.editable-heading .edit-button {
+  @apply inline-flex gap-2 p-0 m-0 text-sm text-gray-700 border border-transparent opacity-30;
+}
+.editable-heading:hover .edit-button {
+  @apply opacity-100;
+}
+.editable-heading:hover .input-field-placeholder {
+  @apply hover:border-dashed hover:border-gray-400;
+}
