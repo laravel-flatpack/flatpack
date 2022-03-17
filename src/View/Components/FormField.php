@@ -2,15 +2,10 @@
 
 namespace Faustoq\Flatpack\View\Components;
 
-use Faustoq\Flatpack\Traits\WithRelationships;
-use Illuminate\Contracts\Support\Arrayable;
-use Illuminate\Support\Arr;
 use Illuminate\View\Component;
 
-class FormField extends Component implements Arrayable
+class FormField extends Component
 {
-    use WithRelationships;
-
     /**
      * Entity name.
      *
@@ -159,7 +154,7 @@ class FormField extends Component implements Arrayable
         $this->fieldErrors = $fieldErrors;
         $this->formType = $formType;
 
-        $this->initProps();
+        $this->initFormFieldProps();
     }
 
     /**
@@ -175,30 +170,21 @@ class FormField extends Component implements Arrayable
     /**
      * Dynamically initialize component props based on the options.
      */
-    protected function initProps(): void
+    protected function initFormFieldProps(): void
     {
-        $this->type = $this->getOption('type', 'text');
-        $this->label = $this->getOption('label', '');
-        $this->placeholder = $this->getOption('placeholder', '');
-        $this->span = $this->getOption('span', 'full');
-        $this->required = $this->getOption('required', false);
-        $this->disabled = $this->getOption('disabled', false);
-        $this->readonly = $this->getOption('readonly', false);
-        $this->value = $this->getOption('value', optional($this->entry)->{$this->key});
-        $this->items = $this->getOption('items', []);
-        $this->size = $this->getOption('size', 'base');
+        $this->type = $this->getFieldOption('type', 'text');
+        $this->label = $this->getFieldOption('label', '');
+        $this->placeholder = $this->getFieldOption('placeholder', '');
+        $this->span = $this->getFieldOption('span', 'full');
+        $this->required = $this->getFieldOption('required', false);
+        $this->disabled = $this->getFieldOption('disabled', false);
+        $this->readonly = $this->getFieldOption('readonly', false);
+        $this->value = $this->getFieldOption('value', optional($this->entry)->{$this->key});
+        $this->items = $this->getFieldOption('items', []);
+        $this->size = $this->getFieldOption('size', 'base');
 
         if (in_array($this->type, [ 'relation', 'select', 'taginput' ])) {
-            $this->relation = $this->getOption('relation', false);
-        }
-    }
-
-    protected function initRelationship(): void
-    {
-        $key = $this->getOption('relation.name', $this->key);
-
-        if ($this->isRelationship($key)) {
-            $this->relationshipType = $this->getRelationshipType($key);
+            $this->relation = $this->getFieldOption('relation', false);
         }
     }
 
@@ -209,9 +195,9 @@ class FormField extends Component implements Arrayable
      * @param mixed $default
      * @return mixed
      */
-    public function getOption($key, $default = null)
+    public function getFieldOption($key, $default = null)
     {
-        return Arr::get($this->options, $key, $default);
+        return getOption($this->getOptions(), $key, $default);
     }
 
     /**
@@ -222,26 +208,5 @@ class FormField extends Component implements Arrayable
     public function getOptions()
     {
         return $this->options;
-    }
-
-    /**
-     * Get the instance as an array.
-     *
-     * @return array
-     */
-    public function toArray()
-    {
-        return [
-            'key' => $this->key,
-            'label' => $this->label,
-            'placeholder' => $this->placeholder,
-            'span' => $this->span,
-            'type' => $this->type,
-            'items' => $this->items,
-            'readonly' => $this->readonly,
-            'disabled' => $this->disabled,
-            'required' => $this->required,
-            'value' => $this->value,
-        ];
     }
 }
