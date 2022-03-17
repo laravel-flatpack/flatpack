@@ -193,13 +193,16 @@ class RelationField extends InputField
         switch (true) {
             case $this->relationshipType instanceof \Illuminate\Database\Eloquent\Relations\BelongsToMany:
                 return $this->relation->getRelatedKeyName();
+
                 break;
             case $this->relationshipType instanceof \Illuminate\Database\Eloquent\Relations\BelongsTo:
                 return $this->relation->getOwnerKeyName();
+
                 break;
             case $this->relationshipType instanceof \Illuminate\Database\Eloquent\Relations\HasMany:
             case $this->relationshipType instanceof \Illuminate\Database\Eloquent\Relations\HasOne:
                 return $this->relation->getForeignKeyName();
+
                 break;
         }
 
@@ -233,6 +236,7 @@ class RelationField extends InputField
         return collect(explode(',', $orderBy))
             ->map(function ($item) {
                 $item = explode(' ', trim($item));
+
                 return [
                     $item[0] => $item[1] ?? 'asc',
                 ];
