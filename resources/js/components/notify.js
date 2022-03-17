@@ -16,37 +16,30 @@ const config = {
   },
 };
 
-const notifications = {
-  info: (message) =>
-    Toastify({
-      ...config,
-      style: {
-        background: "#3b82f6",
-      },
-      text: message,
-    }).showToast(),
-
-  success: (message) =>
-    Toastify({
-      ...config,
-      style: {
-        background: "#22c55e",
-      },
-      text: message,
-    }).showToast(),
-  error: (message) =>
-    Toastify({
-      ...config,
-      style: {
-        background: "#ef4444",
-      },
-      text: message,
-    }).showToast(),
+const styles = {
+  info: {
+    background: "#3b82f6",
+  },
+  success: {
+    background: "#22c55e",
+  },
+  error: {
+    background: "#ef4444",
+  },
 };
 
 const notify = ({ message, type = "info" }) => {
   if (!message) return;
-  notifications[type](message);
+
+  const style = styles[type] || config.style;
+
+  console.log(message, type);
+
+  return Toastify({
+    ...config,
+    style,
+    text: message,
+  }).showToast();
 };
 
 export default notify;
