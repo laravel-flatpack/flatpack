@@ -38,9 +38,9 @@ return [
     */
     'brand' => [
 
-        'name' => 'Flatpack',
+        'name' => env('APP_NAME', 'Flatpack'),
 
-        'logo' => 'flatpack/images/logo.svg',
+        'logo' => env('FLATPACK_LOGO', 'flatpack/images/logo.svg'),
     ],
 
     /*
@@ -52,7 +52,7 @@ return [
     | the application root.
     |
     */
-    'directory' => 'flatpack',
+    'directory' => env('FLATPACK_DIRECTORY', 'flatpack'),
 
     /*
     |--------------------------------------------------------------------------
@@ -63,7 +63,7 @@ return [
     | Example: http://localhost/backend
     |
     */
-    'prefix' => 'backend',
+    'prefix' => env('FLATPACK_PREFIX', 'backend'),
 
     /*
     |--------------------------------------------------------------------------
@@ -95,9 +95,9 @@ return [
     */
     'storage' => [
 
-        'disk' => 'public',
+        'disk' =>  env('FLATPACK_STORAGE_DISK', 'public'),
 
-        'path' => 'uploads',
+        'path' =>  env('FLATPACK_STORAGE_PATH', 'uploads'),
     ],
 
 ];
