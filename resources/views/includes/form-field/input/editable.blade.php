@@ -1,15 +1,33 @@
 @if (strtolower($type ?? '') === 'editable')
 <div
-    wire:ignore
     x-cloak
     x-data="{
-        editing: false, placeholder: @js($placeholder), value: @js($value)
+        editing: false,
+        placeholder: @js($placeholder),
+        value: @js($value),
+        edit: function () {
+            this.editing = true;
+            setTimeout(() => { $refs.input.focus(); }, 50);
+        },
+        undo: function () {
+            this.editing = false;
+            $refs.input.value = this.value;
+        },
+        apply: function () {
+            if (!this.editing) { return; }
+            this.editing = false;
+            this.value = $refs.input.value;
+
+            $refs.placeholder.innerText = this.value;
+        },
+        isEmpty: function () {
+            return this.value === '' || this.value === null;
+        },
     }"
-    class="w-full"
-    :class="editing ? 'is-editing' : ''">
+    class="w-full" :class="editing ? 'is-editing' : ''">
     <label
         x-show="!editing"
-        @click="editing=true; setTimeout(() => { console.log(editing, $refs.input, value); $refs.input.focus(); }, 10);"
+        @click="edit"
         {{ $attributes->class([
             'heading editable',
             'text-gray-800 bg-transparent outline-none',
@@ -18,15 +36,15 @@
             'text-sm font-normal' => $size === 'small',
         ]); }}
     >
-        <div
-            class="input-field-placeholder"
-            :class="value !== '' && value !== null ? 'opacity-100' : 'opacity-70'"
-            x-text="value !== '' && value !== null ? value : placeholder">
-        </div>
-
-        <span class="edit-button" x-show="!editing">
-            <x-flatpack::icon icon="edit" size="{{ $size }}" />
+        <span x-ref="placeholder" class="{{ empty($value) ? 'opacity-80' : 'opacity-100' }} input-field-placeholder">
+            {{ empty($value) ? $placeholder : $value }}
         </span>
+
+        <div class="edit-button">
+            <button @click="edit">
+                <x-flatpack::icon icon="edit" size="{{ $size }}" />
+            </button>
+        </div>
     </label>
     <label
         x-show="editing"
@@ -40,12 +58,10 @@
         ]); }}
     >
         <input
-            x-cloak
-            x-show="editing"
             x-ref="input"
-            @keyup.escape="editing=false; setTimeout(() => { console.log('esc', editing, $refs.input.value, value); $refs.input.value = value; }, 10);"
-            @keyup.enter="editing=false; setTimeout(() => { console.log('enter', editing, $refs.input.value, value); value = $refs.input.value; }, 10);"
-            @blur="editing=false; setTimeout(() => { console.log('blur', editing, $refs.input.value, value); value = $refs.input.value; }, 10);"
+            @keyup.escape="undo"
+            @keyup.enter="apply"
+            @keydown.tab="apply"
             wire:model.stop="fields.{{ $key }}"
             wire:key="fields-{{ $key }}"
             id="editable-{{ $key }}"
@@ -62,14 +78,16 @@
             ]) }}
         />
 
-        <span class="edit-button">
-            <div @click="editing=false; setTimeout(() => { $refs.input.value = value; }, 10);">
+        <div class="edit-button">
+            <button @click.stop="undo" class="w-8 h-8">
                 <x-flatpack::icon icon="cancel" size="small" />
-            </div>
-            <div @click="editing=false; setTimeout(() => { value = $refs.input.value; }, 10);">
+            </button>
+        </div>
+        <div class="edit-button">
+            <button @click.stop="apply" class="w-8 h-8">
                 <x-flatpack::icon icon="check" size="small" />
-            </div>
-        </span>
+            </button>
+        </div>
 
     </label>
 </div>
