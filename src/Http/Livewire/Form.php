@@ -69,6 +69,13 @@ class Form extends Component
     public $formType;
 
     /**
+     * Form fields changed.
+     *
+     * @var bool
+     */
+    public $hasChanges = false;
+
+    /**
      * Field types excluded from validation and binding.
      *
      * @var array
@@ -92,13 +99,6 @@ class Form extends Component
         $this->bindModelToFields();
     }
 
-    public function updated($name, $value)
-    {
-        $field = str_replace('fields.', '', $name);
-
-        unset($this->formErrors[$field]);
-    }
-
     public function render()
     {
         return view('flatpack::components.form', [
@@ -109,6 +109,13 @@ class Form extends Component
         ]);
     }
 
+    public function updated($name, $value)
+    {
+        $this->setHasChanges($name, $value);
+
+        $this->clearFieldError($name);
+    }
+
     /**
      * Save the state of the image uploader.
      *
@@ -117,6 +124,8 @@ class Form extends Component
      */
     public function saveImageUploaderState($key, $images)
     {
+        $this->setHasChanges($key, $images);
+
         $this->fields[$key] = $images;
 
         return $this->fields[$key];
@@ -143,6 +152,8 @@ class Form extends Component
      */
     public function saveEditorState($key, $data)
     {
+        $this->setHasChanges($key, $data);
+
         $this->fields[$key] = json_encode($data);
 
         return $this->fields[$key];
@@ -157,7 +168,11 @@ class Form extends Component
      */
     public function saveTagInputState($key, $tags)
     {
-        $this->fields[$key] = explode(',', $tags);
+        $tags = explode(',', $tags);
+
+        $this->setHasChanges($key, $tags);
+
+        $this->fields[$key] = $tags;
 
         return $this->fields[$key];
     }
@@ -185,29 +200,13 @@ class Form extends Component
         }
     }
 
-    private function beforeAction($method)
-    {
-        if ($method === 'save') {
-            $this->emit('flatpack-form:saving', $this->fields, $this->entry, $this->entry->exists);
-        }
-    }
-
-    private function afterAction($method)
-    {
-        if ($method === 'save') {
-            $this->entityId = $this->entry->getKey() ?? 'create';
-
-            $this->emit('flatpack-form:saved', $this->fields, $this->entry->getKey());
-
-            $this->emit('update_url', route('flatpack.form', [
-                'entity' => $this->entity,
-                'id' => $this->entry->getKey(),
-            ]));
-
-            $this->formType = 'edit';
-        }
-    }
-
+    /**
+     * Perform validation and run a given action.
+     *
+     * @param  string $method
+     * @param  array $options
+     * @return void
+     */
     public function action($method = 'cancel', $options = [])
     {
         // Cancel action
@@ -215,7 +214,7 @@ class Form extends Component
             return $this->goBack();
         }
 
-        $redirect = Arr::get($options, 'redirect', false);
+        $redirect = getOption($options, 'redirect', false);
 
         try {
             $this->formErrors = [];
@@ -261,6 +260,96 @@ class Form extends Component
         } catch (\Exception $e) {
             $this->notifyError($e->getMessage());
         }
+    }
+
+    /**
+     * Run before action.
+     *
+     * @param  string $method
+     * @return void
+     */
+    private function beforeAction($method)
+    {
+        if ($method === 'save') {
+            $this->emit('flatpack-form:saving', $this->fields, $this->entry, $this->entry->exists);
+        }
+    }
+
+    /**
+     * Run after action.
+     *
+     * @param  string $method
+     * @return void
+     */
+    private function afterAction($method)
+    {
+        if ($method === 'save') {
+            $this->entityId = $this->entry->getKey() ?? 'create';
+
+            $this->emit('flatpack-form:saved', $this->fields, $this->entry->getKey());
+
+            $this->emit('update_url', route('flatpack.form', [
+                'entity' => $this->entity,
+                'id' => $this->entry->getKey(),
+            ]));
+
+            $this->formType = 'edit';
+
+            $this->hasChanges = false;
+        }
+    }
+
+    /**
+     * Clean up field errors.
+     *
+     * @param string $key
+     * @return void
+     */
+    private function clearFieldError($key)
+    {
+        $field = $this->fieldKeyName($key);
+
+        unset($this->formErrors[$field]);
+    }
+
+    /**
+     * Set hasChanges flag if field has changed.
+     *
+     * @param string $key
+     * @param mixed $value
+     * @return void
+     */
+    private function setHasChanges($key, $value)
+    {
+        $field = $this->fieldKeyName($key);
+
+        $oldValue = $this->fields[$field];
+
+        $this->hasChanges = $this->compareValues($oldValue, $value);
+    }
+
+    /**
+     * Encode and compare two values.
+     * Return true if they are different.
+     *
+     * @param  mixed $oldValue
+     * @param  mixed $newValue
+     * @return bool
+     */
+    private function compareValues($oldValue, $newValue)
+    {
+        return md5(json_encode($oldValue)) !== md5(json_encode($newValue));
+    }
+
+    /**
+     * Return the clean field key name.
+     *
+     * @param  string $key
+     * @return string
+     */
+    protected function fieldKeyName($name)
+    {
+        return str_replace('fields.', '', $name);
     }
 
     /**
