@@ -1,4 +1,4 @@
-<div x-cloak x-data id="form" class="flex flex-col w-full min-h-screen gap-5 {{ $hasChanges ? 'has-unsaved-changes' : 'is-saved' }}">
+<div x-cloak x-data id="form" class="flex flex-col w-full min-h-screen gap-3 {{ $hasChanges ? 'has-unsaved-changes' : 'is-saved' }}">
     <div class="flex flex-col-reverse items-start justify-start w-full gap-5 my-2 lg:justify-between lg:flex-row">
         @include('flatpack::includes.form-header', [
             'fieldset' => 'header-fieldset',

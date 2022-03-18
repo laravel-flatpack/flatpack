@@ -1,18 +1,19 @@
 <button
     wire:key="{{ $key }}"
+    wire:loading.attr="disabled"
+    wire:offline.attr="disabled"
     {{ $attributes->class([
         'button text-md font-medium lg:text-sm',
         $style,
         'hidden' => $hidden,
     ]) }}
     @if ($confirm)
-    @click="event.stopImmediatePropagation(); Flatpack.confirm(@js($confirmationMessage), {
-        title: @js($label),
-        action: @js($label),
-        style: @js($style)
-    }).then(({ isConfirmed }) => isConfirmed && @this.{{ $method }}('{{ $action }}', @js($options)));"
+    @click="event.stopImmediatePropagation(); Flatpack.confirm(@js($confirmationMessage), @js([
+            'title' => $label,
+            'action' => $label,
+            'style' => $style,
+        ])).then(({ isConfirmed }) => isConfirmed && @this.{{ $method }}('{{ $action }}', @js($options)));"
     @else
-    wire:loading.attr="disabled"
     wire:click="{{ $method }}('{{ $action }}', @js($options))"
     @endif
     @if(isset($options['shortcut']))

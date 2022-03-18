@@ -217,10 +217,7 @@ class Form extends Component
         $redirect = getOption($options, 'redirect', false);
 
         try {
-            $this->formErrors = [];
-
-            // Form validation
-            $this->validateForm($this->fields, $this->getFormFields());
+            $this->clearFormErrors();
 
             // Assign fields to model attributes
             $this->bindFieldsToModel();
@@ -271,6 +268,9 @@ class Form extends Component
     private function beforeAction($method)
     {
         if ($method === 'save') {
+            // Form validation
+            $this->validateForm($this->fields, $this->getFormFields());
+
             $this->emit('flatpack-form:saving', $this->fields, $this->entry, $this->entry->exists);
         }
     }
@@ -310,6 +310,16 @@ class Form extends Component
         $field = $this->fieldKeyName($key);
 
         unset($this->formErrors[$field]);
+    }
+
+    /**
+     * Clean up all form errors.
+     *
+     * @return void
+     */
+    private function clearFormErrors()
+    {
+        $this->formErrors = [];
     }
 
     /**

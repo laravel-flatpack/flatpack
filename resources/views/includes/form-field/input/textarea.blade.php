@@ -1,11 +1,11 @@
 @if (strtolower($type ?? '') === 'textarea')
 <textarea
-    wire:model.stop="fields.{{ $key }}"
+    wire:model.lazy="fields.{{ $key }}"
     wire:key="fields-{{ $key }}"
     id="fields-{{ $key }}"
     type="text"
     placeholder="{{ $placeholder ?? '' }}"
-    class="form-field-input resize-none"
+    class="resize-none form-field-input"
     {{ $disabled ? 'disabled' : '' }}
     {{ $required ? 'required' : '' }}
     {{ $readonly ? 'readonly' : '' }}

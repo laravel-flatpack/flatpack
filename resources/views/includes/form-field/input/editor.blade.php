@@ -3,7 +3,7 @@
     <div class="w-full max-w-full prose">
         <textarea
             class="block w-full mx-auto transition duration-150 ease-in-out border-gray-300 resize-none input-editor"
-            wire:model.stop="fields.{{ $key }}"
+            wire:model.lazy="fields.{{ $key }}"
             wire:key="fields-{{ $key }}"
             x-data x-init="
             Flatpack.editor.classic.create($refs.fields_{{ $key }}, Flatpack.editorConfig())
