@@ -62,7 +62,7 @@
             @keyup.escape="undo"
             @keyup.enter="apply"
             @keydown.tab="apply"
-            wire:model.stop="fields.{{ $key }}"
+            wire:model.defer="fields.{{ $key }}"
             wire:key="fields-{{ $key }}"
             id="editable-{{ $key }}"
             type="text"

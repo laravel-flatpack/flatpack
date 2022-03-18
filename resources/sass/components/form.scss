@@ -1,9 +1,14 @@
-.form-main,
-.form-header {
-  @apply flex flex-col flex-grow w-full max-w-6xl mx-auto lg:w-3/4;
+.form-main {
+  @apply flex flex-col flex-grow w-full max-w-5xl mx-auto lg:w-3/4;
+}
+.form-sidebar {
+  @apply w-full min-w-[370px] lg:w-1/4 lg:max-w-sm;
 }
 
-.form-sidebar {
+.form-header {
+  @apply flex flex-col flex-grow w-full max-w-5xl mx-auto lg:w-3/4;
+}
+.form-toolbar {
   @apply w-full min-w-[370px] lg:w-1/4 lg:max-w-sm;
 }
 

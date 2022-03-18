@@ -1,6 +1,6 @@
 @if (in_array(strtolower($type), ['relation','select']))
 <select
-    wire:model.stop="fields.{{ $key }}"
+    wire:model="fields.{{ $key }}"
     wire:key="fields-{{ $key }}"
     id="fields-{{ $key }}"
     class="form-select form-field-input"

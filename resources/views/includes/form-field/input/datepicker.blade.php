@@ -1,6 +1,6 @@
 @if (strtolower($type ?? '') === 'datepicker')
 <input
-    wire:model.stop="fields.{{ $key }}"
+    wire:model.lazy="fields.{{ $key }}"
     wire:key="fields-{{ $key }}"
     id="fields-{{ $key }}"
     type="date"
