@@ -97,9 +97,16 @@ class CreateRelation extends Component
         $this->dispatchBrowserEvent('close-modal');
     }
 
+    /**
+     * Create a new entity.
+     *
+     * @return void
+     */
     private function save()
     {
-        $this->entry = new $this->model();
+        $model = $this->model;
+
+        $this->entry = new $model();
 
         foreach ($this->formFields as $key => $options) {
             $this->entry->{$key} = $this->fields[$key] ?? null;
