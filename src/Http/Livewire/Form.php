@@ -294,9 +294,9 @@ class Form extends Component
             ]));
 
             $this->formType = 'edit';
-
-            $this->hasChanges = false;
         }
+
+        $this->hasChanges = false;
     }
 
     /**

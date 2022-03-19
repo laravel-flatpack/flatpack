@@ -8,7 +8,7 @@
 
         @include('flatpack::includes.form-field.label')
 
-        @switch(getOption($options, 'type'))
+        @switch(data_get($options, 'type'))
 
             @case('button')
                 <x-flatpack-action-button
@@ -16,6 +16,7 @@
                     :options="$options"
                     :entity="$entity"
                     :model="$model"
+                    :entry="$entry"
                     class="self-center w-fit h-fit"
                 />
                 @break
@@ -51,6 +52,8 @@
                         <x-flatpack-input-field
                             :key="$key"
                             :options="$options"
+                            :entity="$entity"
+                            :model="$model"
                             :entry="$entry"
                         />
                     @endif
