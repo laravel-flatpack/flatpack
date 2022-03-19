@@ -5,17 +5,19 @@
             class="block w-full mx-auto transition duration-150 ease-in-out border-gray-300 resize-none input-editor"
             wire:model.lazy="fields.{{ $key }}"
             wire:key="fields-{{ $key }}"
-            x-data x-init="
-            Flatpack.editor.classic.create($refs.fields_{{ $key }}, Flatpack.editorConfig())
-            .then(function(editor){
-                editor.model.document.on('change:data', () => {
-                    @this.set('fields.{{ $key }}', editor.getData())
-                })
-            })
-            .catch( error => {
-                console.error( error );
-            } );" x-ref="fields_{{ $key }}">
+            x-data="Flatpack.ckEditor.editorInstance('fields.{{ $key }}', 'ckeditor-field-{{ $key }}', {
+                upload: '{{ route('flatpack.upload', [ 'entity' => $entity, 'id' => $entry->id ?? 'create' ]) }}',
+                token: '{{ csrf_token() }}',
+            })"
+            x-init="initEditor()"
+            id="ckeditor-field-{{ $key }}">
         </textarea>
     </div>
 </div>
+
+@section('scripts')
+@parent
+<script src="{{ asset('flatpack/js/ckeditor.js') }}"></script>
+@endsection
+
 @endif
