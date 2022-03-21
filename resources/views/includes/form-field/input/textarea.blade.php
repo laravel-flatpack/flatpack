@@ -1,6 +1,6 @@
 @if (strtolower($type ?? '') === 'textarea')
 <textarea
-    wire:model.lazy="fields.{{ $key }}"
+    wire:model.defer="fields.{{ $key }}"
     wire:key="fields-{{ $key }}"
     id="fields-{{ $key }}"
     type="text"

@@ -9,7 +9,8 @@
         style: @js($style)
     }).then(({ isConfirmed }) => isConfirmed && @this.{{ $method }}('{{ $action }}', @js($options)));"
     @else
-    wire:loading.attr="disabled"
+    wire:loading.attr.delay.long="disabled"
+    wire:offline.attr="disabled"
     wire:click="{{ $method }}('{{ $action }}', @js($options))"
     @endif
 >
