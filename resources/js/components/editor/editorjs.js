@@ -11,7 +11,7 @@ import Table from "@editorjs/table";
 import Delimiter from "@editorjs/delimiter";
 import RawTool from "@editorjs/raw";
 
-window.editorInstance = function (
+const editorInstance = function (
   dataProperty,
   editorId,
   readOnly,
@@ -106,4 +106,11 @@ window.editorInstance = function (
       });
     },
   };
+};
+
+window.Flatpack = {
+  ...window.Flatpack,
+  blockEditor: {
+    editorInstance,
+  },
 };
