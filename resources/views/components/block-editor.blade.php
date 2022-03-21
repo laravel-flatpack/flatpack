@@ -1,6 +1,6 @@
 <div class="flex w-full px-20 py-16 mx-auto mt-1 border rounded-md shadow-sm">
     <div
-        x-data="editorInstance('data', @js($editorId), @js($readOnly), @js($placeholder), @js($logLevel))"
+        x-data="Flatpack.blockEditor.editorInstance('data', @js($editorId), @js($readOnly), @js($placeholder), @js($logLevel))"
         x-init="initEditor()"
         class="{{ $class }}"
         style="{{ $style }}"

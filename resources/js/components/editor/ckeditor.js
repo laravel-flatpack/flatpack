@@ -4,7 +4,7 @@ import UploadAdapter from "./plugins/upload-adapter";
 const editorInstance = (dataProperty, editorId, options) => {
   const { upload, token } = options;
 
-  const debounce = (func, timeout = 1000) => {
+  const debounce = (func, timeout = 400) => {
     let timer;
     return (...args) => {
       clearTimeout(timer);
