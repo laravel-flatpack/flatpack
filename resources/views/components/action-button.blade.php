@@ -1,6 +1,6 @@
 <button
     wire:key="{{ $key }}"
-    wire:loading.attr="disabled"
+    wire:loading.attr.delay.long="disabled"
     wire:offline.attr="disabled"
     {{ $attributes->class([
         'button text-md font-medium lg:text-sm',
