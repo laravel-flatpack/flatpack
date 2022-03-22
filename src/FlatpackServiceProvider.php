@@ -26,12 +26,8 @@ class FlatpackServiceProvider extends ServiceProvider
     {
         $this->publishes([
             __DIR__ . '/../public' => public_path('flatpack'),
-        ], 'public');
-
-        $this->publishes([
             __DIR__ . '/../config/flatpack.php' => config_path('flatpack.php'),
-        ], 'config');
-
+        ], 'flatpack');
 
         $this->registerCommands();
         $this->registerViews();
