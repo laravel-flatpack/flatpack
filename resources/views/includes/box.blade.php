@@ -1,7 +1,7 @@
 @if ($key === 'box')
-<div x-data="{ closed: {{ Arr::get($options, 'collapsed', false) ? 'true' : 'false' }} }" class="box flex-col">
-    <div class="flex flex-row justify-between items-center cursor-pointer" @click="closed = !closed">
-        <div class="w-full h-12 flex items-center px-2">{{ Arr::get($options, 'label', '') }}</div>
+<div x-data="{ closed: {{ Arr::get($options, 'collapsed', false) ? 'true' : 'false' }} }" class="flex-col box">
+    <div class="flex flex-row items-center justify-between cursor-pointer" @click="closed = !closed">
+        <div class="flex items-center w-full h-12 px-2">{{ Arr::get($options, 'label', '') }}</div>
         <div>
             <span x-show="closed === true"><x-flatpack::icon icon="expand_more" /></span>
             <span x-show="closed === false"><x-flatpack::icon icon="expand_less" /></span>

@@ -6,8 +6,6 @@
         "has-errors" => !empty($fieldErrors)
     ]) }}>
 
-        @include('flatpack::includes.form-field.label')
-
         @switch(data_get($options, 'type'))
 
             @case('button')
@@ -49,19 +47,23 @@
                             :entry="$entry"
                         />
                     @else
-                        <x-flatpack-input-field
-                            :key="$key"
-                            :options="$options"
-                            :entity="$entity"
-                            :model="$model"
-                            :entry="$entry"
-                        />
+                        @include('flatpack::includes.form-field.input.text')
+                        @include('flatpack::includes.form-field.input.email')
+                        @include('flatpack::includes.form-field.input.password')
+                        @include('flatpack::includes.form-field.editor')
+                        @include('flatpack::includes.form-field.textarea')
+                        @include('flatpack::includes.form-field.datepicker')
+                        @include('flatpack::includes.form-field.datetimepicker')
+                        @include('flatpack::includes.form-field.select')
+                        @include('flatpack::includes.form-field.multiselect')
+                        @include('flatpack::includes.form-field.editable')
+                        @include('flatpack::includes.heading')
                     @endif
                 </div>
 
         @endswitch
 
-        @include('flatpack::includes.form-field.input.errors')
+        @include('flatpack::includes.form-field.errors')
 
     </div>
 

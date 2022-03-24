@@ -1,13 +1,11 @@
 @if (strtolower($type) === 'password')
-<input
+<x-input
+    :label="$label"
+    :placeholder="$placeholder"
+    :disabled="$disabled"
+    :readonly="$readonly"
     wire:model.defer="fields.{{ $key }}"
-    wire:key="fields-{{ $key }}"
-    id="fields-{{ $key }}"
     type="password"
-    placeholder="{{ $placeholder ?? '' }}"
-    class="form-field-input"
-    {{ $disabled ? 'disabled' : '' }}
-    {{ $required ? 'required' : '' }}
-    {{ $readonly ? 'readonly' : '' }}
+    autocomplete="new-password"
 />
 @endif
