@@ -1,13 +1,10 @@
 @if (strtolower($type) === 'email')
-<input
+<x-input
+    :label="$label"
+    :placeholder="$placeholder"
+    :disabled="$disabled"
+    :readonly="$readonly"
     wire:model.defer="fields.{{ $key }}"
-    wire:key="fields-{{ $key }}"
-    id="fields-{{ $key }}"
     type="email"
-    placeholder="{{ $placeholder ?? '' }}"
-    class="form-field-input"
-    {{ $disabled ? 'disabled' : '' }}
-    {{ $required ? 'required' : '' }}
-    {{ $readonly ? 'readonly' : '' }}
 />
 @endif

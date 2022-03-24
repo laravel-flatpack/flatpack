@@ -8,7 +8,10 @@
     <link rel="stylesheet" href="{{ asset('flatpack/fonts/inter.css') }}" />
     <link rel="stylesheet" href="{{ asset('flatpack/fonts/icons.css') }}" />
     <link rel="stylesheet" href="{{ asset('flatpack/css/flatpack.css') }}" />
-    <script src="https://unpkg.com/alpinejs@3.8.1/dist/cdn.min.js" defer></script>
+    @wireUiScripts
+
+    <script src="https://unpkg.com/alpinejs@3.9.0/dist/cdn.min.js" defer></script>
+
     @livewireStyles
 </head>
 <body>
@@ -30,8 +33,11 @@
         </main>
 
     </div>
+
     @livewireScripts
+
     <script src="{{ asset('flatpack/js/flatpack.js') }}"></script>
+
     @yield('scripts')
 </body>
 </html>

@@ -1,4 +1,10 @@
 <div x-cloak x-data id="form" class="flex flex-col w-full min-h-screen gap-3 {{ $hasChanges ? 'has-unsaved-changes' : 'is-saved' }}">
+
+    <div wire:offline class="flex items-center justify-end w-full h-10 gap-1 text-sm text-red-500">
+        <x-flatpack::icon icon="error_outline" />
+        <span>{{ __("You are offline."); }}</span>
+    </div>
+
     <div class="flex flex-col-reverse items-start justify-start w-full gap-5 my-2 lg:justify-between lg:flex-row">
         @include('flatpack::includes.form-header', [
             'fieldset' => 'header-fieldset',
@@ -13,6 +19,7 @@
             'formErrors' => $formErrors,
         ])
     </div>
+
     <div class="flex flex-col w-full gap-6 lg:flex-row">
         <div class="form-main">
             @include('flatpack::includes.form-fields', [
@@ -35,4 +42,5 @@
         </div>
         @endif
     </div>
+
 </div>
