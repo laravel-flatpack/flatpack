@@ -12,3 +12,21 @@
     :warning="$style === 'warning'"
     md
 />
+
+@section('scripts')
+@parent
+
+@if ($shortcut)
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        window.addEventListener("keydown", (event) => {
+            if ((event.ctrlKey || event.metaKey) && event.key == "{{ $shortcut }}") {
+                event.preventDefault();
+                @this.call(@js($method), @js($action), @js($options));
+            }
+        });
+    });
+</script>
+@endif
+
+@endsection

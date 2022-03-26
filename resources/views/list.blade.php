@@ -6,6 +6,6 @@
     />
 @section('scripts')
 @parent
-<script src="{{ asset('flatpack/js/list-components.js') }}"></script>
+<script src="{{ asset('flatpack/js/list.js') }}"></script>
 @endsection
 </x-flatpack-layout>
