@@ -10,7 +10,7 @@
 
     @section('scripts')
     @parent
-        <script src="{{ asset('flatpack/js/form-components.js') }}"></script>
+        <script src="{{ asset('flatpack/js/form.js') }}"></script>
     @endsection
 
 </x-flatpack-layout>

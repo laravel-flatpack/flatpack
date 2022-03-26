@@ -32,8 +32,6 @@ const notify = ({ message, type = "info" }) => {
 
   const style = styles[type] || config.style;
 
-  console.log(message, type);
-
   return Toastify({
     ...config,
     style,
