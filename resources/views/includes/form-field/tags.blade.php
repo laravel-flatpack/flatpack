@@ -1,6 +1,11 @@
 @if (strtolower($type ?? '') === 'taginput')
 <div wire:ignore class="form-field-input">
-    <input wire:model="fields.{{ $key }}" id="fields-{{ $key }}" name="fields.{{ $key }}" />
+    <input
+        wire:model="fields.{{ $key }}"
+        placeholder="{{ $placeholder }}"
+        name="fields.{{ $key }}"
+        id="fields-{{ $key }}"
+    />
 </div>
 @php
     // Covert items to array of tags {value:1, name: 'foo'}
