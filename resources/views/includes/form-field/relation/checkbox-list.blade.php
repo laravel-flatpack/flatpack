@@ -1,4 +1,4 @@
-@if (in_array(strtolower($type), ['relation', 'multiselect']))
+@if ($type === 'relation')
 <div class="w-full">
     <ul class="w-full py-1 overflow-y-scroll list-none bg-gray-200 rounded-sm shadow-inner max-h-60">
         @foreach ($items as $optionValue => $display)
@@ -26,9 +26,11 @@
             </x-flatpack-modal>
         </div>
         <button
-            @click="toggle(); setTimeout(() => $refs.modal.querySelector('.form-field-input').focus(), 300);"
-            class="text-black bg-gray-100 button">
-            <span class="whitespace-nowrap">{{ __("Create new :entity", ["entity" => Str::singular($key)]) }}</span>
+            class="text-black bg-gray-100 button"
+            @click="toggle(); setTimeout(() => $refs.modal.querySelector('input').focus(), 200);">
+            <span class="whitespace-nowrap">{{ __("Create new :entity", [
+                "entity" => Str::singular($key)
+            ]) }}</span>
         </button>
     </div>
     @endif

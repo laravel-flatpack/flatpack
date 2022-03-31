@@ -27,12 +27,14 @@
 
             @include('flatpack::includes.layout.topbar')
 
-            <div class="container px-5 py-5 mx-auto">
+            <div class="container px-5 mx-auto max-w-[1440px]">
                 {{ $slot }}
             </div>
         </main>
 
     </div>
+
+    <x-notifications z-index="z-50" />
 
     @livewireScripts
 

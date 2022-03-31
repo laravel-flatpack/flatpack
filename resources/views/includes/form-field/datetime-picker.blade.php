@@ -1,4 +1,4 @@
-@if (strtolower($type ?? '') === 'datetimepicker')
+@if (strtolower($type ?? '') === 'datetime-picker')
     <x-datetime-picker
         without-timezone
         :label="$label"

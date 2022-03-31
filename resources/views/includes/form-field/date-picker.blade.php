@@ -1,4 +1,4 @@
-@if (strtolower($type ?? '') === 'datepicker')
+@if (strtolower($type ?? '') === 'date-picker')
 <x-datetime-picker
     without-timezone
     without-time

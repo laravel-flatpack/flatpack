@@ -4,7 +4,7 @@ namespace Faustoq\Flatpack\View\Components;
 
 use Faustoq\Flatpack\Traits\WithRelationships;
 
-class RelationField extends InputField
+class RelationField extends FormField
 {
     use WithRelationships;
 
@@ -190,20 +190,13 @@ class RelationField extends InputField
      */
     protected function getRelationKeyName()
     {
-        switch (true) {
-            case $this->relationshipType instanceof \Illuminate\Database\Eloquent\Relations\BelongsToMany:
-                return $this->relation->getRelatedKeyName();
-
-                break;
-            case $this->relationshipType instanceof \Illuminate\Database\Eloquent\Relations\BelongsTo:
-                return $this->relation->getOwnerKeyName();
-
-                break;
-            case $this->relationshipType instanceof \Illuminate\Database\Eloquent\Relations\HasMany:
-            case $this->relationshipType instanceof \Illuminate\Database\Eloquent\Relations\HasOne:
-                return $this->relation->getForeignKeyName();
-
-                break;
+        if ($this->relationshipType instanceof \Illuminate\Database\Eloquent\Relations\BelongsToMany) {
+            return $this->relation->getRelatedKeyName();
+        } elseif ($this->relationshipType instanceof \Illuminate\Database\Eloquent\Relations\BelongsTo) {
+            return $this->relation->getOwnerKeyName();
+        } elseif ($this->relationshipType instanceof \Illuminate\Database\Eloquent\Relations\HasMany ||
+            $this->relationshipType instanceof \Illuminate\Database\Eloquent\Relations\HasOne) {
+            return $this->relation->getForeignKeyName();
         }
 
         return $this->getRelationId();

@@ -10,6 +10,7 @@ use Illuminate\View\Component;
 class Layout extends Component
 {
     public $template = [];
+
     public $navigation = [];
 
     /**
@@ -31,10 +32,9 @@ class Layout extends Component
     public function render()
     {
         $current = request()->flatpack['entity'] ?? null;
-        $current = empty($current) ? 'home' : $current;
 
         return view('flatpack::components.layout', [
-            'current' => $current,
+            'current' => (empty($current) ? 'home' : $current),
             'navigation' => $this->navigation,
         ]);
     }
