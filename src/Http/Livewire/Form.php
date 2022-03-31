@@ -8,7 +8,6 @@ use Faustoq\Flatpack\Traits\WithFormFields;
 use Faustoq\Flatpack\Traits\WithFormValidation;
 use Faustoq\Flatpack\Traits\WithRelationships;
 use Illuminate\Support\Arr;
-use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 
 class Form extends Component
