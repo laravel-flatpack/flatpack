@@ -9,6 +9,6 @@
         </li>
     </ul>
     <button @click="navbar = !navbar" class="navbar-close">
-        <x-flatpack::icon icon="close" />
+        <x-icon name="x" style="outline" class="w-6 h-6" />
     </button>
 </aside>

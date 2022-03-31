@@ -10,6 +10,6 @@
         wire:loading.attr="disabled" wire:target="handleRemoveImage('{{ $index }}')"
         wire:click.prevent="handleRemoveImage('{{ $index }}')"
     >
-        <x-flatpack::icon icon="close" size="small" />
+        <x-icon name="x" style="outline" class="w-4 h-4" />
     </button>
 </div>

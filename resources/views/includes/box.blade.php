@@ -3,8 +3,8 @@
     <div class="flex flex-row items-center justify-between cursor-pointer" @click="closed = !closed">
         <div class="flex items-center w-full h-12 px-2">{{ Arr::get($options, 'label', '') }}</div>
         <div>
-            <span x-show="closed === true"><x-flatpack::icon icon="expand_more" /></span>
-            <span x-show="closed === false"><x-flatpack::icon icon="expand_less" /></span>
+            <span x-show="closed === true"><x-icon name="chevron-up" style="solid" class="w-4 h-4" /></span>
+            <span x-show="closed === false"><x-icon name="chevron-down" style="solid" class="w-4 h-4" /></span>
         </div>
     </div>
     <div x-show="closed === false" class="w-full {{ $fieldset }}">

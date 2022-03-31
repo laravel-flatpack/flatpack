@@ -42,7 +42,7 @@
 
         <div class="edit-button">
             <button @click="edit">
-                <x-flatpack::icon icon="edit" size="{{ $size }}" />
+                <x-icon name="pencil" style="outline" class="w-5 h-5" />
             </button>
         </div>
     </label>
@@ -80,12 +80,12 @@
 
         <div class="edit-button">
             <button @click.stop="undo" class="w-8 h-8">
-                <x-flatpack::icon icon="cancel" size="small" />
+                <x-icon name="x" style="outline" class="w-5 h-5" />
             </button>
         </div>
         <div class="edit-button">
             <button @click.stop="apply" class="w-8 h-8">
-                <x-flatpack::icon icon="check" size="small" />
+                <x-icon name="check" style="outline" class="w-5 h-5" />
             </button>
         </div>
 
