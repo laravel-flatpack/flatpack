@@ -1,42 +1,18 @@
-import Toastify from "toastify-js";
+const notify = (type, message, description = null) => {
+  if (!["success", "error", "info", "warning", "question"].includes(type)) {
+    return;
+  }
 
-const config = {
-  duration: 3000,
-  close: false,
-  gravity: "top",
-  position: "center",
-  stopOnFocus: true,
-  style: {
-    background: "#1f2937",
-    color: "#fff",
-  },
-  offset: {
-    y: "2rem",
-  },
-};
+  if (!message) {
+    return;
+  }
 
-const styles = {
-  info: {
-    background: "#3b82f6",
-  },
-  success: {
-    background: "#22c55e",
-  },
-  error: {
-    background: "#ef4444",
-  },
-};
-
-const notify = ({ message, type = "info" }) => {
-  if (!message) return;
-
-  const style = styles[type] || config.style;
-
-  return Toastify({
-    ...config,
-    style,
-    text: message,
-  }).showToast();
+  return window.$wireui.notify({
+    title: message,
+    description,
+    icon: type,
+    timeout: 3000,
+  });
 };
 
 export default notify;

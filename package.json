@@ -59,7 +59,6 @@
         "@editorjs/embed": "^2.5.1",
         "@editorjs/table": "^2.0.1",
         "@yaireo/tagify": "^4.9.5",
-        "sweetalert2": "^11.4.2",
-        "toastify-js": "^1.11.2"
+        "sweetalert2": "^11.4.2"
     }
 }
