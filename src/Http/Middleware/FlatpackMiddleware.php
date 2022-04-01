@@ -1,10 +1,10 @@
 <?php
 
-namespace Faustoq\Flatpack\Http\Middleware;
+namespace Flatpack\Http\Middleware;
 
-use Faustoq\Flatpack\Exceptions\EntityNotFoundException;
-use Faustoq\Flatpack\Exceptions\ModelNotFoundException;
-use Faustoq\Flatpack\Facades\Flatpack;
+use Flatpack\Exceptions\EntityNotFoundException;
+use Flatpack\Exceptions\ModelNotFoundException;
+use Flatpack\Facades\Flatpack;
 use Illuminate\Http\Request;
 
 class FlatpackMiddleware

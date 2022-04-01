@@ -1,8 +1,8 @@
 <?php
 
-namespace Faustoq\Flatpack\Http\Controllers;
+namespace Flatpack\Http\Controllers;
 
-use Faustoq\Flatpack\Facades\Flatpack;
+use Flatpack\Facades\Flatpack;
 use Illuminate\Http\Request;
 
 class ListController extends Controller

@@ -1,9 +1,9 @@
 <?php
 
-namespace Faustoq\Flatpack\Http\Livewire;
+namespace Flatpack\Http\Livewire;
 
-use Faustoq\Flatpack\Traits\WithActions;
-use Faustoq\Flatpack\Traits\WithComposition;
+use Flatpack\Traits\WithActions;
+use Flatpack\Traits\WithComposition;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Arr;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;

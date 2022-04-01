@@ -1,6 +1,6 @@
 <?php
 
-namespace Faustoq\Flatpack\Exceptions;
+namespace Flatpack\Exceptions;
 
 use Exception;
 use Facade\IgnitionContracts\BaseSolution;

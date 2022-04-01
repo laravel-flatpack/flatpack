@@ -1,6 +1,6 @@
 <?php
 
-namespace Faustoq\Flatpack\View\Components;
+namespace Flatpack\View\Components;
 
 class TagInput extends RelationField
 {

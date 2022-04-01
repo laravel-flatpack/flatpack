@@ -1,8 +1,8 @@
 <?php
 
-namespace Faustoq\Flatpack\Actions;
+namespace Flatpack\Actions;
 
-use Faustoq\Flatpack\Contracts\FlatpackActionContract;
+use Flatpack\Contracts\FlatpackActionContract;
 
 class Create extends FlatpackAction implements FlatpackActionContract
 {

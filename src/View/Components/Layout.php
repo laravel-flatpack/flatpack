@@ -1,8 +1,8 @@
 <?php
 
-namespace Faustoq\Flatpack\View\Components;
+namespace Flatpack\View\Components;
 
-use Faustoq\Flatpack\Facades\Flatpack;
+use Flatpack\Facades\Flatpack;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\View\Component;

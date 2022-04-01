@@ -1,6 +1,6 @@
 <?php
 
-namespace Faustoq\Flatpack\Traits;
+namespace Flatpack\Traits;
 
 trait WithRelationships
 {

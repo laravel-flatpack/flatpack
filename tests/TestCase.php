@@ -1,8 +1,8 @@
 <?php
 
-namespace Faustoq\Flatpack\Tests;
+namespace Flatpack\Tests;
 
-use Faustoq\Flatpack\FlatpackServiceProvider;
+use Flatpack\FlatpackServiceProvider;
 use Livewire\LivewireServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 

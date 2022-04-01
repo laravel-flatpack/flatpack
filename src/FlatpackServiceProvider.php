@@ -1,22 +1,22 @@
 <?php
 
-namespace Faustoq\Flatpack;
+namespace Flatpack;
 
-use Faustoq\Flatpack\Commands\MakeCommand;
-use Faustoq\Flatpack\Commands\MakeFormCommand;
-use Faustoq\Flatpack\Commands\MakeListCommand;
-use Faustoq\Flatpack\Http\Livewire\BlockEditor;
-use Faustoq\Flatpack\Http\Livewire\CreateRelation;
-use Faustoq\Flatpack\Http\Livewire\Form;
-use Faustoq\Flatpack\Http\Livewire\ImageUploader;
-use Faustoq\Flatpack\Http\Livewire\Table;
-use Faustoq\Flatpack\View\Components\ActionButton;
-use Faustoq\Flatpack\View\Components\FormField;
-use Faustoq\Flatpack\View\Components\InputField;
-use Faustoq\Flatpack\View\Components\Layout;
-use Faustoq\Flatpack\View\Components\Modal;
-use Faustoq\Flatpack\View\Components\RelationField;
-use Faustoq\Flatpack\View\Components\TagInput;
+use Flatpack\Commands\MakeCommand;
+use Flatpack\Commands\MakeFormCommand;
+use Flatpack\Commands\MakeListCommand;
+use Flatpack\Http\Livewire\BlockEditor;
+use Flatpack\Http\Livewire\CreateRelation;
+use Flatpack\Http\Livewire\Form;
+use Flatpack\Http\Livewire\ImageUploader;
+use Flatpack\Http\Livewire\Table;
+use Flatpack\View\Components\ActionButton;
+use Flatpack\View\Components\FormField;
+use Flatpack\View\Components\InputField;
+use Flatpack\View\Components\Layout;
+use Flatpack\View\Components\Modal;
+use Flatpack\View\Components\RelationField;
+use Flatpack\View\Components\TagInput;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
@@ -120,7 +120,7 @@ class FlatpackServiceProvider extends ServiceProvider
      */
     private function getRouteMiddleware()
     {
-        return collect([\Faustoq\Flatpack\Http\Middleware\FlatpackMiddleware::class])
+        return collect([\Flatpack\Http\Middleware\FlatpackMiddleware::class])
             ->prepend(config('flatpack.middleware.before', []))
             ->push(config('flatpack.middleware.after', []))
             ->prepend('web')

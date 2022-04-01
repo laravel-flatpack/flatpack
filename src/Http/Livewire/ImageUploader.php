@@ -1,9 +1,9 @@
 <?php
 
-namespace Faustoq\Flatpack\Http\Livewire;
+namespace Flatpack\Http\Livewire;
 
-use Faustoq\Flatpack\Traits\WithActions;
-use Faustoq\Flatpack\Traits\WithStorageFiles;
+use Flatpack\Traits\WithActions;
+use Flatpack\Traits\WithStorageFiles;
 use Illuminate\Support\Arr;
 use Livewire\Component;
 use Livewire\WithFileUploads;

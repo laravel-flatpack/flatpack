@@ -1,6 +1,6 @@
 <?php
 
-namespace Faustoq\Flatpack\Actions;
+namespace Flatpack\Actions;
 
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;

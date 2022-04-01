@@ -1,6 +1,6 @@
 <?php
 
-namespace Faustoq\Flatpack\Facades;
+namespace Flatpack\Facades;
 
 use Illuminate\Support\Facades\Facade;
 

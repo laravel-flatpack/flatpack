@@ -1,6 +1,6 @@
 <?php
 
-use Faustoq\Flatpack\Facades\Flatpack;
+use Flatpack\Facades\Flatpack;
 
 it('converts a string to entity name', function () {
     $input = "User";

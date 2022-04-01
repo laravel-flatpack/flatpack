@@ -1,9 +1,9 @@
 <?php
 
-use Faustoq\Flatpack\Http\Controllers\FormController;
-use Faustoq\Flatpack\Http\Controllers\HomeController;
-use Faustoq\Flatpack\Http\Controllers\ListController;
-use Faustoq\Flatpack\Http\Controllers\UploadController;
+use Flatpack\Http\Controllers\FormController;
+use Flatpack\Http\Controllers\HomeController;
+use Flatpack\Http\Controllers\ListController;
+use Flatpack\Http\Controllers\UploadController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/{entity}/{id}/upload', [UploadController::class, 'store'])->name('flatpack.upload');

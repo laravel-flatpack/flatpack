@@ -1,6 +1,6 @@
 <?php
 
-namespace Faustoq\Flatpack\Commands;
+namespace Flatpack\Commands;
 
 use Illuminate\Console\Command;
 

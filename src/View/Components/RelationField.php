@@ -1,8 +1,8 @@
 <?php
 
-namespace Faustoq\Flatpack\View\Components;
+namespace Flatpack\View\Components;
 
-use Faustoq\Flatpack\Traits\WithRelationships;
+use Flatpack\Traits\WithRelationships;
 
 class RelationField extends FormField
 {

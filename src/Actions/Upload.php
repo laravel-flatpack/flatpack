@@ -1,9 +1,9 @@
 <?php
 
-namespace Faustoq\Flatpack\Actions;
+namespace Flatpack\Actions;
 
-use Faustoq\Flatpack\Contracts\FlatpackActionContract;
-use Faustoq\Flatpack\Traits\WithStorageFiles;
+use Flatpack\Contracts\FlatpackActionContract;
+use Flatpack\Traits\WithStorageFiles;
 
 class Upload extends FlatpackAction implements FlatpackActionContract
 {

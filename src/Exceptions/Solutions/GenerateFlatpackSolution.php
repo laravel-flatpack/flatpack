@@ -1,6 +1,6 @@
 <?php
 
-namespace Faustoq\Flatpack\Exceptions\Solutions;
+namespace Flatpack\Exceptions\Solutions;
 
 use Facade\IgnitionContracts\RunnableSolution;
 use Illuminate\Support\Facades\Artisan;
