@@ -6,19 +6,31 @@ use Illuminate\Support\Facades\Validator;
 
 trait WithFormValidation
 {
-    protected function validateForm($fields = [], $form = [])
+    /**
+     * Validate form data.
+     *
+     * @param array $data
+     * @param array $form
+     * @throws \Illuminate\Validation\ValidationException
+     * @return bool
+     */
+    protected function validateForm($data = [], $form = [])
     {
-        return Validator::make(
-            $fields,
-            $this->getValidationRules($form)
-        )->validate();
+        return Validator::make($data, $this->getValidationRules($form))
+            ->validate();
     }
 
-    protected function getValidationRules($fields = [])
+    /**
+     * Get validation rules for all form fields.
+     *
+     * @param array $form
+     * @return array
+     */
+    protected function getValidationRules($form)
     {
         $rules = [];
 
-        foreach ($fields as $key => $options) {
+        foreach ($form as $key => $options) {
             $rules[$key] = $options['rules'] ?? 'present';
         }
 
