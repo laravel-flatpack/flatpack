@@ -12,15 +12,6 @@ module.exports = {
     "./resources/js/**/*.js",
     "./resources/**/*.blade.php",
   ],
-  purge: [
-    "./vendor/wireui/wireui/resources/**/*.blade.php",
-    "./vendor/wireui/wireui/ts/**/*.ts",
-    "./vendor/wireui/wireui/src/View/**/*.php",
-    "./vendor/rappasoft/laravel-livewire-tables/resources/views/tailwind/**/*.blade.php",
-    "./resources/css/**/*.css",
-    "./resources/js/**/*.js",
-    "./resources/**/*.blade.php",
-  ],
   darkMode: "class",
   theme: {
     extend: {
