@@ -12,10 +12,10 @@ class ConfigurationException extends Exception implements ProvidesSolution
     /** @return  \Facade\IgnitionContracts\Solution */
     public function getSolution(): Solution
     {
-        return BaseSolution::create('Flatpack configuration is missing.')
-            ->setSolutionDescription('Generate your first Flatpack template using `php artisan make:flatpack` command.')
+        return BaseSolution::create("Flatpack configuration is missing.")
+            ->setSolutionDescription("Generate your first Flatpack template using `php artisan make:flatpack` command.")
             ->setDocumentationLinks([
-                'Package documentation' => 'https://github.com/faustoq/laravel-flatpack',
+                "Package documentation" => "https://github.com/laravel-flatpack/flatpack",
             ]);
     }
 }

@@ -24,7 +24,7 @@ class GenerateFlatpackSolution implements RunnableSolution
     public function getDocumentationLinks(): array
     {
         return [
-            'Usage documentation' => 'https://github.com/faustoq/laravel-flatpack#usage',
+            'Usage documentation' => 'https://laravel-flatpack.com/guide/#usage',
         ];
     }
 

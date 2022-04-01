@@ -23,7 +23,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                         </svg>
-                        <div class="ml-4 text-lg font-semibold leading-7"><a href="https://github.com/faustoq/laravel-flatpack" class="text-gray-900 underline dark:text-white" target="_blank">Documentation</a></div>
+                        <div class="ml-4 text-lg font-semibold leading-7"><a href="https://github.com/laravel-flatpack/flatpack" class="text-gray-900 underline dark:text-white" target="_blank">Documentation</a></div>
                     </div>
 
                     <div class="ml-12">
@@ -36,7 +36,7 @@
                 <div class="p-6 border-t border-gray-200 dark:border-gray-700 md:border-t-0 md:border-l">
                     <div class="flex items-center">
                         <svg viewBox="0 0 24 24" class="w-8 h-8 text-gray-500 fill-gray-500"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
-                        <div class="ml-4 text-lg font-semibold leading-7"><a href="https://github.com/faustoq/laravel-flatpack" class="text-gray-900 underline dark:text-white" target="_blank">Github</a></div>
+                        <div class="ml-4 text-lg font-semibold leading-7"><a href="https://github.com/laravel-flatpack/flatpack" class="text-gray-900 underline dark:text-white" target="_blank">Github</a></div>
                     </div>
 
                     <div class="ml-12">
@@ -49,12 +49,12 @@
                 <div class="p-6 border-t border-gray-200 dark:border-gray-700">
                     <div class="flex items-center">
                         <svg viewBox="0 0 24 24" class="w-8 h-8 text-gray-500 fill-gray-500"><path d="M12 12.805c0 .191-.157.346-.352.346h-.796c-.186 0-.383.11-.426.378-.034.215.09.387.255.461l.807.359c.177.079.255.283.176.458-.081.174-.289.251-.465.172l-.854-.38c-.111-.05-.233-.023-.32.121-.356.588-1.047 1.171-2.025 1.28-.997-.111-1.696-.715-2.045-1.314-.071-.122-.198-.131-.3-.086l-.854.38c-.177.079-.384.001-.465-.172-.079-.174-.001-.379.176-.458l.807-.359c.175-.078.288-.245.251-.487-.036-.228-.231-.352-.422-.352h-.796c-.195-.001-.352-.156-.352-.347 0-.191.157-.346.352-.346h.801c.184 0 .376-.118.411-.37.027-.193-.092-.361-.258-.425l-.743-.289c-.181-.07-.27-.271-.198-.448s.275-.265.456-.195l.765.297c.099.038.238.025.313-.146l.2-.382c.57.333 1.197.499 1.901.499.693 0 1.329-.17 1.899-.5.075.124.146.255.207.396.064.146.199.177.309.134l.765-.297c.181-.07.385.017.456.195s-.018.378-.198.448l-.743.289c-.16.062-.286.218-.256.444.03.219.218.351.409.351h.801c.194-.001.351.154.351.345zm-5.27-3.878c.107.024.2.09.257.183.206.343-.062.637-.312.943.402.188.836.28 1.325.28.481 0 .919-.095 1.323-.282-.246-.302-.514-.602-.31-.941.056-.093.149-.159.257-.183.212-.046.372-.233.372-.458 0-.259-.213-.469-.477-.469-.314 0-.542.295-.46.592.03.112.014.231-.046.332-.135.223-.365.357-.659.359-.298-.002-.525-.138-.659-.359-.06-.1-.076-.219-.046-.332.082-.298-.146-.592-.46-.592-.264 0-.477.21-.477.469 0 .225.161.412.372.458zm4.208 11.073h-10.938v-20h21v11.462c-.594-.472-1.269-.843-2-1.094v-4.368h-17v12h8.212c.136.713.384 1.386.726 2zm13.062 2.586l-2.831-2.832c.522-.79.831-1.735.831-2.754 0-2.761-2.238-5-5-5s-5 2.239-5 5 2.238 5 5 5c1.019 0 1.964-.309 2.755-.832l2.831 2.832 1.414-1.414zm-10-5.586c0-1.654 1.346-3 3-3s3 1.346 3 3-1.346 3-3 3-3-1.346-3-3z"/></svg>
-                        <div class="ml-4 text-lg font-semibold leading-7"><a href="https://github.com/faustoq/laravel-flatpack/issues" class="text-gray-900 underline dark:text-white" target="_blank">Bugs &amp; issues</a></div>
+                        <div class="ml-4 text-lg font-semibold leading-7"><a href="https://github.com/laravel-flatpack/flatpack/issues" class="text-gray-900 underline dark:text-white" target="_blank">Bugs &amp; issues</a></div>
                     </div>
 
                     <div class="ml-12">
                         <div class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                            If you find a bug, have an issue or want to suggest a new feature, please report it on the issues page. <a href="https://github.com/faustoq/laravel-flatpack/issues/new/choose" class="text-gray-700 underline dark:text-white" target="_blank">Report an issue</a>.
+                            If you find a bug, have an issue or want to suggest a new feature, please report it on the issues page. <a href="https://github.com/laravel-flatpack/flatpack/issues/new/choose" class="text-gray-700 underline dark:text-white" target="_blank">Report an issue</a>.
                         </div>
                     </div>
                 </div>

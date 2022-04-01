@@ -14,17 +14,17 @@ return [
     */
     'actions' => [
 
-        'create' => \Faustoq\Flatpack\Actions\Create::class,
+        'create' => \Flatpack\Actions\Create::class,
 
-        'save' => \Faustoq\Flatpack\Actions\Save::class,
+        'save' => \Flatpack\Actions\Save::class,
 
-        'upload' => \Faustoq\Flatpack\Actions\Upload::class,
+        'upload' => \Flatpack\Actions\Upload::class,
 
-        'delete' => \Faustoq\Flatpack\Actions\Delete::class,
+        'delete' => \Flatpack\Actions\Delete::class,
 
-        'restore' => \Faustoq\Flatpack\Actions\Restore::class,
+        'restore' => \Flatpack\Actions\Restore::class,
 
-        'empty-trash' => \Faustoq\Flatpack\Actions\EmptyTrash::class,
+        'empty-trash' => \Flatpack\Actions\EmptyTrash::class,
     ],
 
     /*

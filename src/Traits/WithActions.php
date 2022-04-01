@@ -31,7 +31,7 @@ trait WithActions
      * Initialise and return action class instance.
      *
      * @param  string $action
-     * @return \Faustoq\Flatpack\Actions\FlatpackAction
+     * @return \Flatpack\Actions\FlatpackAction
      */
     protected function getAction($action)
     {
@@ -47,15 +47,15 @@ trait WithActions
 
         $instance = new $actions[$action]($this->entity, $this->model);
 
-        if (! $instance instanceof \Faustoq\Flatpack\Actions\FlatpackAction) {
+        if (! $instance instanceof \Flatpack\Actions\FlatpackAction) {
             throw new ActionNotFoundException(
-                "Action class must extend \Faustoq\Flatpack\Actions\FlatpackAction: $action"
+                "Action class must extend \Flatpack\Actions\FlatpackAction: $action"
             );
         }
 
-        if (! $instance instanceof \Faustoq\Flatpack\Contracts\FlatpackActionContract) {
+        if (! $instance instanceof \Flatpack\Contracts\FlatpackActionContract) {
             throw new ActionNotFoundException(
-                "Action class must implement \Faustoq\Flatpack\Contracts\FlatpackActionContract: $action"
+                "Action class must implement \Flatpack\Contracts\FlatpackActionContract: $action"
             );
         }
 
