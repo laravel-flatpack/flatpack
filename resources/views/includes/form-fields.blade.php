@@ -13,8 +13,8 @@
                 @if (getOption($options, 'group') !== null)
                     <div class="flex items-center justify-between text-gray-500 cursor-pointer" @click="open = !open">
                         <div class="text-xs font-bold uppercase">{{ getOption($options, 'group') }}</div>
-                        <span x-cloak x-show="!open"><x-flatpack::icon icon="expand_more" size="small" /></span>
-                        <span x-cloak x-show="open"><x-flatpack::icon icon="expand_less" size="small" /></span>
+                        <span x-show="closed === true"><x-icon name="chevron-down" style="solid" class="w-4 h-4" /></span>
+                        <span x-show="closed === false"><x-icon name="chevron-up" style="solid" class="w-4 h-4" /></span>
                     </div>
                 @endif
 
@@ -27,7 +27,6 @@
                 :entity="$entity"
                 :model="$model"
                 :entry="$entry"
-                :fieldErrors="getErrors($formErrors, $key)"
             />
 
         @if($loop->last)

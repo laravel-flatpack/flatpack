@@ -8,7 +8,10 @@
     <link rel="stylesheet" href="{{ asset('flatpack/fonts/inter.css') }}" />
     <link rel="stylesheet" href="{{ asset('flatpack/fonts/icons.css') }}" />
     <link rel="stylesheet" href="{{ asset('flatpack/css/flatpack.css') }}" />
-    <script src="https://unpkg.com/alpinejs@3.8.1/dist/cdn.min.js" defer></script>
+    @wireUiScripts
+
+    <script src="https://unpkg.com/alpinejs@3.9.0/dist/cdn.min.js" defer></script>
+
     @livewireStyles
 </head>
 <body>
@@ -24,14 +27,19 @@
 
             @include('flatpack::includes.layout.topbar')
 
-            <div class="container px-5 py-5 mx-auto">
+            <div class="container px-5 pb-20 mx-auto max-w-[1440px]">
                 {{ $slot }}
             </div>
         </main>
 
     </div>
+
+    <x-notifications z-index="z-50" />
+
     @livewireScripts
+
     <script src="{{ asset('flatpack/js/flatpack.js') }}"></script>
+
     @yield('scripts')
 </body>
 </html>

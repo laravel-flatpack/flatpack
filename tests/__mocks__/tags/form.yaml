@@ -16,10 +16,10 @@ fields:
 
   created_at:
     label: Created
-    type: datetimepicker
+    type: datetime-picker
     span: 1
 
   updated_at:
     label: Updated
-    type: datetimepicker
+    type: datetime-picker
     span: 1

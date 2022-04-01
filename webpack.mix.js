@@ -12,8 +12,8 @@ const tailwindcss = require("tailwindcss");
 
 mix
   .js("resources/js/flatpack.js", "public/js")
-  .js("resources/js/form-components.js", "public/js")
-  .js("resources/js/list-components.js", "public/js")
+  .js("resources/js/form.js", "public/js")
+  .js("resources/js/list.js", "public/js")
   .js("resources/js/components/editor/editorjs.js", "public/js")
   .js("resources/js/components/editor/ckeditor.js", "public/js")
   .sass("resources/sass/flatpack.scss", "public/css")

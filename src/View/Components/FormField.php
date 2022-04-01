@@ -2,6 +2,8 @@
 
 namespace Faustoq\Flatpack\View\Components;
 
+use Illuminate\Support\Str;
+use Illuminate\Support\ViewErrorBag;
 use Illuminate\View\Component;
 
 class FormField extends Component
@@ -172,7 +174,7 @@ class FormField extends Component
      */
     protected function initFormFieldProps(): void
     {
-        $this->type = $this->getFieldOption('type', 'text');
+        $this->type = Str::lower($this->getFieldOption('type', 'text'));
         $this->label = $this->getFieldOption('label', '');
         $this->placeholder = $this->getFieldOption('placeholder', '');
         $this->span = $this->getFieldOption('span', 'full');
@@ -208,5 +210,18 @@ class FormField extends Component
     public function getOptions()
     {
         return $this->options;
+    }
+
+    /**
+     * Return an array of field errors.
+     *
+     * @param ViewErrorBag $errors
+     * @return array
+     */
+    public function getErrorMessages(ViewErrorBag $errors): array
+    {
+        $messages = $errors->getMessages();
+
+        return array_filter($messages, fn ($key) => $key === $this->key, ARRAY_FILTER_USE_KEY);
     }
 }

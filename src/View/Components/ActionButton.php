@@ -88,6 +88,13 @@ class ActionButton extends Component
     public $style = '';
 
     /**
+     * Shortcut key combined with cmd/ctrl key.
+     *
+     * @var mixed
+     */
+    public $shortcut = false;
+
+    /**
      * ActionButton constructor.
      *
      * @param string $entity - Entity name
@@ -139,6 +146,7 @@ class ActionButton extends Component
     {
         $this->action = $this->getOption('action');
         $this->label = $this->getOption('label', '');
+        $this->shortcut = $this->getOption('shortcut', false);
         $this->confirm = $this->getOption('confirm', false);
         $this->hidden = $this->getOption('hidden', false);
         $this->style = $this->getOption('style', $this->style, [

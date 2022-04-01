@@ -5,7 +5,6 @@ namespace Faustoq\Flatpack\Http\Livewire;
 use Faustoq\Flatpack\Traits\WithComposition;
 use Faustoq\Flatpack\Traits\WithFormFields;
 use Faustoq\Flatpack\Traits\WithFormValidation;
-use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 
 class CreateRelation extends Component
@@ -55,7 +54,7 @@ class CreateRelation extends Component
     {
         $this->entry = new $this->model();
 
-        $this->formFields = $this->getFormFields();
+        $this->formFields = $this->getMainComposition();
 
         foreach ($this->formFields as $key => $options) {
             $this->fields[$key] = null;
@@ -69,25 +68,27 @@ class CreateRelation extends Component
         ]);
     }
 
-    public function create()
+    /**
+     * Submit the form.
+     */
+    public function submit()
     {
-        try {
-            $this->clearErrors();
+        $this->clearErrors();
 
-            $this->validateForm($this->fields, $this->formFields);
+        $this->validateForm($this->fields, $this->formFields);
 
-            $this->save();
+        $this->save();
 
-            $this->clearForm();
+        $this->clearForm();
 
-            $this->emitUp('flatpack-relation:updated');
+        $this->emitUp('flatpack-relation:updated');
 
-            $this->dispatchBrowserEvent('close-modal');
-        } catch (ValidationException $e) {
-            $this->formErrors = $e->errors();
-        }
+        $this->dispatchBrowserEvent('close-modal');
     }
 
+    /**
+     * Reset the form.
+     */
     public function cancel()
     {
         $this->clearErrors();

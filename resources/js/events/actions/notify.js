@@ -1,5 +1,5 @@
-const notifyAction = (event) => {
-  window.Flatpack.notify(event);
+const notifyAction = ({ type, message }) => {
+  window.Flatpack.notify(type, message);
 };
 
 export default notifyAction;

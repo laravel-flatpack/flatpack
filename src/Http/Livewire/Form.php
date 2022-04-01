@@ -8,7 +8,6 @@ use Faustoq\Flatpack\Traits\WithFormFields;
 use Faustoq\Flatpack\Traits\WithFormValidation;
 use Faustoq\Flatpack\Traits\WithRelationships;
 use Illuminate\Support\Arr;
-use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 
 class Form extends Component
@@ -209,27 +208,27 @@ class Form extends Component
      */
     public function action($method = 'cancel', $options = [])
     {
-        // Cancel action
         if ($method === 'cancel') {
-            return $this->goBack();
+            return redirect()->route('flatpack.list', [
+                'entity' => $this->entity,
+            ]);
         }
 
-        $redirect = getOption($options, 'redirect', false);
+        $this->clearFormErrors();
+
+        $this->beforeAction($method);
 
         try {
-            $this->clearFormErrors();
-
             // Assign fields to model attributes
             $this->bindFieldsToModel();
+
+            $redirect = getOption($options, 'redirect', false);
 
             // Get action instance
             $action = $this->getAction($method)
                 ->setEntry($this->entry)
                 ->setFields($this->fields)
                 ->setRedirect($redirect);
-
-            // Execute action
-            $this->beforeAction($method);
 
             $action->run();
 
@@ -242,7 +241,7 @@ class Form extends Component
 
             // Action failure
             if (! $action->isSuccess()) {
-                throw new \Exception('Action failed');
+                $this->notifyError(__('flatpack::form.action_failed'));
             }
 
             // Bind refreshed model attributes to fields
@@ -251,9 +250,6 @@ class Form extends Component
             if ($action->shouldRedirect()) {
                 return $this->goBack();
             }
-        } catch (ValidationException $e) {
-            $this->formErrors = $e->errors();
-            $this->notifyError($e->getMessage(), $this->formErrors);
         } catch (\Exception $e) {
             $this->notifyError($e->getMessage());
         }
@@ -262,16 +258,14 @@ class Form extends Component
     /**
      * Run before action.
      *
-     * @param  string $method
+     * @param  string $action
      * @return void
      */
-    private function beforeAction($method)
+    private function beforeAction($action)
     {
-        if ($method === 'save') {
+        if ($action === 'save') {
             // Form validation
             $this->validateForm($this->fields, $this->getFormFields());
-
-            $this->emit('flatpack-form:saving', $this->fields, $this->entry, $this->entry->exists);
         }
     }
 

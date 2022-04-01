@@ -43,7 +43,7 @@ class UploadAdapter {
       const response = xhr.response;
 
       if (response.error) {
-        window.Flatpack.notify({ message: response.error, type: "error" });
+        window.Flatpack.notify("error", "An error occurred", response.error);
       }
 
       if (!response || response.error) {

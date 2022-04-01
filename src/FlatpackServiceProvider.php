@@ -16,6 +16,7 @@ use Faustoq\Flatpack\View\Components\InputField;
 use Faustoq\Flatpack\View\Components\Layout;
 use Faustoq\Flatpack\View\Components\Modal;
 use Faustoq\Flatpack\View\Components\RelationField;
+use Faustoq\Flatpack\View\Components\TagInput;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
@@ -89,6 +90,7 @@ class FlatpackServiceProvider extends ServiceProvider
             FormField::class,
             InputField::class,
             RelationField::class,
+            TagInput::class,
             Layout::class,
             Modal::class,
         ]);

@@ -66,9 +66,7 @@ This command will create two files:
 -   A form template `/flatpack/posts/form.yaml`, that defines the layout composition of your posts form.
 -   A list template `/flatpack/posts/list.yaml`, that defines the layout composition of your posts table with pagination.
 
-Let's check the result:
-
-[http://localhost/backend/posts](http://localhost/backend/posts)
+Let's check the result, visit `/backend/posts`.
 
 Now start assembling, grab the generated files and define how they should look!
 
@@ -88,11 +86,11 @@ fields:
 
     created_at:
         label: Created
-        type: datetimepicker
+        type: datetime-picker
 
     updated_at:
         label: Updated
-        type: datetimepicker
+        type: datetime-picker
 ```
 
 ## Lists

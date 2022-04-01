@@ -7,9 +7,9 @@
         <div @click.away="visible = !visible" class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-lg shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
             <div class="flex justify-between px-4 py-3 bg-gray-50">
                 <span>{{ $title }}</span>
-                <span @click="visible = !visible" class="cursor-pointer">
-                    <x-flatpack::icon icon="close" size="small" />
-                </span>
+                <button @click="visible = !visible" class="cursor-pointer">
+                    <x-icon name="x" style="solid" class="w-4 h-4" />
+                </button>
             </div>
             <div class="bg-white">
                 <div class="text-left">

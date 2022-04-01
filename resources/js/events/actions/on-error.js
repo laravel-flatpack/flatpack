@@ -10,7 +10,7 @@ const messages = {
 
 const onErrorAction = (error) => {
   const message = messages[error] || messages[0];
-  window.Flatpack.notify({ message, type: "error" });
+  window.Flatpack.notify("error", "Error", message);
 
   return false;
 };
