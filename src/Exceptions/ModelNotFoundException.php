@@ -26,7 +26,7 @@ class ModelNotFoundException extends Exception implements ProvidesSolution
         return BaseSolution::create("Flatpack could not map '{$this->entity}' to an existing model.")
             ->setSolutionDescription("Generate the templates using `php artisan make:flatpack {$this->model}`.")
             ->setDocumentationLinks([
-                'Package documentation' => 'https://github.com/faustoq/laravel-flatpack',
+                'Package documentation' => 'https://github.com/laravel-flatpack/flatpack',
             ]);
     }
 }

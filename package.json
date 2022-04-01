@@ -1,7 +1,7 @@
 {
     "name": "laravel-flatpack",
     "version": "1.0.0",
-    "description": "Flat pack: Administration panel for Laravel, ready to assemble.",
+    "description": "Flatpack: Administration panel for Laravel, ready to assemble.",
     "main": "tailwind.config.js",
     "directories": {
         "test": "tests"
@@ -18,15 +18,15 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/faustoq/laravel-flatpack.git"
+        "url": "git+https://github.com/laravel-flatpack/flatpack.git"
     },
     "keywords": [],
     "author": "",
     "license": "ISC",
     "bugs": {
-        "url": "https://github.com/faustoq/laravel-flatpack/issues"
+        "url": "https://github.com/laravel-flatpack/flatpack/issues"
     },
-    "homepage": "https://github.com/faustoq/laravel-flatpack",
+    "homepage": "https://laravel-flatpack.com",
     "devDependencies": {
         "@editorjs/code": "^2.7.0",
         "@editorjs/delimiter": "^1.2.0",

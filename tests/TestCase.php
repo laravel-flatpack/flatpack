@@ -14,7 +14,7 @@ class TestCase extends Orchestra
 
         /*
         Factory::guessFactoryNamesUsing(
-            fn (string $modelName) => 'Faustoq\\Flatpack\\Database\\Factories\\'.class_basename($modelName).'Factory'
+            fn (string $modelName) => 'Flatpack\\Database\\Factories\\'.class_basename($modelName).'Factory'
         );
         */
     }

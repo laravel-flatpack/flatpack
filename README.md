@@ -7,17 +7,9 @@
 
 📦 Flat pack: Administration panel for Laravel, ready to assemble.
 
-**Yet another Laravel Administration Panel?**
+---
 
-Flat Pack is the quickest and simplest solution to create fast multi-purpose user interfaces. Out of the box, it provides a rich stack of crafted components, ready to assemble.
-
-With Flat Pack you can:
-
--   Quickly create CRUD interfaces for your app's models.
--   Customise the interfaces with simple and declarative yaml files.
--   Build a complete and dynamic administration panel for your site in few seconds.
-
-... simply create flatpack composition files with one command and start building!
+📕 [Documentation](https://laravel-flatpack.com)
 
 ---
 
@@ -123,7 +115,7 @@ columns:
 
 You can edit the yaml composition files by mapping your model's attributes with components of differnt types and features.
 
-[Check out the Documentation](DOCUMENTATION.md)
+[Check out the Documentation](https://laravel-flatpack.com)
 
 ## Changelog
 
