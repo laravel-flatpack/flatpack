@@ -81,7 +81,7 @@
                 <span>Dashboard customization coming soon.</span>
             </div>
             <div class="ml-4 text-sm text-center text-gray-500 sm:text-right sm:ml-0">
-                Flatpack v{{ \Faustoq\Flatpack\Flatpack::VERSION }} (PHP v{{ PHP_VERSION }})
+                Flatpack v{{ \Flatpack\Flatpack::VERSION }} (PHP v{{ PHP_VERSION }})
             </div>
         </div>
     </div>
