@@ -5,15 +5,19 @@
 [![GitHub Code Style Action Status](https://img.shields.io/github/workflow/status/faustoq/laravel-flatpack/Check%20&%20fix%20styling?label=code%20style)](https://github.com/faustoq/laravel-flatpack/actions?query=workflow%3A"Check+%26+fix+styling"+branch%3Amain)
 [![Total Downloads](https://img.shields.io/packagist/dt/faustoq/laravel-flatpack.svg?style=flat-square)](https://packagist.org/packages/faustoq/laravel-flatpack)
 
-📦 Flat pack: Administration panel for Laravel, ready to assemble.
+# Flatpack
 
----
+📦 Flatpack: Administration panel for Laravel, ready to assemble.
+
+-   Quickly create CRUD (Create, Read, Update, Delete) interfaces for your Eloquent models.
+-   Customise UI and components with simple and declarative YAML files.
+-   Build a complete and dynamic administration panel for your site in seconds.
 
 📕 [Documentation](https://laravel-flatpack.com)
 
 ---
 
-## Installation
+## Quick Install
 
 You can install the package via composer:
 
@@ -21,24 +25,10 @@ You can install the package via composer:
 composer require faustoq/laravel-flatpack
 ```
 
-Publish the config file with:
+Publish the config file and compiled assets:
 
 ```bash
-
-# Copy configuration file /config/flatpack.php
-
-php artisan vendor:publish --tag="config"
-
-```
-
-Publish the compiled assets:
-
-```bash
-
-# Copy compiled assets /public/flatpack.js and /public/flatpack.css
-
-php artisan vendor:publish --tag="public"
-
+php artisan vendor:publish --tag="flatpack"
 ```
 
 ## Usage
@@ -46,11 +36,7 @@ php artisan vendor:publish --tag="public"
 Generate the flatpack composition files for App\Models\Post model...
 
 ```bash
-
-# Generate the flatpack composition files for App\Models\Post model...
-
 php artisan make:flatpack Post
-
 ```
 
 This command will create two files:
@@ -62,7 +48,12 @@ Let's check the result, visit `/backend/posts`.
 
 Now start assembling, grab the generated files and define how they should look!
 
-## Forms
+## Examples
+
+-   [Form example](#form)
+-   [List example](#list)
+
+### Form
 
 Example of generated file `/flatpack/posts/form.yaml`
 
@@ -85,7 +76,7 @@ fields:
         type: datetime-picker
 ```
 
-## Lists
+### List
 
 Example of generated `/flatpack/posts/list.yaml`
 
@@ -115,7 +106,7 @@ columns:
 
 You can edit the yaml composition files by mapping your model's attributes with components of differnt types and features.
 
-[Check out the Documentation](https://laravel-flatpack.com)
+[Check out the Documentation](https://laravel-flatpack.com/reference)
 
 ## Changelog
 
