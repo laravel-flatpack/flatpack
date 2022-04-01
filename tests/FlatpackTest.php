@@ -22,7 +22,7 @@ it('converts a string to model class name', function () {
 
 it('loads and returns the composition', function () {
     $flatpack = Flatpack::loadComposition();
-    expect($flatpack)->toBeInstanceOf(Faustoq\Flatpack\Flatpack::class);
+    expect($flatpack)->toBeInstanceOf(\Flatpack\Flatpack::class);
 
     $composition = $flatpack->getComposition();
     expect($composition)->toBeArray();
@@ -30,7 +30,7 @@ it('loads and returns the composition', function () {
 
 it('gets a template form composition by entity', function () {
     $flatpack = Flatpack::loadComposition();
-    expect($flatpack)->toBeInstanceOf(Faustoq\Flatpack\Flatpack::class);
+    expect($flatpack)->toBeInstanceOf(\Flatpack\Flatpack::class);
 
     $composition = $flatpack->getTemplateComposition('posts', 'form.yaml');
 
@@ -42,7 +42,7 @@ it('gets a template form composition by entity', function () {
 
 it('gets a template list composition by entity', function () {
     $flatpack = Flatpack::loadComposition();
-    expect($flatpack)->toBeInstanceOf(Faustoq\Flatpack\Flatpack::class);
+    expect($flatpack)->toBeInstanceOf(\Flatpack\Flatpack::class);
 
     $composition = $flatpack->getTemplateComposition('posts', 'list.yaml');
 
@@ -54,16 +54,16 @@ it('gets a template list composition by entity', function () {
 
 it('throws an exception when entity is not found', function () {
     $flatpack = Flatpack::loadComposition();
-    expect($flatpack)->toBeInstanceOf(Faustoq\Flatpack\Flatpack::class);
+    expect($flatpack)->toBeInstanceOf(\Flatpack\Flatpack::class);
 
-    $this->expectException(Faustoq\Flatpack\Exceptions\EntityNotFoundException::class);
+    $this->expectException(\Flatpack\Exceptions\EntityNotFoundException::class);
     $flatpack->getTemplateComposition('not-found-entity', 'form.yaml');
 });
 
 it('throws an exception when template is not found', function () {
     $flatpack = Flatpack::loadComposition();
-    expect($flatpack)->toBeInstanceOf(Faustoq\Flatpack\Flatpack::class);
+    expect($flatpack)->toBeInstanceOf(\Flatpack\Flatpack::class);
 
-    $this->expectException(Faustoq\Flatpack\Exceptions\TemplateNotFoundException::class);
+    $this->expectException(\Flatpack\Exceptions\TemplateNotFoundException::class);
     $flatpack->getTemplateComposition('posts', 'file-not-found.yaml');
 });
