@@ -1,4 +1,4 @@
-<div class="flex flex-row items-center justify-center gap-2">
+<div class="flex flex-row items-center justify-center gap-2 whitespace-nowrap">
 @if ($scope === 'onlyTrashed')
     <x-flatpack-action-button
         key="action-empty-trash"
@@ -22,7 +22,12 @@
         <x-flatpack-action-button
             method="bulkAction"
             key="bulk-action-restore"
-            :options="['action'=>'restore', 'confirm' => true, 'label' => __('Restore')]"
+            :options="[
+                'action'=>'restore',
+                'confirm' => true,
+                'label' => __('Restore'),
+                'style' => 'secondary'
+            ]"
             :entity="$entity"
             :model="$model"
         />

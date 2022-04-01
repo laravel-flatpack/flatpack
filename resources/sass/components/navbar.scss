@@ -3,14 +3,17 @@
   @apply items-start justify-start w-full h-screen;
   @apply py-2 text-white bg-gray-800;
   max-width: 256px;
+
+  &.is-minimized {
+    @apply hidden xl:flex xl:w-20 xl:justify-center xl:items-start;
+  }
 }
+
 .navbar .navbar-item-text {
   @apply w-full pr-2 overflow-hidden text-base text-left whitespace-nowrap text-ellipsis;
   max-width: 166px;
 }
-.navbar.is-minimized {
-  @apply hidden xl:flex xl:w-20 xl:justify-center xl:items-start;
-}
+
 .navbar.is-minimized .navbar-item-text,
 .navbar.is-minimized .navbar-logo span {
   @apply hidden;

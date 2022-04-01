@@ -9,6 +9,7 @@
             ])
         </div>
     </div>
+    @include('flatpack::includes.table.scopes')
     <div>
         <div
             @if (is_numeric($refresh))
@@ -36,7 +37,6 @@
                             @include('livewire-tables::tailwind.includes.reorder')
                             @include('flatpack::includes.table.search')
                             @include('livewire-tables::tailwind.includes.filters')
-                            @include('flatpack::includes.table.scopes')
                         </div>
 
                         <div class="md:flex md:items-center">

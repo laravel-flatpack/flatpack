@@ -12,7 +12,7 @@
     'is-active' => $current
 ])}}>
 
-    <x-icon name="{{ $icon }}" style="{{ $current ? 'solid' : 'outline' }}" class="h-7 w-7" />
+    <x-icon name="{{ $icon }}" style="outline" class="h-[24px] w-[24px]" />
 
     <span class="navbar-item-text">{{ $title }}</span>
 </a>
