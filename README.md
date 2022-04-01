@@ -10,8 +10,8 @@
 📦 Flatpack: Administration panel for Laravel, ready to assemble.
 
 -   Quickly create CRUD (Create, Read, Update, Delete) interfaces for your Eloquent models.
--   Customise UI and components with simple and declarative YAML files.
--   Build a complete and dynamic administration panel for your site in seconds.
+-   Define components with simple and declarative YAML files.
+-   Build a complete administration panel for your site in seconds.
 
 📕 [Documentation](https://laravel-flatpack.com)
 
@@ -33,7 +33,7 @@ php artisan vendor:publish --tag="flatpack"
 
 ## Usage
 
-Generate the flatpack composition files for App\Models\Post model...
+Generate the flatpack composition files for `App\Models\Post` model...
 
 ```bash
 php artisan make:flatpack Post
