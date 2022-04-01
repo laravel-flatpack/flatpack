@@ -208,6 +208,12 @@ class Form extends Component
      */
     public function action($method = 'cancel', $options = [])
     {
+        if ($method === 'cancel') {
+            return redirect()->route('flatpack.list', [
+                'entity' => $this->entity,
+            ]);
+        }
+
         $this->clearFormErrors();
 
         $this->beforeAction($method);
@@ -260,10 +266,6 @@ class Form extends Component
         if ($action === 'save') {
             // Form validation
             $this->validateForm($this->fields, $this->getFormFields());
-        }
-
-        if ($action === 'cancel') {
-            return $this->goBack();
         }
     }
 
