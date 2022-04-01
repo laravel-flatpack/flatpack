@@ -58,14 +58,14 @@ return [
           'created_at' =>
           [
             'label' => 'Created',
-            'type' => 'datetimepicker',
+            'type' => 'datetime-picker',
             'disabled' => true,
             'span' => 1,
           ],
           'updated_at' =>
           [
             'label' => 'Updated',
-            'type' => 'datetimepicker',
+            'type' => 'datetime-picker',
             'span' => 1,
           ],
         ],
@@ -78,14 +78,14 @@ return [
     [
       'group' => 'Info',
       'label' => 'Created',
-      'type' => 'datetimepicker',
+      'type' => 'datetime-picker',
       'disabled' => true,
     ],
     'updated_at' =>
     [
       'group' => 'Info',
       'label' => 'Updated',
-      'type' => 'datetimepicker',
+      'type' => 'datetime-picker',
       'disabled' => true,
     ],
     'categories' =>

@@ -24,7 +24,8 @@
         "livewire/livewire": "^2.6",
         "maxeckel/livewire-editorjs": "^1.4",
         "rappasoft/laravel-livewire-tables": "^1.22",
-        "symfony/yaml": "^5.0"
+        "symfony/yaml": "^5.0",
+        "wireui/wireui": "^1.0"
     },
     "require-dev": {
         "nunomaduro/collision": "^5.10",

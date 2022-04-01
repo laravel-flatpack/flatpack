@@ -42,32 +42,21 @@
   }
 }
 
+/*
+|--------------------------------------------------------------------------
+| Form fieldset variants
+|--------------------------------------------------------------------------
+*/
 .form-fieldset {
   @apply grid w-full max-w-6xl grid-cols-2 gap-5 mx-auto my-0;
-}
 
-.header-fieldset,
-.sidebar-fieldset {
-  @apply grid w-full max-w-6xl grid-cols-1 gap-5 ml-0 my-0;
-}
-
-.compact-fieldset {
-  @apply grid w-full max-w-4xl grid-cols-1 gap-5 mx-auto my-0 p-5;
-}
-
-.sidebar-fieldset {
-  .form-field {
-    .form-field-elements.has-label {
-      @apply lg:flex-row lg:gap-2 lg:items-center;
-
-      .form-field-label {
-        @apply min-w-[6rem];
-      }
-      .form-field-input {
-        @apply lg:max-w-[14.5rem];
-      }
-    }
+  &.is-compact {
+    @apply max-w-4xl grid-cols-1 p-5;
   }
+}
+
+.sidebar-fieldset {
+  @apply grid w-full max-w-6xl grid-cols-1 gap-5 mx-auto my-0;
 }
 
 .header-fieldset {
