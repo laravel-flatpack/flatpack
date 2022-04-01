@@ -1,8 +1,8 @@
 <?php
 
-namespace Faustoq\Flatpack\Traits;
+namespace Flatpack\Traits;
 
-use Faustoq\Flatpack\Exceptions\ActionNotFoundException;
+use Flatpack\Exceptions\ActionNotFoundException;
 
 trait WithActions
 {

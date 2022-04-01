@@ -1,8 +1,8 @@
 <?php
 
-namespace Faustoq\Flatpack\Http\Livewire;
+namespace Flatpack\Http\Livewire;
 
-use Faustoq\Flatpack\Traits\WithActions;
+use Flatpack\Traits\WithActions;
 use Illuminate\Support\Facades\Storage;
 use Livewire\TemporaryUploadedFile;
 use Livewire\WithFileUploads;

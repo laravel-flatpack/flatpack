@@ -1,8 +1,8 @@
 <?php
 
-namespace Faustoq\Flatpack\Actions;
+namespace Flatpack\Actions;
 
-use Faustoq\Flatpack\Contracts\FlatpackActionContract;
+use Flatpack\Contracts\FlatpackActionContract;
 use Illuminate\Support\Str;
 
 class Delete extends FlatpackAction implements FlatpackActionContract

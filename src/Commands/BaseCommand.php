@@ -1,8 +1,8 @@
 <?php
 
-namespace Faustoq\Flatpack\Commands;
+namespace Flatpack\Commands;
 
-use Faustoq\Flatpack\Facades\Flatpack;
+use Flatpack\Facades\Flatpack;
 use Illuminate\Console\GeneratorCommand;
 use Illuminate\Support\Str;
 use Symfony\Component\Console\Input\InputArgument;

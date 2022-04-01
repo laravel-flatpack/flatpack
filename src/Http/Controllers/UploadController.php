@@ -1,8 +1,8 @@
 <?php
 
-namespace Faustoq\Flatpack\Http\Controllers;
+namespace Flatpack\Http\Controllers;
 
-use Faustoq\Flatpack\Traits\WithActions;
+use Flatpack\Traits\WithActions;
 use Illuminate\Http\Request;
 
 class UploadController extends Controller

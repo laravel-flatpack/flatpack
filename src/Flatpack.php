@@ -1,17 +1,17 @@
 <?php
 
-namespace Faustoq\Flatpack;
+namespace Flatpack;
 
-use Faustoq\Flatpack\Exceptions\ConfigurationException;
-use Faustoq\Flatpack\Exceptions\EntityNotFoundException;
-use Faustoq\Flatpack\Exceptions\TemplateNotFoundException;
+use Flatpack\Exceptions\ConfigurationException;
+use Flatpack\Exceptions\EntityNotFoundException;
+use Flatpack\Exceptions\TemplateNotFoundException;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use Symfony\Component\Yaml\Yaml;
 
 class Flatpack
 {
-    public const VERSION = "0.0.1";
+    public const VERSION = "0.1.0";
 
     /**
      * The configuration files path.

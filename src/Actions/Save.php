@@ -1,9 +1,9 @@
 <?php
 
-namespace Faustoq\Flatpack\Actions;
+namespace Flatpack\Actions;
 
-use Faustoq\Flatpack\Contracts\FlatpackActionContract;
-use Faustoq\Flatpack\Traits\WithRelationships;
+use Flatpack\Contracts\FlatpackActionContract;
+use Flatpack\Traits\WithRelationships;
 use Illuminate\Support\Str;
 
 class Save extends FlatpackAction implements FlatpackActionContract

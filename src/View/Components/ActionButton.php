@@ -1,8 +1,8 @@
 <?php
 
-namespace Faustoq\Flatpack\View\Components;
+namespace Flatpack\View\Components;
 
-use Faustoq\Flatpack\Traits\WithActions;
+use Flatpack\Traits\WithActions;
 use Illuminate\Support\Arr;
 use Illuminate\View\Component;
 

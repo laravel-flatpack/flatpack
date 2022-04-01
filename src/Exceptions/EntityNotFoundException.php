@@ -1,11 +1,11 @@
 <?php
 
-namespace Faustoq\Flatpack\Exceptions;
+namespace Flatpack\Exceptions;
 
 use Exception;
 use Facade\IgnitionContracts\ProvidesSolution;
 use Facade\IgnitionContracts\Solution;
-use Faustoq\Flatpack\Exceptions\Solutions\GenerateFlatpackSolution;
+use Flatpack\Exceptions\Solutions\GenerateFlatpackSolution;
 
 class EntityNotFoundException extends Exception implements ProvidesSolution
 {

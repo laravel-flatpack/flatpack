@@ -1,6 +1,6 @@
 <?php
 
-namespace Faustoq\Flatpack\Http\Livewire;
+namespace Flatpack\Http\Livewire;
 
 use Rappasoft\LaravelLivewireTables\Views\Column as BaseColumn;
 

@@ -1,5 +1,5 @@
 {
-    "name": "faustoq/laravel-flatpack",
+    "name": "laravel-flatpack/flatpack",
     "description": "Flat pack: Administration panel for Laravel, ready to assemble.",
     "keywords": [
         "laravel-flatpack",
@@ -9,7 +9,7 @@
         "admin",
         "panel"
     ],
-    "homepage": "https://github.com/faustoq/laravel-flatpack",
+    "homepage": "https://github.com/laravel-flatpack/flatpack",
     "license": "MIT",
     "authors": [
         {
@@ -41,7 +41,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Faustoq\\Flatpack\\": "src"
+            "Flatpack\\": "src"
         },
         "files": [
             "src/helpers.php"
@@ -49,7 +49,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Faustoq\\Flatpack\\Tests\\": "tests"
+            "Flatpack\\Tests\\": "tests"
         }
     },
     "scripts": {
@@ -62,10 +62,10 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Faustoq\\Flatpack\\FlatpackServiceProvider"
+                "Flatpack\\FlatpackServiceProvider"
             ],
             "aliases": {
-                "Flatpack": "Faustoq\\Flatpack\\Facades\\Flatpack"
+                "Flatpack": "Flatpack\\Facades\\Flatpack"
             }
         }
     },

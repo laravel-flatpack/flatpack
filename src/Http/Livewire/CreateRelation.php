@@ -1,10 +1,10 @@
 <?php
 
-namespace Faustoq\Flatpack\Http\Livewire;
+namespace Flatpack\Http\Livewire;
 
-use Faustoq\Flatpack\Traits\WithComposition;
-use Faustoq\Flatpack\Traits\WithFormFields;
-use Faustoq\Flatpack\Traits\WithFormValidation;
+use Flatpack\Traits\WithComposition;
+use Flatpack\Traits\WithFormFields;
+use Flatpack\Traits\WithFormValidation;
 use Livewire\Component;
 
 class CreateRelation extends Component

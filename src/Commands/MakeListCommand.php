@@ -1,6 +1,6 @@
 <?php
 
-namespace Faustoq\Flatpack\Commands;
+namespace Flatpack\Commands;
 
 class MakeListCommand extends BaseCommand
 {

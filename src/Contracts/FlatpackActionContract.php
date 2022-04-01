@@ -1,6 +1,6 @@
 <?php
 
-namespace Faustoq\Flatpack\Contracts;
+namespace Flatpack\Contracts;
 
 interface FlatpackActionContract
 {
