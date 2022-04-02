@@ -22,7 +22,7 @@
 You can install the package via composer:
 
 ```bash
-composer require laravel-flatpack/flatpack
+composer require flatpack/flatpack
 ```
 
 Publish the config file and compiled assets:
