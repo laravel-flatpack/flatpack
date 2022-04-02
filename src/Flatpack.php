@@ -11,7 +11,7 @@ use Symfony\Component\Yaml\Yaml;
 
 class Flatpack
 {
-    public const VERSION = "0.1.0";
+    public const VERSION = "1.0.0";
 
     /**
      * The configuration files path.
@@ -179,13 +179,7 @@ class Flatpack
             return __DIR__ . '/../tests/__mocks__';
         }
 
-        $path = base_path(config('flatpack.directory', 'flatpack'));
-
-        if (! File::isDirectory($path)) {
-            throw new ConfigurationException('Flatpack directory not found.');
-        }
-
-        return $path;
+        return base_path(config('flatpack.directory', 'flatpack'));
     }
 
     /**
