@@ -17,7 +17,19 @@ module.exports = {
     extend: {
       colors: {
         slate: colors.slate,
-        primary: colors.dark,
+        primary: {
+          DEFAULT: "#374151",
+          50: "#8E9CB2",
+          100: "#8191AA",
+          200: "#697C99",
+          300: "#586882",
+          400: "#485569",
+          500: "#374151",
+          600: "#2B323F",
+          700: "#1E242D",
+          800: "#12151A",
+          900: "#060708",
+        },
         secondary: colors.slate,
         positive: colors.emerald,
         negative: colors.red,

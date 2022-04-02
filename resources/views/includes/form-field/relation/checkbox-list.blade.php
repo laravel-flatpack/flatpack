@@ -7,7 +7,7 @@
                 <input
                     type="checkbox"
                     wire:model="fields.{{ $key }}"
-                    class="text-indigo-600 border-gray-300 rounded shadow-sm focus:border-indigo-300 focus:ring focus:ring-offset-0 focus:ring-indigo-200 focus:ring-opacity-50"
+                    class="border-gray-300 rounded shadow-sm text-primary-300 focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50"
                     value="{{ $optionValue }}"
                     />
                 <span class="w-full ml-3 overflow-hidden text-base sm:text-sm text-ellipsis whitespace-nowrap">{{ $display }}</span>
@@ -25,13 +25,11 @@
                 />
             </x-flatpack-modal>
         </div>
-        <button
-            class="text-black bg-gray-100 button"
-            @click="toggle(); setTimeout(() => $refs.modal.querySelector('input').focus(), 200);">
-            <span class="whitespace-nowrap">{{ __("Create new :entity", [
-                "entity" => Str::singular($key)
-            ]) }}</span>
-        </button>
+        <x-button
+            wire:key="toggle-modal-{{ $key }}"
+            label="Create new {{ Str::singular($key) }}"
+            @click="toggle(); setTimeout(() => $refs.modal.querySelector('input').focus(), 200);"
+        />
     </div>
     @endif
 </div>
