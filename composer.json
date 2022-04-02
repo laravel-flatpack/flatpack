@@ -1,10 +1,10 @@
 {
-    "name": "laravel-flatpack/flatpack",
+    "name": "flatpack/flatpack",
     "description": "Flatpack: Administration panel for Laravel, ready to assemble.",
     "keywords": [
+        "flatpack",
         "laravel-flatpack",
         "laravel",
-        "flatpack",
         "administration",
         "admin",
         "panel"
