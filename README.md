@@ -1,9 +1,9 @@
 ![Image of package](.github/package-cover.png)
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/laravel-flatpack/flatpack.svg?style=flat-square)](https://packagist.org/packages/laravel-flatpack/flatpack)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/flatpack/flatpack.svg?style=flat-square)](https://packagist.org/packages/flatpack/flatpack)
 [![GitHub Tests Action Status](https://img.shields.io/github/workflow/status/laravel-flatpack/flatpack/run-tests?label=tests)](https://github.com/laravel-flatpack/flatpack/actions?query=workflow%3Arun-tests+branch%3Amain)
 [![GitHub Code Style Action Status](https://img.shields.io/github/workflow/status/laravel-flatpack/flatpack/Check%20&%20fix%20styling?label=code%20style)](https://github.com/laravel-flatpack/flatpack/actions?query=workflow%3A"Check+%26+fix+styling"+branch%3Amain)
-[![Total Downloads](https://img.shields.io/packagist/dt/laravel-flatpack/flatpack.svg?style=flat-square)](https://packagist.org/packages/laravel-flatpack/flatpack)
+[![Total Downloads](https://img.shields.io/packagist/dt/flatpack/flatpack.svg?style=flat-square)](https://packagist.org/packages/flatpack/flatpack)
 
 # Flatpack
 
