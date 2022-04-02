@@ -151,16 +151,16 @@
 .swal2-styled.swal2-deny,
 .swal2-styled.swal2-cancel {
   @apply flex justify-center px-4 py-2 text-base font-medium border rounded-md shadow-sm sm:text-sm;
-  @apply text-gray-700 bg-white border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500;
+  @apply text-gray-700 bg-white border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500;
 }
 .swal2-styled.swal2-confirm {
-  @apply text-white bg-gray-800 border-transparent hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500;
+  @apply text-white bg-gray-800 border-transparent hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500;
 }
 .swal2-styled.swal2-deny {
   @apply text-white bg-red-800 border-transparent hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500;
 }
 .swal2-styled:focus {
-  @apply focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-400;
+  @apply focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400;
 }
 .swal2-styled::-moz-focus-inner {
   border: 0;
@@ -170,7 +170,7 @@
 }
 .swal2-close {
   @apply z-20 items-center justify-center w-6 h-6 p-0 mr-0 overflow-hidden text-gray-400 bg-transparent border-0 border-none rounded-md cursor-pointer;
-  @apply focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-300;
+  @apply focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-300;
   position: absolute;
   top: 10px;
   right: 10px;

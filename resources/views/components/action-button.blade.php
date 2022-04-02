@@ -5,7 +5,7 @@
     wire:click.stop="{{ $method }}('{{ $action }}', {{ json_encode($options) }})"
     loading-delay="short"
     :label="$label"
-    :dark="$style === 'primary'"
+    :primary="$style === 'primary'"
     :secondary="$style === 'secondary' || $style === 'default'"
     :positive="$style === 'success'"
     :negative="$style === 'danger'"
