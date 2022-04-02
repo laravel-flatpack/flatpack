@@ -20,7 +20,6 @@
     ],
     "require": {
         "php": "^8.0",
-        "illuminate/contracts": "^8.73",
         "livewire/livewire": "^2.6",
         "maxeckel/livewire-editorjs": "^1.4",
         "rappasoft/laravel-livewire-tables": "^1.22",
