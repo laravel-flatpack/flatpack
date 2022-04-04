@@ -2,7 +2,7 @@
 
 namespace Flatpack\Actions;
 
-use Flatpack\Contracts\FlatpackActionContract;
+use Flatpack\Contracts\FlatpackAction as FlatpackActionContract;
 use Illuminate\Support\Str;
 
 class Restore extends FlatpackAction implements FlatpackActionContract

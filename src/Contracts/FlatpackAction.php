@@ -2,7 +2,7 @@
 
 namespace Flatpack\Contracts;
 
-interface FlatpackActionContract
+interface FlatpackAction
 {
     public function authorize();
 
