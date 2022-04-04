@@ -10,13 +10,16 @@ use Flatpack\Http\Livewire\CreateRelation;
 use Flatpack\Http\Livewire\Form;
 use Flatpack\Http\Livewire\ImageUploader;
 use Flatpack\Http\Livewire\Table;
+use Flatpack\Http\Middleware\Authenticate;
+use Flatpack\Http\Middleware\FlatpackMiddleware;
 use Flatpack\View\Components\ActionButton;
 use Flatpack\View\Components\FormField;
-use Flatpack\View\Components\InputField;
+use Flatpack\View\Components\GuestLayout;
 use Flatpack\View\Components\Layout;
 use Flatpack\View\Components\Modal;
 use Flatpack\View\Components\RelationField;
 use Flatpack\View\Components\TagInput;
+use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
@@ -31,12 +34,16 @@ class FlatpackServiceProvider extends ServiceProvider
         ], 'flatpack');
 
         $this->registerCommands();
+        $this->registerMiddleware();
         $this->registerViews();
         $this->registerViewComponents();
         $this->registerLivewireComponents();
         $this->registerRoutes();
     }
 
+    /**
+     * Register Flatpack.
+     */
     public function register()
     {
         $this->mergeConfigFrom(__DIR__ . '/../config/flatpack.php', 'flatpack');
@@ -86,12 +93,12 @@ class FlatpackServiceProvider extends ServiceProvider
     protected function registerViewComponents()
     {
         $this->loadViewComponentsAs('flatpack', [
+            GuestLayout::class,
+            Layout::class,
             ActionButton::class,
             FormField::class,
-            InputField::class,
             RelationField::class,
             TagInput::class,
-            Layout::class,
             Modal::class,
         ]);
     }
@@ -102,6 +109,16 @@ class FlatpackServiceProvider extends ServiceProvider
     protected function registerViews()
     {
         $this->loadViewsFrom(__DIR__ . '/../resources/views', 'flatpack');
+    }
+
+    /**
+     * Register route middleware.
+     */
+    protected function registerMiddleware()
+    {
+        $router = $this->app->make(Router::class);
+        $router->aliasMiddleware('flatpack-auth', Authenticate::class);
+        $router->aliasMiddleware('flatpack', FlatpackMiddleware::class);
     }
 
     /**
@@ -120,10 +137,9 @@ class FlatpackServiceProvider extends ServiceProvider
      */
     private function getRouteMiddleware()
     {
-        return collect([\Flatpack\Http\Middleware\FlatpackMiddleware::class])
+        return collect(['web'])
             ->prepend(config('flatpack.middleware.before', []))
             ->push(config('flatpack.middleware.after', []))
-            ->prepend('web')
             ->flatten()
             ->toArray();
     }
