@@ -33,7 +33,7 @@ class Layout extends Component
     {
         $current = request()->flatpack['entity'] ?? null;
 
-        return view('flatpack::components.layout', [
+        return view('flatpack::layouts.layout', [
             'current' => (empty($current) ? 'home' : $current),
             'navigation' => $this->navigation,
         ]);

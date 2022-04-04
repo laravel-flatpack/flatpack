@@ -2,7 +2,7 @@
 
 namespace Flatpack\Actions;
 
-use Flatpack\Contracts\FlatpackActionContract;
+use Flatpack\Contracts\FlatpackAction as FlatpackActionContract;
 use Flatpack\Traits\WithStorageFiles;
 
 class Upload extends FlatpackAction implements FlatpackActionContract
