@@ -2,7 +2,7 @@
 
 namespace Flatpack\Actions;
 
-use Flatpack\Contracts\FlatpackActionContract;
+use Flatpack\Contracts\FlatpackAction as FlatpackActionContract;
 use Illuminate\Support\Str;
 
 class EmptyTrash extends FlatpackAction implements FlatpackActionContract

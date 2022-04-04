@@ -33,6 +33,8 @@ class FlatpackMiddleware
      */
     public function handle(Request $request, \Closure $next)
     {
+        $this->authorize($request);
+
         // Load and cache the flatpack template composition files.
         $this->options = Flatpack::loadComposition()->getComposition();
 
@@ -47,6 +49,15 @@ class FlatpackMiddleware
         ];
 
         return $next($request);
+    }
+
+    protected function authorize(Request $request)
+    {
+        $user = $request->user();
+
+        abort_if(! $user->isFlatpackAdmin(), 401, 'Unauthorized.');
+
+        return true;
     }
 
     /**
