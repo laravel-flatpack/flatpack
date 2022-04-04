@@ -53,9 +53,9 @@ trait WithActions
             );
         }
 
-        if (! $instance instanceof \Flatpack\Contracts\FlatpackActionContract) {
+        if (! $instance instanceof \Flatpack\Contracts\FlatpackAction) {
             throw new ActionNotFoundException(
-                "Action class must implement \Flatpack\Contracts\FlatpackActionContract: $action"
+                "Action class must implement \Flatpack\Contracts\FlatpackAction interface: $action"
             );
         }
 
