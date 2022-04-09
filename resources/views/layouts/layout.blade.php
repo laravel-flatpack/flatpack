@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 <head>
     <title>Flatpack - Admin Panel</title>
@@ -8,11 +9,9 @@
     <link rel="stylesheet" href="{{ asset('flatpack/fonts/inter.css') }}" />
     <link rel="stylesheet" href="{{ asset('flatpack/fonts/icons.css') }}" />
     <link rel="stylesheet" href="{{ asset('flatpack/css/flatpack.css') }}" />
-    @wireUiScripts
-
-    <script src="https://unpkg.com/alpinejs@3.9.0/dist/cdn.min.js" defer></script>
-
     @livewireStyles
+    @wireUiScripts
+    <script defer src="{{ asset('flatpack/js/alpine.js') }}"></script>
 </head>
 <body>
     <div
