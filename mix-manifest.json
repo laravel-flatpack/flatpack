@@ -1,4 +1,5 @@
 {
+    "/public/js/alpine.js": "/public/js/alpine.js",
     "/public/js/flatpack.js": "/public/js/flatpack.js",
     "/public/js/form.js": "/public/js/form.js",
     "/public/js/list.js": "/public/js/list.js",

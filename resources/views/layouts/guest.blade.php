@@ -1,19 +1,17 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <title>{{ config('app.name', 'Flatpack') }}</title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
-
-        <title>{{ config('app.name', 'Flatpack') }}</title>
-
         <link rel="icon" type="image/x-icon" href="{{ asset('flatpack/favicon.ico') }}">
-
         <link rel="stylesheet" href="{{ asset('flatpack/fonts/inter.css') }}" />
         <link rel="stylesheet" href="{{ asset('flatpack/fonts/icons.css') }}" />
         <link rel="stylesheet" href="{{ asset('flatpack/css/flatpack.css') }}" />
-
-        <script src="https://unpkg.com/alpinejs@3.9.0/dist/cdn.min.js" defer></script>
+        @livewireStyles
+        @wireUiScripts
+        <script defer src="{{ asset('flatpack/js/alpine.js') }}"></script>
     </head>
     <body>
         <div class="font-sans antialiased text-gray-100 bg-gray-900">
