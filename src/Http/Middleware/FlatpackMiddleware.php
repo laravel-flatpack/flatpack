@@ -33,7 +33,7 @@ class FlatpackMiddleware
      */
     public function handle(Request $request, \Closure $next)
     {
-        $this->authorize($request);
+        abort_if(! $this->authorize($request), 401, 'Unauthorized.');
 
         // Load and cache the flatpack template composition files.
         $this->options = Flatpack::loadComposition()->getComposition();
@@ -53,11 +53,13 @@ class FlatpackMiddleware
 
     protected function authorize(Request $request)
     {
+        if (app()->environment('local')) {
+            return true;
+        }
+
         $user = $request->user();
 
-        abort_if(! $user->isFlatpackAdmin(), 401, 'Unauthorized.');
-
-        return true;
+        return $user->isFlatpackAdmin();
     }
 
     /**
