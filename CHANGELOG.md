@@ -2,6 +2,15 @@
 
 All notable changes to `laravel-flatpack` will be documented in this file.
 
+## v1.0.2 - 2022-04-09
+
+## What's Changed
+
+- Authorize any user in local environment
+- Include AlpineJS
+
+**Full Changelog**: https://github.com/laravel-flatpack/flatpack/compare/v1.0.1...v1.0.2
+
 ## v1.0.1 - 2022-04-04
 
 ## What's Changed
