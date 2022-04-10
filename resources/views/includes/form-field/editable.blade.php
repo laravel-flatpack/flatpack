@@ -15,8 +15,11 @@
             'text-sm font-normal' => $size === 'small',
         ]); }}
     >
-        <span x-text="data" class="{{ empty($value) ? 'opacity-80' : 'opacity-100' }} input-field-placeholder">
+        <span x-show="!data" class="{{ empty($value) ? 'opacity-80' : 'opacity-100' }} input-field-placeholder">
             {{ empty($value) ? $placeholder : $value }}
+        </span>
+
+        <span x-show="data" x-text="data" class="{{ empty($value) ? 'opacity-80' : 'opacity-100' }} input-field-placeholder">
         </span>
 
         <div class="edit-button">
