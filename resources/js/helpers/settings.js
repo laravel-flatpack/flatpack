@@ -5,10 +5,9 @@ export const getSetting = (setting) => {
 };
 
 export const isActive = (setting) => {
-  return getSetting(setting) === "true";
+  return [true, "true"].includes(getSetting(setting));
 };
 
 export const setSetting = (setting, value) => {
-  console.log(`${PREFIX}_${setting}`, value);
   return localStorage.setItem(`${PREFIX}_${setting}`, value);
 };

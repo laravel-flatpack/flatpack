@@ -39,7 +39,7 @@ const editorInstance = (dataProperty, editorId, options) => {
           )
         )
         .catch((error) => {
-          console.error(error);
+          console.error("Sync failed: ", editorId, error);
         });
     },
   };
