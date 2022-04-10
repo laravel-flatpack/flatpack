@@ -7,7 +7,6 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <link rel="icon" type="image/x-icon" href="{{ asset('flatpack/favicon.ico') }}">
         <link rel="stylesheet" href="{{ asset('flatpack/fonts/inter.css') }}" />
-        <link rel="stylesheet" href="{{ asset('flatpack/fonts/icons.css') }}" />
         <link rel="stylesheet" href="{{ asset('flatpack/css/flatpack.css') }}" />
         @livewireStyles
         @wireUiScripts
