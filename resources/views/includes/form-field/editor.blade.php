@@ -15,8 +15,10 @@
         </div>
     </div>
 
-    @section('scripts')
-    @parent
-    <script src="{{ asset('flatpack/js/ckeditor.js') }}"></script>
-    @endsection
+    @once
+        @push('scripts')
+            <script src="{{ asset('flatpack/js/ckeditor.js') }}"></script>
+        @endpush
+    @endonce
+
 @endif

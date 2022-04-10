@@ -4,8 +4,9 @@
         :entity="$entity"
         :composition="$composition"
     />
-@section('scripts')
-@parent
-<script src="{{ asset('flatpack/js/list.js') }}"></script>
-@endsection
+    @once
+        @push('scripts')
+            <script src="{{ asset('flatpack/js/list.js') }}"></script>
+        @endpush
+    @endonce
 </x-flatpack-layout>
