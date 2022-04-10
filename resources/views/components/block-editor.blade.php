@@ -9,7 +9,8 @@
         <div id="{{ $editorId }}" class="mx-auto prose"></div>
     </div>
 </div>
-@section('scripts')
-@parent
-<script src="{{ asset('flatpack/js/editorjs.js') }}"></script>
-@endsection
+@once
+    @push('scripts')
+        <script src="{{ asset('flatpack/js/editorjs.js') }}"></script>
+    @endpush
+@endonce

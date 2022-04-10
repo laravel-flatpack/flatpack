@@ -38,6 +38,6 @@
 
     <script src="{{ asset('flatpack/js/flatpack.js') }}"></script>
 
-    @yield('scripts')
+    @stack('scripts')
 </body>
 </html>

@@ -8,9 +8,9 @@
         :formType="$formType"
         />
 
-    @section('scripts')
-    @parent
-        <script src="{{ asset('flatpack/js/form.js') }}"></script>
-    @endsection
-
+    @once
+        @push('scripts')
+            <script src="{{ asset('flatpack/js/form.js') }}"></script>
+        @endpush
+    @endonce
 </x-flatpack-layout>
