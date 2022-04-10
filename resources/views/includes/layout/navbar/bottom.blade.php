@@ -1,7 +1,7 @@
 <ul class="navbar-items">
     <li>
         <div x-data="{open: false}" class="relative">
-            <button @click="open = !open" aria-expanded="true" aria-haspopup="true" class="navbar-menu-item">
+            <button @click="open = !open" aria-label="{{ __('Settings') }}" aria-expanded="true" aria-haspopup="true" class="navbar-menu-item">
                 <x-icon name="cog" style="solid" class="h-7 w-7" />
 
                 <span class="navbar-item-text">{{ __('Settings') }}</span>
