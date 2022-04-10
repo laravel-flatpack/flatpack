@@ -1,4 +1,4 @@
-<ul class="navbar-items">
+<ul class="pt-0 navbar-items">
     <li>
         <a href="/{{ config('flatpack.prefix', 'backend') }}" class="navbar-logo {{ $current === 'home' ? 'current' : '' }}">
             <svg width="46" height="46">
