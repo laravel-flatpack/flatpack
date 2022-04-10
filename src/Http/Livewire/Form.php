@@ -222,7 +222,7 @@ class Form extends Component
             // Assign fields to model attributes
             $this->bindFieldsToModel();
 
-            $redirect = getOption($options, 'redirect', false);
+            $redirect = data_get($options, 'redirect', false);
 
             // Get action instance
             $action = $this->getAction($method)
