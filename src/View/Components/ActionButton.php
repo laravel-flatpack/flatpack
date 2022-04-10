@@ -137,8 +137,6 @@ class ActionButton extends Component
       */
     public function render()
     {
-        $this->setConfirmationMessage();
-
         if ($this->method === 'bulkAction') {
             return view('flatpack::components.action-button-bulk');
         }
@@ -165,6 +163,13 @@ class ActionButton extends Component
             'warning',
             'danger',
         ]);
+
+        $this->setConfirmationMessage();
+
+        $this->options = [
+            ...$this->options,
+            'confirmationMessage' => $this->confirmationMessage,
+        ];
     }
 
     private function formatLink($link)

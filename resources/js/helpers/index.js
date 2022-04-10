@@ -5,8 +5,10 @@ import {
   isSmallScreen,
 } from "./device";
 import { getSetting, setSetting, isActive } from "./settings";
+import performAction from "./actions";
 
 export {
+  performAction,
   getSetting,
   setSetting,
   isActive,

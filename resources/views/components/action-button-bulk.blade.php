@@ -3,11 +3,7 @@
     type="button"
     role="menuitem"
     @if ($confirm)
-    @click="event.stopImmediatePropagation(); Flatpack.confirm(@js($confirmationMessage), {
-        title: @js($label),
-        action: @js($label),
-        style: @js($style)
-    }).then(({ isConfirmed }) => isConfirmed && @this.{{ $method }}('{{ $action }}', @js($options)));"
+    @click.stop="Flatpack.action($wire.{{ $method }}, '{{ $action }}', {{ json_encode($options) }})"
     @else
     wire:loading.attr.delay.long="disabled"
     wire:offline.attr="disabled"
