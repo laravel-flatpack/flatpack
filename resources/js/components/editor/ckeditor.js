@@ -1,4 +1,4 @@
-import ClassicEditor from "./classic";
+import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import UploadAdapter from "./plugins/upload-adapter";
 
 const editorInstance = (dataProperty, editorId, options) => {
