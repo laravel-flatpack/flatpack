@@ -96,11 +96,10 @@ const editorInstance = function (
             .save()
             .then((outputData) => {
               this.$wire.set(dataProperty, outputData);
-
               this.$wire.call("save");
             })
             .catch((error) => {
-              console.log("Saving failed: ", error);
+              console.error("Sync failed: ", editorId, error);
             });
         },
       });
