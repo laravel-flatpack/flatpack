@@ -18,6 +18,13 @@ class ActionButton extends Component
     public $action;
 
     /**
+     * Destination link.
+     *
+     * @var string
+     */
+    public $link = "#";
+
+    /**
      * Requires action confirmation.
      *
      * @var bool
@@ -145,6 +152,7 @@ class ActionButton extends Component
     private function initProps(): void
     {
         $this->action = $this->getOption('action');
+        $this->link = $this->formatLink($this->getOption('link', '#'));
         $this->label = $this->getOption('label', '');
         $this->shortcut = $this->getOption('shortcut', false);
         $this->confirm = $this->getOption('confirm', false);
@@ -157,6 +165,15 @@ class ActionButton extends Component
             'warning',
             'danger',
         ]);
+    }
+
+    private function formatLink($link)
+    {
+        return (str_contains($link, '?') || str_contains($link, '#') || str_contains($link, '/')) ?
+            $link : route('flatpack.form', [
+                "entity" => $this->entity,
+                "id" => $link,
+            ]);
     }
 
     /**
