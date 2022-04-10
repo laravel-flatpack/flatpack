@@ -1,5 +1,5 @@
 import { alert, confirm, notify, navbar } from "../components";
-import { getSetting, setSetting, isActive } from "../helpers";
+import { getSetting, setSetting, isActive, performAction } from "../helpers";
 
 /*
 |--------------------------------------------------------------------------
@@ -15,6 +15,7 @@ const createFlatpack = () => {
     alert,
     confirm,
     notify,
+    action: performAction,
     navbar: navbar(),
     settings: {
       get: getSetting,
@@ -23,4 +24,5 @@ const createFlatpack = () => {
     },
   };
 };
+
 export default createFlatpack;
