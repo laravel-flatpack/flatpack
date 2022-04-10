@@ -2,6 +2,19 @@
 
 All notable changes to `laravel-flatpack` will be documented in this file.
 
+## v1.0.3 - 2022-04-10
+
+## What's Changed
+
+- Editable field input ([View Docs](https://laravel-flatpack.com/reference/form-fields.html#editable))
+- List scopes ([View Docs](https://laravel-flatpack.com/reference/table-columns.html))
+- Button links
+- Stack scripts
+- Navigation aria labels
+- Layout optimisations
+
+**Full Changelog**: https://github.com/laravel-flatpack/flatpack/compare/v1.0.2...v1.0.3
+
 ## v1.0.2 - 2022-04-09
 
 ## What's Changed
