@@ -5,5 +5,6 @@
     "/public/js/list.js": "/public/js/list.js",
     "/public/js/editorjs.js": "/public/js/editorjs.js",
     "/public/js/ckeditor.js": "/public/js/ckeditor.js",
+    "/public/js/editable.js": "/public/js/editable.js",
     "/public/css/flatpack.css": "/public/css/flatpack.css"
 }
