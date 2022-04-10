@@ -14,8 +14,6 @@ return [
     */
     'actions' => [
 
-        'create' => \Flatpack\Actions\Create::class,
-
         'save' => \Flatpack\Actions\Save::class,
 
         'upload' => \Flatpack\Actions\Upload::class,
