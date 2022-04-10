@@ -1,12 +1,12 @@
 @if (sizeof($scopes ?? []) > 0)
-<ul class="items-center justify-start hidden mb-2 -mt-8 list-none border border-transparent md:flex">
+<ul class="items-center justify-start hidden mb-2 -mt-8 list-none border-b border-gray-300 md:flex">
     @foreach ($scopes as $key => $options)
         <li class="pr-1">
             <button
                 wire:click="$set('scope', '{{ $key }}')"
                 style="min-width: 52px"
-                class="flex items-center justify-center px-2 py-2 {{ $key === $scope ? 'bg-gray-300 bg-opacity-50' : 'bg-transparent' }} rounded-md hover:bg-gray-300">
-                <span class="text-sm whitespace-nowrap {{ $key === $scope ? 'font-medium': '' }}">
+                class="flex items-center justify-center px-2 py-2 bg-transparent rounded-md">
+                <span class="text-md cursor-pointer whitespace-nowrap {{ $key === $scope ? 'font-bold': '' }}">
                     {{ data_get($options, 'label', $key) }}
                 </span>
                 @if (data_get($options, 'count', false))
