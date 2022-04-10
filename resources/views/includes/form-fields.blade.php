@@ -10,9 +10,9 @@
         @if ($loop->first)
             <div x-data="{ open: true }" class="box">
 
-                @if (getOption($options, 'group') !== null)
+                @if (data_get($options, 'group') !== null)
                     <div class="flex items-center justify-between text-gray-500 cursor-pointer" @click="open = !open">
-                        <div class="text-xs font-bold uppercase">{{ getOption($options, 'group') }}</div>
+                        <div class="text-xs font-bold uppercase">{{ data_get($options, 'group') }}</div>
                         <span x-show="closed === true"><x-icon name="chevron-down" style="solid" class="w-4 h-4" /></span>
                         <span x-show="closed === false"><x-icon name="chevron-up" style="solid" class="w-4 h-4" /></span>
                     </div>

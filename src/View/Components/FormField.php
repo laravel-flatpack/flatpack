@@ -199,7 +199,7 @@ class FormField extends Component
      */
     public function getFieldOption($key, $default = null)
     {
-        return getOption($this->getOptions(), $key, $default);
+        return data_get($this->getOptions(), $key, $default);
     }
 
     /**
