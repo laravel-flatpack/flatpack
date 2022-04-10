@@ -1,33 +1,12 @@
 @if (strtolower($type ?? '') === 'editable')
 <div
     x-cloak
-    x-data="{
-        editing: false,
-        placeholder: @js($placeholder),
-        value: @js($value),
-        edit: function () {
-            this.editing = true;
-            setTimeout(() => { $refs.input.focus(); }, 50);
-        },
-        undo: function () {
-            this.editing = false;
-            $refs.input.value = this.value;
-        },
-        apply: function () {
-            if (!this.editing) { return; }
-            this.editing = false;
-            this.value = $refs.input.value;
-
-            $refs.placeholder.innerText = this.value;
-        },
-        isEmpty: function () {
-            return this.value === '' || this.value === null;
-        },
-    }"
-    class="w-full" :class="editing ? 'is-editing' : ''">
+    x-data="Flatpack.editable.editableInstance('fields.{{ $key }}', 'editable-field-{{ $key }}')"
+    x-init="initEditable()"
+    :class="isEditing ? 'w-full is-editing' : 'w-full'">
     <label
-        x-show="!editing"
-        @click="edit"
+        x-show="!isEditing"
+        @click.stop="toggleEditing"
         {{ $attributes->class([
             'heading editable',
             'text-gray-800 bg-transparent outline-none',
@@ -36,18 +15,16 @@
             'text-sm font-normal' => $size === 'small',
         ]); }}
     >
-        <span x-ref="placeholder" class="{{ empty($value) ? 'opacity-80' : 'opacity-100' }} input-field-placeholder">
+        <span x-text="data" class="{{ empty($value) ? 'opacity-80' : 'opacity-100' }} input-field-placeholder">
             {{ empty($value) ? $placeholder : $value }}
         </span>
 
         <div class="edit-button">
-            <button @click="edit">
-                <x-icon name="pencil" style="outline" class="w-5 h-5" />
-            </button>
+            <x-icon name="pencil" style="outline" class="w-5 h-5" />
         </div>
     </label>
     <label
-        x-show="editing"
+        x-show="isEditing"
         for="editable-{{ $key }}"
         {{ $attributes->class([
             'heading editable',
@@ -59,11 +36,11 @@
     >
         <input
             x-ref="input"
-            @keyup.escape="undo"
-            @keyup.enter="apply"
-            @keydown.tab="apply"
-            wire:model.defer="fields.{{ $key }}"
-            wire:key="fields-{{ $key }}"
+            x-model="data"
+            x-show="isEditing"
+            @click.away="toggleEditing"
+            @keydown.enter="disableEditing"
+            @keydown.window.escape="disableEditing"
             id="editable-{{ $key }}"
             type="text"
             name="{{ $key }}"
@@ -83,12 +60,20 @@
                 <x-icon name="x" style="outline" class="w-5 h-5" />
             </button>
         </div>
+
         <div class="edit-button">
-            <button @click.stop="apply" class="w-8 h-8">
+            <button @click.stop="toggleEditing" class="w-8 h-8">
                 <x-icon name="check" style="outline" class="w-5 h-5" />
             </button>
         </div>
 
     </label>
 </div>
+
+@once
+    @push('scripts')
+        <script src="{{ asset('flatpack/js/editable.js') }}"></script>
+    @endpush
+@endonce
+
 @endif

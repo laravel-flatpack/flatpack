@@ -17,6 +17,7 @@ mix
   .js("resources/js/list.js", "public/js")
   .js("resources/js/components/editor/editorjs.js", "public/js")
   .js("resources/js/components/editor/ckeditor.js", "public/js")
+  .js("resources/js/components/input/editable.js", "public/js")
   .sass("resources/sass/flatpack.scss", "public/css")
   .options({
     postCss: [tailwindcss("./tailwind.config.js")],
