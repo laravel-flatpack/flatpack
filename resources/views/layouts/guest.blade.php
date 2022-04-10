@@ -5,12 +5,12 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
-        <link rel="icon" type="image/x-icon" href="{{ asset('flatpack/favicon.ico') }}">
-        <link rel="stylesheet" href="{{ asset('flatpack/fonts/inter.css') }}" />
-        <link rel="stylesheet" href="{{ asset('flatpack/css/flatpack.css') }}" />
+        <link rel="icon" type="image/x-icon" href="{{ flatpackAsset('flatpack/favicon.ico') }}">
+        <link rel="stylesheet" href="{{ flatpackAsset('flatpack/fonts/inter.css') }}" />
+        <link rel="stylesheet" href="{{ flatpackAsset('flatpack/css/flatpack.css') }}" />
         @livewireStyles
         @wireUiScripts
-        <script defer src="{{ asset('flatpack/js/alpine.js') }}"></script>
+        <script defer src="{{ flatpackAsset('flatpack/js/alpine.js') }}"></script>
     </head>
     <body>
         <div class="font-sans antialiased text-gray-100 bg-gray-900">
@@ -26,6 +26,6 @@
             </div>
         </div>
 
-        <script src="{{ asset('flatpack/js/flatpack.js') }}"></script>
+        <script src="{{ flatpackAsset('flatpack/js/flatpack.js') }}"></script>
     </body>
 </html>

@@ -2,18 +2,20 @@
 
 use Illuminate\Support\Arr;
 
-if (! function_exists('getOption')) {
+if (! function_exists('flatpackAsset')) {
     /**
-     * Get an option from the options array.
+     * Flatpack versioned assets.
      *
-     * @param array $options
-     * @param string $key
-     * @param mixed $default
-     * @return mixed
+     * @param string $file
+     * @return string
      */
-    function getOption($options, $key, $default = null)
+    function flatpackAsset($file)
     {
-        return Arr::get($options, $key, $default);
+        if (app()->environment('local')) {
+            return asset($file);
+        }
+
+        return asset($file) . "?v=" . \Flatpack\Flatpack::VERSION;
     }
 }
 
@@ -48,14 +50,14 @@ if (! function_exists('groupComposition')) {
         $i = 0;
 
         foreach ($fields as $key => $options) {
-            if ($i === 0 || $key === 'tabs' || getOption($options, 'group') !== $group) {
+            if ($i === 0 || $key === 'tabs' || data_get($options, 'group') !== $group) {
                 $result[][$key] = $options;
-                $group = getOption($options, 'group');
+                $group = data_get($options, 'group');
             } else {
                 $result[count($result) - 1][$key] = $options;
             }
 
-            $group = getOption($options, 'group');
+            $group = data_get($options, 'group');
             $i++;
         }
 
