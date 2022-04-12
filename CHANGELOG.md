@@ -2,6 +2,15 @@
 
 All notable changes to `laravel-flatpack` will be documented in this file.
 
+## v1.0.4 - 2022-04-12
+
+## What's Changed
+
+- Versioned assets
+- Editable field placeholder
+
+**Full Changelog**: https://github.com/laravel-flatpack/flatpack/compare/v1.0.3...v1.0.4
+
 ## v1.0.3 - 2022-04-10
 
 ## What's Changed
