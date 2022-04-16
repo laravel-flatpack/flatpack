@@ -91,7 +91,7 @@ trait WithComposition
      *
      * @return array
      */
-    protected function getFormFields()
+    protected function getAllCompositionFields()
     {
         return array_merge(
             $this->getCompositionFields($this->getComposition('header')),
