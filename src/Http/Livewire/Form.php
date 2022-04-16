@@ -19,18 +19,11 @@ class Form extends Component
     use WithFormValidation;
 
     /**
-     * Form fields.
+     * Form fields values.
      *
      * @var array
      */
     public $fields = [];
-
-    /**
-     * Form field components.
-     *
-     * @var array
-     */
-    public $formFields = [];
 
     /**
      * Form field errors.
@@ -75,13 +68,6 @@ class Form extends Component
     public $hasChanges = false;
 
     /**
-     * Field types excluded from validation and binding.
-     *
-     * @var array
-     */
-    private $excludedTypes = ['button', 'label', 'heading'];
-
-    /**
      * Livewire component listeners.
      */
     protected $listeners = [
@@ -95,6 +81,8 @@ class Form extends Component
 
     public function mount()
     {
+        $this->formFields = $this->getAllCompositionFields();
+        
         $this->bindModelToFields();
     }
 
@@ -184,8 +172,7 @@ class Form extends Component
     public function createRelatedEntity($key, $data)
     {
         try {
-            $fields = $this->getFormFields();
-            $nameField = Arr::get($fields, "$key.relation.display", "name");
+            $nameField = Arr::get($this->formFields, "$key.relation.display", "name");
 
             $created = $this->createRelationship(
                 $key,
@@ -202,13 +189,13 @@ class Form extends Component
     /**
      * Perform validation and run a given action.
      *
-     * @param  string $method
+     * @param  string $action
      * @param  array $options
      * @return void
      */
-    public function action($method = 'cancel', $options = [])
+    public function action($action = 'cancel', $options = [])
     {
-        if ($method === 'cancel') {
+        if ($action === 'cancel') {
             return redirect()->route('flatpack.list', [
                 'entity' => $this->entity,
             ]);
@@ -216,38 +203,28 @@ class Form extends Component
 
         $this->clearFormErrors();
 
-        $this->beforeAction($method);
+        $this->beforeAction($action);
 
         try {
-            // Assign fields to model attributes
-            $this->bindFieldsToModel();
-
-            $redirect = data_get($options, 'redirect', false);
-
             // Get action instance
-            $action = $this->getAction($method)
+            $actionInstance = $this->getAction($action)
                 ->setEntry($this->entry)
                 ->setFields($this->fields)
-                ->setRedirect($redirect);
+                ->setRedirect(data_get($options, 'redirect', false));
 
-            $action->run();
+            // Perform action
+            $actionInstance->run();
 
-            $this->afterAction($method);
+            $this->afterAction($action);
 
             // Action success notification
-            if (method_exists($action, 'getMessage') && $action->isSuccess()) {
-                $this->notifySuccess($action->getMessage());
+            if (method_exists($actionInstance, 'getMessage') && $actionInstance->isSuccess()) {
+                $this->notifySuccess($actionInstance->getMessage());
+            } else {
+                throw new \Exception(__('flatpack::form.action_failed', ['action' => $action]));
             }
 
-            // Action failure
-            if (! $action->isSuccess()) {
-                $this->notifyError(__('flatpack::form.action_failed'));
-            }
-
-            // Bind refreshed model attributes to fields
-            $this->bindModelToFields();
-
-            if ($action->shouldRedirect()) {
+            if ($actionInstance->shouldRedirect()) {
                 return $this->goBack();
             }
         } catch (\Exception $e) {
@@ -263,9 +240,10 @@ class Form extends Component
      */
     private function beforeAction($action)
     {
+        $this->bindFieldsToModel();
+
         if ($action === 'save') {
-            // Form validation
-            $this->validateForm($this->fields, $this->getFormFields());
+            $this->validateForm($this->fields, $this->onlyInputFields());
         }
     }
 
@@ -277,6 +255,8 @@ class Form extends Component
      */
     private function afterAction($method)
     {
+        $this->bindModelToFields();
+
         if ($method === 'save') {
             $this->entityId = $this->entry->getKey() ?? 'create';
 
@@ -299,7 +279,7 @@ class Form extends Component
      * @param string $key
      * @return void
      */
-    private function clearFieldError($key)
+    protected function clearFieldError($key)
     {
         $field = $this->fieldKeyName($key);
 
@@ -311,7 +291,7 @@ class Form extends Component
      *
      * @return void
      */
-    private function clearFormErrors()
+    protected function clearFormErrors()
     {
         $this->formErrors = [];
     }

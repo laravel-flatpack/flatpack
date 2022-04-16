@@ -26,10 +26,10 @@ class Upload extends FlatpackAction implements FlatpackActionContract
      */
     public function handle()
     {
-        if (! count($this->files)) {
-            return;
+        if (count($this->files)) {
+            return $this->uploadFiles();
         }
 
-        return $this->uploadFiles();
+        return [];
     }
 }

@@ -3,7 +3,6 @@
 namespace Flatpack\Actions;
 
 use Flatpack\Contracts\FlatpackAction as FlatpackActionContract;
-use Illuminate\Support\Str;
 
 class Restore extends FlatpackAction implements FlatpackActionContract
 {
@@ -24,21 +23,26 @@ class Restore extends FlatpackAction implements FlatpackActionContract
      */
     public function getMessage()
     {
-        if ($this->isMultiple) {
-            return __(':count :entity restored.', [
+        return $this->isBulk() ?
+            __(':count :entity restored.', [
                 'count' => count($this->selected),
-                'entity' => Str::lower(Str::plural($this->entity)),
+                'entity' => $this->entityName(true),
+            ]) :
+            __(':entity restored.', [
+                'entity' => $this->entityName()
             ]);
-        }
-
-        return __(':entity restored.', [
-            'entity' => Str::ucfirst(Str::singular($this->entity)),
-        ]);
     }
 
-    public function getBulkConfirmationMessage()
+    /**
+     * Get confirmation message.
+     *
+     * @return string
+     */
+    public function getConfirmationMessage()
     {
-        return __('Are you sure you want to restore the selected :entity?', [ 'entity' => Str::plural($this->entity) ]);
+        return __('Are you sure you want to restore the selected :entity?', [
+            'entity' => $this->entityName(true)
+        ]);
     }
 
     /**
@@ -48,8 +52,10 @@ class Restore extends FlatpackAction implements FlatpackActionContract
      */
     public function handle()
     {
-        if ($this->selected && is_array($this->selected) && count($this->selected) > 0) {
-            $this->model::withTrashed()->whereIn('id', $this->selected)->restore();
+        if (count($this->selected) > 0) {
+            $this->model::withTrashed()
+                 ->whereIn('id', $this->selected)
+                 ->restore();
         }
     }
 }
