@@ -2,6 +2,16 @@
 
 All notable changes to `laravel-flatpack` will be documented in this file.
 
+## v1.0.5 - 2022-04-20
+
+## What's Changed
+
+- Custom Actions https://github.com/laravel-flatpack/flatpack/pull/13
+- chore(deps): bump async from 2.6.3 to 2.6.4 by @dependabot in https://github.com/laravel-flatpack/flatpack/pull/14
+- Other minor fixes
+
+**Full Changelog**: https://github.com/laravel-flatpack/flatpack/compare/v1.0.4...v1.0.5
+
 ## v1.0.4 - 2022-04-12
 
 ## What's Changed
