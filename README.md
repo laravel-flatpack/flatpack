@@ -53,7 +53,7 @@ Now start assembling, grab the generated files and define how they should look!
 - [Form example](#form)
 - [List example](#list)
 
-### Form
+### Defining a form
 
 Example of generated file `/flatpack/posts/form.yaml`
 
@@ -76,7 +76,7 @@ fields:
     type: datetime-picker
 ```
 
-### List
+### Defining a list
 
 Example of generated `/flatpack/posts/list.yaml`
 
@@ -115,7 +115,7 @@ Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed re
 
 ## Contributing
 
-Please see [CONTRIBUTING](.github/CONTRIBUTING.md) for details.
+Contributions are welcome! Please see [CONTRIBUTING](.github/CONTRIBUTING.md) for details.
 
 ## Security Vulnerabilities
 
