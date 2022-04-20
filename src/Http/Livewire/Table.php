@@ -109,15 +109,19 @@ class Table extends DataTableComponent
 
     public function query(): Builder
     {
-        return $this->scopeQuery($this->scope);
+        return $this->scopeQuery();
     }
 
-    public function scopeQuery($scope = 'default'): Builder
+    public function scopeQuery(): Builder
     {
+        $default = "default";
+
+        $scope = $this->scope ?? $default;
+
         $query = $this->model::query();
 
         try {
-            if (! empty($scope) && $scope !== 'default') {
+            if (! empty($scope) && $scope !== $default) {
                 return $query->{$scope}();
             }
         } catch (\Exception $e) {

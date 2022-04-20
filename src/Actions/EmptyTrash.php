@@ -3,6 +3,7 @@
 namespace Flatpack\Actions;
 
 use Flatpack\Contracts\FlatpackAction as FlatpackActionContract;
+use Flatpack\Exceptions\ActionNotFoundException;
 
 class EmptyTrash extends FlatpackAction implements FlatpackActionContract
 {
@@ -47,9 +48,13 @@ class EmptyTrash extends FlatpackAction implements FlatpackActionContract
      */
     public function handle()
     {
-        $this->model::onlyTrashed()
-             ->forceDelete();
+        if (! in_array('Illuminate\Database\Eloquent\SoftDeletes', class_uses($this->model))) {
+            throw new ActionNotFoundException(
+                "Empty Trash action is only supported by models that implement the SoftDeletes trait."
+            );
+        }
 
+        $this->model::onlyTrashed()->forceDelete();
         $this->setRedirect(true);
     }
 }
