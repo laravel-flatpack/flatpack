@@ -1,6 +1,6 @@
 {
     "name": "laravel-flatpack",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "description": "Flatpack: Administration panel for Laravel, ready to assemble.",
     "main": "tailwind.config.js",
     "directories": {
