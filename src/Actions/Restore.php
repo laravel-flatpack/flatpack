@@ -29,7 +29,7 @@ class Restore extends FlatpackAction implements FlatpackActionContract
                 'entity' => $this->entityName(true),
             ]) :
             __(':entity restored.', [
-                'entity' => $this->entityName()
+                'entity' => $this->entityName(),
             ]);
     }
 
@@ -41,7 +41,7 @@ class Restore extends FlatpackAction implements FlatpackActionContract
     public function getConfirmationMessage()
     {
         return __('Are you sure you want to restore the selected :entity?', [
-            'entity' => $this->entityName(true)
+            'entity' => $this->entityName(true),
         ]);
     }
 

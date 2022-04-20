@@ -27,7 +27,7 @@ class Save extends FlatpackAction implements FlatpackActionContract
     public function getMessage()
     {
         return __(':entity saved.', [
-            'entity' => $this->entityName()
+            'entity' => $this->entityName(),
         ]);
     }
 

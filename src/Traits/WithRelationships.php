@@ -48,7 +48,7 @@ trait WithRelationships
      */
     protected function syncRelationship($key)
     {
-        if (!$this->isRelationship($key)) {
+        if (! $this->isRelationship($key)) {
             return;
         }
 

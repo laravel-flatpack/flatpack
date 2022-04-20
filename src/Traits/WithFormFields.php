@@ -39,7 +39,7 @@ trait WithFormFields
         "label",
         "heading",
         "divider",
-        "html"
+        "html",
     ];
 
     /**
@@ -90,7 +90,7 @@ trait WithFormFields
     {
         return collect($this->formFields)
             ->filter(function ($options) {
-                return !in_array(data_get($options, "type"), $this->excludedTypes);
+                return ! in_array(data_get($options, "type"), $this->excludedTypes);
             })
             ->toArray();
     }

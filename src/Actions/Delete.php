@@ -29,7 +29,7 @@ class Delete extends FlatpackAction implements FlatpackActionContract
                 'entity' => $this->entityName(true),
             ]) :
             __(':entity deleted.', [
-                'entity' => $this->entityName()
+                'entity' => $this->entityName(),
             ]);
     }
 
@@ -42,10 +42,10 @@ class Delete extends FlatpackAction implements FlatpackActionContract
     {
         return $this->isBulk() ?
             __('Are you sure you want to delete the selected :entity?', [
-                'entity' => $this->entityName(true)
+                'entity' => $this->entityName(true),
             ]) :
             __('Are you sure you want to delete this :entity?', [
-                'entity' => $this->entityName()
+                'entity' => $this->entityName(),
             ]);
     }
 

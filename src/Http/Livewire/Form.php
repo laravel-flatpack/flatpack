@@ -82,7 +82,7 @@ class Form extends Component
     public function mount()
     {
         $this->formFields = $this->getAllCompositionFields();
-        
+
         $this->bindModelToFields();
     }
 
