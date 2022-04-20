@@ -9,7 +9,7 @@ class MakeFormCommand extends BaseCommand
      *
      * @var string
      */
-    protected $name = 'flatpack:make:form';
+    protected $name = 'flatpack:form';
 
     /**
      * The console command description.

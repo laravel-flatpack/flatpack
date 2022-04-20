@@ -31,7 +31,7 @@ trait WithFormValidation
         $rules = [];
 
         foreach ($form as $key => $options) {
-            $rules[$key] = $options['rules'] ?? 'present';
+            $rules[$key] = data_get($options, "rules", "present");
         }
 
         return $rules;

@@ -9,7 +9,7 @@ class MakeListCommand extends BaseCommand
      *
      * @var string
      */
-    protected $name = 'flatpack:make:list';
+    protected $name = 'flatpack:list';
 
     /**
      * The console command description.

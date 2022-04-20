@@ -13,14 +13,12 @@ class CreateRelation extends Component
     use WithFormValidation;
     use WithComposition;
 
-    public $fields = [];
-
     /**
-     * Form fields.
+     * Form fields values.
      *
      * @var array
      */
-    public $formFields = [];
+    public $fields = [];
 
     /**
      * Form field errors.
@@ -75,7 +73,7 @@ class CreateRelation extends Component
     {
         $this->clearErrors();
 
-        $this->validateForm($this->fields, $this->formFields);
+        $this->validateForm($this->fields, $this->onlyInputFields());
 
         $this->save();
 

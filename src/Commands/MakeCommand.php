@@ -41,12 +41,12 @@ class MakeCommand extends Command
             $this->warn("Force option enabled, will overwrite existing files\n");
         }
 
-        $this->call('flatpack:make:list', [
+        $this->call('flatpack:list', [
             'name' => $this->getNameInput(),
             '--force' => $this->option('force'),
         ]);
 
-        $this->call('flatpack:make:form', [
+        $this->call('flatpack:form', [
             'name' => $this->getNameInput(),
             '--force' => $this->option('force'),
         ]);
