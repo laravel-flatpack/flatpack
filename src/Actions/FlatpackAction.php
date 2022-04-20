@@ -20,7 +20,7 @@ class FlatpackAction
      *
      * @var \Illuminate\Database\Eloquent\Model
      */
-    protected $entry;
+    public $entry;
 
     /**
      * Form fields values.
