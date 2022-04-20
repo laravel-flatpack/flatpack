@@ -3,6 +3,7 @@
 namespace Flatpack\Actions;
 
 use Flatpack\Contracts\FlatpackAction as FlatpackActionContract;
+use Illuminate\Database\Eloquent\Builder;
 
 class Delete extends FlatpackAction implements FlatpackActionContract
 {
@@ -56,13 +57,25 @@ class Delete extends FlatpackAction implements FlatpackActionContract
      */
     public function handle()
     {
-        if ($this->isMultiple && count($this->selected) > 0) {
-            $this->model::withTrashed()
-                 ->whereIn('id', $this->selected)
-                 ->delete();
+        if ($this->isBulk() && count($this->selected) > 0) {
+            $this->query()->whereIn('id', $this->selected)->delete();
         } else {
             $this->entry->delete();
             $this->setRedirect(true);
         }
+    }
+
+    /**
+     * Get query builder.
+     *
+     * @return Builder
+     */
+    private function query(): Builder
+    {
+        if (! in_array('Illuminate\Database\Eloquent\SoftDeletes', class_uses($this->model))) {
+            return $this->model::withTrashed();
+        }
+
+        return $this->model::query();
     }
 }
