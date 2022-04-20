@@ -49,14 +49,27 @@ trait WithStorageFiles
         );
     }
 
+    /**
+     * Get the file name from url.
+     *
+     * @param  string  $file
+     * @return string
+     */
     protected function getFileName($url)
     {
         return last(explode('/', $url));
     }
 
+    /**
+     * Remove the file from storage.
+     *
+     * @param  string  $file
+     * @return void
+     */
     protected function removeFile($file)
     {
         $disk = $this->getStorageDisk();
+
         $filename = $this->combinePath($this->getStoragePath(), $this->getFileName($file));
 
         $exists = Storage::disk($disk)->exists($filename);

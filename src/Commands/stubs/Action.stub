@@ -1,14 +1,12 @@
 <?php
 
-namespace Flatpack\Actions;
+namespace App\Actions\Flatpack;
 
+use Flatpack\Actions\FlatpackAction;
 use Flatpack\Contracts\FlatpackAction as FlatpackActionContract;
-use Flatpack\Traits\WithStorageFiles;
 
-class Upload extends FlatpackAction implements FlatpackActionContract
+class {{ actionName }} extends FlatpackAction implements FlatpackActionContract
 {
-    use WithStorageFiles;
-
     /**
      * Action authorization.
      *
@@ -22,14 +20,10 @@ class Upload extends FlatpackAction implements FlatpackActionContract
     /**
      * Handle action.
      *
-     * @return array
+     * @return void
      */
     public function handle()
     {
-        if (count($this->files)) {
-            return $this->uploadFiles();
-        }
-
-        return [];
+        //
     }
 }

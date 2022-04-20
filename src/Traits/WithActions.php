@@ -21,16 +21,11 @@ trait WithActions
     public $entity;
 
     /**
-     * The model instance.
-     *
-     * @var \Illuminate\Database\Eloquent\Model
-     */
-    public $entry;
-
-    /**
      * Initialise and return action class instance.
      *
      * @param  string $action
+     * @throws \Flatpack\Exceptions\ActionNotFoundException
+     * @throws \Exception
      * @return \Flatpack\Actions\FlatpackAction
      */
     protected function getAction($action)
@@ -45,16 +40,17 @@ trait WithActions
             throw new ActionNotFoundException("Action class does not exist: $actions[$action]");
         }
 
+        // Initialise action class instance.
         $instance = new $actions[$action]($this->entity, $this->model);
 
         if (! $instance instanceof \Flatpack\Actions\FlatpackAction) {
-            throw new ActionNotFoundException(
+            throw new \Exception(
                 "Action class must extend \Flatpack\Actions\FlatpackAction: $action"
             );
         }
 
         if (! $instance instanceof \Flatpack\Contracts\FlatpackAction) {
-            throw new ActionNotFoundException(
+            throw new \Exception(
                 "Action class must implement \Flatpack\Contracts\FlatpackAction interface: $action"
             );
         }

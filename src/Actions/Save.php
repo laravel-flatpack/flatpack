@@ -4,7 +4,6 @@ namespace Flatpack\Actions;
 
 use Flatpack\Contracts\FlatpackAction as FlatpackActionContract;
 use Flatpack\Traits\WithRelationships;
-use Illuminate\Support\Str;
 
 class Save extends FlatpackAction implements FlatpackActionContract
 {
@@ -27,7 +26,9 @@ class Save extends FlatpackAction implements FlatpackActionContract
      */
     public function getMessage()
     {
-        return __(Str::ucfirst(Str::singular($this->entity) . ' saved.'));
+        return __(':entity saved.', [
+            'entity' => $this->entityName(),
+        ]);
     }
 
     /**
@@ -43,23 +44,16 @@ class Save extends FlatpackAction implements FlatpackActionContract
     }
 
     /**
-     * Sync fields to model relationships.
+     * Save model relationships.
      *
      * @return void
      */
     private function syncFieldsToRelations()
     {
         foreach ($this->fields as $key => $options) {
-            if ((isset($options['disabled']) && $options['disabled']) ||
-                (isset($options['readonly']) && $options['readonly']) ||
-                $this->isRelationship($key) === false) {
-                continue;
-            }
-
             $this->syncRelationship($key);
         }
 
         $this->entry->save();
-        $this->entry->refresh();
     }
 }

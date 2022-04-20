@@ -3,7 +3,6 @@
 namespace Flatpack\Actions;
 
 use Flatpack\Contracts\FlatpackAction as FlatpackActionContract;
-use Illuminate\Support\Str;
 
 class EmptyTrash extends FlatpackAction implements FlatpackActionContract
 {
@@ -25,14 +24,19 @@ class EmptyTrash extends FlatpackAction implements FlatpackActionContract
     public function getMessage()
     {
         return __(':entity permanently deleted.', [
-            'entity' => Str::ucfirst(Str::plural($this->entity)),
+            'entity' => $this->entityName(true),
         ]);
     }
 
+    /**
+     * Get confirmation message.
+     *
+     * @return string
+     */
     public function getConfirmationMessage()
     {
         return __('Are you sure you want to permanently delete these :entity?', [
-            'entity' => Str::plural($this->entity),
+            'entity' => $this->entityName(true),
         ]);
     }
 
@@ -43,7 +47,9 @@ class EmptyTrash extends FlatpackAction implements FlatpackActionContract
      */
     public function handle()
     {
-        $this->model::onlyTrashed()->forceDelete();
+        $this->model::onlyTrashed()
+             ->forceDelete();
+
         $this->setRedirect(true);
     }
 }

@@ -4,6 +4,7 @@ namespace Flatpack\Actions;
 
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class FlatpackAction
 {
@@ -12,7 +13,7 @@ class FlatpackAction
      *
      * @var string
      */
-    public $entity;
+    protected $entity;
 
     /**
      * Model instance.
@@ -22,40 +23,39 @@ class FlatpackAction
     public $entry;
 
     /**
-     * Form fields.
+     * Form fields values.
      *
      * @var array
      */
-    public $fields;
-
-    /**
-     * Files to upload.
-     * \Illuminate\Http\UploadedFile
-     *
-     * @var array
-     */
-    public $files;
+    protected $fields;
 
     /**
      * Model class name.
      *
      * @var string
      */
-    public $model;
+    protected $model;
+
+    /**
+     * Files to upload.
+     *
+     * @var array
+     */
+    protected $files = [];
 
     /**
      * Selected keys.
      *
      * @var array
      */
-    protected $selected;
+    protected $selected = [];
 
     /**
      * Action successfully handled.
      *
      * @var bool
      */
-    protected $success;
+    protected $success = false;
 
     /**
      * Action performed on multiple entries.
@@ -69,7 +69,7 @@ class FlatpackAction
      *
      * @var bool
      */
-    protected $redirect;
+    protected $redirect = false;
 
     /**
      * FlatpackAction constructor.
@@ -81,12 +81,14 @@ class FlatpackAction
     {
         $this->entity = $entity;
         $this->model = $modelClass;
-        $this->success = false;
-        $this->redirect = false;
-        $this->files = [];
-        $this->selected = [];
     }
 
+    /**
+     * Add file to upload.
+     *
+     * @param \Illuminate\Http\UploadedFile $file
+     * @return $this
+     */
     public function addFile($file)
     {
         $this->files[] = $file;
@@ -94,6 +96,12 @@ class FlatpackAction
         return $this;
     }
 
+    /**
+     * Add multiple files to upload.
+     *
+     * @param array $files
+     * @return $this
+     */
     public function addFiles($files)
     {
         $this->files = array_merge($this->files, $files);
@@ -101,31 +109,58 @@ class FlatpackAction
         return $this;
     }
 
+    /**
+     * Action was successful.
+     *
+     * @return bool
+     */
     public function isSuccess()
     {
         return $this->success === true;
     }
 
-    public function success()
+    /**
+     * Set action as successful.
+     *
+     * @return $this
+     */
+    protected function success()
     {
         $this->success = true;
 
         return $this;
     }
 
+    /**
+     * Set entry.
+     *
+     * @param \Illuminate\Database\Eloquent\Model|null $entry
+     * @return $this
+     */
     public function setEntry(Model $entry = null)
     {
         $this->entry = $entry;
-        $this->isMultiple = false;
+        $this->setIsMultiple(false);
 
         return $this;
     }
 
+    /**
+     * Get entry.
+     *
+     * @return \Illuminate\Database\Eloquent\Model|null
+     */
     protected function getEntry()
     {
         return $this->entry;
     }
 
+    /**
+     * Set form fields values.
+     *
+     * @param array $fields
+     * @return $this
+     */
     public function setFields(array $fields = [])
     {
         $this->fields = $fields;
@@ -133,19 +168,59 @@ class FlatpackAction
         return $this;
     }
 
+    /**
+     * Get form fields values.
+     *
+     * @return array
+     */
     protected function getFields()
     {
         return $this->fields;
     }
 
+    /**
+     * Set selected keys.
+     *
+     * @param array $selected
+     * @return $this
+     */
     public function setSelectedKeys($selected)
     {
         $this->selected = $selected;
-        $this->isMultiple = true;
+        $this->setIsMultiple(true);
 
         return $this;
     }
 
+    /**
+     * Set whether action is multiple (bulk action).
+     *
+     * @param bool $isMultiple
+     * @return $this
+     */
+    public function setIsMultiple($isMultiple)
+    {
+        $this->isMultiple = $isMultiple;
+
+        return $this;
+    }
+
+    /**
+     * Get whether action is multiple (bulk action).
+     *
+     * @return bool
+     */
+    public function isBulk()
+    {
+        return $this->isMultiple;
+    }
+
+    /**
+     * Set redirect value.
+     *
+     * @param bool $redirect
+     * @return $this
+     */
     public function setRedirect($redirect)
     {
         $this->redirect = $redirect;
@@ -153,6 +228,11 @@ class FlatpackAction
         return $this;
     }
 
+    /**
+     * Determine if should redirect after performing the action.
+     *
+     * @return bool
+     */
     public function shouldRedirect()
     {
         return $this->isSuccess() && $this->redirect;
@@ -175,5 +255,46 @@ class FlatpackAction
         $this->success();
 
         return $result;
+    }
+
+    /**
+     * Get entity name for output.
+     *
+     * @param bool $plural - whether to return plural form.
+     * @return string
+     */
+    protected function entityName($plural = false)
+    {
+        return $plural ? Str::plural($this->entity) : Str::singular($this->entity);
+    }
+
+    /**
+     * Handle action.
+     * --------------------------------
+     * Override this method in your action class.
+     * --------------------------------
+     *
+     * @throws \Exception
+     * @return mixed
+     */
+    protected function handle()
+    {
+        throw new \Exception('Method not implemented: handle()');
+    }
+
+    /**
+     * Determine if action is authorized.
+     * --------------------------------
+     * Override this method in your action class.
+     * --------------------------------
+     *
+     * @throws \Exception
+     * @return bool
+     */
+    protected function authorize()
+    {
+        throw new \Exception('Method not implemented: authorize()');
+
+        return false;
     }
 }

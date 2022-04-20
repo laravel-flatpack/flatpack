@@ -1,18 +1,11 @@
 import Swal from "sweetalert2/dist/sweetalert2.js";
 
-const getColor = (style) => {
-  switch (style) {
-    case "danger":
-      return "#ef5350";
-    case "warning":
-      return "#ffc107";
-    case "info":
-      return "#3085d6";
-    case "success":
-      return "#66bb6a";
-    default:
-      return "#37474f";
-  }
+const styles = {
+  danger: "#ef5350",
+  warning: "#ffc107",
+  info: "#3085d6",
+  success: "#66bb6a",
+  default: "#37474f",
 };
 
 const confirm = (text, options = {}) => {
@@ -24,7 +17,7 @@ const confirm = (text, options = {}) => {
     reverseButtons: true,
     showCancelButton: true,
     showCloseButton: true,
-    confirmButtonColor: getColor(style),
+    confirmButtonColor: styles[style] ?? styles.default,
     confirmButtonText: action ?? "Ok",
     cancelButtonText: cancel ?? "Cancel",
   });

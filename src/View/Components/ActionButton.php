@@ -92,7 +92,7 @@ class ActionButton extends Component
      *
      * @var string
      */
-    public $style = '';
+    public $style = "";
 
     /**
      * Shortcut key combined with cmd/ctrl key.
@@ -116,8 +116,8 @@ class ActionButton extends Component
         $entity,
         $model,
         $options = [],
-        $style = '',
-        $method = 'action'
+        $style = "",
+        $method = "action"
     ) {
         $this->key = $key;
         $this->entity = $entity;
@@ -125,7 +125,6 @@ class ActionButton extends Component
         $this->options = $options;
         $this->method = $method;
         $this->style = $style;
-        $this->confirmationMessage = 'Are you sure you want to proceed?';
 
         $this->initProps();
     }
@@ -137,45 +136,47 @@ class ActionButton extends Component
       */
     public function render()
     {
-        if ($this->method === 'bulkAction') {
-            return view('flatpack::components.action-button-bulk');
+        if ($this->method === "bulkAction") {
+            return view("flatpack::components.action-button-bulk");
         }
 
-        return view('flatpack::components.action-button');
+        return view("flatpack::components.action-button");
     }
 
     /**
      * Dynamically initialize component props based on the options.
+     *
+     * @return void
      */
     private function initProps(): void
     {
-        $this->action = $this->getOption('action');
-        $this->link = $this->formatLink($this->getOption('link', '#'));
-        $this->label = $this->getOption('label', '');
-        $this->shortcut = $this->getOption('shortcut', false);
-        $this->confirm = $this->getOption('confirm', false);
-        $this->hidden = $this->getOption('hidden', false);
-        $this->style = $this->getOption('style', $this->style, [
-            'primary',
-            'secondary',
-            'info',
-            'success',
-            'warning',
-            'danger',
+        $this->action = $this->getOption("action");
+        $this->link = $this->formatLink($this->getOption("link", "#"));
+        $this->label = $this->getOption("label", "");
+        $this->shortcut = $this->getOption("shortcut", false);
+        $this->confirm = $this->getOption("confirm", false);
+        $this->hidden = $this->getOption("hidden", false);
+        $this->style = $this->getOption("style", $this->style, [
+            "primary",
+            "secondary",
+            "info",
+            "success",
+            "warning",
+            "danger",
         ]);
 
         $this->setConfirmationMessage();
-
-        $this->options = [
-            ...$this->options,
-            'confirmationMessage' => $this->confirmationMessage,
-        ];
     }
 
+    /**
+     * Format link, returns flatpack form route or absolute url.
+     *
+     * @return void
+     */
     private function formatLink($link)
     {
-        return (str_contains($link, '?') || str_contains($link, '#') || str_contains($link, '/')) ?
-            $link : route('flatpack.form', [
+        return (str_contains($link, "?") || str_contains($link, "#") || str_contains($link, "/")) ?
+            $link : route("flatpack.form", [
                 "entity" => $this->entity,
                 "id" => $link,
             ]);
@@ -189,11 +190,11 @@ class ActionButton extends Component
      * @param mixed $acceptedValues
      * @return mixed
      */
-    private function getOption($key, $default = null, $acceptedValues = '*')
+    private function getOption($key, $default = null, $acceptedValues = "*")
     {
         $option = Arr::get($this->options, $key, $default);
 
-        if ($acceptedValues !== '*') {
+        if ($acceptedValues !== "*") {
             return in_array(
                 $option,
                 collect($acceptedValues)->toArray()
@@ -203,18 +204,35 @@ class ActionButton extends Component
         return $option;
     }
 
+    /**
+     * Set the default confirmation message to be displayed before action.
+     *
+     * @return void
+     */
     private function setConfirmationMessage()
     {
-        try {
-            $action = $this->getAction($this->action);
+        $this->confirmationMessage = $this->getOption(
+            "confirmationMessage",
+            "Are you sure you want to proceed?"
+        );
 
-            if ($this->method === 'bulkAction' && method_exists($action, 'getBulkConfirmationMessage')) {
-                $this->confirmationMessage = $action->getBulkConfirmationMessage();
-            } elseif (method_exists($action, 'getConfirmationMessage')) {
-                $this->confirmationMessage = $action->getConfirmationMessage();
+        try {
+            $actionInstance = $this->getAction($this->action);
+
+            if ($this->method === "bulkAction") {
+                $actionInstance->setIsMultiple(true);
+            }
+
+            if (method_exists($actionInstance, "getConfirmationMessage")) {
+                $this->confirmationMessage = $actionInstance->getConfirmationMessage();
             }
         } catch (\Exception $e) {
             //
         }
+
+        $this->options = [
+            ...$this->options,
+            "confirmationMessage" => $this->confirmationMessage,
+        ];
     }
 }

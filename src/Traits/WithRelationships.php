@@ -48,6 +48,10 @@ trait WithRelationships
      */
     protected function syncRelationship($key)
     {
+        if (! $this->isRelationship($key)) {
+            return;
+        }
+
         $relation = $this->relation($key);
         $related = $relation->getRelated();
 

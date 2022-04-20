@@ -2,6 +2,7 @@
 
 namespace Flatpack;
 
+use Flatpack\Commands\ActionCommand;
 use Flatpack\Commands\MakeCommand;
 use Flatpack\Commands\MakeFormCommand;
 use Flatpack\Commands\MakeListCommand;
@@ -62,6 +63,7 @@ class FlatpackServiceProvider extends ServiceProvider
             MakeFormCommand::class,
             MakeListCommand::class,
             MakeCommand::class,
+            ActionCommand::class,
         ]);
     }
 
