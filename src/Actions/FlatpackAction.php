@@ -4,6 +4,7 @@ namespace Flatpack\Actions;
 
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 class FlatpackAction
@@ -72,6 +73,13 @@ class FlatpackAction
     protected $redirect = false;
 
     /**
+     * Current user instance.
+     *
+     * @var \Illuminate\Contracts\Auth\Authenticatable
+     */
+    protected $user;
+
+    /**
      * FlatpackAction constructor.
      *
      * @param string $entity
@@ -81,6 +89,7 @@ class FlatpackAction
     {
         $this->entity = $entity;
         $this->model = $modelClass;
+        $this->user = Auth::user();
     }
 
     /**
