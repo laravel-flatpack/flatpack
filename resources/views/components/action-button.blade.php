@@ -1,10 +1,10 @@
 @if ($action)
     <x-button
         wire:key="button-{{ $key }}"
+        wire:loading.attr="none"
         wire:loading.attr.delay.long="disabled"
         wire:offline.attr="disabled"
         @click.stop="Flatpack.action($wire.{{ $method }}, '{{ $action }}', {{ json_encode($options) }})"
-        loading-delay="short"
         :label="$label"
         :primary="$style === 'primary'"
         :secondary="$style === 'secondary' || $style === 'default'"
