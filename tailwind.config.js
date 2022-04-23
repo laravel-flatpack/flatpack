@@ -63,7 +63,7 @@ module.exports = {
 
   plugins: [
     require("@tailwindcss/forms"),
-    require("./vendor/wireui/wireui/tailwindcss/plugins/hideScrollbar"),
+    require("./resources/js/plugins/hideScrollbar.js"),
     require("@tailwindcss/typography"),
     require("@tailwindcss/aspect-ratio"),
     require("@tailwindcss/line-clamp"),
