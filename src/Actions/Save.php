@@ -48,12 +48,14 @@ class Save extends FlatpackAction implements FlatpackActionContract
      *
      * @return void
      */
-    private function syncFieldsToRelations()
+    protected function syncFieldsToRelations()
     {
         foreach ($this->fields as $key => $options) {
             $this->syncRelationship($key);
         }
 
         $this->entry->save();
+
+        $this->entry->refresh();
     }
 }
