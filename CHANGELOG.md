@@ -2,6 +2,17 @@
 
 All notable changes to `laravel-flatpack` will be documented in this file.
 
+## v1.0.6 - 2022-04-23
+
+## What's Changed
+
+- `Toggle` form field type
+- Fix: sync related records after saving
+- Fix: "text" option in buttons
+- Other minor fixes
+
+**Full Changelog**: https://github.com/laravel-flatpack/flatpack/compare/v1.0.5...v1.0.6
+
 ## v1.0.5 - 2022-04-20
 
 ## What's Changed
