@@ -12,6 +12,7 @@
             @include('flatpack::includes.form-field.editor')
             @include('flatpack::includes.form-field.block-editor')
             @include('flatpack::includes.form-field.textarea')
+            @include('flatpack::includes.form-field.toggle')
             @include('flatpack::includes.form-field.date-picker')
             @include('flatpack::includes.form-field.datetime-picker')
             @include('flatpack::includes.form-field.select')
