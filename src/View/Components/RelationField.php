@@ -152,7 +152,10 @@ class RelationField extends FormField
 
         $keyName = $this->getRelationKeyName();
 
-        $query = $this->relation->getRelated()->query()->select($select);
+        $query = $this->relation
+                      ->getRelated()
+                      ->query()
+                      ->select($select);
 
         foreach ($this->getRelationOrderBy() as $sorting) {
             foreach ($sorting as $column => $direction) {
