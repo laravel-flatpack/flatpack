@@ -41,6 +41,8 @@ class Save extends FlatpackAction implements FlatpackActionContract
         $this->entry->save();
 
         $this->syncFieldsToRelations();
+
+        return true;
     }
 
     /**

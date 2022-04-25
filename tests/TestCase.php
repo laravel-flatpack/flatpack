@@ -2,6 +2,7 @@
 
 namespace Flatpack\Tests;
 
+use Illuminate\Encryption\Encrypter;
 use Flatpack\FlatpackServiceProvider;
 use Livewire\LivewireServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
@@ -41,11 +42,9 @@ class TestCase extends Orchestra
                 resource_path('views'),
             ]);
 
-        config()->set('app.key', 'base64:Hupx3yAySikrM2/edkZQNQHslgDWYfiBfCuSThJ5SK8=');
+        config()->set('app.key', Encrypter::generateKey(config('app.cipher')));
 
-        /*
-        $migration = include __DIR__.'/../database/migrations/create_laravel-flatpack_table.php.stub';
-        $migration->up();
-        */
+        include_once __DIR__.'/../database/migrations/create_test_tables.php.stub';
+        (new \CreateTestTables())->up();
     }
 }
