@@ -12,13 +12,15 @@ it('returns the successful message', function () {
 });
 
 it('handles the action', function () {
+    $fields = [
+        'title' => 'Lorem ipsum',
+    ];
+
     $action = $this->actionInstance
         ->setEntry(new \Flatpack\Tests\Models\Post([
             'title' => 'Lorem ispum',
         ]))
-        ->setFields([
-            'title' => 'Lorem ipsum',
-        ])
+        ->setFields($fields)
         ->run();
 
     $this->expect($action)->toBe(true);
