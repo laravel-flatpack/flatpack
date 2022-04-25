@@ -43,15 +43,15 @@ trait WithActions
         // Initialise action class instance.
         $instance = new $actions[$action]($this->entity, $this->model);
 
-        if (! $instance instanceof \Flatpack\Actions\FlatpackAction) {
-            throw new \Exception(
-                "Action class must extend \Flatpack\Actions\FlatpackAction: $action"
-            );
-        }
-
         if (! $instance instanceof \Flatpack\Contracts\FlatpackAction) {
             throw new \Exception(
                 "Action class must implement \Flatpack\Contracts\FlatpackAction interface: $action"
+            );
+        }
+
+        if (! $instance instanceof \Flatpack\Actions\FlatpackAction) {
+            throw new \Exception(
+                "Action class must extend \Flatpack\Actions\FlatpackAction: $action"
             );
         }
 
