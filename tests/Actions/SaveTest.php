@@ -12,7 +12,6 @@ it('returns the successful message', function () {
 });
 
 it('handles the action', function () {
-
     \Flatpack\Tests\Models\Category::insert([
         ['id' => 1, 'name' => 'Category 1'],
         ['id' => 2, 'name' => 'Category 2'],
@@ -29,7 +28,7 @@ it('handles the action', function () {
         'title' => 'Lorem ipsum',
         'category' => 2,
         'tags' => [
-            2, 3
+            2, 3,
         ],
     ];
 
