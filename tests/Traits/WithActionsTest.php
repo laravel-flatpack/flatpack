@@ -3,7 +3,7 @@
 use Flatpack\Traits\WithActions;
 
 beforeEach(function () {
-    $this->trait = new class {
+    $this->trait = new class () {
         use WithActions {
             getAction as public;
         }
@@ -36,7 +36,7 @@ it('should throw an error if the action references a non existing class', functi
 });
 
 it('should throw an error if the action references a not compatible class', function () {
-    $wrongAction = new class {
+    $wrongAction = new class () {
     };
 
     config(['flatpack.actions.my-action' => $wrongAction::class]);
@@ -47,7 +47,7 @@ it('should throw an error if the action references a not compatible class', func
 
 
 it('should throw an error if the action references a not allowed class', function () {
-    $wrongAction = new class implements \Flatpack\Contracts\FlatpackAction {
+    $wrongAction = new class () implements \Flatpack\Contracts\FlatpackAction {
         public function authorize()
         {
             return true;

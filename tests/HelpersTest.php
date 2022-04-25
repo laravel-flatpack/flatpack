@@ -67,6 +67,6 @@ it('returns an array of fields grouped together only if consecutive fields are c
         [
             'zip' => ['group' => 'Address'],
             'country' => ['group' => 'Address'],
-        ]
+        ],
     ]);
 });
