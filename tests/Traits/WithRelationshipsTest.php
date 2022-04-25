@@ -3,7 +3,7 @@
 use Flatpack\Traits\WithRelationships;
 
 beforeEach(function () {
-    $this->trait = new class() {
+    $this->trait = new class () {
         use WithRelationships {
             relation as public;
             createRelationship as public;
