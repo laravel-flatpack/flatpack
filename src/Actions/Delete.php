@@ -72,7 +72,7 @@ class Delete extends FlatpackAction implements FlatpackActionContract
      */
     private function query(): Builder
     {
-        if (! in_array('Illuminate\Database\Eloquent\SoftDeletes', class_uses($this->model))) {
+        if (in_array('Illuminate\Database\Eloquent\SoftDeletes', class_uses($this->model))) {
             return $this->model::withTrashed();
         }
 
