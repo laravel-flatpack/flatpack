@@ -12,7 +12,7 @@ class Category extends Model
      *
      * @var string
      */
-    protected $table = 'category';
+    protected $table = 'categories';
 
     /**
      * @var bool
