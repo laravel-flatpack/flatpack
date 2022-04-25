@@ -4,8 +4,6 @@ use Flatpack\Traits\WithComposition;
 
 beforeEach(function () {
     $this->trait = new class {
-        public $composition = [];
-
         use WithComposition {
             getMainComposition as public;
             getComposition as public;
