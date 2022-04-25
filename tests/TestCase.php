@@ -2,8 +2,8 @@
 
 namespace Flatpack\Tests;
 
-use Illuminate\Encryption\Encrypter;
 use Flatpack\FlatpackServiceProvider;
+use Illuminate\Encryption\Encrypter;
 use Livewire\LivewireServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 
