@@ -4,7 +4,7 @@ use Flatpack\Traits\WithFormFields;
 use Flatpack\Traits\WithRelationships;
 
 beforeEach(function () {
-    $this->trait = new class {
+    $this->trait = new class () {
         use WithRelationships, WithFormFields {
             bindModelToFields as public;
             bindFieldsToModel as public;
@@ -35,26 +35,26 @@ beforeEach(function () {
                     'type' => 'relation',
                     'relation' => [
                         'name' => 'category',
-                        'display' => 'name'
-                    ]
+                        'display' => 'name',
+                    ],
                 ],
                 'tags' => [
                     'label' => 'Tags',
                     'type' => 'relation',
                     'relation' => [
                         'name' => 'tags',
-                        'display' => 'name'
-                    ]
+                        'display' => 'name',
+                    ],
                 ],
                 'created_at' => [
                     'label' => 'Created at',
                     'disabled' => true,
-                    'type' => 'datetime-picker'
+                    'type' => 'datetime-picker',
                 ],
                 'updated_at' => [
                     'label' => 'Updated at',
                     'disabled' => true,
-                    'type' => 'datetime-picker'
+                    'type' => 'datetime-picker',
                 ],
             ];
         }
@@ -81,16 +81,16 @@ it('binds the active record entry values to the fields attribute', function () {
     $this->trait->entry->body = 'Lorem ipsum dolor sit amet';
     $this->trait->entry->category = new \Flatpack\Tests\Models\Category([
         'id' => 1,
-        'name' => 'Category 1'
+        'name' => 'Category 1',
     ]);
     $this->trait->entry->tags = \Illuminate\Database\Eloquent\Collection::make([
         new \Flatpack\Tests\Models\Tag([
             'id' => 1,
-            'name' => 'Tag 1'
+            'name' => 'Tag 1',
         ]),
         new \Flatpack\Tests\Models\Tag([
             'id' => 2,
-            'name' => 'Tag 2'
+            'name' => 'Tag 2',
         ]),
     ]);
     $this->trait->entry->created_at = \Carbon\Carbon::parse('2022-01-01 00:00:00');

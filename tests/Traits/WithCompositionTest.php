@@ -3,7 +3,7 @@
 use Flatpack\Traits\WithComposition;
 
 beforeEach(function () {
-    $this->trait = new class {
+    $this->trait = new class () {
         use WithComposition {
             getMainComposition as public;
             getComposition as public;
@@ -21,11 +21,11 @@ beforeEach(function () {
                 'toolbar' => [
                     'save' => [
                         'type' => 'button',
-                        'action' => 'save'
+                        'action' => 'save',
                     ],
                     'cancel' => [
                         'type' => 'button',
-                        'action' => 'cancel'
+                        'action' => 'cancel',
                     ],
                 ],
                 'main' => [
@@ -61,13 +61,13 @@ beforeEach(function () {
                 'sidebar' => [
                     'created_at' => [
                         'label' => 'Created at',
-                        'type' => 'datetime-picker'
+                        'type' => 'datetime-picker',
                     ],
                     'updated_at' => [
                         'label' => 'Updated at',
-                        'type' => 'datetime-picker'
+                        'type' => 'datetime-picker',
                     ],
-                ]
+                ],
             ];
         }
     };
@@ -75,12 +75,11 @@ beforeEach(function () {
 
 
 it('returns the default form fields composition', function () {
-    $trait = new class {
-        public $composition = [];
-
+    $trait = new class () {
         use WithComposition {
             getMainComposition as public;
         }
+        public $composition = [];
 
         public function __construct()
         {
@@ -159,11 +158,11 @@ it('returns all form fields in a composition', function () {
         ],
         'created_at' => [
             'label' => 'Created at',
-            'type' => 'datetime-picker'
+            'type' => 'datetime-picker',
         ],
         'updated_at' => [
             'label' => 'Updated at',
-            'type' => 'datetime-picker'
+            'type' => 'datetime-picker',
         ],
     ]);
 });

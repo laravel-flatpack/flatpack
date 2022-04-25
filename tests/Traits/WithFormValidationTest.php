@@ -3,7 +3,7 @@
 use Flatpack\Traits\WithFormValidation;
 
 it('returns form validation rules', function () {
-    $trait = new class {
+    $trait = new class () {
         use WithFormValidation {
             getValidationRules as public;
         }
@@ -17,7 +17,7 @@ it('returns form validation rules', function () {
             'email' => [
                 'rules' => 'required|email',
             ],
-            'bio' => []
+            'bio' => [],
         ])
     )->toBe([
         'name' => 'required|string',
@@ -28,7 +28,7 @@ it('returns form validation rules', function () {
 
 
 it('should pass form validation', function () {
-    $trait = new class {
+    $trait = new class () {
         use WithFormValidation {
             validateForm as public;
         }
@@ -37,7 +37,7 @@ it('should pass form validation', function () {
     $data = [
         'name' => 'User name',
         'email' => 'user@example.com',
-        'bio' => 'Some bio'
+        'bio' => 'Some bio',
     ];
 
     $this->expect(
@@ -48,13 +48,13 @@ it('should pass form validation', function () {
             'email' => [
                 'rules' => 'required|email',
             ],
-            'bio' => []
+            'bio' => [],
         ])
     )->toBe($data);
 });
 
 it('should fail form validation', function () {
-    $trait = new class {
+    $trait = new class () {
         use WithFormValidation {
             validateForm as public;
         }
@@ -72,6 +72,6 @@ it('should fail form validation', function () {
         'email' => [
             'rules' => 'required|email',
         ],
-        'bio' => []
+        'bio' => [],
     ]);
 });

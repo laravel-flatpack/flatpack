@@ -3,7 +3,7 @@
 use Flatpack\Traits\WithRelationships;
 
 beforeEach(function () {
-    $this->trait = new class {
+    $this->trait = new class () {
         use WithRelationships {
             relation as public;
             createRelationship as public;
@@ -36,26 +36,26 @@ beforeEach(function () {
                     'type' => 'relation',
                     'relation' => [
                         'name' => 'category',
-                        'display' => 'name'
-                    ]
+                        'display' => 'name',
+                    ],
                 ],
                 'tags' => [
                     'label' => 'Tags',
                     'type' => 'relation',
                     'relation' => [
                         'name' => 'tags',
-                        'display' => 'name'
-                    ]
+                        'display' => 'name',
+                    ],
                 ],
                 'created_at' => [
                     'label' => 'Created at',
                     'disabled' => true,
-                    'type' => 'datetime-picker'
+                    'type' => 'datetime-picker',
                 ],
                 'updated_at' => [
                     'label' => 'Updated at',
                     'disabled' => true,
-                    'type' => 'datetime-picker'
+                    'type' => 'datetime-picker',
                 ],
             ];
         }
