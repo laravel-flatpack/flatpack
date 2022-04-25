@@ -17,7 +17,7 @@ it('handles the action', function () {
             'title' => 'Lorem ispum',
         ]))
         ->setFields([
-            'title' => 'Lorem ipsum'
+            'title' => 'Lorem ipsum',
         ])
         ->run();
 
