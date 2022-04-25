@@ -3,7 +3,7 @@
 use Flatpack\Traits\WithRelationships;
 
 beforeEach(function () {
-    $this->trait = new class () {
+    $this->trait = new class() {
         use WithRelationships {
             relation as public;
             createRelationship as public;
@@ -79,4 +79,9 @@ it('checks if the field is a valid relationship', function () {
     $this->trait->entry = null;
     $this->expect($this->trait->isRelationship('category'))
         ->toBe(false);
+});
+
+it('creates a new related model instance', function () {
+    $this->expect($this->trait->createRelationship('category', 'name', 'Category'))
+        ->toBe(1);
 });

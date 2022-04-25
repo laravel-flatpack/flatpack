@@ -12,14 +12,32 @@ it('returns the successful message', function () {
 });
 
 it('handles the action', function () {
+
+    \Flatpack\Tests\Models\Category::insert([
+        ['id' => 1, 'name' => 'Category 1'],
+        ['id' => 2, 'name' => 'Category 2'],
+        ['id' => 3, 'name' => 'Category 3'],
+    ]);
+
+    \Flatpack\Tests\Models\Tag::insert([
+        ['id' => 1, 'name' => 'Tag 1'],
+        ['id' => 2, 'name' => 'Tag 2'],
+        ['id' => 3, 'name' => 'Tag 3'],
+    ]);
+
     $fields = [
         'title' => 'Lorem ipsum',
+        'category' => 2,
+        'tags' => [
+            2, 3
+        ],
     ];
 
+    $entry = new \Flatpack\Tests\Models\Post();
+    $entry->title = 'Lorem ipsum';
+
     $action = $this->actionInstance
-        ->setEntry(new \Flatpack\Tests\Models\Post([
-            'title' => 'Lorem ispum',
-        ]))
+        ->setEntry($entry)
         ->setFields($fields)
         ->run();
 
