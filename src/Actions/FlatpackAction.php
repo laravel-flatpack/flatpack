@@ -159,7 +159,7 @@ class FlatpackAction
      *
      * @return \Illuminate\Database\Eloquent\Model|null
      */
-    protected function getEntry()
+    public function getEntry()
     {
         return $this->entry;
     }
@@ -182,7 +182,7 @@ class FlatpackAction
      *
      * @return array
      */
-    protected function getFields()
+    public function getFields()
     {
         return $this->fields;
     }

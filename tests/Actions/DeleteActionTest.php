@@ -33,9 +33,14 @@ it('handles the action for single entry', function () {
 
     $this->actionInstance
          ->setEntry($entry)
+         ->setRedirect(true)
          ->run();
 
+    $this->expect($this->actionInstance->getEntry())->toBe($entry);
+
     $this->expect($this->actionInstance->isSuccess())->toBe(true);
+
+    $this->expect($this->actionInstance->shouldRedirect())->toBe(true);
 
     $this->expect(\Flatpack\Tests\Models\Post::find($entry->id))->toBe(null);
 });
