@@ -35,6 +35,8 @@ it('handles the action for single entry', function () {
          ->setEntry($entry)
          ->run();
 
+    $this->expect($this->actionInstance->isSuccess())->toBe(true);
+
     $this->expect(\Flatpack\Tests\Models\Post::find($entry->id))->toBe(null);
 });
 
