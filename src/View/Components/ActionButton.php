@@ -92,7 +92,7 @@ class ActionButton extends Component
      *
      * @var string
      */
-    public $style = "";
+    public $style = "default";
 
     /**
      * Shortcut key combined with cmd/ctrl key.
@@ -154,7 +154,7 @@ class ActionButton extends Component
         $this->shortcut = $this->getOption("shortcut", false);
         $this->confirm = $this->getOption("confirm", false);
         $this->hidden = $this->getOption("hidden", false);
-        $this->style = $this->getOption("style", $this->style, [
+        $this->style = $this->getOption("style", "default", [
             "primary",
             "secondary",
             "info",
