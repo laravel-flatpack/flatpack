@@ -107,7 +107,25 @@ columns:
 
 You can edit the yaml composition files by mapping your model's attributes with components of differnt types and features.
 
-[Check out the documentation](https://laravel-flatpack.com/reference)
+📖 [Check out the documentation](https://laravel-flatpack.com/reference)
+
+## Requirements
+
+- PHP 8.x
+- Composer
+- Laravel 9.x
+
+### Includes:
+
+| Dependency        | Version  | More info                                                    |
+| :---------------- | :------- | :----------------------------------------------------------- |
+| Tailwindcss       | `3.0.23`   | [Docs](https://tailwindcss.com/)                             |
+| Alpine            | `3.9.0`    | [Docs](https://alpinejs.dev/)                                |
+| Livewire          | `2.6`      | [Docs](https://laravel-livewire.com/)                        |
+| WireUI            | `1.0`      | [Github](https://github.com/wireui/wireui), [Docs](https://livewire-wireui.com/) |
+| Livewire Tables   | `1.22`     | [Github](https://github.com/rappasoft/laravel-livewire-tables) |
+| Livewire EditorJS | `1.4`      | [Github](https://github.com/maxeckel/livewire-editorjs)        |
+
 
 ## Changelog
 
