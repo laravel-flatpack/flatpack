@@ -26,7 +26,7 @@ it('handles the action for multiple files', function () {
             ->store('filename.txt'),
         \Illuminate\Http\UploadedFile::fake()
             ->createWithContent('filename.txt', 'hello world')
-            ->store('filename.txt')
+            ->store('filename.txt'),
     ];
 
     $action = $this->actionInstance

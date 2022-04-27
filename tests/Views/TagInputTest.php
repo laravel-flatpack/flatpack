@@ -10,7 +10,7 @@ beforeEach(function () {
         'relation' => [
             'name' => 'tags',
             'display' => 'name',
-        ]
+        ],
     ];
 
     $entry = new \Flatpack\Tests\Models\Post();

@@ -62,7 +62,7 @@ it('creates a button component for links', function () {
         'label' => 'New Post',
         'link' => 'create',
         'style' => 'primary',
-        'shortcut' => 'enter'
+        'shortcut' => 'enter',
     ], 'bulkAction');
 
     $this->assertEquals('posts', $button->entity);
