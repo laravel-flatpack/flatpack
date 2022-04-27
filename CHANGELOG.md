@@ -2,6 +2,19 @@
 
 All notable changes to `laravel-flatpack` will be documented in this file.
 
+## v1.0.7 - 2022-04-27
+
+## What's Changed
+
+- fix: `tag-input` field type styling
+- fix: `button` styling
+- test flatpack actions
+- test traits
+- other tests
+- chore(deps): bump dependabot/fetch-metadata from 1.3.0 to 1.3.1 by @dependabot in https://github.com/laravel-flatpack/flatpack/pull/15
+
+**Full Changelog**: https://github.com/laravel-flatpack/flatpack/compare/v1.0.6...v1.0.7
+
 ## v1.0.6 - 2022-04-23
 
 ## What's Changed
