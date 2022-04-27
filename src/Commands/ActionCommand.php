@@ -47,9 +47,7 @@ class ActionCommand extends GeneratorCommand
      */
     protected function resolveStubPath($stub)
     {
-        return file_exists($customPath = $this->laravel->basePath(trim($stub, "/")))
-            ? $customPath
-            : __DIR__.$stub;
+        return __DIR__ . $stub;
     }
 
     /**
@@ -127,10 +125,6 @@ class ActionCommand extends GeneratorCommand
     public function handle()
     {
         $this->line("\n 📦 Flatpack \n");
-
-        if ($this->hasOption('force') && $this->option('force') === true) {
-            $this->warn("Force option enabled, will overwrite existing files\n");
-        }
 
         parent::handle();
     }

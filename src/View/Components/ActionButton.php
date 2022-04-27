@@ -116,7 +116,6 @@ class ActionButton extends Component
         $entity,
         $model,
         $options = [],
-        $style = "",
         $method = "action"
     ) {
         $this->key = $key;
@@ -124,7 +123,6 @@ class ActionButton extends Component
         $this->model = $model;
         $this->options = $options;
         $this->method = $method;
-        $this->style = $style;
 
         $this->initProps();
     }
@@ -230,9 +228,6 @@ class ActionButton extends Component
             //
         }
 
-        $this->options = [
-            ...$this->options,
-            "confirmationMessage" => $this->confirmationMessage,
-        ];
+        $this->options["confirmationMessage"] = $this->confirmationMessage;
     }
 }
