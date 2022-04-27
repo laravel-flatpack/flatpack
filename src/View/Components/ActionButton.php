@@ -92,7 +92,7 @@ class ActionButton extends Component
      *
      * @var string
      */
-    public $style = "";
+    public $style = "default";
 
     /**
      * Shortcut key combined with cmd/ctrl key.
@@ -116,7 +116,6 @@ class ActionButton extends Component
         $entity,
         $model,
         $options = [],
-        $style = "",
         $method = "action"
     ) {
         $this->key = $key;
@@ -124,7 +123,6 @@ class ActionButton extends Component
         $this->model = $model;
         $this->options = $options;
         $this->method = $method;
-        $this->style = $style;
 
         $this->initProps();
     }
@@ -156,7 +154,7 @@ class ActionButton extends Component
         $this->shortcut = $this->getOption("shortcut", false);
         $this->confirm = $this->getOption("confirm", false);
         $this->hidden = $this->getOption("hidden", false);
-        $this->style = $this->getOption("style", $this->style, [
+        $this->style = $this->getOption("style", "default", [
             "primary",
             "secondary",
             "info",
@@ -230,9 +228,6 @@ class ActionButton extends Component
             //
         }
 
-        $this->options = [
-            ...$this->options,
-            "confirmationMessage" => $this->confirmationMessage,
-        ];
+        $this->options["confirmationMessage"] = $this->confirmationMessage;
     }
 }

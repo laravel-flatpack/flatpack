@@ -42,7 +42,7 @@ class FlatpackAction
      *
      * @var array
      */
-    protected $files = [];
+    public $files = [];
 
     /**
      * Selected keys.
@@ -159,7 +159,7 @@ class FlatpackAction
      *
      * @return \Illuminate\Database\Eloquent\Model|null
      */
-    protected function getEntry()
+    public function getEntry()
     {
         return $this->entry;
     }
@@ -182,7 +182,7 @@ class FlatpackAction
      *
      * @return array
      */
-    protected function getFields()
+    public function getFields()
     {
         return $this->fields;
     }
@@ -286,7 +286,7 @@ class FlatpackAction
      * @throws \Exception
      * @return mixed
      */
-    protected function handle()
+    public function handle()
     {
         throw new \Exception('Method not implemented: handle()');
     }
@@ -300,7 +300,7 @@ class FlatpackAction
      * @throws \Exception
      * @return bool
      */
-    protected function authorize()
+    public function authorize()
     {
         throw new \Exception('Method not implemented: authorize()');
 
