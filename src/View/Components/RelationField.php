@@ -3,6 +3,7 @@
 namespace Flatpack\View\Components;
 
 use Flatpack\Traits\WithRelationships;
+use Illuminate\Support\Str;
 
 class RelationField extends FormField
 {
@@ -86,7 +87,7 @@ class RelationField extends FormField
         $entry = null,
         $fieldErrors = []
     ) {
-        parent::__construct($key, $options, $entity, $model, $entry, $fieldErrors);
+        parent::__construct($key, $entity, $model, $options, $entry, $fieldErrors);
 
         $this->initRelationFieldProps();
     }
@@ -152,6 +153,10 @@ class RelationField extends FormField
 
         $keyName = $this->getRelationKeyName();
 
+        if ($this->getRelationshipModel() === null) {
+            return [];
+        }
+
         $query = $this->relation
                       ->getRelated()
                       ->query()
@@ -193,12 +198,11 @@ class RelationField extends FormField
      */
     protected function getRelationKeyName()
     {
-        if ($this->relationshipType instanceof \Illuminate\Database\Eloquent\Relations\BelongsToMany) {
+        if ($this->relationshipType === "belongsToMany") {
             return $this->relation->getRelatedKeyName();
-        } elseif ($this->relationshipType instanceof \Illuminate\Database\Eloquent\Relations\BelongsTo) {
+        } elseif ($this->relationshipType === "belongsTo") {
             return $this->relation->getOwnerKeyName();
-        } elseif ($this->relationshipType instanceof \Illuminate\Database\Eloquent\Relations\HasMany ||
-            $this->relationshipType instanceof \Illuminate\Database\Eloquent\Relations\HasOne) {
+        } elseif (in_array($this->relationshipType, ["hasMany", "hasOne"])) {
             return $this->relation->getForeignKeyName();
         }
 
@@ -261,44 +265,19 @@ class RelationField extends FormField
      */
     protected function getRelationshipType()
     {
-        $relation = $this->relation;
+        $relation =  Str::camel(class_basename($this->relation));
 
-        if ($relation instanceof \Illuminate\Database\Eloquent\Relations\BelongsTo) {
-            return 'belongsTo';
-        }
+        $relations = [
+            'belongsToMany',
+            'belongsTo',
+            'hasMany',
+            'hasOne',
+            'morphOne',
+            'morphMany',
+            'morphTo',
+            'morphToMany',
+        ];
 
-        if ($relation instanceof \Illuminate\Database\Eloquent\Relations\BelongsToMany) {
-            return 'belongsToMany';
-        }
-
-        if ($relation instanceof \Illuminate\Database\Eloquent\Relations\HasMany) {
-            return 'hasMany';
-        }
-
-        if ($relation instanceof \Illuminate\Database\Eloquent\Relations\HasOne) {
-            return 'hasOne';
-        }
-
-        if ($relation instanceof \Illuminate\Database\Eloquent\Relations\MorphMany) {
-            return 'morphMany';
-        }
-
-        if ($relation instanceof \Illuminate\Database\Eloquent\Relations\MorphOne) {
-            return 'morphOne';
-        }
-
-        if ($relation instanceof \Illuminate\Database\Eloquent\Relations\MorphTo) {
-            return 'morphTo';
-        }
-
-        if ($relation instanceof \Illuminate\Database\Eloquent\Relations\MorphToMany) {
-            return 'morphToMany';
-        }
-
-        if ($relation instanceof \Illuminate\Database\Eloquent\Relations\BelongsToMany) {
-            return 'belongsToMany';
-        }
-
-        return 'unknown';
+        return in_array($relation, $relations) ? $relation : 'unknown';
     }
 }

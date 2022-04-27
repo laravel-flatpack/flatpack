@@ -41,10 +41,7 @@ it('handles the action', function () {
         ->run();
 
     $this->expect($this->actionInstance->getEntry())->toBe($entry);
-
     $this->expect($this->actionInstance->getFields())->toBe($fields);
-
     $this->expect($this->actionInstance->isSuccess())->toBe(true);
-
     $this->expect($action)->toBe(true);
 });

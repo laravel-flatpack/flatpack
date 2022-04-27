@@ -12,7 +12,7 @@ trait WithStorageFiles
      *
      * @var array
      */
-    public $files;
+    public $files = [];
 
     /**
      * Combine path and filename.

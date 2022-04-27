@@ -42,7 +42,7 @@ class FlatpackAction
      *
      * @var array
      */
-    protected $files = [];
+    public $files = [];
 
     /**
      * Selected keys.
@@ -286,7 +286,7 @@ class FlatpackAction
      * @throws \Exception
      * @return mixed
      */
-    protected function handle()
+    public function handle()
     {
         throw new \Exception('Method not implemented: handle()');
     }
@@ -300,7 +300,7 @@ class FlatpackAction
      * @throws \Exception
      * @return bool
      */
-    protected function authorize()
+    public function authorize()
     {
         throw new \Exception('Method not implemented: authorize()');
 

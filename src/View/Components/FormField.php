@@ -131,9 +131,9 @@ class FormField extends Component
      * Create a new FormField instance.
      *
      * @param string $key
-     * @param array $options
      * @param string $entity
      * @param string $model
+     * @param array $options
      * @param \Illuminate\Database\Eloquent\Model $entry
      * @param array $fieldErrors
      * @param string $formType
@@ -141,9 +141,9 @@ class FormField extends Component
      */
     public function __construct(
         $key,
-        $options = [],
         $entity = '',
         $model = '',
+        $options = [],
         $entry = null,
         $fieldErrors = [],
         $formType = 'create'
@@ -222,6 +222,6 @@ class FormField extends Component
     {
         $messages = $errors->getMessages();
 
-        return array_filter($messages, fn ($key) => $key === $this->key, ARRAY_FILTER_USE_KEY);
+        return $messages[$this->key] ?? [];
     }
 }
