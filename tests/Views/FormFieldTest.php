@@ -53,7 +53,7 @@ it('returns the error messages for the field', function () {
     $errors = new \Illuminate\Support\ViewErrorBag();
     $errors->put('default', new \Illuminate\Support\MessageBag([
         'title' => ['The title field is required.'],
-        'email' => ['The email field is required.']
+        'email' => ['The email field is required.'],
     ]));
 
     $this->assertEquals(

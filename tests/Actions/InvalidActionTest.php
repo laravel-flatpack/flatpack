@@ -3,7 +3,7 @@
 use Flatpack\Actions\FlatpackAction;
 
 it('should not handle the action', function () {
-    $action = new class() extends FlatpackAction {
+    $action = new class () extends FlatpackAction {
         public function __construct()
         {
             parent::__construct('posts', \Flatpack\Tests\Models\Post::class);
@@ -16,7 +16,7 @@ it('should not handle the action', function () {
 });
 
 it('should not authorize the action', function () {
-    $action = new class() extends FlatpackAction {
+    $action = new class () extends FlatpackAction {
         public function __construct()
         {
             parent::__construct('posts', \Flatpack\Tests\Models\Post::class);

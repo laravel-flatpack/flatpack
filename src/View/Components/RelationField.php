@@ -265,7 +265,7 @@ class RelationField extends FormField
      */
     protected function getRelationshipType()
     {
-        $relation =  Str::camel(class_basename($this->relation));
+        $relation = Str::camel(class_basename($this->relation));
 
         $relations = [
             'belongsToMany',

@@ -10,7 +10,7 @@ it('creates a relation field component with options', function () {
         'relation' => [
             'name' => 'category',
             'display' => 'name',
-        ]
+        ],
     ];
     $entry = new \Flatpack\Tests\Models\Post();
 
@@ -46,8 +46,8 @@ it('creates a relation field component with create form', function () {
                     'label' => 'Name',
                     'type' => 'text',
                 ],
-            ]
-        ]
+            ],
+        ],
     ];
 
     $entry = new \Flatpack\Tests\Models\Post();
@@ -76,7 +76,7 @@ it('creates a relation field component with create form', function () {
 it('creates a relation field component with disabled relationship', function () {
     $options = [
         'label' => 'Tags',
-        'type' => 'relation'
+        'type' => 'relation',
     ];
 
     $entry = new \Flatpack\Tests\Models\Post();
