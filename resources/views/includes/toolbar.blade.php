@@ -9,7 +9,6 @@
 
             <x-flatpack-action-button
                 key="action-{{ $key }}"
-                :style="data_get($options, 'style', 'default')"
                 :options="$options"
                 :entity="$entity"
                 :model="$model"
