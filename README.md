@@ -11,7 +11,7 @@
 
 - Quickly create CRUD (Create, Read, Update, Delete) interfaces for your Eloquent models.
 - Define components with simple and declarative YAML files.
-- Build a complete administration panel for your site in seconds.
+- Build a complete administration panel for your Laravel app in seconds.
 
 📕 [Documentation](https://laravel-flatpack.com)
 
@@ -117,8 +117,8 @@ You can edit the yaml composition files by mapping your model's attributes with 
 
 ### Includes:
 
-| Dependency        | Version  | More info                                                    |
-| :---------------- | :------- | :----------------------------------------------------------- |
+| Dependency        | Version    | More info                                                    |
+| :---------------- | :--------- | :----------------------------------------------------------- |
 | Tailwindcss       | `3.0.23`   | [Docs](https://tailwindcss.com/)                             |
 | Alpine            | `3.9.0`    | [Docs](https://alpinejs.dev/)                                |
 | Livewire          | `2.6`      | [Docs](https://laravel-livewire.com/)                        |
