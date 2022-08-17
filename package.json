@@ -58,7 +58,7 @@
         "@ckeditor/ckeditor5-markdown-gfm": "^33.0.0",
         "@editorjs/embed": "^2.5.1",
         "@editorjs/table": "^2.0.1",
-        "@yaireo/tagify": "^4.9.5",
+        "@yaireo/tagify": "^4.9.8",
         "alpinejs": "^3.9.6",
         "sweetalert2": "^11.4.2"
     }
