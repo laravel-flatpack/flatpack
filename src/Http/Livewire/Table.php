@@ -125,7 +125,7 @@ class Table extends DataTableComponent
                 return $query->{$scope}();
             }
         } catch (\Exception $e) {
-            // if query scope is not found, do nothing
+            return $query->whereNull('id');
         }
 
         return $query;

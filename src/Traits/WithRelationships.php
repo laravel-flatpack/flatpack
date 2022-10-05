@@ -18,6 +18,10 @@ trait WithRelationships
      */
     protected function relation($key)
     {
+        if (is_null($key)) {
+            return $key;
+        }
+
         return ($this->isRelationship($key)) ? $this->entry->{$key}() : null;
     }
 
@@ -32,6 +36,11 @@ trait WithRelationships
     protected function createRelationship($key, $name = 'name', $value = null)
     {
         $relation = $this->relation($key);
+
+        if (! $relation) {
+            return null;
+        }
+
         $relatedClass = get_class($relation->getRelated());
         $model = new $relatedClass();
         $model->{$name} = $value;
