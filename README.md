@@ -33,7 +33,7 @@ php artisan vendor:publish --tag="flatpack"
 
 ## Usage
 
-Generate the flatpack composition files for `App\Models\Post` model...
+Generating Flatpack composition files for `App\Models\Post` model...
 
 ```bash
 php artisan make:flatpack Post
@@ -55,9 +55,10 @@ Now start assembling, grab the generated files and define how they should look!
 
 ### Defining a form
 
-Example of generated file `/flatpack/posts/form.yaml`
 
 ```yaml
+# /flatpack/posts/form.yaml
+
 fields:
   name:
     label: Name
@@ -78,9 +79,9 @@ fields:
 
 ### Defining a list
 
-Example of generated `/flatpack/posts/list.yaml`
-
 ```yaml
+# /flatpack/posts/list.yaml
+
 columns:
   id:
     label: ID
@@ -105,7 +106,7 @@ columns:
     sortable: true
 ```
 
-You can edit the yaml composition files by mapping your model's attributes with components of differnt types and features.
+You can customise the yaml composition files by mapping your model's attributes, using components of differnt types and features: Data tables, text inputs, rich text editors, date pickers, tag pickers, searchable select menus, image upload, toggles and more.
 
 📖 [Check out the documentation](https://laravel-flatpack.com/reference)
 
@@ -115,16 +116,24 @@ You can edit the yaml composition files by mapping your model's attributes with 
 - Composer
 - Laravel 9.x
 
-### Includes:
+## Flatpack
 
-| Dependency        | Version    | More info                                                    |
-| :---------------- | :--------- | :----------------------------------------------------------- |
-| Tailwindcss       | `3.0.23`   | [Docs](https://tailwindcss.com/)                             |
-| Alpine            | `3.9.0`    | [Docs](https://alpinejs.dev/)                                |
-| Livewire          | `2.6`      | [Docs](https://laravel-livewire.com/)                        |
-| WireUI            | `1.0`      | [Github](https://github.com/wireui/wireui), [Docs](https://livewire-wireui.com/) |
-| Livewire Tables   | `1.22`     | [Github](https://github.com/rappasoft/laravel-livewire-tables) |
-| Livewire EditorJS | `1.4`      | [Github](https://github.com/maxeckel/livewire-editorjs)        |
+[Flatpack](https://laravel-flatpack.com) makes building fully functional user interfaces for admin panels easier than ever: as easy as editing few lines of a YAML file. 
+
+Out of the box, Flatpack includes a rich set of already made components and a solid stack to build a secure and intuitive experience for the users, as well as a fast and flexible solution for developers that want to have fun, try out new things and save precious time building up the an administration panel. 
+
+| Components included: |                                                                |
+| :------------------- |:-------------------------------------------------------------- |
+| WireUI components    | [Github](https://github.com/wireui/wireui)                     |
+| Livewire Tables      | [Github](https://github.com/rappasoft/laravel-livewire-tables) |
+| Livewire EditorJS    | [Github](https://github.com/maxeckel/livewire-editorjs)        |
+
+Flatpack is a reactive full-stack app, built with [TALL stack](https://tallstack.dev/):
+
+- [Tailwind](https://tailwindcss.com/)
+- [Alpine.js](https://alpinejs.dev/)
+- [Laravel](https://laravel.com/)
+- [Livewire](https://laravel-livewire.com/)
 
 
 ## Changelog
