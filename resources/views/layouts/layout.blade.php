@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Flatpack - Admin Panel</title>
     <meta charset="utf-8">
@@ -12,6 +13,7 @@
     @wireUiScripts
     <script defer src="{{ flatpackAsset('flatpack/js/alpine.js') }}"></script>
 </head>
+
 <body>
     <div
         x-cloak
@@ -40,4 +42,5 @@
 
     @stack('scripts')
 </body>
+
 </html>

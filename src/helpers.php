@@ -19,6 +19,18 @@ if (! function_exists('flatpackAsset')) {
     }
 }
 
+if (! function_exists('flatpackUrl')) {
+    /**
+     * Get Flatpack home url.
+     *
+     * @return string
+     */
+    function flatpackUrl()
+    {
+        return "/" . config('flatpack.prefix', 'backend');
+    }
+}
+
 if (! function_exists('getErrors')) {
     /**
      * Get an option from the errors array.
