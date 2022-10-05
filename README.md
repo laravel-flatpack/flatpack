@@ -17,8 +17,7 @@
 
 ---
 
-
-With [Flatpack](https://laravel-flatpack.com), building fully functional user interfaces for admin panels easier than ever: as easy as editing few lines of a YAML file. 
+[Flatpack](https://laravel-flatpack.com) makes building fully functional user interfaces for admin panels easier than ever: as easy as editing few lines of a YAML file. 
 
 Besides providing a rich set of already built components and a solid stack to build a secure and intuitive experience for the users, it offers a fast and flexible solution for developers who want to have fun, try out new things and save precious time building up the an administration panels. 
 
