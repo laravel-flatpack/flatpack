@@ -2,8 +2,8 @@
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/flatpack/flatpack.svg?style=flat-square)](https://packagist.org/packages/flatpack/flatpack)
 [![License](https://img.shields.io/github/license/laravel-flatpack/flatpack)](LICENSE.md)
-[![GitHub Tests Action Status](https://img.shields.io/github/workflow/status/laravel-flatpack/flatpack/run-tests?label=tests)](https://github.com/laravel-flatpack/flatpack/actions?query=workflow%3Arun-tests+branch%3Amain)
-[![GitHub Code Style Action Status](https://img.shields.io/github/workflow/status/laravel-flatpack/flatpack/Check%20&%20fix%20styling?label=code%20style)](https://github.com/laravel-flatpack/flatpack/actions?query=workflow%3A"Check+%26+fix+styling"+branch%3Amain)
+[![GitHub Tests Status](https://img.shields.io/github/actions/workflow/status/laravel-flatpack/flatpack/run-tests.yml)](https://github.com/laravel-flatpack/flatpack/actions/workflows/run-tests.yml)
+[![GitHub Code Style Status](https://img.shields.io/github/actions/workflow/status/laravel-flatpack/flatpack/php-cs-fixer.yml)](https://github.com/laravel-flatpack/flatpack/actions/workflows/php-cs-fixer.yml)
 
 # Flatpack
 
