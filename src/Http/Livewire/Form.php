@@ -211,7 +211,7 @@ class Form extends Component
                 ->setEntry($this->entry)
                 ->setFields($this->fields)
                 ->setRedirect(data_get($options, 'redirect', false));
-
+                
             // Perform action
             $actionInstance->run();
 
@@ -307,7 +307,7 @@ class Form extends Component
     {
         $field = $this->fieldKeyName($key);
 
-        $oldValue = $this->fields[$field];
+        $oldValue = $this->fields[$field] ?? null;
 
         $this->hasChanges = $this->compareValues($oldValue, $value);
     }
