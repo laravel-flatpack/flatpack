@@ -19,6 +19,8 @@ it('creates a button component with the given options', function () {
     $this->assertEquals('Are you sure?', $button->confirmationMessage);
     $this->assertEquals('save', $button->action);
     $this->assertEquals('primary', $button->style);
+
+    $this->expect($button->render())->toBeInstanceOf(\Illuminate\Contracts\View\View::class);
 });
 
 it('creates a button component with confirmation message defined in actions', function () {
@@ -55,6 +57,8 @@ it('creates a button component for bulk actions', function () {
     $this->assertEquals('Are you sure you want to delete the selected posts?', $button->confirmationMessage);
     $this->assertEquals('delete', $button->action);
     $this->assertEquals('danger', $button->style);
+
+    $this->expect($button->render())->toBeInstanceOf(\Illuminate\Contracts\View\View::class);
 });
 
 it('creates a button component for links', function () {
