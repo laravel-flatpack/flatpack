@@ -17,6 +17,8 @@ it('creates a form field component with default options', function () {
     $this->assertEquals(false, $field->readonly);
     $this->assertEquals('Title', $field->label);
     $this->assertEquals('Enter a title', $field->placeholder);
+
+    $this->expect($field->render())->toBeInstanceOf(\Illuminate\Contracts\View\View::class);
 });
 
 it('creates a form field component for relations', function () {

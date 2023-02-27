@@ -5,6 +5,10 @@ it('returns asset url with versioning param', function () {
         ->toBe("http://localhost/file.js?v=". \Flatpack\Flatpack::VERSION);
 });
 
+it('returns flatpack url', function () {
+    expect(flatpackUrl())->toBe("/backend");
+});
+
 it('returns the error values for a given key from an associative array of errors', function () {
     expect(getErrors([
         'name' => ['The name field is required.'],

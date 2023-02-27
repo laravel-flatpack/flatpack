@@ -2,7 +2,7 @@
 
 use Flatpack\View\Components\RelationField;
 
-it('creates a relation field component with options', function () {
+it('creates a BelongsTo relation field component with options', function () {
     $options = [
         'label' => 'Category',
         'placeholder' => 'Select a category',
@@ -30,6 +30,41 @@ it('creates a relation field component with options', function () {
     $this->assertEquals(false, $field->readonly);
     $this->assertEquals('Category', $field->label);
     $this->assertEquals('Select a category', $field->placeholder);
+
+    $this->expect($field->render())
+         ->toBeInstanceOf(\Illuminate\Contracts\View\View::class);
+});
+
+
+it('creates a HasMany relation field component with options', function () {
+    $options = [
+        'label' => 'Posts',
+        'type' => 'relation',
+        'relation' => [
+            'name' => 'posts',
+            'display' => 'title',
+        ],
+    ];
+    
+    $entry = new \Flatpack\Tests\Models\Category();
+    $field = new RelationField(
+        'posts',
+        $options,
+        'categories',
+        \Flatpack\Tests\Models\Category::class,
+        $entry
+    );
+
+    $this->assertEquals('categories', $field->entity);
+    $this->assertEquals(\Flatpack\Tests\Models\Category::class, $field->model);
+
+    $this->assertEquals('relation', $field->type);
+    $this->assertEquals(false, $field->required);
+    $this->assertEquals(false, $field->readonly);
+    $this->assertEquals('Posts', $field->label);
+
+    $this->expect($field->render())
+         ->toBeInstanceOf(\Illuminate\Contracts\View\View::class);
 });
 
 it('creates a relation field component with create form', function () {
@@ -92,3 +127,4 @@ it('creates a relation field component with disabled relationship', function () 
     $this->assertEquals('relation', $field->type);
     $this->assertEquals(false, $field->relation);
 });
+

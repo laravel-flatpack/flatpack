@@ -33,4 +33,6 @@ it('creates a tag input field component', function () {
     $this->assertEquals(false, $this->field->readonly);
     $this->assertEquals('Tags', $this->field->label);
     $this->assertEquals('Type a tag...', $this->field->placeholder);
+
+    $this->expect($this->field->render())->toBeInstanceOf(\Illuminate\Contracts\View\View::class);
 });
