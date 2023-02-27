@@ -211,7 +211,7 @@ class Form extends Component
                 ->setEntry($this->entry)
                 ->setFields($this->fields)
                 ->setRedirect(data_get($options, 'redirect', false));
-                
+
             // Perform action
             $actionInstance->run();
 

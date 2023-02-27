@@ -1,8 +1,8 @@
 <?php
 
-use Livewire\Livewire;
 use Flatpack\Http\Livewire\Form;
 use Flatpack\Tests\Models\Post;
+use Livewire\Livewire;
 
 it('redirects back to index list', function () {
     Livewire::test(Form::class, [
@@ -26,7 +26,7 @@ it('displays an error if action does not exist', function () {
     ->assertEmitted('notify', [
         'type' => 'error',
         'message' => 'Action not found: not-existing',
-        'errors' => []
+        'errors' => [],
     ]);
 });
 
@@ -43,30 +43,30 @@ it('creates a new post entry', function () {
                     'type' => 'editable',
                     'size' => 'large',
                     'placeholder' => 'Your post title...',
-                    'rules' => 'required|string'
-                ]
+                    'rules' => 'required|string',
+                ],
             ],
             'toolbar' => [
                 'save' => [
                     'label' => 'Save',
                     'action' => 'save',
-                    'redirect' => true
-                ]
+                    'redirect' => true,
+                ],
             ],
             'main' => [
                 'body' => [
                     'type' => 'block-editor',
-                    'rules' => 'required'
-                ]
-            ]
-        ]
+                    'rules' => 'required',
+                ],
+            ],
+        ],
     ])
     ->set('fields', [
         'title' => 'Lorem ipsum',
-        'body' => 'Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet.'
+        'body' => 'Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet.',
     ])
     ->call('action', 'save', [
-        'redirect' => true
+        'redirect' => true,
     ])
     ->assertEmitted('redirect');
 
@@ -74,9 +74,8 @@ it('creates a new post entry', function () {
 });
 
 it('updates an existing post entry', function () {
-    
     $post = Post::create([
-        'title' => 'Testing title'
+        'title' => 'Testing title',
     ]);
 
     $this->assertTrue(Post::whereTitle('Testing title')->exists());
@@ -92,26 +91,26 @@ it('updates an existing post entry', function () {
                     'type' => 'editable',
                     'size' => 'large',
                     'placeholder' => 'Your post title...',
-                    'rules' => 'required|string'
-                ]
+                    'rules' => 'required|string',
+                ],
             ],
             'toolbar' => [
                 'save' => [
                     'label' => 'Save',
-                    'action' => 'save'
-                ]
+                    'action' => 'save',
+                ],
             ],
             'main' => [
                 'body' => [
                     'type' => 'block-editor',
-                    'rules' => 'required'
-                ]
-            ]
-        ]
+                    'rules' => 'required',
+                ],
+            ],
+        ],
     ])
     ->set('fields', [
         'title' => 'Lorem ipsum',
-        'body' => 'Lorem ipsum dolor sit amet.'
+        'body' => 'Lorem ipsum dolor sit amet.',
     ])
     ->call('action', 'save');
 

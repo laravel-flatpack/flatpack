@@ -5,8 +5,8 @@ namespace Flatpack\Tests;
 use Flatpack\FlatpackServiceProvider;
 use Illuminate\Encryption\Encrypter;
 use Livewire\LivewireServiceProvider;
-use WireUi\Providers\WireUiServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
+use WireUi\Providers\WireUiServiceProvider;
 
 class TestCase extends Orchestra
 {
