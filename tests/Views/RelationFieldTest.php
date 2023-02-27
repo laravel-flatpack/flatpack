@@ -45,7 +45,7 @@ it('creates a HasMany relation field component with options', function () {
             'display' => 'title',
         ],
     ];
-    
+
     $entry = new \Flatpack\Tests\Models\Category();
     $field = new RelationField(
         'posts',
@@ -127,4 +127,3 @@ it('creates a relation field component with disabled relationship', function () 
     $this->assertEquals('relation', $field->type);
     $this->assertEquals(false, $field->relation);
 });
-
