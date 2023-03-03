@@ -1,9 +1,9 @@
 <?php
 
-use Livewire\Livewire;
 use Flatpack\Http\Livewire\Form;
 use Flatpack\Tests\Models\Post;
 use Flatpack\Tests\Models\Tag;
+use Livewire\Livewire;
 
 it('redirects back to index list', function () {
     Livewire::test(Form::class, [
