@@ -3,11 +3,8 @@
 namespace Flatpack\Exceptions;
 
 use Exception;
-use Facade\IgnitionContracts\ProvidesSolution;
-use Facade\IgnitionContracts\Solution;
-use Flatpack\Exceptions\Solutions\GenerateFlatpackSolution;
 
-class EntityNotFoundException extends Exception implements ProvidesSolution
+class EntityNotFoundException extends Exception
 {
     private $entity;
     private $model;
@@ -18,11 +15,5 @@ class EntityNotFoundException extends Exception implements ProvidesSolution
 
         $this->entity = $entity;
         $this->model = $model;
-    }
-
-    /** @return  \Facade\IgnitionContracts\Solution */
-    public function getSolution(): Solution
-    {
-        return new GenerateFlatpackSolution($this->entity, $this->model);
     }
 }
