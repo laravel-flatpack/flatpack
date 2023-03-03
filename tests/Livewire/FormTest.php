@@ -1,9 +1,9 @@
 <?php
 
-use Livewire\Livewire;
 use Flatpack\Http\Livewire\Form;
 use Flatpack\Tests\Models\Post;
 use Flatpack\Tests\Models\Tag;
+use Livewire\Livewire;
 
 it('redirects back to index list', function () {
     Livewire::test(Form::class, [
@@ -27,7 +27,7 @@ it('displays an error if action does not exist', function () {
     ->assertEmitted('notify', [
         'type' => 'error',
         'message' => 'Action not found: not-existing',
-        'errors' => []
+        'errors' => [],
     ]);
 });
 
@@ -41,23 +41,23 @@ it('throw error if fields validation fails', function () {
             'header' => [
                 'title' => [
                     'type' => 'editable',
-                    'rules' => 'required|string'
-                ]
+                    'rules' => 'required|string',
+                ],
             ],
             'toolbar' => [
                 'save' => [
                     'label' => 'Save',
                     'action' => 'save',
-                    'redirect' => true
-                ]
+                    'redirect' => true,
+                ],
             ],
             'main' => [
                 'body' => [
                     'type' => 'textarea',
-                    'rules' => 'required|string'
-                ]
-            ]
-        ]
+                    'rules' => 'required|string',
+                ],
+            ],
+        ],
     ])
     ->call('action', 'save')
     ->assertHasErrors();
@@ -75,30 +75,30 @@ it('creates a new post entry', function () {
                     'type' => 'editable',
                     'size' => 'large',
                     'placeholder' => 'Your post title...',
-                    'rules' => 'required|string'
-                ]
+                    'rules' => 'required|string',
+                ],
             ],
             'toolbar' => [
                 'save' => [
                     'label' => 'Save',
                     'action' => 'save',
-                    'redirect' => true
-                ]
+                    'redirect' => true,
+                ],
             ],
             'main' => [
                 'body' => [
                     'type' => 'textarea',
-                    'rules' => 'required'
-                ]
-            ]
-        ]
+                    'rules' => 'required',
+                ],
+            ],
+        ],
     ])
     ->set('fields', [
         'title' => 'Lorem ipsum',
-        'body' => 'Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet.'
+        'body' => 'Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet.',
     ])
     ->call('action', 'save', [
-        'redirect' => true
+        'redirect' => true,
     ])
     ->assertEmitted('redirect');
 
@@ -107,7 +107,7 @@ it('creates a new post entry', function () {
 
 it('updates an existing post entry', function () {
     $post = Post::create([
-        'title' => 'Testing title'
+        'title' => 'Testing title',
     ]);
 
     $this->assertTrue(Post::whereTitle('Testing title')->exists());
@@ -123,26 +123,26 @@ it('updates an existing post entry', function () {
                     'type' => 'editable',
                     'size' => 'large',
                     'placeholder' => 'Your post title...',
-                    'rules' => 'required|string'
-                ]
+                    'rules' => 'required|string',
+                ],
             ],
             'toolbar' => [
                 'save' => [
                     'label' => 'Save',
-                    'action' => 'save'
-                ]
+                    'action' => 'save',
+                ],
             ],
             'main' => [
                 'body' => [
                     'type' => 'textarea',
-                    'rules' => 'required'
-                ]
-            ]
-        ]
+                    'rules' => 'required',
+                ],
+            ],
+        ],
     ])
     ->set('fields', [
         'title' => 'Lorem ipsum',
-        'body' => 'Lorem ipsum dolor sit amet.'
+        'body' => 'Lorem ipsum dolor sit amet.',
     ])
     ->call('action', 'save');
 
@@ -152,7 +152,7 @@ it('updates an existing post entry', function () {
 
 it('handles form field components state', function () {
     $post = Post::create([
-        'title' => 'Testing title'
+        'title' => 'Testing title',
     ]);
 
     $this->assertTrue(Post::whereTitle('Testing title')->exists());
@@ -166,44 +166,43 @@ it('handles form field components state', function () {
             'header' => [
                 'title' => [
                     'type' => 'editable',
-                    'rules' => 'required|string'
-                ]
+                    'rules' => 'required|string',
+                ],
             ],
             'toolbar' => [
                 'save' => [
                     'label' => 'Save',
-                    'action' => 'save'
-                ]
+                    'action' => 'save',
+                ],
             ],
             'main' => [
                 'body' => [
                     'type' => 'block-editor',
-                    'rules' => 'required'
+                    'rules' => 'required',
                 ],
                 'image' => [
-                    'type' => 'image-upload'
-                ]
-            ]
-        ]
+                    'type' => 'image-upload',
+                ],
+            ],
+        ],
     ])
     ->call('saveEditorState', 'body', ['foo' => 'bar'])
     ->assertSet('fields', [
-        'title' => 'Testing title', 
+        'title' => 'Testing title',
         'body' => json_encode(['foo' => 'bar']),
-        'image' => null
+        'image' => null,
     ])
     ->call('saveImageUploaderState', 'image', ['img1', 'img2', 'img3'])
     ->assertSet('fields', [
-        'title' => 'Testing title', 
+        'title' => 'Testing title',
         'body' => json_encode(['foo' => 'bar']),
-        'image' => ['img1', 'img2', 'img3']
+        'image' => ['img1', 'img2', 'img3'],
     ]);
 });
 
 it('creates a new related entry', function () {
-    
     $post = Post::create([
-        'title' => 'Lorem ipsum'
+        'title' => 'Lorem ipsum',
     ]);
 
     $component = Livewire::test(Form::class, [
@@ -217,37 +216,37 @@ it('creates a new related entry', function () {
                     'type' => 'editable',
                     'size' => 'large',
                     'placeholder' => 'Your post title...',
-                    'rules' => 'required|string'
-                ]
+                    'rules' => 'required|string',
+                ],
             ],
             'toolbar' => [
                 'save' => [
                     'label' => 'Save',
-                    'action' => 'save'
-                ]
+                    'action' => 'save',
+                ],
             ],
             'main' => [
                 'body' => [
                     'type' => 'block-editor',
-                    'rules' => 'required'
+                    'rules' => 'required',
                 ],
                 'tags' => [
                     'type' => 'tag-input',
                     'placeholder' => 'Write tags...',
                     'relation' => [
                         'name' => 'tags',
-                        'display'=> 'name',
-                        'create' => true
-                    ]
+                        'display' => 'name',
+                        'create' => true,
+                    ],
                 ],
-            ]
-        ]
+            ],
+        ],
     ]);
 
     $component
         ->set('fields', [
             'title' => 'Lorem ipsum',
-            'body' => 'Lorem ipsum dolor sit amet.'
+            'body' => 'Lorem ipsum dolor sit amet.',
         ])
         ->call('createRelatedEntity', 'tags', 'testing-new-tag')
         ->assertEmitted('flatpack-form:related-entity-created:tags', 1)
@@ -260,18 +259,17 @@ it('creates a new related entry', function () {
     $component
         ->call('saveTagInputState', 'tags', '1,2')
         ->call('action', 'save');
-    
+
     $tags = $post->refresh()->tags->pluck('name');
-    
+
     $this->assertTrue($tags->contains('testing-new-tag'));
     $this->assertTrue($tags->contains('another-tag'));
 });
 
 
 it('handles form failures and error messages', function () {
-    
     $post = Post::create([
-        'title' => 'Lorem ipsum'
+        'title' => 'Lorem ipsum',
     ]);
 
     $component = Livewire::test(Form::class, [
@@ -283,30 +281,30 @@ it('handles form failures and error messages', function () {
             'header' => [
                 'title' => [
                     'type' => 'editable',
-                    'rules' => 'required|string'
-                ]
+                    'rules' => 'required|string',
+                ],
             ],
             'toolbar' => [
                 'save' => [
                     'label' => 'Save',
-                    'action' => 'save'
-                ]
+                    'action' => 'save',
+                ],
             ],
             'main' => [
                 'body' => [
                     'type' => 'block-editor',
-                    'rules' => 'required'
+                    'rules' => 'required',
                 ],
                 'tags' => [
                     'type' => 'tag-input',
                     'relation' => [
                         'name' => 'tags',
-                        'display'=> 'not-existing',
-                        'create' => true
-                    ]
+                        'display' => 'not-existing',
+                        'create' => true,
+                    ],
                 ],
-            ]
-        ]
+            ],
+        ],
     ]);
 
     $component
@@ -314,7 +312,7 @@ it('handles form failures and error messages', function () {
         ->assertEmitted('notify', [
             'type' => 'error',
             'message' => 'Failed to create new tags',
-            'errors' => []
+            'errors' => [],
         ]);
 
     $component
@@ -322,6 +320,6 @@ it('handles form failures and error messages', function () {
         ->assertEmitted('notify', [
             'type' => 'error',
             'message' => 'Error Message',
-            'errors' => []
+            'errors' => [],
         ]);
 });
