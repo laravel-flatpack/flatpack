@@ -69,6 +69,16 @@ it('returns the field relationship', function () {
     );
 });
 
+it('returns null for non existing relationship', function () {
+    $this->expect($this->trait->createRelationship('foo', 'bar', 'baz'))
+        ->toBe(null);
+
+    $this->assertEquals(
+        $this->trait->relation(null),
+        null
+    );
+});
+
 it('checks if the field is a valid relationship', function () {
     $this->expect($this->trait->isRelationship('category'))
         ->toBe(true);
