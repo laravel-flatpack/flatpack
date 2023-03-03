@@ -9,4 +9,3 @@ it('renders a modal component', function () {
     $this->expect($modal->render())
          ->toBeInstanceOf(\Illuminate\Contracts\View\View::class);
 });
-
