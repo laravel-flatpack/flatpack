@@ -34,7 +34,7 @@ class CreateTestTables extends Migration
             $table->timestamps();
         });
 
-        Schema::create('post_tag', function (Blueprint $table) {
+        Schema::create('posts_tags', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('post_id');
             $table->unsignedBigInteger('tag_id');
@@ -48,12 +48,12 @@ class CreateTestTables extends Migration
      */
     public function down()
     {
+        Schema::dropIfExists('posts_tags');
+        
         Schema::dropIfExists('posts');
 
         Schema::dropIfExists('categories');
 
         Schema::dropIfExists('tags');
-
-        Schema::dropIfExists('post_tag');
     }
 }
