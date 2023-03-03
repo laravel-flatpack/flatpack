@@ -307,7 +307,7 @@ class Form extends Component
     {
         $field = $this->fieldKeyName($key);
 
-        $oldValue = $this->fields[$field];
+        $oldValue = $this->fields[$field] ?? null;
 
         $this->hasChanges = $this->compareValues($oldValue, $value);
     }

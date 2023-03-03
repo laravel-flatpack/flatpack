@@ -6,6 +6,7 @@ use Flatpack\FlatpackServiceProvider;
 use Illuminate\Encryption\Encrypter;
 use Livewire\LivewireServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
+use WireUi\Providers\WireUiServiceProvider;
 
 class TestCase extends Orchestra
 {
@@ -24,6 +25,7 @@ class TestCase extends Orchestra
     {
         return [
             FlatpackServiceProvider::class,
+            WireUiServiceProvider::class,
             LivewireServiceProvider::class,
         ];
     }
