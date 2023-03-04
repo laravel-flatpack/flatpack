@@ -9,7 +9,7 @@ beforeEach(function () {
     $this->user = User::create([
         'name' => 'User Name',
         'email' => 'example@demo.com',
-        'password' => 'password'
+        'password' => 'password',
     ]);
 });
 
@@ -18,9 +18,9 @@ it('returns upload validation error', function () {
     $response->assertJson([
         'error' => 'Create the Post entry first.',
     ]);
-    
+
     $post = Post::create([
-        'title' => 'Lorem Ipsum'
+        'title' => 'Lorem Ipsum',
     ]);
 
     $response = actingAs($this->user)->post("/backend/posts/{$post->id}/upload");
@@ -31,15 +31,15 @@ it('returns upload validation error', function () {
 
 it('successfully uploads a file', function () {
     $post = Post::create([
-        'title' => 'Lorem Ipsum'
+        'title' => 'Lorem Ipsum',
     ]);
 
     Storage::fake('public');
- 
+
     $file = UploadedFile::fake()->image('avatar.jpg');
 
     $response = actingAs($this->user)->post("/backend/posts/{$post->id}/upload", [
-        'upload' => $file
+        'upload' => $file,
     ]);
 
     Storage::disk('public')->assertExists("uploads/posts/{$post->id}/{$file->hashName()}");

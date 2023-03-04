@@ -5,7 +5,6 @@ namespace Flatpack\Tests;
 use Illuminate\Encryption\Encrypter;
 use Orchestra\Testbench\TestCase as Orchestra;
 
-
 class TestCase extends Orchestra
 {
     protected function setUp(): void

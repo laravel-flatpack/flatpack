@@ -2,7 +2,6 @@
 
 use Flatpack\Http\Livewire\Table;
 use Flatpack\Tests\Models\Post;
-use Flatpack\Tests\Models\Tag;
 use Livewire\Livewire;
 
 it('displays posts in table component', function () {
@@ -15,7 +14,7 @@ it('displays posts in table component', function () {
         'model' => Post::class,
         'composition' => [
             'bulk' => [
-                'delete' => [ 
+                'delete' => [
                     'label' => 'Delete',
                     'action' => 'delete',
                     'confirm' => true,
@@ -23,22 +22,22 @@ it('displays posts in table component', function () {
             ],
             'columns' => [
                 'image' => [
-                    'type' => 'image'
+                    'type' => 'image',
                 ],
                 'title' => [
                     'lable' => 'title',
                     'searchable' => true,
-                    'sortable' => true
+                    'sortable' => true,
                 ],
                 'created_at' => [
                     'lable' => 'Created',
-                    'sortable' => true
+                    'sortable' => true,
                 ],
-            ]
-        ]
+            ],
+        ],
     ])
     ->assertSet('bulkActions', [
-        'delete' => 'Delete'
+        'delete' => 'Delete',
     ])
     ->call('render')
     ->assertViewIs('flatpack::components.table')
@@ -46,12 +45,12 @@ it('displays posts in table component', function () {
     ->assertEmitted('notify', [
         "type" => "error",
         "message" => "Action not found: non-existing",
-        "errors" => []
+        "errors" => [],
     ])
     ->set('selectAll', true)
     ->call('bulkAction', 'delete')
     ->assertEmitted('notify', [
         'type' => 'success',
-        'message' => '3 posts deleted.'
+        'message' => '3 posts deleted.',
     ]);
 });
