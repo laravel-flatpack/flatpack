@@ -1,15 +1,14 @@
 <?php
 
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 use Flatpack\Http\Livewire\ImageUploader;
 use Flatpack\Tests\Models\Post;
-use Flatpack\Tests\Models\Tag;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
 it('uploads files to storage folder', function () {
     $post = Post::create([
-        'title' => 'Lorem ipsum'
+        'title' => 'Lorem ipsum',
     ]);
 
     Storage::fake('public');
@@ -19,14 +18,14 @@ it('uploads files to storage folder', function () {
          ->toBe(0);
 
     $file = UploadedFile::fake()->image('test-image.jpg');
- 
+
     Livewire::test(ImageUploader::class, [
         'name' => 'picture',
         'entity' => 'posts',
         'model' => Post::class,
         'entry' => $post,
         'options' => [
-            'maxSize' => 1024
+            'maxSize' => 1024,
         ],
     ])
     ->assertSet('previousValue', [])
@@ -35,12 +34,12 @@ it('uploads files to storage folder', function () {
     ->assertSet('multiple', false)
     ->assertSet('preview', 'auto')
     ->set('rawImages', [
-        $file
+        $file,
     ])
     ->call('handleUpload', [], $post->id)
     ->assertEmitted('flatpack-imageuploader:updated')
     ->assertCount('images', 1);
-    
+
     $this->expect(sizeof($disk->allFiles("uploads/posts/{$post->id}")))
          ->toBe(1);
 });
@@ -48,23 +47,23 @@ it('uploads files to storage folder', function () {
 it('handles multiple image uploads', function () {
     $post = Post::create([
         'title' => 'Lorem ipsummmmm',
-        'picture' => 'previous-image.jpg'
+        'picture' => 'previous-image.jpg',
     ]);
 
     Storage::fake('public');
     $disk = Storage::disk('public');
 
     $current = [
-        'previous-image.jpg'
+        'previous-image.jpg',
     ];
- 
+
     Livewire::test(ImageUploader::class, [
         'name' => 'picture',
         'entity' => 'posts',
         'model' => Post::class,
         'entry' => $post,
         'options' => [
-            'multiple' => true
+            'multiple' => true,
         ],
     ])
     ->assertSet('previousValue', $current)
@@ -73,7 +72,7 @@ it('handles multiple image uploads', function () {
     ->set('rawImages', [
         UploadedFile::fake()->image('test-image.jpg'),
         UploadedFile::fake()->image('test-image.jpg'),
-        UploadedFile::fake()->image('test-image.jpg')
+        UploadedFile::fake()->image('test-image.jpg'),
     ])
     ->call('handleUpload', [], $post->id)
     ->assertEmitted('flatpack-imageuploader:updated')

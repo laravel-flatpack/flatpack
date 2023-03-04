@@ -22,9 +22,9 @@ beforeEach(function () {
 });
 
 it('returns a combined path and filename', function () {
-    $this->expect($this->trait->combinePath('foo','bar.baz.txt'))
+    $this->expect($this->trait->combinePath('foo', 'bar.baz.txt'))
          ->toBe('foo/bar.baz.txt');
-    $this->expect($this->trait->combinePath('foo/bar/baz/','/bar.baz.txt'))
+    $this->expect($this->trait->combinePath('foo/bar/baz/', '/bar.baz.txt'))
          ->toBe('foo/bar/baz/bar.baz.txt');
 });
 
