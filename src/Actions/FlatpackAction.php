@@ -14,7 +14,7 @@ class FlatpackAction
      *
      * @var string
      */
-    protected $entity;
+    public $entity;
 
     /**
      * Model instance.

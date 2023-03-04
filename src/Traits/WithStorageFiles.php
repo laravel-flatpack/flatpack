@@ -15,6 +15,20 @@ trait WithStorageFiles
     public $files = [];
 
     /**
+     * Entity name.
+     *
+     * @var string
+     */
+    public $entity;
+
+    /**
+     * Model instance.
+     *
+     * @var \Illuminate\Database\Eloquent\Model
+     */
+    public $entry;
+
+    /**
      * Combine path and filename.
      *
      * @param  string  $path
@@ -99,7 +113,7 @@ trait WithStorageFiles
      */
     private function getEntityPath()
     {
-        return "{$this->entity}/" . $this->entry->getKey();
+        return "{$this->entity}/" . optional($this->entry)->getKey();
     }
 
     /**

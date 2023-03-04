@@ -17,7 +17,7 @@ it('converts a string to model name', function () {
 it('converts a string to model class name', function () {
     $input = "users";
     $result = Flatpack::guessModelClass($input);
-    expect($result)->toBe("User");
+    expect($result)->toBe("Flatpack\Tests\Models\User");
 });
 
 it('loads and returns the composition', function () {

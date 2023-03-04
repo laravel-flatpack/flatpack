@@ -250,16 +250,6 @@ class ImageUploader extends Component
     }
 
     /**
-     * Get original images value.
-     *
-     * @return array
-     */
-    public function getPreviousValue()
-    {
-        return array_values($this->previousValue);
-    }
-
-    /**
      * Notify when images state is updated.
      *
      * @return void
@@ -296,6 +286,8 @@ class ImageUploader extends Component
         if ($this->getErrorBag()->has('rawImages.*')) {
             $this->rawImages = [];
         }
+
+        $this->deleteOldFiles();
     }
 
     /**
