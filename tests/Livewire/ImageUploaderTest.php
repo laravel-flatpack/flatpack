@@ -80,7 +80,7 @@ it('handles existing images', function () {
     $previous = UploadedFile::fake()
         ->image('photo.jpg')
         ->store("uploads/posts/{$post->id}", [
-            'disk' => 'public'
+            'disk' => 'public',
         ]);
 
     $post->picture = $previous;
@@ -137,7 +137,7 @@ it('handles input errors', function () {
     ->assertSet('rawImages', [])
     ->assertSet('multiple', true)
     ->set('rawImages', [
-        UploadedFile::fake()->image('test-image.jpg')->size(1000)
+        UploadedFile::fake()->image('test-image.jpg')->size(1000),
     ])
     ->call('handleUpload', [], $post->id)
     ->assertCount('images', 0)
