@@ -4,6 +4,7 @@
 [![License](https://img.shields.io/github/license/laravel-flatpack/flatpack)](LICENSE.md)
 [![GitHub Tests Status](https://img.shields.io/github/actions/workflow/status/laravel-flatpack/flatpack/run-tests.yml)](https://github.com/laravel-flatpack/flatpack/actions/workflows/run-tests.yml)
 [![GitHub Code Style Status](https://img.shields.io/github/actions/workflow/status/laravel-flatpack/flatpack/php-cs-fixer.yml?label=code%20style)](https://github.com/laravel-flatpack/flatpack/actions/workflows/php-cs-fixer.yml)
+[![Test Coverage](https://raw.githubusercontent.com/flatpack/flatpack/main/.github/badge-coverage.svg)](https://packagist.org/packages/flatpack/flatpack)
 
 # Flatpack
 
