@@ -16,8 +16,7 @@ trait WithFormValidation
      */
     protected function validateForm($data = [], $form = [])
     {
-        return Validator::make($data, $this->getValidationRules($form))
-            ->validate();
+        return Validator::make($data, $this->getValidationRules($form))->validate();
     }
 
     /**

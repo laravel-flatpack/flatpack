@@ -182,7 +182,7 @@ class Form extends Component
 
             $this->emit("flatpack-form:related-entity-created:{$key}", $created);
         } catch (\Exception $e) {
-            $this->notifyError($e->getMessage());
+            $this->notifyError(__("Failed to create new {$key}"));
         }
     }
 

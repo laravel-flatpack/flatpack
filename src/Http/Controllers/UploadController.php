@@ -37,9 +37,7 @@ class UploadController extends Controller
                 ->addFile($request->file('upload'))
                 ->run();
         } catch (\Exception $e) {
-            return $this->jsonResponse([
-                'error' => $e->getMessage(),
-            ]);
+            //
         }
 
         return $this->jsonResponse([

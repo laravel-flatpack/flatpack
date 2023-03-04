@@ -11,11 +11,9 @@ if (! function_exists('flatpackAsset')) {
      */
     function flatpackAsset($file)
     {
-        if (app()->environment('local')) {
-            return asset($file);
-        }
-
-        return asset($file) . "?v=" . \Flatpack\Flatpack::VERSION;
+        return (app()->environment('local')) ?
+            asset($file) :
+            (asset($file) . "?v=" . \Flatpack\Flatpack::VERSION);
     }
 }
 
