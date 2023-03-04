@@ -46,7 +46,7 @@ jobs:
       - name: Execute tests
         env:
           SESSION_DRIVER: array
-        run: vendor/bin/pest --coverage-clover clover.xml
+        run: XDEBUG_MODE=coverage ./vendor/bin/pest --coverage
 
       - name: Generate test coverage badge
         uses: timkrase/phpunit-coverage-badge@v1.2.0
