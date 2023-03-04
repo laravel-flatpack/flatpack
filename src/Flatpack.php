@@ -142,6 +142,11 @@ class Flatpack
         return Str::studly(Str::singular($name));
     }
 
+    private function getModelsDirectory()
+    {
+        return app()->environment('testing') ? 'Flatpack\\Tests\\Models\\' : 'App\\';
+    }
+
     /**
      * Get the model class by the entity name.
      *
@@ -150,14 +155,16 @@ class Flatpack
      */
     public function guessModelClass($name = ''): string
     {
-        $modelClass = 'App\\' . $this->modelName($name);
+        $directory = $this->getModelsDirectory();
+
+        $modelClass = $directory . $this->modelName($name);
 
         if (class_exists($modelClass)) {
             return $modelClass;
         }
 
         if (is_dir(app_path('Models/'))) {
-            $modelClass = 'App\\Models\\' . $this->modelName($name);
+            $modelClass = $directory . 'Models\\' . $this->modelName($name);
 
             if (class_exists($modelClass)) {
                 return $modelClass;
