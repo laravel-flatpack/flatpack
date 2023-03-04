@@ -32,6 +32,7 @@ class Post extends Model
         'id',
         'title',
         'body',
+        'picture'
     ];
 
     /**
