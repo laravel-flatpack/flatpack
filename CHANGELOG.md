@@ -2,6 +2,10 @@
 
 All notable changes to `laravel-flatpack` will be documented in this file.
 
+## v1.0.9 - 2023-03-28
+
+Improved test coverage. Minor fixes.
+
 ## v1.0.7 - 2022-04-27
 
 ## What's Changed
