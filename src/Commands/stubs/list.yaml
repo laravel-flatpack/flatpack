@@ -2,6 +2,19 @@
 #  {{ model }} List Definition
 # =======================================
 
+toolbar:
+  create:
+    label: New {{ model }}
+    link: create
+    style: primary
+    shortcut: enter
+
+bulk:
+  delete:
+    label: Delete
+    action: delete
+    confirm: true
+
 columns:
   id:
     label: ID
