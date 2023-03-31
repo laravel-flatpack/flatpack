@@ -65,9 +65,9 @@ it('handles the action for multiple entries', function () {
     $actionInstance = new Delete('categories', \Flatpack\Tests\Models\Category::class);
 
     \Flatpack\Tests\Models\Category::insert([
-        ['id' => 101, 'name' => 'Lorem ipsum'],
-        ['id' => 102, 'name' => 'Dolor sit amet'],
-        ['id' => 103, 'name' => 'Ad nostrum'],
+        ['id' => 101, 'name' => 'Lorem ipsum', 'slug' => 'lorem-ipsum'],
+        ['id' => 102, 'name' => 'Dolor sit amet', 'slug' => 'dolor-sit-amet'],
+        ['id' => 103, 'name' => 'Ad nostrum', 'slug' => 'ad-nostrum'],
     ]);
 
     $actionInstance

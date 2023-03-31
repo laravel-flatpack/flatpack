@@ -44,11 +44,13 @@ class Post extends Model
     }
 
     /**
-     * @return BelongsTo
+     * Post Categories
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
-    public function category(): BelongsTo
+    public function categories()
     {
-        return $this->belongsTo(Category::class);
+        return $this->belongsToMany(Category::class, 'posts_categories');
     }
 
     /**
