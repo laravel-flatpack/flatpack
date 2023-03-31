@@ -150,7 +150,6 @@ class BaseCommand extends GeneratorCommand
 
 
         $this->output->error("Unable to determine model from name [{$name}].");
-
     }
 
     /**

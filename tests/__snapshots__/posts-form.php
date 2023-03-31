@@ -107,15 +107,15 @@ return [
             'label' => 'Slug',
             'placeholder' => 'Category Url Slug',
             'type' => 'text',
-            'rules' => 'required|string'
+            'rules' => 'required|string',
           ],
           'description' => [
             'label' => 'Description',
             'placeholder' => 'Category Description',
             'type' => 'textarea',
-            'rules' => 'required|string'
-          ]
-        ]
+            'rules' => 'required|string',
+          ],
+        ],
       ],
     ],
     'tags' =>
