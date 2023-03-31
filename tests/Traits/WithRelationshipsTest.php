@@ -31,11 +31,11 @@ beforeEach(function () {
                     'type' => 'editor',
                     'rules' => 'required|string',
                 ],
-                'category' => [
-                    'label' => 'Category',
+                'categories' => [
+                    'label' => 'Categories',
                     'type' => 'relation',
                     'relation' => [
-                        'name' => 'category',
+                        'name' => 'categories',
                         'display' => 'name',
                     ],
                 ],
@@ -64,8 +64,8 @@ beforeEach(function () {
 
 it('returns the field relationship', function () {
     $this->assertEquals(
-        $this->trait->relation('category'),
-        $this->trait->entry->category()
+        $this->trait->relation('categories'),
+        $this->trait->entry->categories()
     );
 });
 
@@ -80,18 +80,18 @@ it('returns null for non existing relationship', function () {
 });
 
 it('checks if the field is a valid relationship', function () {
-    $this->expect($this->trait->isRelationship('category'))
+    $this->expect($this->trait->isRelationship('categories'))
         ->toBe(true);
 
     $this->expect($this->trait->isRelationship('title'))
         ->toBe(false);
 
     $this->trait->entry = null;
-    $this->expect($this->trait->isRelationship('category'))
+    $this->expect($this->trait->isRelationship('categories'))
         ->toBe(false);
 });
 
 it('creates a new related model instance', function () {
-    $this->expect($this->trait->createRelationship('category', 'name', 'Category'))
+    $this->expect($this->trait->createRelationship('tags', 'name', 'My Tag'))
         ->toBe(1);
 });

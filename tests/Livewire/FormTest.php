@@ -236,7 +236,7 @@ it('creates a new related entry', function () {
                     'relation' => [
                         'name' => 'tags',
                         'display' => 'name',
-                        'create' => true,
+                        'make' => true,
                     ],
                 ],
             ],

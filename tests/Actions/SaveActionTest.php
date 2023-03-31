@@ -13,9 +13,9 @@ it('returns the successful message', function () {
 
 it('handles the action', function () {
     \Flatpack\Tests\Models\Category::insert([
-        ['id' => 1, 'name' => 'Category 1'],
-        ['id' => 2, 'name' => 'Category 2'],
-        ['id' => 3, 'name' => 'Category 3'],
+        ['id' => 1, 'name' => 'Category 1', 'slug' => 'category-1'],
+        ['id' => 2, 'name' => 'Category 2', 'slug' => 'category-2'],
+        ['id' => 3, 'name' => 'Category 3', 'slug' => 'category-3'],
     ]);
 
     \Flatpack\Tests\Models\Tag::insert([

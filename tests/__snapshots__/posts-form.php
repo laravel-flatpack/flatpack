@@ -88,15 +88,34 @@ return [
       'type' => 'datetime-picker',
       'disabled' => true,
     ],
-    'categories' =>
-    [
+    'categories' => [
       'group' => 'Categories',
       'type' => 'relation',
       'relation' =>
       [
         'name' => 'categories',
         'display' => 'name',
-        'make' => true,
+        'create' => true,
+        'fields' => [
+          'name' => [
+            'label' => 'Name',
+            'placeholder' => 'Category Name',
+            'type' => 'text',
+            'rules' => 'required|string',
+          ],
+          'slug' => [
+            'label' => 'Slug',
+            'placeholder' => 'Category Url Slug',
+            'type' => 'text',
+            'rules' => 'required|string'
+          ],
+          'description' => [
+            'label' => 'Description',
+            'placeholder' => 'Category Description',
+            'type' => 'textarea',
+            'rules' => 'required|string'
+          ]
+        ]
       ],
     ],
     'tags' =>
