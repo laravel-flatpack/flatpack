@@ -2,10 +2,13 @@
     <div class="flex items-center justify-start gap-5 text-gray-300">
         <div class="block xl:hidden">
             <button @click="navbar = !navbar" aria-label="{{ __('Toggle Navbar') }}">
-                <div x-show="!navbar"><x-icon name="login" style="solid" class="w-6 h-6" /></div>
-                <div x-show="navbar"><x-icon name="menu" style="outline" class="w-6 h-6" /></div>
+                <x-icon name="menu" style="solid" class="w-6 h-6" />
             </button>
         </div>
+        {{-- <div class="flex gap-4">
+            <x-icon name="search" style="outline" class="w-5 h-5" />
+            <input class="bg-transparent outline-none h-5 text-sm" placeholder="{{ __('Search...') }}" />
+        </div> --}}
     </div>
     <div class="flex gap-4 text-white">
         @auth
@@ -17,8 +20,7 @@
             </button>
             <div x-show="open" @click.away="open = false" class="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
                 <div class="py-1" role="none">
-                    <a class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100" href="https://github.com/laravel-flatpack/flatpack" target="_blank" role="menuitem" tabindex="-1">{{ __('Support') }}</a>
-                    <a class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100" href="https://github.com/laravel-flatpack/flatpack/blob/main/LICENSE.md" target="_blank" role="menuitem" tabindex="-1">{{ __('License') }}</a>
+                    <a class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100" href="https://laravel-flatpack.com/reference/" target="_blank" role="menuitem" tabindex="-1">{{ __('Documentation') }}</a>
                 </div>
                 <div class="py-1" role="none">
                     <form method="POST" action="{{ route('flatpack.logout') }}" class="mb-0" role="none">
