@@ -1,29 +1,12 @@
 <?php
 
-// config for Flatpack
+/*
+ | Configuration for Flatpack.
+ | https://laravel-flatpack.com
+ |
+ */
 
 return [
-
-    /*
-    |--------------------------------------------------------------------------
-    | Actions
-    |--------------------------------------------------------------------------
-    |
-    | Flatpack form or list actions. You can add your own actions here.
-    |
-    */
-    'actions' => [
-
-        'save' => \Flatpack\Actions\Save::class,
-
-        'upload' => \Flatpack\Actions\Upload::class,
-
-        'delete' => \Flatpack\Actions\Delete::class,
-
-        'restore' => \Flatpack\Actions\Restore::class,
-
-        'empty-trash' => \Flatpack\Actions\EmptyTrash::class,
-    ],
 
     /*
     |--------------------------------------------------------------------------
@@ -62,6 +45,27 @@ return [
     |
     */
     'prefix' => env('FLATPACK_PREFIX', 'backend'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Actions
+    |--------------------------------------------------------------------------
+    |
+    | Flatpack form or list actions. You can add your own actions here.
+    |
+    */
+    'actions' => [
+
+        'save' => \Flatpack\Actions\Save::class,
+
+        'upload' => \Flatpack\Actions\Upload::class,
+
+        'delete' => \Flatpack\Actions\Delete::class,
+
+        'restore' => \Flatpack\Actions\Restore::class,
+
+        'empty-trash' => \Flatpack\Actions\EmptyTrash::class,
+    ],
 
     /*
     |--------------------------------------------------------------------------
