@@ -43,13 +43,13 @@
 
                         <div class="md:flex md:items-center">
                             @include('flatpack::includes.table.bulk-actions')
-                            @include('livewire-tables::tailwind.includes.column-select')
-                            @include('livewire-tables::tailwind.includes.per-page')
+                            @include('flatpack::includes.table.column-select')
+                            @include('flatpack::includes.table.per-page')
                         </div>
                     </div>
 
                     @include('flatpack::includes.table.table')
-                    @include('livewire-tables::tailwind.includes.pagination')
+                    @include('flatpack::includes.table.pagination')
                 </div>
             </div>
         </div>
