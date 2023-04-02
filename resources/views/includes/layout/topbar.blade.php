@@ -8,8 +8,10 @@
     <div class="flex gap-4 text-white">
         @auth
         <div x-data="{open: false}" class="relative">
-            <button @click="open = !open" aria-label="{{ __('User Options') }}" aria-expanded="true" aria-haspopup="true" class="flex items-center justify-center gap-2 text-sm text-gray-400 hover:text-white">
+            <button @click="open = !open" aria-label="{{ __('User Options') }}" aria-expanded="true" aria-haspopup="true" class="flex items-center justify-center gap-2 text-sm text-gray-100 hover:text-white">
                 <x-icon name="user-circle" style="outline" class="w-6 h-6" />
+                <span>{{ $user->name }}</span>
+                <x-icon name="chevron-down" style="outline" class="w-3 h-3" />
             </button>
             <div x-show="open" @click.away="open = false" class="absolute right-0 w-40 mt-2 text-left origin-top-right bg-white rounded-md shadow-lg top-8 ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
                 <div class="py-1" role="none">

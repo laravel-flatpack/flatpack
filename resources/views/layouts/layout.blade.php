@@ -27,7 +27,7 @@
 
             @include('flatpack::includes.layout.topbar')
 
-            <div class="container px-5 pb-20 mx-auto max-w-[1330px]">
+            <div class="container px-5 pb-20 mx-auto max-w-[1400px]">
                 {{ $slot }}
             </div>
         </main>
