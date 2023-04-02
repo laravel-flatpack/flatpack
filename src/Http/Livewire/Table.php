@@ -28,9 +28,15 @@ class Table extends DataTableComponent
     protected string $tableName = '';
 
     protected $queryString = [
-        'filters' => ['except' => null],
-        'sorts' => ['except' => null],
-        'scope' => ['except' => 'default'],
+        'filters' => [
+            'except' => null,
+        ],
+        'sorts' => [
+            'except' => null,
+        ],
+        'scope' => [
+            'except' => 'default',
+        ],
     ];
 
     /**
@@ -107,30 +113,47 @@ class Table extends DataTableComponent
         return [];
     }
 
+    /**
+     * Query Builder
+     *
+     * @return Illuminate\Database\Eloquent\Builder
+     */
+    private function modelQuery()
+    {
+        return $this->model::query();
+    }
+
+    /**
+     * Query Builder
+     *
+     * @return Illuminate\Database\Eloquent\Builder
+     */
     public function query(): Builder
     {
         return $this->scopeQuery();
     }
 
+    /**
+     * Apply model scopes to query
+     *
+     * @return Illuminate\Database\Eloquent\Builder
+     */
     public function scopeQuery(): Builder
     {
-        $default = "default";
+        $query = $this->modelQuery();
 
-        $scope = $this->scope ?? $default;
-
-        $query = $this->model::query();
-
-        try {
-            if (! empty($scope) && $scope !== $default) {
-                return $query->{$scope}();
-            }
-        } catch (\Exception $e) {
-            return $query->whereNull('id');
+        if (! empty($this->scope) && $this->scope !== 'default') {
+            return $query->{$this->scope}();
         }
 
         return $query;
     }
 
+    /**
+     * Every time the scope is updated, reset the selected checkboxes.
+     *
+     * @return void
+     */
     public function updatedScope($value)
     {
         $this->selected = [];
@@ -166,22 +189,16 @@ class Table extends DataTableComponent
 
     public function bulkAction($action)
     {
-        try {
-            $action = $this->getAction($action)->setSelectedKeys($this->selectedKeys());
+        $action = $this->getAction($action)->setSelectedKeys($this->selectedKeys());
 
-            $action->run();
+        $action->run();
 
-            $this->selected = [];
-            $this->resetBulk();
+        $this->selected = [];
+        $this->resetBulk();
 
-            // Action success notification
-            if (method_exists($action, 'getMessage') && $action->isSuccess()) {
-                $this->notifySuccess($action->getMessage());
-            } else {
-                $this->notifySuccess('Done!');
-            }
-        } catch (\Exception $e) {
-            $this->notifyError($e->getMessage());
+        // Action success notification
+        if (method_exists($action, 'getMessage') && $action->isSuccess()) {
+            $this->notifySuccess($action->getMessage());
         }
     }
 
