@@ -22,14 +22,6 @@
   display: none;
 }
 
-.tooltip {
-  @apply absolute invisible;
-}
-
-.has-tooltip:hover .tooltip {
-  @apply z-50 visible;
-}
-
 .table-image-column {
   @apply w-32;
 }
