@@ -29,6 +29,7 @@ class CreateTestTables extends Migration
             $table->string('title');
             $table->text('body')->nullable();
             $table->string('picture')->nullable();
+            $table->boolean('status')->default(0);
             $table->timestamps();
             $table->softDeletes();
         });
