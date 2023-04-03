@@ -1,6 +1,6 @@
 @if ($showSearch && count($searchableColumns) > 0)
-    <div class="flex rounded-md shadow-sm">
-        <x-input wire:model="filters.search" placeholder="{{ __('Search') }}" class="w-full">
+    <div class="w-full md:w-auto flex rounded-md shadow-sm">
+        <x-input wire:model="filters.search" placeholder="{{ __('Search :entity ...', ['entity' => $entity]) }}" class="w-full md:w-auto">
             <x-slot name="append">
                 @if (isset($filters['search']) && strlen($filters['search']))
                 <span wire:click="$set('filters.search', null)" class="absolute inset-y-0 right-0 px-3 flex items-center">

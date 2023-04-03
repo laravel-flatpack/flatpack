@@ -154,6 +154,19 @@ class Table extends DataTableComponent
      *
      * @return void
      */
+    public function updatedFilters(): void
+    {
+        if (isset($this->filters['search'])) {
+            $this->selected = [];
+            $this->resetBulk();
+        }
+    }
+
+    /**
+     * Every time the scope is updated, reset the selected checkboxes.
+     *
+     * @return void
+     */
     public function updatedScope($value)
     {
         $this->selected = [];
@@ -189,7 +202,8 @@ class Table extends DataTableComponent
 
     public function bulkAction($action)
     {
-        $action = $this->getAction($action)->setSelectedKeys($this->selectedKeys());
+        $selected = $this->selectedKeys();
+        $action = $this->getAction($action)->setSelectedKeys($selected);
 
         $action->run();
 

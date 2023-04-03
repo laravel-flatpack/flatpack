@@ -13,7 +13,11 @@
         :model="$model"
     />
 @endif
-@if ($this->showBulkActionsDropdown && count($selected))
+@if ($this->showBulkActionsDropdown && (
+    ($paginationEnabled && (($selectPage && $rows->total() > $rows->count()) ||
+    count($selected))) ||
+    count($selected)
+))
     @if ($scope === 'onlyTrashed')
         <x-flatpack-action-button
             method="bulkAction"
