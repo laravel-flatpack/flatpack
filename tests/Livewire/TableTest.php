@@ -92,6 +92,7 @@ it('search posts in table component', function () {
             'columns' => [
                 'image' => [
                     'type' => 'image',
+                    'width' => '50px',
                 ],
                 'title' => [
                     'lable' => 'title',

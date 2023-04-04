@@ -102,6 +102,10 @@ class Table extends DataTableComponent
                 $column->addClass('table-image-column');
             }
 
+            if (isset($options['width'])) {
+                $column->setWidth($options['width']);
+            }
+
             $columns[] = $column;
         }
 
