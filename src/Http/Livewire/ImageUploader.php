@@ -198,17 +198,13 @@ class ImageUploader extends Component
      */
     public function uploadFiles()
     {
-        try {
-            if (count($this->onlyFilesToUpload($this->images)) > 0) {
-                $images = $this->getAction('upload')
-                    ->setEntry($this->entry)
-                    ->addFiles($this->images)
-                    ->run();
+        if (count($this->onlyFilesToUpload($this->images)) > 0) {
+            $images = $this->getAction('upload')
+                ->setEntry($this->entry)
+                ->addFiles($this->images)
+                ->run();
 
-                $this->images = $images;
-            }
-        } catch (\Exception $e) {
-            $this->notifyError($e->getMessage());
+            $this->images = $images;
         }
 
         return $this->images;
@@ -257,16 +253,6 @@ class ImageUploader extends Component
     public function stateUpdated()
     {
         $this->emit('flatpack-imageuploader:updated', $this->name, $this->getCurrentValue());
-    }
-
-    /**
-     * Notify error.
-     *
-     * @return void
-     */
-    public function notifyError($message)
-    {
-        $this->emit('flatpack-imageuploader:error', $message, $this->getCurrentValue());
     }
 
     public function render()
