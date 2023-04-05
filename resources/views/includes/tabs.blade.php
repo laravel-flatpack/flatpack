@@ -3,7 +3,7 @@
     <ul class="flex w-full mx-auto border-b border-gray-300">
         @foreach ($options as $tab => $tabOptions)
         <li @click="openTab={{ $loop->index }}">
-            <a class="block p-2 px-3 cursor-pointer" :class="openTab === @js($loop->index) ? active : inactive">
+            <a class="block p-2 px-3 cursor-pointer text-base" :class="openTab === @js($loop->index) ? active : inactive">
                 <span>{{ data_get($tabOptions, 'label', Str::ucfirst($tab)) }}</span>
             </a>
         </li>

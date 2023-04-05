@@ -31,6 +31,14 @@ beforeEach(function () {
                     'type' => 'editor',
                     'rules' => 'required|string',
                 ],
+                'author' => [
+                    'label' => 'Author',
+                    'type' => 'relation',
+                    'relation' => [
+                        'name' => 'author',
+                        'display' => 'name',
+                    ],
+                ],
                 'categories' => [
                     'label' => 'Categories',
                     'type' => 'relation',
@@ -89,6 +97,56 @@ it('checks if the field is a valid relationship', function () {
     $this->trait->entry = null;
     $this->expect($this->trait->isRelationship('categories'))
         ->toBe(false);
+});
+
+it('sync relationship models', function () {
+    $this->trait->entry->title = 'Post title';
+    $this->trait->entry->save();
+    $author = \Flatpack\Tests\Models\User::create([
+        'name' => 'Test',
+        'email' => 'test@test.com',
+        'password' => 'password',
+    ]);
+    \Flatpack\Tests\Models\Category::create([
+        'name' => 'Lorem Ipsum',
+        'slug' => 'lorem ipsum',
+    ]);
+    \Flatpack\Tests\Models\Category::create([
+        'name' => 'Lorem Ipsum 2',
+        'slug' => 'lorem ipsum 2',
+    ]);
+    $this->trait->entry->categories()->sync([1, 2]);
+    $this->trait->entry->author()->associate($author);
+    $this->trait->entry->save();
+
+    $category1 = \Flatpack\Tests\Models\Category::whereId(1)->first();
+    $category1->slug = 'lorem-ipsum';
+    $category1->save();
+
+    $category2 = \Flatpack\Tests\Models\Category::whereId(2)->first();
+    $category2->slug = 'lorem-ipsum-2';
+    $category2->save();
+
+    $author->name = 'Foo Bar';
+    $author->save();
+
+    $this->trait->fields = [
+        'title' => $this->trait->entry->name,
+        'categories' => $this->trait->entry->categories->pluck('id')->toArray(),
+        'author' => $this->trait->entry->author->id,
+    ];
+
+    $this->trait->syncRelationship('categories');
+    $this->trait->syncRelationship('author');
+
+    $this->expect($this->trait->entry->categories()->pluck('slug')->toArray())
+        ->toBe([
+            'lorem-ipsum',
+            'lorem-ipsum-2',
+        ]);
+
+    $this->expect(optional($this->trait->entry->author)->name)
+    ->toBe('Foo Bar');
 });
 
 it('creates a new related model instance', function () {

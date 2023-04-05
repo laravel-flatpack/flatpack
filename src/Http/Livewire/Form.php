@@ -220,8 +220,6 @@ class Form extends Component
             // Action success notification
             if (method_exists($actionInstance, 'getMessage') && $actionInstance->isSuccess()) {
                 $this->notifySuccess($actionInstance->getMessage());
-            } else {
-                throw new \Exception(__('flatpack::form.action_failed', ['action' => $action]));
             }
 
             if ($actionInstance->shouldRedirect()) {

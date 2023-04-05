@@ -31,14 +31,10 @@ class UploadController extends Controller
             ]);
         }
 
-        try {
-            $url = $this->getAction('upload')
-                ->setEntry($this->entry)
-                ->addFile($request->file('upload'))
-                ->run();
-        } catch (\Exception $e) {
-            //
-        }
+        $url = $this->getAction('upload')
+            ->setEntry($this->entry)
+            ->addFile($request->file('upload'))
+            ->run();
 
         return $this->jsonResponse([
             'url' => $url,

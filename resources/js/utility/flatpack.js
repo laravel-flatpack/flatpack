@@ -1,5 +1,11 @@
 import { alert, confirm, notify, navbar } from "../components";
-import { getSetting, setSetting, isActive, performAction } from "../helpers";
+import {
+  getSetting,
+  setSetting,
+  isActive,
+  performAction,
+  shortcutAction
+} from "../helpers";
 
 /*
 |--------------------------------------------------------------------------
@@ -16,6 +22,7 @@ const createFlatpack = () => {
     confirm,
     notify,
     action: performAction,
+    shortcut: shortcutAction,
     navbar: navbar(),
     settings: {
       get: getSetting,
