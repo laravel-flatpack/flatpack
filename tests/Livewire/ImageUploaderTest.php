@@ -102,20 +102,23 @@ it('handles existing images', function () {
     ->assertSet('images', [$previous])
     ->assertSet('multiple', true)
     ->set('rawImages', [
-        UploadedFile::fake()->image('test-image.jpg'),
+        \Livewire\TemporaryUploadedFile::fake()->image('temp-image.jpg'),
         UploadedFile::fake()->image('test-image.jpg'),
         UploadedFile::fake()->image('test-image.jpg'),
     ])
+    ->call('handleRemoveImage', 1)
+    ->assertEmitted('flatpack-imageuploader:updated')
+    ->assertCount('images', 3)
     ->call('handleUpload', [], $post->id)
     ->assertEmitted('flatpack-imageuploader:updated')
-    ->assertCount('images', 4)
+    ->assertCount('images', 3)
     ->assertSet('toDelete', [])
     ->call('handleRemoveImage', 2)
     ->assertEmitted('flatpack-imageuploader:updated')
-    ->assertCount('images', 3)
+    ->assertCount('images', 2)
     ->call('handleRemoveImage', 0)
     ->assertEmitted('flatpack-imageuploader:updated')
-    ->assertCount('images', 2)
+    ->assertCount('images', 1)
     ->call('render');
 
     $disk->assertMissing($previous);

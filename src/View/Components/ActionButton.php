@@ -60,6 +60,13 @@ class ActionButton extends Component
     public $label;
 
     /**
+     * Button icon.
+     *
+     * @var string
+     */
+    public $icon;
+
+    /**
      * Button key.
      *
      * @var string
@@ -151,6 +158,7 @@ class ActionButton extends Component
         $this->action = $this->getOption("action");
         $this->link = $this->formatLink($this->getOption("link", "#"));
         $this->label = $this->getOption("text", $this->getOption("label", ""));
+        $this->icon = $this->getOption("icon", "");
         $this->shortcut = $this->getOption("shortcut", false);
         $this->confirm = $this->getOption("confirm", false);
         $this->hidden = $this->getOption("hidden", false);

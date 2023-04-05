@@ -4,6 +4,7 @@ namespace Flatpack\View\Components;
 
 use Flatpack\Facades\Flatpack;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\View\Component;
 
@@ -36,6 +37,7 @@ class Layout extends Component
         return view('flatpack::layouts.layout', [
             'current' => (empty($current) ? 'home' : $current),
             'navigation' => $this->navigation,
+            'user' => Auth::user(),
         ]);
     }
 
@@ -44,7 +46,33 @@ class Layout extends Component
      *
      * @return void
      */
-    private function setTemplateComposition()
+    private function setTemplateComposition($template = [])
+    {
+        $layout = $this->customLayout();
+
+        if (empty($layout)) {
+            $layout = $this->defaultLayout();
+        }
+
+        $this->template = array_merge($template, $layout);
+    }
+
+    /**
+     * Set navigation property.
+     *
+     * @return void
+     */
+    private function setNavigation($navigation)
+    {
+        $this->navigation = Arr::get($this->template, $navigation, []);
+    }
+
+    /**
+     * Get the custom layout defined in flatpack root folder.
+     *
+     * @return array
+     */
+    private function customLayout()
     {
         try {
             $layout = Flatpack::getTemplateComposition('__global__', 'layout.yaml');
@@ -52,16 +80,7 @@ class Layout extends Component
             $layout = [];
         }
 
-        if (empty($layout)) {
-            $layout = $this->defaultLayout();
-        }
-
-        $this->template = array_merge($this->template, $layout);
-    }
-
-    private function setNavigation($navigation)
-    {
-        $this->navigation = Arr::get($this->template, $navigation, []);
+        return $layout;
     }
 
     /**
@@ -71,22 +90,15 @@ class Layout extends Component
      */
     private function defaultLayout()
     {
-        $composition = Flatpack::getComposition();
-        $layout = [
-            'sidebar' => collect($composition)
-                ->filter(function ($item, $key) {
-                    return $key !== '__global__';
-                })
-                ->map(function ($item, $key) {
-                    return [
+        return [
+            'sidebar' => collect(Flatpack::getComposition())
+                ->filter(fn ($item, $key) => $key !== '__global__')
+                ->map(fn ($item, $key) => [
                         "url" => route('flatpack.list', ['entity' => $key]),
                         "title" => Str::ucfirst($key),
                         "icon" => "folder",
-                    ];
-                })
+                    ])
                 ->toArray(),
         ];
-
-        return $layout;
     }
 }

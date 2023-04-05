@@ -1,12 +1,9 @@
 @if (sizeof($scopes ?? []) > 0)
-<ul class="items-center justify-start hidden mb-2 -mt-8 list-none border-b border-gray-300 md:flex">
+<ul class="hidden md:flex items-center justify-start gap-2">
 	@foreach ($scopes as $key => $options)
-	<li class="pr-1">
-		<button
-			wire:click="$set('scope', '{{ $key }}')"
-			style="min-width: 52px"
-			class="flex items-center justify-center px-2 py-2 bg-transparent rounded-md">
-			<span class="text-md cursor-pointer whitespace-nowrap {{ $key === $scope ? 'font-bold': '' }}">
+	<li>
+		<button wire:click="$set('scope', '{{ $key }}')" class="pill {{ $key === $scope ? 'bg-primary-500 text-white': 'bg-gray-100 text-primary-500' }}">
+			<span class="font-normal text-sm whitespace-nowrap">
 				{{ data_get($options, 'label', $key) }}
 			</span>
 		</button>

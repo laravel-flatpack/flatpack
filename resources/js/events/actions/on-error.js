@@ -9,7 +9,8 @@ const messages = {
 };
 
 const onErrorAction = (error) => {
-  const message = messages[error] || messages[0];
+  const message = messages?.[error] || messages[0];
+
   window.Flatpack.notify("error", "Error", message);
 
   return false;

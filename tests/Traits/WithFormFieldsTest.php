@@ -65,8 +65,7 @@ it('binds fields attribute to the active record entry values', function () {
     $this->trait->fields = [
         'title' => 'Lorem ipsum',
         'body' => 'Lorem ipsum dolor sit amet',
-        'category' => 1,
-        'tags' => [1, 2],
+        'tags' => null,
         'created_at' => '2022-01-01 00:00:00',
         'updated_at' => '2022-01-01 00:00:00',
     ];

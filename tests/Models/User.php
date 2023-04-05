@@ -4,6 +4,7 @@ namespace Flatpack\Tests\Models;
 
 use Flatpack\Contracts\FlatpackUser;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -52,5 +53,13 @@ class User extends Authenticatable implements FlatpackUser
     public function isFlatpackAdmin(): bool
     {
         return $this->id === 1;
+    }
+
+    /**
+     * @return HasMany
+     */
+    public function posts(): HasMany
+    {
+        return $this->hasMany(Post::class);
     }
 }
