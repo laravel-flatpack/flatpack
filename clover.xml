@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1680281220">
-  <project timestamp="1680281220">
+<coverage generated="1680719926">
+  <project timestamp="1680719926">
     <file name="/home/runner/work/flatpack/flatpack/src/Actions/Delete.php">
       <class name="Flatpack\Actions\Delete" namespace="global">
         <metrics complexity="10" methods="5" coveredmethods="5" conditionals="0" coveredconditionals="0" statements="23" coveredstatements="23" elements="28" coveredelements="28"/>
@@ -39,23 +39,23 @@
       <class name="Flatpack\Actions\EmptyTrash" namespace="global">
         <metrics complexity="5" methods="4" coveredmethods="4" conditionals="0" coveredconditionals="0" statements="13" coveredstatements="13" elements="17" coveredelements="17"/>
       </class>
-      <line num="15" type="method" name="authorize" visibility="public" complexity="1" crap="1" count="2"/>
-      <line num="17" type="stmt" count="2"/>
+      <line num="15" type="method" name="authorize" visibility="public" complexity="1" crap="1" count="3"/>
+      <line num="17" type="stmt" count="3"/>
       <line num="25" type="method" name="getMessage" visibility="public" complexity="1" crap="1" count="1"/>
       <line num="27" type="stmt" count="1"/>
       <line num="28" type="stmt" count="1"/>
       <line num="29" type="stmt" count="1"/>
-      <line num="37" type="method" name="getConfirmationMessage" visibility="public" complexity="1" crap="1" count="1"/>
-      <line num="39" type="stmt" count="1"/>
-      <line num="40" type="stmt" count="1"/>
-      <line num="41" type="stmt" count="1"/>
-      <line num="49" type="method" name="handle" visibility="public" complexity="2" crap="2" count="2"/>
-      <line num="51" type="stmt" count="2"/>
+      <line num="37" type="method" name="getConfirmationMessage" visibility="public" complexity="1" crap="1" count="2"/>
+      <line num="39" type="stmt" count="2"/>
+      <line num="40" type="stmt" count="2"/>
+      <line num="41" type="stmt" count="2"/>
+      <line num="49" type="method" name="handle" visibility="public" complexity="2" crap="2" count="3"/>
+      <line num="51" type="stmt" count="3"/>
       <line num="52" type="stmt" count="1"/>
       <line num="53" type="stmt" count="1"/>
       <line num="54" type="stmt" count="1"/>
-      <line num="57" type="stmt" count="1"/>
-      <line num="58" type="stmt" count="1"/>
+      <line num="57" type="stmt" count="2"/>
+      <line num="58" type="stmt" count="2"/>
       <metrics loc="61" ncloc="41" classes="1" methods="4" coveredmethods="4" conditionals="0" coveredconditionals="0" statements="13" coveredstatements="13" elements="17" coveredelements="17"/>
     </file>
     <file name="/home/runner/work/flatpack/flatpack/src/Actions/FlatpackAction.php">
@@ -97,9 +97,9 @@
       <line num="214" type="stmt" count="18"/>
       <line num="222" type="method" name="isBulk" visibility="public" complexity="1" crap="1" count="15"/>
       <line num="224" type="stmt" count="15"/>
-      <line num="233" type="method" name="setRedirect" visibility="public" complexity="1" crap="1" count="5"/>
-      <line num="235" type="stmt" count="5"/>
-      <line num="237" type="stmt" count="5"/>
+      <line num="233" type="method" name="setRedirect" visibility="public" complexity="1" crap="1" count="6"/>
+      <line num="235" type="stmt" count="6"/>
+      <line num="237" type="stmt" count="6"/>
       <line num="245" type="method" name="shouldRedirect" visibility="public" complexity="2" crap="2" count="4"/>
       <line num="247" type="stmt" count="4"/>
       <line num="256" type="method" name="run" visibility="public" complexity="2" crap="2" count="20"/>
@@ -131,10 +131,10 @@
       <line num="32" type="stmt" count="2"/>
       <line num="33" type="stmt" count="2"/>
       <line num="34" type="stmt" count="2"/>
-      <line num="42" type="method" name="getConfirmationMessage" visibility="public" complexity="1" crap="1" count="1"/>
-      <line num="44" type="stmt" count="1"/>
-      <line num="45" type="stmt" count="1"/>
-      <line num="46" type="stmt" count="1"/>
+      <line num="42" type="method" name="getConfirmationMessage" visibility="public" complexity="1" crap="1" count="2"/>
+      <line num="44" type="stmt" count="2"/>
+      <line num="45" type="stmt" count="2"/>
+      <line num="46" type="stmt" count="2"/>
       <line num="54" type="method" name="handle" visibility="public" complexity="4" crap="4" count="2"/>
       <line num="56" type="stmt" count="2"/>
       <line num="57" type="stmt" count="1"/>
@@ -209,10 +209,10 @@
       <line num="103" type="stmt" count="1"/>
       <line num="104" type="stmt" count="1"/>
       <line num="105" type="stmt" count="1"/>
-      <line num="111" type="method" name="getOptions" visibility="protected" complexity="1" crap="1" count="1"/>
-      <line num="113" type="stmt" count="1"/>
-      <line num="114" type="stmt" count="1"/>
-      <line num="115" type="stmt" count="1"/>
+      <line num="111" type="method" name="getOptions" visibility="protected" complexity="1" crap="1" count="2"/>
+      <line num="113" type="stmt" count="2"/>
+      <line num="114" type="stmt" count="2"/>
+      <line num="115" type="stmt" count="2"/>
       <line num="125" type="method" name="handle" visibility="public" complexity="1" crap="1" count="1"/>
       <line num="127" type="stmt" count="1"/>
       <line num="129" type="stmt" count="1"/>
@@ -220,111 +220,110 @@
     </file>
     <file name="/home/runner/work/flatpack/flatpack/src/Commands/BaseCommand.php">
       <class name="Flatpack\Commands\BaseCommand" namespace="global">
-        <metrics complexity="19" methods="12" coveredmethods="2" conditionals="0" coveredconditionals="0" statements="49" coveredstatements="6" elements="61" coveredelements="8"/>
+        <metrics complexity="19" methods="12" coveredmethods="6" conditionals="0" coveredconditionals="0" statements="48" coveredstatements="41" elements="60" coveredelements="47"/>
       </class>
       <line num="18" type="method" name="getStub" visibility="protected" complexity="1" crap="2" count="0"/>
       <line num="20" type="stmt" count="0"/>
-      <line num="29" type="method" name="resolveStubPath" visibility="protected" complexity="2" crap="6" count="0"/>
-      <line num="31" type="stmt" count="0"/>
+      <line num="29" type="method" name="resolveStubPath" visibility="protected" complexity="2" crap="2.15" count="1"/>
+      <line num="31" type="stmt" count="1"/>
       <line num="32" type="stmt" count="0"/>
-      <line num="33" type="stmt" count="0"/>
-      <line num="42" type="method" name="buildClass" visibility="protected" complexity="1" crap="2" count="0"/>
-      <line num="44" type="stmt" count="0"/>
-      <line num="45" type="stmt" count="0"/>
-      <line num="46" type="stmt" count="0"/>
-      <line num="48" type="stmt" count="0"/>
-      <line num="49" type="stmt" count="0"/>
-      <line num="50" type="stmt" count="0"/>
-      <line num="51" type="stmt" count="0"/>
-      <line num="52" type="stmt" count="0"/>
-      <line num="53" type="stmt" count="0"/>
-      <line num="54" type="stmt" count="0"/>
-      <line num="55" type="stmt" count="0"/>
-      <line num="57" type="stmt" count="0"/>
-      <line num="58" type="stmt" count="0"/>
-      <line num="59" type="stmt" count="0"/>
-      <line num="60" type="stmt" count="0"/>
-      <line num="61" type="stmt" count="0"/>
-      <line num="70" type="method" name="qualifyClass" visibility="protected" complexity="1" crap="2" count="0"/>
-      <line num="72" type="stmt" count="0"/>
-      <line num="80" type="method" name="flatpackDir" visibility="protected" complexity="1" crap="2" count="0"/>
-      <line num="82" type="stmt" count="0"/>
-      <line num="83" type="stmt" count="0"/>
-      <line num="84" type="stmt" count="0"/>
-      <line num="93" type="method" name="makeDirectory" visibility="protected" complexity="4" crap="20" count="0"/>
-      <line num="95" type="stmt" count="0"/>
+      <line num="33" type="stmt" count="1"/>
+      <line num="42" type="method" name="buildClass" visibility="protected" complexity="1" crap="1" count="1"/>
+      <line num="44" type="stmt" count="1"/>
+      <line num="45" type="stmt" count="1"/>
+      <line num="46" type="stmt" count="1"/>
+      <line num="48" type="stmt" count="1"/>
+      <line num="49" type="stmt" count="1"/>
+      <line num="50" type="stmt" count="1"/>
+      <line num="51" type="stmt" count="1"/>
+      <line num="52" type="stmt" count="1"/>
+      <line num="53" type="stmt" count="1"/>
+      <line num="54" type="stmt" count="1"/>
+      <line num="55" type="stmt" count="1"/>
+      <line num="57" type="stmt" count="1"/>
+      <line num="58" type="stmt" count="1"/>
+      <line num="59" type="stmt" count="1"/>
+      <line num="60" type="stmt" count="1"/>
+      <line num="61" type="stmt" count="1"/>
+      <line num="70" type="method" name="qualifyClass" visibility="protected" complexity="1" crap="1" count="1"/>
+      <line num="72" type="stmt" count="1"/>
+      <line num="80" type="method" name="flatpackDir" visibility="protected" complexity="1" crap="1" count="1"/>
+      <line num="82" type="stmt" count="1"/>
+      <line num="83" type="stmt" count="1"/>
+      <line num="84" type="stmt" count="1"/>
+      <line num="93" type="method" name="makeDirectory" visibility="protected" complexity="4" crap="4.13" count="1"/>
+      <line num="95" type="stmt" count="1"/>
       <line num="96" type="stmt" count="0"/>
-      <line num="99" type="stmt" count="0"/>
-      <line num="100" type="stmt" count="0"/>
-      <line num="103" type="stmt" count="0"/>
-      <line num="111" type="method" name="getNameInput" visibility="protected" complexity="1" crap="2" count="0"/>
-      <line num="113" type="stmt" count="0"/>
+      <line num="99" type="stmt" count="1"/>
+      <line num="100" type="stmt" count="1"/>
+      <line num="103" type="stmt" count="1"/>
+      <line num="111" type="method" name="getNameInput" visibility="protected" complexity="1" crap="1" count="1"/>
+      <line num="113" type="stmt" count="1"/>
       <line num="122" type="method" name="getPath" visibility="protected" complexity="1" crap="2" count="0"/>
       <line num="124" type="stmt" count="0"/>
-      <line num="132" type="method" name="guessModelName" visibility="protected" complexity="4" crap="20" count="0"/>
-      <line num="134" type="stmt" count="0"/>
-      <line num="136" type="stmt" count="0"/>
-      <line num="138" type="stmt" count="0"/>
+      <line num="132" type="method" name="guessModelName" visibility="protected" complexity="4" crap="4.13" count="1"/>
+      <line num="134" type="stmt" count="1"/>
+      <line num="136" type="stmt" count="1"/>
+      <line num="138" type="stmt" count="1"/>
       <line num="139" type="stmt" count="0"/>
-      <line num="142" type="stmt" count="0"/>
-      <line num="143" type="stmt" count="0"/>
-      <line num="144" type="stmt" count="0"/>
-      <line num="146" type="stmt" count="0"/>
+      <line num="142" type="stmt" count="1"/>
+      <line num="143" type="stmt" count="1"/>
+      <line num="144" type="stmt" count="1"/>
+      <line num="146" type="stmt" count="1"/>
       <line num="147" type="stmt" count="0"/>
-      <line num="152" type="stmt" count="0"/>
-      <line num="154" type="stmt" count="0"/>
-      <line num="160" type="method" name="deleteFile" visibility="protected" complexity="1" crap="2" count="0"/>
-      <line num="162" type="stmt" count="0"/>
-      <line num="170" type="method" name="getArguments" visibility="protected" complexity="1" crap="1" count="1"/>
-      <line num="172" type="stmt" count="1"/>
-      <line num="173" type="stmt" count="1"/>
-      <line num="174" type="stmt" count="1"/>
-      <line num="180" type="method" name="getOptions" visibility="protected" complexity="1" crap="1" count="1"/>
-      <line num="182" type="stmt" count="1"/>
-      <line num="183" type="stmt" count="1"/>
-      <line num="184" type="stmt" count="1"/>
-      <metrics loc="187" ncloc="126" classes="1" methods="12" coveredmethods="2" conditionals="0" coveredconditionals="0" statements="49" coveredstatements="6" elements="61" coveredelements="8"/>
+      <line num="152" type="stmt" count="1"/>
+      <line num="158" type="method" name="deleteFile" visibility="protected" complexity="1" crap="2" count="0"/>
+      <line num="160" type="stmt" count="0"/>
+      <line num="168" type="method" name="getArguments" visibility="protected" complexity="1" crap="1" count="2"/>
+      <line num="170" type="stmt" count="2"/>
+      <line num="171" type="stmt" count="2"/>
+      <line num="172" type="stmt" count="2"/>
+      <line num="178" type="method" name="getOptions" visibility="protected" complexity="1" crap="1" count="2"/>
+      <line num="180" type="stmt" count="2"/>
+      <line num="181" type="stmt" count="2"/>
+      <line num="182" type="stmt" count="2"/>
+      <metrics loc="185" ncloc="124" classes="1" methods="12" coveredmethods="6" conditionals="0" coveredconditionals="0" statements="48" coveredstatements="41" elements="60" coveredelements="47"/>
     </file>
     <file name="/home/runner/work/flatpack/flatpack/src/Commands/MakeCommand.php">
       <class name="Flatpack\Commands\MakeCommand" namespace="global">
-        <metrics complexity="3" methods="2" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="13" coveredstatements="0" elements="15" coveredelements="0"/>
+        <metrics complexity="3" methods="2" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="13" coveredstatements="12" elements="15" coveredelements="13"/>
       </class>
-      <line num="28" type="method" name="getNameInput" visibility="protected" complexity="1" crap="2" count="0"/>
-      <line num="30" type="stmt" count="0"/>
-      <line num="36" type="method" name="handle" visibility="public" complexity="2" crap="6" count="0"/>
-      <line num="38" type="stmt" count="0"/>
-      <line num="40" type="stmt" count="0"/>
+      <line num="28" type="method" name="getNameInput" visibility="protected" complexity="1" crap="1" count="1"/>
+      <line num="30" type="stmt" count="1"/>
+      <line num="36" type="method" name="handle" visibility="public" complexity="2" crap="2.00" count="1"/>
+      <line num="38" type="stmt" count="1"/>
+      <line num="40" type="stmt" count="1"/>
       <line num="41" type="stmt" count="0"/>
-      <line num="44" type="stmt" count="0"/>
-      <line num="45" type="stmt" count="0"/>
-      <line num="46" type="stmt" count="0"/>
-      <line num="47" type="stmt" count="0"/>
-      <line num="49" type="stmt" count="0"/>
-      <line num="50" type="stmt" count="0"/>
-      <line num="51" type="stmt" count="0"/>
-      <line num="52" type="stmt" count="0"/>
-      <line num="54" type="stmt" count="0"/>
-      <metrics loc="57" ncloc="39" classes="1" methods="2" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="13" coveredstatements="0" elements="15" coveredelements="0"/>
+      <line num="44" type="stmt" count="1"/>
+      <line num="45" type="stmt" count="1"/>
+      <line num="46" type="stmt" count="1"/>
+      <line num="47" type="stmt" count="1"/>
+      <line num="49" type="stmt" count="1"/>
+      <line num="50" type="stmt" count="1"/>
+      <line num="51" type="stmt" count="1"/>
+      <line num="52" type="stmt" count="1"/>
+      <line num="54" type="stmt" count="1"/>
+      <metrics loc="57" ncloc="39" classes="1" methods="2" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="13" coveredstatements="12" elements="15" coveredelements="13"/>
     </file>
     <file name="/home/runner/work/flatpack/flatpack/src/Commands/MakeFormCommand.php">
       <class name="Flatpack\Commands\MakeFormCommand" namespace="global">
-        <metrics complexity="2" methods="2" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="2" coveredstatements="0" elements="4" coveredelements="0"/>
+        <metrics complexity="2" methods="2" coveredmethods="2" conditionals="0" coveredconditionals="0" statements="2" coveredstatements="2" elements="4" coveredelements="4"/>
       </class>
-      <line num="33" type="method" name="getStub" visibility="protected" complexity="1" crap="2" count="0"/>
-      <line num="35" type="stmt" count="0"/>
-      <line num="44" type="method" name="getPath" visibility="protected" complexity="1" crap="2" count="0"/>
-      <line num="46" type="stmt" count="0"/>
-      <metrics loc="49" ncloc="23" classes="1" methods="2" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="2" coveredstatements="0" elements="4" coveredelements="0"/>
+      <line num="33" type="method" name="getStub" visibility="protected" complexity="1" crap="1" count="1"/>
+      <line num="35" type="stmt" count="1"/>
+      <line num="44" type="method" name="getPath" visibility="protected" complexity="1" crap="1" count="1"/>
+      <line num="46" type="stmt" count="1"/>
+      <metrics loc="49" ncloc="23" classes="1" methods="2" coveredmethods="2" conditionals="0" coveredconditionals="0" statements="2" coveredstatements="2" elements="4" coveredelements="4"/>
     </file>
     <file name="/home/runner/work/flatpack/flatpack/src/Commands/MakeListCommand.php">
       <class name="Flatpack\Commands\MakeListCommand" namespace="global">
-        <metrics complexity="2" methods="2" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="2" coveredstatements="0" elements="4" coveredelements="0"/>
+        <metrics complexity="2" methods="2" coveredmethods="2" conditionals="0" coveredconditionals="0" statements="2" coveredstatements="2" elements="4" coveredelements="4"/>
       </class>
-      <line num="33" type="method" name="getStub" visibility="protected" complexity="1" crap="2" count="0"/>
-      <line num="35" type="stmt" count="0"/>
-      <line num="44" type="method" name="getPath" visibility="protected" complexity="1" crap="2" count="0"/>
-      <line num="46" type="stmt" count="0"/>
-      <metrics loc="49" ncloc="23" classes="1" methods="2" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="2" coveredstatements="0" elements="4" coveredelements="0"/>
+      <line num="33" type="method" name="getStub" visibility="protected" complexity="1" crap="1" count="1"/>
+      <line num="35" type="stmt" count="1"/>
+      <line num="44" type="method" name="getPath" visibility="protected" complexity="1" crap="1" count="1"/>
+      <line num="46" type="stmt" count="1"/>
+      <metrics loc="49" ncloc="23" classes="1" methods="2" coveredmethods="2" conditionals="0" coveredconditionals="0" statements="2" coveredstatements="2" elements="4" coveredelements="4"/>
     </file>
     <file name="/home/runner/work/flatpack/flatpack/src/Contracts/FlatpackAction.php">
       <metrics loc="11" ncloc="11" classes="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="0" coveredstatements="0" elements="0" coveredelements="0"/>
@@ -364,35 +363,6 @@
       <line num="17" type="stmt" count="1"/>
       <metrics loc="20" ncloc="20" classes="1" methods="1" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="3" coveredstatements="3" elements="4" coveredelements="4"/>
     </file>
-    <file name="/home/runner/work/flatpack/flatpack/src/Exceptions/Solutions/GenerateFlatpackSolution.php">
-      <class name="Flatpack\Exceptions\Solutions\GenerateFlatpackSolution" namespace="global">
-        <metrics complexity="8" methods="8" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="16" coveredstatements="0" elements="24" coveredelements="0"/>
-      </class>
-      <line num="13" type="method" name="__construct" visibility="public" complexity="1" crap="2" count="0"/>
-      <line num="15" type="stmt" count="0"/>
-      <line num="16" type="stmt" count="0"/>
-      <line num="19" type="method" name="getSolutionTitle" visibility="public" complexity="1" crap="2" count="0"/>
-      <line num="21" type="stmt" count="0"/>
-      <line num="24" type="method" name="getDocumentationLinks" visibility="public" complexity="1" crap="2" count="0"/>
-      <line num="26" type="stmt" count="0"/>
-      <line num="27" type="stmt" count="0"/>
-      <line num="28" type="stmt" count="0"/>
-      <line num="31" type="method" name="getSolutionActionDescription" visibility="public" complexity="1" crap="2" count="0"/>
-      <line num="33" type="stmt" count="0"/>
-      <line num="36" type="method" name="getRunButtonText" visibility="public" complexity="1" crap="2" count="0"/>
-      <line num="38" type="stmt" count="0"/>
-      <line num="41" type="method" name="getSolutionDescription" visibility="public" complexity="1" crap="2" count="0"/>
-      <line num="43" type="stmt" count="0"/>
-      <line num="45" type="stmt" count="0"/>
-      <line num="46" type="stmt" count="0"/>
-      <line num="49" type="method" name="getRunParameters" visibility="public" complexity="1" crap="2" count="0"/>
-      <line num="51" type="stmt" count="0"/>
-      <line num="52" type="stmt" count="0"/>
-      <line num="53" type="stmt" count="0"/>
-      <line num="56" type="method" name="run" visibility="public" complexity="1" crap="2" count="0"/>
-      <line num="58" type="stmt" count="0"/>
-      <metrics loc="61" ncloc="61" classes="1" methods="8" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="16" coveredstatements="0" elements="24" coveredelements="0"/>
-    </file>
     <file name="/home/runner/work/flatpack/flatpack/src/Exceptions/TemplateNotFoundException.php">
       <class name="Flatpack\Exceptions\TemplateNotFoundException" namespace="global">
         <metrics complexity="1" methods="1" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="3" coveredstatements="3" elements="4" coveredelements="4"/>
@@ -407,17 +377,17 @@
       <class name="Flatpack\Facades\Flatpack" namespace="global">
         <metrics complexity="1" methods="1" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="1" coveredstatements="1" elements="2" coveredelements="2"/>
       </class>
-      <line num="9" type="method" name="getFacadeAccessor" visibility="protected" complexity="1" crap="1" count="17"/>
-      <line num="11" type="stmt" count="17"/>
+      <line num="9" type="method" name="getFacadeAccessor" visibility="protected" complexity="1" crap="1" count="18"/>
+      <line num="11" type="stmt" count="18"/>
       <metrics loc="14" ncloc="14" classes="1" methods="1" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="1" coveredstatements="1" elements="2" coveredelements="2"/>
     </file>
     <file name="/home/runner/work/flatpack/flatpack/src/Flatpack.php">
       <class name="Flatpack\Flatpack" namespace="global">
         <metrics complexity="22" methods="13" coveredmethods="12" conditionals="0" coveredconditionals="0" statements="46" coveredstatements="45" elements="59" coveredelements="57"/>
       </class>
-      <line num="42" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="17"/>
-      <line num="44" type="stmt" count="17"/>
-      <line num="45" type="stmt" count="17"/>
+      <line num="42" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="18"/>
+      <line num="44" type="stmt" count="18"/>
+      <line num="45" type="stmt" count="18"/>
       <line num="53" type="method" name="loadComposition" visibility="public" complexity="1" crap="1" count="13"/>
       <line num="57" type="stmt" count="13"/>
       <line num="59" type="stmt" count="13"/>
@@ -441,10 +411,10 @@
       <line num="115" type="stmt" count="13"/>
       <line num="117" type="stmt" count="13"/>
       <line num="120" type="stmt" count="13"/>
-      <line num="129" type="method" name="entityName" visibility="public" complexity="1" crap="1" count="1"/>
-      <line num="131" type="stmt" count="1"/>
-      <line num="140" type="method" name="modelName" visibility="public" complexity="1" crap="1" count="13"/>
-      <line num="142" type="stmt" count="13"/>
+      <line num="129" type="method" name="entityName" visibility="public" complexity="1" crap="1" count="2"/>
+      <line num="131" type="stmt" count="2"/>
+      <line num="140" type="method" name="modelName" visibility="public" complexity="1" crap="1" count="14"/>
+      <line num="142" type="stmt" count="14"/>
       <line num="145" type="method" name="getModelsDirectory" visibility="private" complexity="2" crap="2" count="8"/>
       <line num="147" type="stmt" count="8"/>
       <line num="156" type="method" name="guessModelClass" visibility="public" complexity="4" crap="4.02" count="8"/>
@@ -457,10 +427,10 @@
       <line num="169" type="stmt" count="1"/>
       <line num="170" type="stmt" count="0"/>
       <line num="174" type="stmt" count="1"/>
-      <line num="183" type="method" name="getDirectory" visibility="public" complexity="2" crap="2" count="17"/>
-      <line num="185" type="stmt" count="17"/>
-      <line num="186" type="stmt" count="17"/>
-      <line num="187" type="stmt" count="17"/>
+      <line num="183" type="method" name="getDirectory" visibility="public" complexity="2" crap="2" count="18"/>
+      <line num="185" type="stmt" count="18"/>
+      <line num="186" type="stmt" count="18"/>
+      <line num="187" type="stmt" count="18"/>
       <line num="196" type="method" name="getTemplates" visibility="private" complexity="2" crap="2" count="10"/>
       <line num="198" type="stmt" count="10"/>
       <line num="199" type="stmt" count="6"/>
@@ -480,66 +450,66 @@
       <class name="Flatpack\FlatpackServiceProvider" namespace="global">
         <metrics complexity="10" methods="10" coveredmethods="10" conditionals="0" coveredconditionals="0" statements="50" coveredstatements="50" elements="60" coveredelements="60"/>
       </class>
-      <line num="30" type="method" name="boot" visibility="public" complexity="1" crap="1" count="101"/>
-      <line num="32" type="stmt" count="101"/>
-      <line num="33" type="stmt" count="101"/>
-      <line num="34" type="stmt" count="101"/>
-      <line num="35" type="stmt" count="101"/>
-      <line num="37" type="stmt" count="101"/>
-      <line num="38" type="stmt" count="101"/>
-      <line num="39" type="stmt" count="101"/>
-      <line num="40" type="stmt" count="101"/>
-      <line num="41" type="stmt" count="101"/>
-      <line num="42" type="stmt" count="101"/>
-      <line num="48" type="method" name="register" visibility="public" complexity="1" crap="1" count="101"/>
-      <line num="50" type="stmt" count="101"/>
-      <line num="52" type="stmt" count="101"/>
-      <line num="53" type="stmt" count="17"/>
-      <line num="54" type="stmt" count="101"/>
-      <line num="60" type="method" name="registerCommands" visibility="protected" complexity="1" crap="1" count="101"/>
-      <line num="62" type="stmt" count="101"/>
-      <line num="63" type="stmt" count="101"/>
-      <line num="64" type="stmt" count="101"/>
-      <line num="65" type="stmt" count="101"/>
-      <line num="66" type="stmt" count="101"/>
-      <line num="67" type="stmt" count="101"/>
-      <line num="73" type="method" name="registerRoutes" visibility="protected" complexity="1" crap="1" count="101"/>
-      <line num="75" type="stmt" count="101"/>
-      <line num="76" type="stmt" count="101"/>
-      <line num="77" type="stmt" count="101"/>
-      <line num="83" type="method" name="registerLivewireComponents" visibility="protected" complexity="1" crap="1" count="101"/>
-      <line num="85" type="stmt" count="101"/>
-      <line num="86" type="stmt" count="101"/>
-      <line num="87" type="stmt" count="101"/>
-      <line num="88" type="stmt" count="101"/>
-      <line num="89" type="stmt" count="101"/>
-      <line num="95" type="method" name="registerViewComponents" visibility="protected" complexity="1" crap="1" count="101"/>
-      <line num="97" type="stmt" count="101"/>
-      <line num="98" type="stmt" count="101"/>
-      <line num="99" type="stmt" count="101"/>
-      <line num="100" type="stmt" count="101"/>
-      <line num="101" type="stmt" count="101"/>
-      <line num="102" type="stmt" count="101"/>
-      <line num="103" type="stmt" count="101"/>
-      <line num="104" type="stmt" count="101"/>
-      <line num="105" type="stmt" count="101"/>
-      <line num="111" type="method" name="registerViews" visibility="protected" complexity="1" crap="1" count="101"/>
-      <line num="113" type="stmt" count="101"/>
-      <line num="119" type="method" name="registerMiddleware" visibility="protected" complexity="1" crap="1" count="101"/>
-      <line num="121" type="stmt" count="101"/>
-      <line num="122" type="stmt" count="101"/>
-      <line num="123" type="stmt" count="101"/>
-      <line num="129" type="method" name="routeConfiguration" visibility="protected" complexity="1" crap="1" count="101"/>
-      <line num="131" type="stmt" count="101"/>
-      <line num="132" type="stmt" count="101"/>
-      <line num="133" type="stmt" count="101"/>
-      <line num="134" type="stmt" count="101"/>
-      <line num="140" type="method" name="getRouteMiddleware" visibility="private" complexity="1" crap="1" count="101"/>
-      <line num="142" type="stmt" count="101"/>
-      <line num="143" type="stmt" count="101"/>
-      <line num="144" type="stmt" count="101"/>
-      <line num="145" type="stmt" count="101"/>
-      <line num="146" type="stmt" count="101"/>
+      <line num="30" type="method" name="boot" visibility="public" complexity="1" crap="1" count="105"/>
+      <line num="32" type="stmt" count="105"/>
+      <line num="33" type="stmt" count="105"/>
+      <line num="34" type="stmt" count="105"/>
+      <line num="35" type="stmt" count="105"/>
+      <line num="37" type="stmt" count="105"/>
+      <line num="38" type="stmt" count="105"/>
+      <line num="39" type="stmt" count="105"/>
+      <line num="40" type="stmt" count="105"/>
+      <line num="41" type="stmt" count="105"/>
+      <line num="42" type="stmt" count="105"/>
+      <line num="48" type="method" name="register" visibility="public" complexity="1" crap="1" count="105"/>
+      <line num="50" type="stmt" count="105"/>
+      <line num="52" type="stmt" count="105"/>
+      <line num="53" type="stmt" count="18"/>
+      <line num="54" type="stmt" count="105"/>
+      <line num="60" type="method" name="registerCommands" visibility="protected" complexity="1" crap="1" count="105"/>
+      <line num="62" type="stmt" count="105"/>
+      <line num="63" type="stmt" count="105"/>
+      <line num="64" type="stmt" count="105"/>
+      <line num="65" type="stmt" count="105"/>
+      <line num="66" type="stmt" count="105"/>
+      <line num="67" type="stmt" count="105"/>
+      <line num="73" type="method" name="registerRoutes" visibility="protected" complexity="1" crap="1" count="105"/>
+      <line num="75" type="stmt" count="105"/>
+      <line num="76" type="stmt" count="105"/>
+      <line num="77" type="stmt" count="105"/>
+      <line num="83" type="method" name="registerLivewireComponents" visibility="protected" complexity="1" crap="1" count="105"/>
+      <line num="85" type="stmt" count="105"/>
+      <line num="86" type="stmt" count="105"/>
+      <line num="87" type="stmt" count="105"/>
+      <line num="88" type="stmt" count="105"/>
+      <line num="89" type="stmt" count="105"/>
+      <line num="95" type="method" name="registerViewComponents" visibility="protected" complexity="1" crap="1" count="105"/>
+      <line num="97" type="stmt" count="105"/>
+      <line num="98" type="stmt" count="105"/>
+      <line num="99" type="stmt" count="105"/>
+      <line num="100" type="stmt" count="105"/>
+      <line num="101" type="stmt" count="105"/>
+      <line num="102" type="stmt" count="105"/>
+      <line num="103" type="stmt" count="105"/>
+      <line num="104" type="stmt" count="105"/>
+      <line num="105" type="stmt" count="105"/>
+      <line num="111" type="method" name="registerViews" visibility="protected" complexity="1" crap="1" count="105"/>
+      <line num="113" type="stmt" count="105"/>
+      <line num="119" type="method" name="registerMiddleware" visibility="protected" complexity="1" crap="1" count="105"/>
+      <line num="121" type="stmt" count="105"/>
+      <line num="122" type="stmt" count="105"/>
+      <line num="123" type="stmt" count="105"/>
+      <line num="129" type="method" name="routeConfiguration" visibility="protected" complexity="1" crap="1" count="105"/>
+      <line num="131" type="stmt" count="105"/>
+      <line num="132" type="stmt" count="105"/>
+      <line num="133" type="stmt" count="105"/>
+      <line num="134" type="stmt" count="105"/>
+      <line num="140" type="method" name="getRouteMiddleware" visibility="private" complexity="1" crap="1" count="105"/>
+      <line num="142" type="stmt" count="105"/>
+      <line num="143" type="stmt" count="105"/>
+      <line num="144" type="stmt" count="105"/>
+      <line num="145" type="stmt" count="105"/>
+      <line num="146" type="stmt" count="105"/>
       <metrics loc="149" ncloc="122" classes="1" methods="10" coveredmethods="10" conditionals="0" coveredconditionals="0" statements="50" coveredstatements="50" elements="60" coveredelements="60"/>
     </file>
     <file name="/home/runner/work/flatpack/flatpack/src/Http/Controllers/Auth/AuthenticatedSessionController.php">
@@ -610,9 +580,9 @@
     </file>
     <file name="/home/runner/work/flatpack/flatpack/src/Http/Controllers/UploadController.php">
       <class name="Flatpack\Http\Controllers\UploadController" namespace="global">
-        <metrics complexity="5" methods="2" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="22" coveredstatements="21" elements="24" coveredelements="22"/>
+        <metrics complexity="4" methods="2" coveredmethods="2" conditionals="0" coveredconditionals="0" statements="21" coveredstatements="21" elements="23" coveredelements="23"/>
       </class>
-      <line num="12" type="method" name="store" visibility="public" complexity="4" crap="4" count="2"/>
+      <line num="12" type="method" name="store" visibility="public" complexity="3" crap="3" count="2"/>
       <line num="14" type="stmt" count="2"/>
       <line num="16" type="stmt" count="2"/>
       <line num="18" type="stmt" count="2"/>
@@ -626,17 +596,16 @@
       <line num="29" type="stmt" count="1"/>
       <line num="30" type="stmt" count="1"/>
       <line num="31" type="stmt" count="1"/>
+      <line num="34" type="stmt" count="1"/>
       <line num="35" type="stmt" count="1"/>
       <line num="36" type="stmt" count="1"/>
       <line num="37" type="stmt" count="1"/>
-      <line num="38" type="stmt" count="1"/>
-      <line num="39" type="stmt" count="0"/>
-      <line num="43" type="stmt" count="1"/>
-      <line num="44" type="stmt" count="1"/>
-      <line num="45" type="stmt" count="1"/>
-      <line num="48" type="method" name="jsonResponse" visibility="private" complexity="1" crap="1" count="2"/>
-      <line num="50" type="stmt" count="2"/>
-      <metrics loc="53" ncloc="52" classes="1" methods="2" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="22" coveredstatements="21" elements="24" coveredelements="22"/>
+      <line num="39" type="stmt" count="1"/>
+      <line num="40" type="stmt" count="1"/>
+      <line num="41" type="stmt" count="1"/>
+      <line num="44" type="method" name="jsonResponse" visibility="private" complexity="1" crap="1" count="2"/>
+      <line num="46" type="stmt" count="2"/>
+      <metrics loc="49" ncloc="49" classes="1" methods="2" coveredmethods="2" conditionals="0" coveredconditionals="0" statements="21" coveredstatements="21" elements="23" coveredelements="23"/>
     </file>
     <file name="/home/runner/work/flatpack/flatpack/src/Http/Livewire/BlockEditor.php">
       <class name="Flatpack\Http\Livewire\BlockEditor" namespace="global">
@@ -682,28 +651,28 @@
     </file>
     <file name="/home/runner/work/flatpack/flatpack/src/Http/Livewire/Column.php">
       <class name="Flatpack\Http\Livewire\Column" namespace="global">
-        <metrics complexity="2" methods="2" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="3" coveredstatements="2" elements="5" coveredelements="3"/>
+        <metrics complexity="2" methods="2" coveredmethods="2" conditionals="0" coveredconditionals="0" statements="3" coveredstatements="3" elements="5" coveredelements="5"/>
       </class>
-      <line num="11" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="2"/>
-      <line num="13" type="stmt" count="2"/>
-      <line num="14" type="stmt" count="2"/>
-      <line num="17" type="method" name="setWidth" visibility="public" complexity="1" crap="2" count="0"/>
-      <line num="19" type="stmt" count="0"/>
-      <metrics loc="22" ncloc="22" classes="1" methods="2" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="3" coveredstatements="2" elements="5" coveredelements="3"/>
+      <line num="11" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="3"/>
+      <line num="13" type="stmt" count="3"/>
+      <line num="14" type="stmt" count="3"/>
+      <line num="17" type="method" name="setWidth" visibility="public" complexity="1" crap="1" count="1"/>
+      <line num="19" type="stmt" count="1"/>
+      <metrics loc="22" ncloc="22" classes="1" methods="2" coveredmethods="2" conditionals="0" coveredconditionals="0" statements="3" coveredstatements="3" elements="5" coveredelements="5"/>
     </file>
     <file name="/home/runner/work/flatpack/flatpack/src/Http/Livewire/CreateRelation.php">
       <class name="Flatpack\Http\Livewire\CreateRelation" namespace="global">
-        <metrics complexity="9" methods="7" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="23" coveredstatements="0" elements="30" coveredelements="0"/>
+        <metrics complexity="9" methods="7" coveredmethods="2" conditionals="0" coveredconditionals="0" statements="23" coveredstatements="7" elements="30" coveredelements="9"/>
       </class>
-      <line num="51" type="method" name="mount" visibility="public" complexity="2" crap="6" count="0"/>
-      <line num="53" type="stmt" count="0"/>
-      <line num="55" type="stmt" count="0"/>
-      <line num="57" type="stmt" count="0"/>
-      <line num="58" type="stmt" count="0"/>
-      <line num="62" type="method" name="render" visibility="public" complexity="1" crap="2" count="0"/>
-      <line num="64" type="stmt" count="0"/>
-      <line num="65" type="stmt" count="0"/>
-      <line num="66" type="stmt" count="0"/>
+      <line num="51" type="method" name="mount" visibility="public" complexity="2" crap="2" count="2"/>
+      <line num="53" type="stmt" count="2"/>
+      <line num="55" type="stmt" count="2"/>
+      <line num="57" type="stmt" count="2"/>
+      <line num="58" type="stmt" count="2"/>
+      <line num="62" type="method" name="render" visibility="public" complexity="1" crap="1" count="2"/>
+      <line num="64" type="stmt" count="2"/>
+      <line num="65" type="stmt" count="2"/>
+      <line num="66" type="stmt" count="2"/>
       <line num="72" type="method" name="submit" visibility="public" complexity="1" crap="2" count="0"/>
       <line num="74" type="stmt" count="0"/>
       <line num="76" type="stmt" count="0"/>
@@ -725,11 +694,11 @@
       <line num="119" type="stmt" count="0"/>
       <line num="122" type="method" name="clearForm" visibility="private" complexity="1" crap="2" count="0"/>
       <line num="124" type="stmt" count="0"/>
-      <metrics loc="127" ncloc="91" classes="1" methods="7" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="23" coveredstatements="0" elements="30" coveredelements="0"/>
+      <metrics loc="127" ncloc="91" classes="1" methods="7" coveredmethods="2" conditionals="0" coveredconditionals="0" statements="23" coveredstatements="7" elements="30" coveredelements="9"/>
     </file>
     <file name="/home/runner/work/flatpack/flatpack/src/Http/Livewire/Form.php">
       <class name="Flatpack\Http\Livewire\Form" namespace="global">
-        <metrics complexity="28" methods="20" coveredmethods="19" conditionals="0" coveredconditionals="0" statements="83" coveredstatements="82" elements="103" coveredelements="101"/>
+        <metrics complexity="28" methods="20" coveredmethods="20" conditionals="0" coveredconditionals="0" statements="82" coveredstatements="82" elements="102" coveredelements="102"/>
       </class>
       <line num="82" type="method" name="mount" visibility="public" complexity="1" crap="1" count="10"/>
       <line num="84" type="stmt" count="10"/>
@@ -769,7 +738,7 @@
       <line num="183" type="stmt" count="1"/>
       <line num="184" type="stmt" count="1"/>
       <line num="185" type="stmt" count="1"/>
-      <line num="196" type="method" name="action" visibility="public" complexity="6" crap="6.01" count="6"/>
+      <line num="196" type="method" name="action" visibility="public" complexity="6" crap="6" count="6"/>
       <line num="198" type="stmt" count="6"/>
       <line num="199" type="stmt" count="1"/>
       <line num="200" type="stmt" count="1"/>
@@ -784,61 +753,60 @@
       <line num="218" type="stmt" count="3"/>
       <line num="221" type="stmt" count="3"/>
       <line num="222" type="stmt" count="3"/>
-      <line num="224" type="stmt" count="0"/>
-      <line num="227" type="stmt" count="3"/>
-      <line num="228" type="stmt" count="3"/>
-      <line num="230" type="stmt" count="1"/>
-      <line num="231" type="stmt" count="1"/>
-      <line num="241" type="method" name="beforeAction" visibility="private" complexity="2" crap="2" count="5"/>
+      <line num="225" type="stmt" count="3"/>
+      <line num="226" type="stmt" count="3"/>
+      <line num="228" type="stmt" count="1"/>
+      <line num="229" type="stmt" count="1"/>
+      <line num="239" type="method" name="beforeAction" visibility="private" complexity="2" crap="2" count="5"/>
+      <line num="241" type="stmt" count="5"/>
       <line num="243" type="stmt" count="5"/>
-      <line num="245" type="stmt" count="5"/>
-      <line num="246" type="stmt" count="4"/>
-      <line num="256" type="method" name="afterAction" visibility="private" complexity="2" crap="2" count="3"/>
+      <line num="244" type="stmt" count="4"/>
+      <line num="254" type="method" name="afterAction" visibility="private" complexity="2" crap="2" count="3"/>
+      <line num="256" type="stmt" count="3"/>
       <line num="258" type="stmt" count="3"/>
-      <line num="260" type="stmt" count="3"/>
+      <line num="259" type="stmt" count="3"/>
       <line num="261" type="stmt" count="3"/>
       <line num="263" type="stmt" count="3"/>
+      <line num="264" type="stmt" count="3"/>
       <line num="265" type="stmt" count="3"/>
       <line num="266" type="stmt" count="3"/>
-      <line num="267" type="stmt" count="3"/>
       <line num="268" type="stmt" count="3"/>
-      <line num="270" type="stmt" count="3"/>
-      <line num="273" type="stmt" count="3"/>
-      <line num="282" type="method" name="clearFieldError" visibility="protected" complexity="1" crap="1" count="3"/>
+      <line num="271" type="stmt" count="3"/>
+      <line num="280" type="method" name="clearFieldError" visibility="protected" complexity="1" crap="1" count="3"/>
+      <line num="282" type="stmt" count="3"/>
       <line num="284" type="stmt" count="3"/>
-      <line num="286" type="stmt" count="3"/>
-      <line num="294" type="method" name="clearFormErrors" visibility="protected" complexity="1" crap="1" count="5"/>
-      <line num="296" type="stmt" count="5"/>
-      <line num="306" type="method" name="setHasChanges" visibility="private" complexity="1" crap="1" count="4"/>
+      <line num="292" type="method" name="clearFormErrors" visibility="protected" complexity="1" crap="1" count="5"/>
+      <line num="294" type="stmt" count="5"/>
+      <line num="304" type="method" name="setHasChanges" visibility="private" complexity="1" crap="1" count="4"/>
+      <line num="306" type="stmt" count="4"/>
       <line num="308" type="stmt" count="4"/>
       <line num="310" type="stmt" count="4"/>
-      <line num="312" type="stmt" count="4"/>
-      <line num="323" type="method" name="compareValues" visibility="private" complexity="1" crap="1" count="4"/>
-      <line num="325" type="stmt" count="4"/>
-      <line num="334" type="method" name="fieldKeyName" visibility="protected" complexity="1" crap="1" count="4"/>
-      <line num="336" type="stmt" count="4"/>
-      <line num="344" type="method" name="goBack" visibility="private" complexity="1" crap="1" count="1"/>
+      <line num="321" type="method" name="compareValues" visibility="private" complexity="1" crap="1" count="4"/>
+      <line num="323" type="stmt" count="4"/>
+      <line num="332" type="method" name="fieldKeyName" visibility="protected" complexity="1" crap="1" count="4"/>
+      <line num="334" type="stmt" count="4"/>
+      <line num="342" type="method" name="goBack" visibility="private" complexity="1" crap="1" count="1"/>
+      <line num="344" type="stmt" count="1"/>
+      <line num="345" type="stmt" count="1"/>
       <line num="346" type="stmt" count="1"/>
-      <line num="347" type="stmt" count="1"/>
-      <line num="348" type="stmt" count="1"/>
-      <line num="357" type="method" name="notifySuccess" visibility="private" complexity="1" crap="1" count="3"/>
+      <line num="355" type="method" name="notifySuccess" visibility="private" complexity="1" crap="1" count="3"/>
+      <line num="357" type="stmt" count="3"/>
+      <line num="358" type="stmt" count="3"/>
       <line num="359" type="stmt" count="3"/>
       <line num="360" type="stmt" count="3"/>
-      <line num="361" type="stmt" count="3"/>
-      <line num="362" type="stmt" count="3"/>
-      <line num="372" type="method" name="notifyError" visibility="private" complexity="1" crap="1" count="2"/>
+      <line num="370" type="method" name="notifyError" visibility="private" complexity="1" crap="1" count="2"/>
+      <line num="372" type="stmt" count="2"/>
+      <line num="373" type="stmt" count="2"/>
       <line num="374" type="stmt" count="2"/>
       <line num="375" type="stmt" count="2"/>
       <line num="376" type="stmt" count="2"/>
-      <line num="377" type="stmt" count="2"/>
-      <line num="378" type="stmt" count="2"/>
-      <line num="387" type="method" name="redirectTo" visibility="private" complexity="1" crap="1" count="1"/>
-      <line num="389" type="stmt" count="1"/>
-      <metrics loc="392" ncloc="244" classes="1" methods="20" coveredmethods="19" conditionals="0" coveredconditionals="0" statements="83" coveredstatements="82" elements="103" coveredelements="101"/>
+      <line num="385" type="method" name="redirectTo" visibility="private" complexity="1" crap="1" count="1"/>
+      <line num="387" type="stmt" count="1"/>
+      <metrics loc="390" ncloc="242" classes="1" methods="20" coveredmethods="20" conditionals="0" coveredconditionals="0" statements="82" coveredstatements="82" elements="102" coveredelements="102"/>
     </file>
     <file name="/home/runner/work/flatpack/flatpack/src/Http/Livewire/ImageUploader.php">
       <class name="Flatpack\Http\Livewire\ImageUploader" namespace="global">
-        <metrics complexity="22" methods="13" coveredmethods="10" conditionals="0" coveredconditionals="0" statements="57" coveredstatements="53" elements="70" coveredelements="63"/>
+        <metrics complexity="20" methods="12" coveredmethods="12" conditionals="0" coveredconditionals="0" statements="54" coveredstatements="54" elements="66" coveredelements="66"/>
       </class>
       <line num="112" type="method" name="mount" visibility="public" complexity="2" crap="2" count="5"/>
       <line num="119" type="stmt" count="5"/>
@@ -874,155 +842,153 @@
       <line num="187" type="stmt" count="4"/>
       <line num="189" type="stmt" count="4"/>
       <line num="191" type="stmt" count="4"/>
-      <line num="199" type="method" name="uploadFiles" visibility="public" complexity="3" crap="3.10" count="4"/>
-      <line num="202" type="stmt" count="4"/>
+      <line num="199" type="method" name="uploadFiles" visibility="public" complexity="2" crap="2" count="4"/>
+      <line num="201" type="stmt" count="4"/>
+      <line num="202" type="stmt" count="3"/>
       <line num="203" type="stmt" count="3"/>
       <line num="204" type="stmt" count="3"/>
       <line num="205" type="stmt" count="3"/>
-      <line num="206" type="stmt" count="3"/>
-      <line num="208" type="stmt" count="4"/>
-      <line num="210" type="stmt" count="0"/>
-      <line num="211" type="stmt" count="0"/>
-      <line num="214" type="stmt" count="4"/>
-      <line num="223" type="method" name="handleRemoveImage" visibility="public" complexity="2" crap="2.03" count="1"/>
-      <line num="225" type="stmt" count="1"/>
-      <line num="226" type="stmt" count="0"/>
-      <line num="228" type="stmt" count="1"/>
-      <line num="231" type="stmt" count="1"/>
-      <line num="233" type="stmt" count="1"/>
-      <line num="241" type="method" name="getCurrentValue" visibility="public" complexity="2" crap="2" count="4"/>
-      <line num="243" type="stmt" count="4"/>
-      <line num="245" type="stmt" count="4"/>
-      <line num="246" type="stmt" count="3"/>
-      <line num="249" type="stmt" count="1"/>
-      <line num="257" type="method" name="stateUpdated" visibility="public" complexity="1" crap="1" count="4"/>
-      <line num="259" type="stmt" count="4"/>
-      <line num="267" type="method" name="notifyError" visibility="public" complexity="1" crap="2" count="0"/>
-      <line num="269" type="stmt" count="0"/>
-      <line num="272" type="method" name="render" visibility="public" complexity="1" crap="1" count="5"/>
-      <line num="274" type="stmt" count="5"/>
+      <line num="207" type="stmt" count="3"/>
+      <line num="210" type="stmt" count="4"/>
+      <line num="219" type="method" name="handleRemoveImage" visibility="public" complexity="2" crap="2" count="1"/>
+      <line num="221" type="stmt" count="1"/>
+      <line num="222" type="stmt" count="1"/>
+      <line num="224" type="stmt" count="1"/>
+      <line num="227" type="stmt" count="1"/>
+      <line num="229" type="stmt" count="1"/>
+      <line num="237" type="method" name="getCurrentValue" visibility="public" complexity="2" crap="2" count="4"/>
+      <line num="239" type="stmt" count="4"/>
+      <line num="241" type="stmt" count="4"/>
+      <line num="242" type="stmt" count="3"/>
+      <line num="245" type="stmt" count="1"/>
+      <line num="253" type="method" name="stateUpdated" visibility="public" complexity="1" crap="1" count="4"/>
+      <line num="255" type="stmt" count="4"/>
+      <line num="258" type="method" name="render" visibility="public" complexity="1" crap="1" count="5"/>
+      <line num="260" type="stmt" count="5"/>
+      <line num="262" type="stmt" count="5"/>
+      <line num="270" type="method" name="cleanUp" visibility="private" complexity="2" crap="2" count="5"/>
+      <line num="272" type="stmt" count="5"/>
+      <line num="273" type="stmt" count="1"/>
       <line num="276" type="stmt" count="5"/>
-      <line num="284" type="method" name="cleanUp" visibility="private" complexity="2" crap="2" count="5"/>
+      <line num="284" type="method" name="deleteOldFiles" visibility="private" complexity="2" crap="2" count="5"/>
       <line num="286" type="stmt" count="5"/>
       <line num="287" type="stmt" count="1"/>
       <line num="290" type="stmt" count="5"/>
-      <line num="298" type="method" name="deleteOldFiles" visibility="private" complexity="2" crap="2" count="5"/>
-      <line num="300" type="stmt" count="5"/>
-      <line num="301" type="stmt" count="1"/>
-      <line num="304" type="stmt" count="5"/>
-      <metrics loc="307" ncloc="195" classes="1" methods="13" coveredmethods="10" conditionals="0" coveredconditionals="0" statements="57" coveredstatements="53" elements="70" coveredelements="63"/>
+      <metrics loc="293" ncloc="186" classes="1" methods="12" coveredmethods="12" conditionals="0" coveredconditionals="0" statements="54" coveredstatements="54" elements="66" coveredelements="66"/>
     </file>
     <file name="/home/runner/work/flatpack/flatpack/src/Http/Livewire/Table.php">
       <class name="Flatpack\Http\Livewire\Table" namespace="global">
-        <metrics complexity="35" methods="14" coveredmethods="8" conditionals="0" coveredconditionals="0" statements="92" coveredstatements="80" elements="106" coveredelements="88"/>
+        <metrics complexity="37" methods="16" coveredmethods="16" conditionals="0" coveredconditionals="0" statements="92" coveredstatements="92" elements="108" coveredelements="108"/>
       </class>
-      <line num="64" type="method" name="mount" visibility="public" complexity="3" crap="3" count="2"/>
-      <line num="66" type="stmt" count="2"/>
-      <line num="67" type="stmt" count="1"/>
-      <line num="68" type="stmt" count="1"/>
-      <line num="73" type="method" name="columns" visibility="public" complexity="10" crap="10" count="2"/>
-      <line num="75" type="stmt" count="2"/>
-      <line num="77" type="stmt" count="2"/>
-      <line num="78" type="stmt" count="2"/>
-      <line num="79" type="stmt" count="2"/>
-      <line num="81" type="stmt" count="2"/>
-      <line num="82" type="stmt" count="2"/>
-      <line num="85" type="stmt" count="2"/>
-      <line num="86" type="stmt" count="2"/>
-      <line num="89" type="stmt" count="2"/>
-      <line num="90" type="stmt" count="2"/>
-      <line num="93" type="stmt" count="2"/>
-      <line num="95" type="stmt" count="2"/>
-      <line num="96" type="stmt" count="1"/>
-      <line num="99" type="stmt" count="2"/>
+      <line num="70" type="method" name="mount" visibility="public" complexity="3" crap="3" count="3"/>
+      <line num="72" type="stmt" count="3"/>
+      <line num="73" type="stmt" count="2"/>
+      <line num="74" type="stmt" count="2"/>
+      <line num="79" type="method" name="columns" visibility="public" complexity="11" crap="11" count="3"/>
+      <line num="81" type="stmt" count="3"/>
+      <line num="83" type="stmt" count="3"/>
+      <line num="84" type="stmt" count="3"/>
+      <line num="85" type="stmt" count="3"/>
+      <line num="87" type="stmt" count="3"/>
+      <line num="88" type="stmt" count="3"/>
+      <line num="91" type="stmt" count="3"/>
+      <line num="92" type="stmt" count="3"/>
+      <line num="95" type="stmt" count="3"/>
+      <line num="96" type="stmt" count="3"/>
+      <line num="99" type="stmt" count="3"/>
+      <line num="101" type="stmt" count="3"/>
       <line num="102" type="stmt" count="2"/>
-      <line num="105" type="method" name="filters" visibility="public" complexity="1" crap="1" count="2"/>
-      <line num="107" type="stmt" count="2"/>
-      <line num="110" type="method" name="query" visibility="public" complexity="1" crap="1" count="2"/>
-      <line num="112" type="stmt" count="2"/>
-      <line num="115" type="method" name="scopeQuery" visibility="public" complexity="4" crap="4.25" count="2"/>
-      <line num="117" type="stmt" count="2"/>
-      <line num="119" type="stmt" count="2"/>
-      <line num="121" type="stmt" count="2"/>
-      <line num="124" type="stmt" count="2"/>
-      <line num="125" type="stmt" count="2"/>
-      <line num="127" type="stmt" count="0"/>
-      <line num="128" type="stmt" count="0"/>
-      <line num="131" type="stmt" count="2"/>
-      <line num="134" type="method" name="updatedScope" visibility="public" complexity="1" crap="2" count="0"/>
-      <line num="136" type="stmt" count="0"/>
-      <line num="137" type="stmt" count="0"/>
-      <line num="140" type="method" name="getTableRowUrl" visibility="public" complexity="2" crap="2.02" count="1"/>
-      <line num="142" type="stmt" count="1"/>
-      <line num="143" type="stmt" count="0"/>
-      <line num="146" type="stmt" count="1"/>
-      <line num="147" type="stmt" count="1"/>
-      <line num="148" type="stmt" count="1"/>
-      <line num="149" type="stmt" count="1"/>
-      <line num="152" type="method" name="isTrashed" visibility="public" complexity="2" crap="2" count="1"/>
-      <line num="154" type="stmt" count="1"/>
-      <line num="157" type="method" name="action" visibility="public" complexity="2" crap="2.06" count="1"/>
-      <line num="160" type="stmt" count="1"/>
-      <line num="161" type="stmt" count="0"/>
-      <line num="162" type="stmt" count="1"/>
+      <line num="105" type="stmt" count="3"/>
+      <line num="106" type="stmt" count="1"/>
+      <line num="109" type="stmt" count="3"/>
+      <line num="112" type="stmt" count="3"/>
+      <line num="115" type="method" name="filters" visibility="public" complexity="1" crap="1" count="3"/>
+      <line num="117" type="stmt" count="3"/>
+      <line num="125" type="method" name="modelQuery" visibility="private" complexity="1" crap="1" count="3"/>
+      <line num="127" type="stmt" count="3"/>
+      <line num="135" type="method" name="query" visibility="public" complexity="1" crap="1" count="3"/>
+      <line num="137" type="stmt" count="3"/>
+      <line num="145" type="method" name="scopeQuery" visibility="public" complexity="3" crap="3" count="3"/>
+      <line num="147" type="stmt" count="3"/>
+      <line num="149" type="stmt" count="3"/>
+      <line num="150" type="stmt" count="1"/>
+      <line num="153" type="stmt" count="3"/>
+      <line num="161" type="method" name="updatedFilters" visibility="public" complexity="2" crap="2" count="1"/>
       <line num="163" type="stmt" count="1"/>
-      <line num="167" type="method" name="bulkAction" visibility="public" complexity="4" crap="4.18" count="1"/>
-      <line num="170" type="stmt" count="1"/>
-      <line num="172" type="stmt" count="1"/>
-      <line num="174" type="stmt" count="1"/>
-      <line num="175" type="stmt" count="1"/>
-      <line num="178" type="stmt" count="1"/>
-      <line num="179" type="stmt" count="1"/>
-      <line num="181" type="stmt" count="1"/>
-      <line num="183" type="stmt" count="0"/>
-      <line num="184" type="stmt" count="0"/>
-      <line num="188" type="method" name="render" visibility="public" complexity="1" crap="1" count="2"/>
-      <line num="190" type="stmt" count="2"/>
-      <line num="191" type="stmt" count="2"/>
-      <line num="192" type="stmt" count="2"/>
-      <line num="193" type="stmt" count="2"/>
+      <line num="164" type="stmt" count="1"/>
+      <line num="165" type="stmt" count="1"/>
+      <line num="174" type="method" name="updatedScope" visibility="public" complexity="1" crap="1" count="2"/>
+      <line num="176" type="stmt" count="2"/>
+      <line num="177" type="stmt" count="2"/>
+      <line num="180" type="method" name="getTableRowUrl" visibility="public" complexity="2" crap="2" count="2"/>
+      <line num="182" type="stmt" count="2"/>
+      <line num="183" type="stmt" count="1"/>
+      <line num="186" type="stmt" count="2"/>
+      <line num="187" type="stmt" count="2"/>
+      <line num="188" type="stmt" count="2"/>
+      <line num="189" type="stmt" count="2"/>
+      <line num="192" type="method" name="isTrashed" visibility="public" complexity="2" crap="2" count="2"/>
       <line num="194" type="stmt" count="2"/>
-      <line num="195" type="stmt" count="2"/>
-      <line num="196" type="stmt" count="2"/>
-      <line num="197" type="stmt" count="2"/>
-      <line num="198" type="stmt" count="2"/>
-      <line num="199" type="stmt" count="2"/>
-      <line num="200" type="stmt" count="2"/>
-      <line num="201" type="stmt" count="2"/>
-      <line num="210" type="method" name="formatColumn" visibility="private" complexity="2" crap="2.03" count="2"/>
-      <line num="212" type="stmt" count="2"/>
-      <line num="213" type="stmt" count="2"/>
-      <line num="215" type="stmt" count="2"/>
-      <line num="216" type="stmt" count="2"/>
-      <line num="217" type="stmt" count="1"/>
-      <line num="218" type="stmt" count="2"/>
-      <line num="219" type="stmt" count="2"/>
-      <line num="220" type="stmt" count="0"/>
-      <line num="221" type="stmt" count="2"/>
-      <line num="222" type="stmt" count="2"/>
-      <line num="223" type="stmt" count="1"/>
-      <line num="224" type="stmt" count="1"/>
-      <line num="225" type="stmt" count="1"/>
-      <line num="226" type="stmt" count="2"/>
-      <line num="227" type="stmt" count="2"/>
-      <line num="228" type="stmt" count="0"/>
-      <line num="229" type="stmt" count="0"/>
-      <line num="230" type="stmt" count="0"/>
-      <line num="231" type="stmt" count="2"/>
-      <line num="232" type="stmt" count="2"/>
-      <line num="234" type="stmt" count="2"/>
-      <line num="237" type="method" name="notifySuccess" visibility="private" complexity="1" crap="1" count="1"/>
-      <line num="239" type="stmt" count="1"/>
-      <line num="240" type="stmt" count="1"/>
-      <line num="241" type="stmt" count="1"/>
-      <line num="242" type="stmt" count="1"/>
-      <line num="245" type="method" name="notifyError" visibility="private" complexity="1" crap="1" count="1"/>
-      <line num="247" type="stmt" count="1"/>
-      <line num="248" type="stmt" count="1"/>
-      <line num="249" type="stmt" count="1"/>
-      <line num="250" type="stmt" count="1"/>
-      <line num="251" type="stmt" count="1"/>
-      <metrics loc="254" ncloc="227" classes="1" methods="14" coveredmethods="8" conditionals="0" coveredconditionals="0" statements="92" coveredstatements="80" elements="106" coveredelements="88"/>
+      <line num="197" type="method" name="action" visibility="public" complexity="2" crap="2" count="1"/>
+      <line num="200" type="stmt" count="1"/>
+      <line num="201" type="stmt" count="1"/>
+      <line num="202" type="stmt" count="1"/>
+      <line num="203" type="stmt" count="1"/>
+      <line num="207" type="method" name="bulkAction" visibility="public" complexity="3" crap="3" count="1"/>
+      <line num="209" type="stmt" count="1"/>
+      <line num="210" type="stmt" count="1"/>
+      <line num="212" type="stmt" count="1"/>
+      <line num="214" type="stmt" count="1"/>
+      <line num="215" type="stmt" count="1"/>
+      <line num="218" type="stmt" count="1"/>
+      <line num="219" type="stmt" count="1"/>
+      <line num="223" type="method" name="render" visibility="public" complexity="1" crap="1" count="3"/>
+      <line num="225" type="stmt" count="3"/>
+      <line num="226" type="stmt" count="3"/>
+      <line num="227" type="stmt" count="3"/>
+      <line num="228" type="stmt" count="3"/>
+      <line num="229" type="stmt" count="3"/>
+      <line num="230" type="stmt" count="3"/>
+      <line num="231" type="stmt" count="3"/>
+      <line num="232" type="stmt" count="3"/>
+      <line num="233" type="stmt" count="3"/>
+      <line num="234" type="stmt" count="3"/>
+      <line num="235" type="stmt" count="3"/>
+      <line num="236" type="stmt" count="3"/>
+      <line num="245" type="method" name="formatColumn" visibility="private" complexity="2" crap="2" count="3"/>
+      <line num="247" type="stmt" count="3"/>
+      <line num="248" type="stmt" count="3"/>
+      <line num="250" type="stmt" count="3"/>
+      <line num="251" type="stmt" count="3"/>
+      <line num="252" type="stmt" count="2"/>
+      <line num="253" type="stmt" count="3"/>
+      <line num="254" type="stmt" count="3"/>
+      <line num="255" type="stmt" count="2"/>
+      <line num="256" type="stmt" count="3"/>
+      <line num="257" type="stmt" count="3"/>
+      <line num="258" type="stmt" count="2"/>
+      <line num="259" type="stmt" count="2"/>
+      <line num="260" type="stmt" count="2"/>
+      <line num="261" type="stmt" count="3"/>
+      <line num="262" type="stmt" count="3"/>
+      <line num="263" type="stmt" count="1"/>
+      <line num="264" type="stmt" count="1"/>
+      <line num="265" type="stmt" count="1"/>
+      <line num="266" type="stmt" count="3"/>
+      <line num="267" type="stmt" count="3"/>
+      <line num="269" type="stmt" count="3"/>
+      <line num="272" type="method" name="notifySuccess" visibility="private" complexity="1" crap="1" count="1"/>
+      <line num="274" type="stmt" count="1"/>
+      <line num="275" type="stmt" count="1"/>
+      <line num="276" type="stmt" count="1"/>
+      <line num="277" type="stmt" count="1"/>
+      <line num="280" type="method" name="notifyError" visibility="private" complexity="1" crap="1" count="1"/>
+      <line num="282" type="stmt" count="1"/>
+      <line num="283" type="stmt" count="1"/>
+      <line num="284" type="stmt" count="1"/>
+      <line num="285" type="stmt" count="1"/>
+      <line num="286" type="stmt" count="1"/>
+      <metrics loc="289" ncloc="237" classes="1" methods="16" coveredmethods="16" conditionals="0" coveredconditionals="0" statements="92" coveredstatements="92" elements="108" coveredelements="108"/>
     </file>
     <file name="/home/runner/work/flatpack/flatpack/src/Http/Middleware/Authenticate.php">
       <class name="Flatpack\Http\Middleware\Authenticate" namespace="global">
@@ -1132,23 +1098,23 @@
       <class name="Flatpack\Traits\WithComposition" namespace="global">
         <metrics complexity="8" methods="4" coveredmethods="4" conditionals="0" coveredconditionals="0" statements="32" coveredstatements="32" elements="36" coveredelements="36"/>
       </class>
-      <line num="29" type="method" name="getComposition" visibility="protected" complexity="1" crap="1" count="16"/>
-      <line num="31" type="stmt" count="16"/>
-      <line num="33" type="stmt" count="16"/>
-      <line num="34" type="stmt" count="12"/>
-      <line num="35" type="stmt" count="12"/>
-      <line num="36" type="stmt" count="12"/>
-      <line num="37" type="stmt" count="12"/>
-      <line num="38" type="stmt" count="12"/>
-      <line num="39" type="stmt" count="12"/>
-      <line num="40" type="stmt" count="12"/>
-      <line num="41" type="stmt" count="12"/>
-      <line num="42" type="stmt" count="12"/>
-      <line num="43" type="stmt" count="16"/>
+      <line num="29" type="method" name="getComposition" visibility="protected" complexity="1" crap="1" count="17"/>
+      <line num="31" type="stmt" count="17"/>
+      <line num="33" type="stmt" count="17"/>
+      <line num="34" type="stmt" count="13"/>
+      <line num="35" type="stmt" count="13"/>
+      <line num="36" type="stmt" count="13"/>
+      <line num="37" type="stmt" count="13"/>
+      <line num="38" type="stmt" count="13"/>
+      <line num="39" type="stmt" count="13"/>
+      <line num="40" type="stmt" count="13"/>
+      <line num="41" type="stmt" count="13"/>
+      <line num="42" type="stmt" count="13"/>
+      <line num="43" type="stmt" count="17"/>
       <line num="51" type="method" name="getMainComposition" visibility="protected" complexity="2" crap="2" count="13"/>
       <line num="53" type="stmt" count="13"/>
       <line num="55" type="stmt" count="13"/>
-      <line num="56" type="stmt" count="3"/>
+      <line num="56" type="stmt" count="5"/>
       <line num="59" type="stmt" count="13"/>
       <line num="68" type="method" name="getCompositionFields" visibility="protected" complexity="4" crap="4" count="11"/>
       <line num="70" type="stmt" count="11"/>
@@ -1172,7 +1138,7 @@
     </file>
     <file name="/home/runner/work/flatpack/flatpack/src/Traits/WithFormFields.php">
       <class name="Flatpack\Traits\WithFormFields" namespace="global">
-        <metrics complexity="12" methods="3" coveredmethods="3" conditionals="0" coveredconditionals="0" statements="20" coveredstatements="20" elements="23" coveredelements="23"/>
+        <metrics complexity="14" methods="3" coveredmethods="3" conditionals="0" coveredconditionals="0" statements="23" coveredstatements="23" elements="26" coveredelements="26"/>
       </class>
       <line num="50" type="method" name="bindModelToFields" visibility="protected" complexity="4" crap="4" count="11"/>
       <line num="52" type="stmt" count="11"/>
@@ -1182,22 +1148,25 @@
       <line num="56" type="stmt" count="9"/>
       <line num="57" type="stmt" count="1"/>
       <line num="59" type="stmt" count="9"/>
-      <line num="69" type="method" name="bindFieldsToModel" visibility="protected" complexity="7" crap="7" count="6"/>
+      <line num="69" type="method" name="bindFieldsToModel" visibility="protected" complexity="9" crap="9" count="6"/>
       <line num="71" type="stmt" count="6"/>
       <line num="72" type="stmt" count="5"/>
-      <line num="73" type="stmt" count="5"/>
-      <line num="74" type="stmt" count="5"/>
-      <line num="75" type="stmt" count="5"/>
+      <line num="73" type="stmt" count="2"/>
       <line num="76" type="stmt" count="5"/>
-      <line num="77" type="stmt" count="3"/>
-      <line num="80" type="stmt" count="4"/>
-      <line num="89" type="method" name="onlyInputFields" visibility="protected" complexity="1" crap="1" count="12"/>
-      <line num="91" type="stmt" count="12"/>
-      <line num="92" type="stmt" count="12"/>
-      <line num="93" type="stmt" count="10"/>
-      <line num="94" type="stmt" count="12"/>
-      <line num="95" type="stmt" count="12"/>
-      <metrics loc="98" ncloc="63" classes="1" methods="3" coveredmethods="3" conditionals="0" coveredconditionals="0" statements="20" coveredstatements="20" elements="23" coveredelements="23"/>
+      <line num="77" type="stmt" count="5"/>
+      <line num="78" type="stmt" count="5"/>
+      <line num="79" type="stmt" count="5"/>
+      <line num="80" type="stmt" count="5"/>
+      <line num="81" type="stmt" count="5"/>
+      <line num="83" type="stmt" count="3"/>
+      <line num="86" type="stmt" count="4"/>
+      <line num="95" type="method" name="onlyInputFields" visibility="protected" complexity="1" crap="1" count="12"/>
+      <line num="97" type="stmt" count="12"/>
+      <line num="98" type="stmt" count="12"/>
+      <line num="99" type="stmt" count="10"/>
+      <line num="100" type="stmt" count="12"/>
+      <line num="101" type="stmt" count="12"/>
+      <metrics loc="104" ncloc="69" classes="1" methods="3" coveredmethods="3" conditionals="0" coveredconditionals="0" statements="23" coveredstatements="23" elements="26" coveredelements="26"/>
     </file>
     <file name="/home/runner/work/flatpack/flatpack/src/Traits/WithFormValidation.php">
       <class name="Flatpack\Traits\WithFormValidation" namespace="global">
@@ -1216,10 +1185,10 @@
       <class name="Flatpack\Traits\WithRelationships" namespace="global">
         <metrics complexity="12" methods="5" coveredmethods="5" conditionals="0" coveredconditionals="0" statements="38" coveredstatements="38" elements="43" coveredelements="43"/>
       </class>
-      <line num="19" type="method" name="relation" visibility="protected" complexity="3" crap="3" count="14"/>
-      <line num="21" type="stmt" count="14"/>
+      <line num="19" type="method" name="relation" visibility="protected" complexity="3" crap="3" count="16"/>
+      <line num="21" type="stmt" count="16"/>
       <line num="22" type="stmt" count="1"/>
-      <line num="25" type="stmt" count="14"/>
+      <line num="25" type="stmt" count="16"/>
       <line num="36" type="method" name="createRelationship" visibility="protected" complexity="2" crap="2" count="4"/>
       <line num="38" type="stmt" count="4"/>
       <line num="40" type="stmt" count="4"/>
@@ -1229,25 +1198,25 @@
       <line num="46" type="stmt" count="3"/>
       <line num="47" type="stmt" count="3"/>
       <line num="49" type="stmt" count="2"/>
-      <line num="58" type="method" name="syncRelationship" visibility="protected" complexity="3" crap="3" count="4"/>
-      <line num="60" type="stmt" count="4"/>
+      <line num="58" type="method" name="syncRelationship" visibility="protected" complexity="3" crap="3" count="6"/>
+      <line num="60" type="stmt" count="6"/>
       <line num="61" type="stmt" count="4"/>
-      <line num="64" type="stmt" count="2"/>
-      <line num="65" type="stmt" count="2"/>
-      <line num="74" type="stmt" count="2"/>
+      <line num="64" type="stmt" count="4"/>
+      <line num="65" type="stmt" count="4"/>
+      <line num="74" type="stmt" count="4"/>
       <line num="75" type="stmt" count="1"/>
       <line num="76" type="stmt" count="1"/>
       <line num="77" type="stmt" count="1"/>
-      <line num="79" type="stmt" count="2"/>
-      <line num="88" type="method" name="isRelationship" visibility="protected" complexity="3" crap="3" count="19"/>
-      <line num="90" type="stmt" count="19"/>
+      <line num="79" type="stmt" count="4"/>
+      <line num="88" type="method" name="isRelationship" visibility="protected" complexity="3" crap="3" count="20"/>
+      <line num="90" type="stmt" count="20"/>
       <line num="91" type="stmt" count="1"/>
-      <line num="94" type="stmt" count="19"/>
+      <line num="94" type="stmt" count="20"/>
       <line num="95" type="stmt" count="14"/>
       <line num="96" type="stmt" count="14"/>
       <line num="97" type="stmt" count="14"/>
       <line num="98" type="stmt" count="14"/>
-      <line num="101" type="stmt" count="11"/>
+      <line num="101" type="stmt" count="10"/>
       <line num="109" type="method" name="allowedRelationships" visibility="private" complexity="1" crap="1" count="14"/>
       <line num="111" type="stmt" count="14"/>
       <line num="112" type="stmt" count="14"/>
@@ -1263,17 +1232,17 @@
     </file>
     <file name="/home/runner/work/flatpack/flatpack/src/Traits/WithStorageFiles.php">
       <class name="Flatpack\Traits\WithStorageFiles" namespace="global">
-        <metrics complexity="15" methods="12" coveredmethods="11" conditionals="0" coveredconditionals="0" statements="30" coveredstatements="27" elements="42" coveredelements="38"/>
+        <metrics complexity="15" methods="12" coveredmethods="12" conditionals="0" coveredconditionals="0" statements="30" coveredstatements="30" elements="42" coveredelements="42"/>
       </class>
-      <line num="38" type="method" name="combinePath" visibility="protected" complexity="1" crap="1" count="6"/>
-      <line num="40" type="stmt" count="6"/>
-      <line num="48" type="method" name="getStorageDisk" visibility="protected" complexity="1" crap="1" count="5"/>
-      <line num="50" type="stmt" count="5"/>
-      <line num="58" type="method" name="getStoragePath" visibility="protected" complexity="1" crap="1" count="5"/>
-      <line num="60" type="stmt" count="5"/>
-      <line num="61" type="stmt" count="5"/>
-      <line num="62" type="stmt" count="5"/>
-      <line num="63" type="stmt" count="5"/>
+      <line num="38" type="method" name="combinePath" visibility="protected" complexity="1" crap="1" count="7"/>
+      <line num="40" type="stmt" count="7"/>
+      <line num="48" type="method" name="getStorageDisk" visibility="protected" complexity="1" crap="1" count="6"/>
+      <line num="50" type="stmt" count="6"/>
+      <line num="58" type="method" name="getStoragePath" visibility="protected" complexity="1" crap="1" count="6"/>
+      <line num="60" type="stmt" count="6"/>
+      <line num="61" type="stmt" count="6"/>
+      <line num="62" type="stmt" count="6"/>
+      <line num="63" type="stmt" count="6"/>
       <line num="72" type="method" name="getFileName" visibility="protected" complexity="1" crap="1" count="2"/>
       <line num="74" type="stmt" count="2"/>
       <line num="83" type="method" name="removeFile" visibility="protected" complexity="2" crap="2" count="1"/>
@@ -1282,12 +1251,12 @@
       <line num="89" type="stmt" count="1"/>
       <line num="91" type="stmt" count="1"/>
       <line num="92" type="stmt" count="1"/>
-      <line num="101" type="method" name="cleanUp" visibility="protected" complexity="1" crap="2" count="0"/>
-      <line num="103" type="stmt" count="0"/>
-      <line num="104" type="stmt" count="0"/>
-      <line num="106" type="stmt" count="0"/>
-      <line num="114" type="method" name="getEntityPath" visibility="private" complexity="1" crap="1" count="5"/>
-      <line num="116" type="stmt" count="5"/>
+      <line num="101" type="method" name="cleanUp" visibility="protected" complexity="1" crap="1" count="1"/>
+      <line num="103" type="stmt" count="1"/>
+      <line num="104" type="stmt" count="1"/>
+      <line num="106" type="stmt" count="1"/>
+      <line num="114" type="method" name="getEntityPath" visibility="private" complexity="1" crap="1" count="6"/>
+      <line num="116" type="stmt" count="6"/>
       <line num="125" type="method" name="onlyFilesToUpload" visibility="protected" complexity="1" crap="1" count="7"/>
       <line num="127" type="stmt" count="7"/>
       <line num="136" type="method" name="onlyFilesAlreadyUploaded" visibility="protected" complexity="1" crap="1" count="7"/>
@@ -1307,31 +1276,24 @@
       <line num="182" type="stmt" count="4"/>
       <line num="183" type="stmt" count="4"/>
       <line num="185" type="stmt" count="4"/>
-      <metrics loc="188" ncloc="105" classes="1" methods="12" coveredmethods="11" conditionals="0" coveredconditionals="0" statements="30" coveredstatements="27" elements="42" coveredelements="38"/>
+      <metrics loc="188" ncloc="105" classes="1" methods="12" coveredmethods="12" conditionals="0" coveredconditionals="0" statements="30" coveredstatements="30" elements="42" coveredelements="42"/>
     </file>
     <file name="/home/runner/work/flatpack/flatpack/src/View/Components/ActionButton.php">
       <class name="Flatpack\View\Components\ActionButton" namespace="global">
-        <metrics complexity="15" methods="6" coveredmethods="6" conditionals="0" coveredconditionals="0" statements="47" coveredstatements="47" elements="53" coveredelements="53"/>
+        <metrics complexity="15" methods="6" coveredmethods="6" conditionals="0" coveredconditionals="0" statements="48" coveredstatements="48" elements="54" coveredelements="54"/>
       </class>
-      <line num="114" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="14"/>
-      <line num="121" type="stmt" count="14"/>
-      <line num="122" type="stmt" count="14"/>
-      <line num="123" type="stmt" count="14"/>
-      <line num="124" type="stmt" count="14"/>
-      <line num="125" type="stmt" count="14"/>
-      <line num="127" type="stmt" count="14"/>
-      <line num="135" type="method" name="render" visibility="public" complexity="2" crap="2" count="11"/>
-      <line num="137" type="stmt" count="11"/>
-      <line num="138" type="stmt" count="2"/>
-      <line num="141" type="stmt" count="9"/>
-      <line num="149" type="method" name="initProps" visibility="private" complexity="1" crap="1" count="14"/>
-      <line num="151" type="stmt" count="14"/>
-      <line num="152" type="stmt" count="14"/>
-      <line num="153" type="stmt" count="14"/>
-      <line num="154" type="stmt" count="14"/>
-      <line num="155" type="stmt" count="14"/>
-      <line num="156" type="stmt" count="14"/>
-      <line num="157" type="stmt" count="14"/>
+      <line num="121" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="14"/>
+      <line num="128" type="stmt" count="14"/>
+      <line num="129" type="stmt" count="14"/>
+      <line num="130" type="stmt" count="14"/>
+      <line num="131" type="stmt" count="14"/>
+      <line num="132" type="stmt" count="14"/>
+      <line num="134" type="stmt" count="14"/>
+      <line num="142" type="method" name="render" visibility="public" complexity="2" crap="2" count="11"/>
+      <line num="144" type="stmt" count="11"/>
+      <line num="145" type="stmt" count="2"/>
+      <line num="148" type="stmt" count="10"/>
+      <line num="156" type="method" name="initProps" visibility="private" complexity="1" crap="1" count="14"/>
       <line num="158" type="stmt" count="14"/>
       <line num="159" type="stmt" count="14"/>
       <line num="160" type="stmt" count="14"/>
@@ -1339,34 +1301,42 @@
       <line num="162" type="stmt" count="14"/>
       <line num="163" type="stmt" count="14"/>
       <line num="164" type="stmt" count="14"/>
+      <line num="165" type="stmt" count="14"/>
       <line num="166" type="stmt" count="14"/>
-      <line num="174" type="method" name="formatLink" visibility="private" complexity="4" crap="4" count="14"/>
-      <line num="176" type="stmt" count="14"/>
-      <line num="177" type="stmt" count="14"/>
-      <line num="178" type="stmt" count="14"/>
-      <line num="179" type="stmt" count="14"/>
-      <line num="180" type="stmt" count="14"/>
-      <line num="191" type="method" name="getOption" visibility="private" complexity="3" crap="3" count="14"/>
-      <line num="193" type="stmt" count="14"/>
-      <line num="195" type="stmt" count="14"/>
-      <line num="196" type="stmt" count="14"/>
-      <line num="197" type="stmt" count="14"/>
-      <line num="198" type="stmt" count="14"/>
-      <line num="199" type="stmt" count="14"/>
-      <line num="202" type="stmt" count="14"/>
-      <line num="210" type="method" name="setConfirmationMessage" visibility="private" complexity="4" crap="4" count="14"/>
-      <line num="212" type="stmt" count="14"/>
-      <line num="213" type="stmt" count="14"/>
-      <line num="214" type="stmt" count="14"/>
-      <line num="215" type="stmt" count="14"/>
-      <line num="218" type="stmt" count="14"/>
-      <line num="220" type="stmt" count="12"/>
-      <line num="221" type="stmt" count="2"/>
-      <line num="224" type="stmt" count="12"/>
-      <line num="225" type="stmt" count="12"/>
-      <line num="227" type="stmt" count="2"/>
-      <line num="231" type="stmt" count="14"/>
-      <metrics loc="234" ncloc="130" classes="1" methods="6" coveredmethods="6" conditionals="0" coveredconditionals="0" statements="47" coveredstatements="47" elements="53" coveredelements="53"/>
+      <line num="167" type="stmt" count="14"/>
+      <line num="168" type="stmt" count="14"/>
+      <line num="169" type="stmt" count="14"/>
+      <line num="170" type="stmt" count="14"/>
+      <line num="171" type="stmt" count="14"/>
+      <line num="172" type="stmt" count="14"/>
+      <line num="174" type="stmt" count="14"/>
+      <line num="182" type="method" name="formatLink" visibility="private" complexity="4" crap="4" count="14"/>
+      <line num="184" type="stmt" count="14"/>
+      <line num="185" type="stmt" count="14"/>
+      <line num="186" type="stmt" count="14"/>
+      <line num="187" type="stmt" count="14"/>
+      <line num="188" type="stmt" count="14"/>
+      <line num="199" type="method" name="getOption" visibility="private" complexity="3" crap="3" count="14"/>
+      <line num="201" type="stmt" count="14"/>
+      <line num="203" type="stmt" count="14"/>
+      <line num="204" type="stmt" count="14"/>
+      <line num="205" type="stmt" count="14"/>
+      <line num="206" type="stmt" count="14"/>
+      <line num="207" type="stmt" count="14"/>
+      <line num="210" type="stmt" count="14"/>
+      <line num="218" type="method" name="setConfirmationMessage" visibility="private" complexity="4" crap="4" count="14"/>
+      <line num="220" type="stmt" count="14"/>
+      <line num="221" type="stmt" count="14"/>
+      <line num="222" type="stmt" count="14"/>
+      <line num="223" type="stmt" count="14"/>
+      <line num="226" type="stmt" count="14"/>
+      <line num="228" type="stmt" count="12"/>
+      <line num="229" type="stmt" count="2"/>
+      <line num="232" type="stmt" count="12"/>
+      <line num="233" type="stmt" count="12"/>
+      <line num="235" type="stmt" count="2"/>
+      <line num="239" type="stmt" count="14"/>
+      <metrics loc="242" ncloc="133" classes="1" methods="6" coveredmethods="6" conditionals="0" coveredconditionals="0" statements="48" coveredstatements="48" elements="54" coveredelements="54"/>
     </file>
     <file name="/home/runner/work/flatpack/flatpack/src/View/Components/FormField.php">
       <class name="Flatpack\View\Components\FormField" namespace="global">
@@ -1415,58 +1385,56 @@
     </file>
     <file name="/home/runner/work/flatpack/flatpack/src/View/Components/Layout.php">
       <class name="Flatpack\View\Components\Layout" namespace="global">
-        <metrics complexity="8" methods="5" coveredmethods="5" conditionals="0" coveredconditionals="0" statements="30" coveredstatements="30" elements="35" coveredelements="35"/>
+        <metrics complexity="9" methods="6" coveredmethods="6" conditionals="0" coveredconditionals="0" statements="27" coveredstatements="27" elements="33" coveredelements="33"/>
       </class>
-      <line num="21" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="5"/>
-      <line num="23" type="stmt" count="5"/>
+      <line num="22" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="5"/>
       <line num="24" type="stmt" count="5"/>
-      <line num="32" type="method" name="render" visibility="public" complexity="2" crap="2" count="5"/>
-      <line num="34" type="stmt" count="5"/>
-      <line num="36" type="stmt" count="5"/>
+      <line num="25" type="stmt" count="5"/>
+      <line num="33" type="method" name="render" visibility="public" complexity="2" crap="2" count="5"/>
+      <line num="35" type="stmt" count="5"/>
       <line num="37" type="stmt" count="5"/>
       <line num="38" type="stmt" count="5"/>
       <line num="39" type="stmt" count="5"/>
-      <line num="47" type="method" name="setTemplateComposition" visibility="private" complexity="3" crap="3" count="5"/>
-      <line num="50" type="stmt" count="5"/>
+      <line num="40" type="stmt" count="5"/>
+      <line num="41" type="stmt" count="5"/>
+      <line num="49" type="method" name="setTemplateComposition" visibility="private" complexity="2" crap="2" count="5"/>
       <line num="51" type="stmt" count="5"/>
-      <line num="52" type="stmt" count="5"/>
-      <line num="55" type="stmt" count="5"/>
-      <line num="56" type="stmt" count="5"/>
-      <line num="59" type="stmt" count="5"/>
-      <line num="62" type="method" name="setNavigation" visibility="private" complexity="1" crap="1" count="5"/>
-      <line num="64" type="stmt" count="5"/>
-      <line num="72" type="method" name="defaultLayout" visibility="private" complexity="1" crap="1" count="5"/>
-      <line num="74" type="stmt" count="5"/>
-      <line num="75" type="stmt" count="5"/>
-      <line num="76" type="stmt" count="5"/>
-      <line num="77" type="stmt" count="5"/>
-      <line num="78" type="stmt" count="4"/>
+      <line num="53" type="stmt" count="5"/>
+      <line num="54" type="stmt" count="5"/>
+      <line num="57" type="stmt" count="5"/>
+      <line num="65" type="method" name="setNavigation" visibility="private" complexity="1" crap="1" count="5"/>
+      <line num="67" type="stmt" count="5"/>
+      <line num="75" type="method" name="customLayout" visibility="private" complexity="2" crap="2" count="5"/>
+      <line num="78" type="stmt" count="5"/>
       <line num="79" type="stmt" count="5"/>
       <line num="80" type="stmt" count="5"/>
-      <line num="81" type="stmt" count="4"/>
-      <line num="82" type="stmt" count="4"/>
-      <line num="83" type="stmt" count="4"/>
-      <line num="84" type="stmt" count="4"/>
-      <line num="85" type="stmt" count="4"/>
-      <line num="86" type="stmt" count="5"/>
-      <line num="87" type="stmt" count="5"/>
-      <line num="88" type="stmt" count="5"/>
-      <line num="90" type="stmt" count="5"/>
-      <metrics loc="93" ncloc="73" classes="1" methods="5" coveredmethods="5" conditionals="0" coveredconditionals="0" statements="30" coveredstatements="30" elements="35" coveredelements="35"/>
+      <line num="83" type="stmt" count="5"/>
+      <line num="91" type="method" name="defaultLayout" visibility="private" complexity="1" crap="1" count="5"/>
+      <line num="93" type="stmt" count="5"/>
+      <line num="94" type="stmt" count="5"/>
+      <line num="95" type="stmt" count="5"/>
+      <line num="96" type="stmt" count="5"/>
+      <line num="97" type="stmt" count="5"/>
+      <line num="98" type="stmt" count="5"/>
+      <line num="99" type="stmt" count="5"/>
+      <line num="100" type="stmt" count="5"/>
+      <line num="101" type="stmt" count="5"/>
+      <line num="102" type="stmt" count="5"/>
+      <metrics loc="105" ncloc="75" classes="1" methods="6" coveredmethods="6" conditionals="0" coveredconditionals="0" statements="27" coveredstatements="27" elements="33" coveredelements="33"/>
     </file>
     <file name="/home/runner/work/flatpack/flatpack/src/View/Components/Modal.php">
       <class name="Flatpack\View\Components\Modal" namespace="global">
         <metrics complexity="2" methods="2" coveredmethods="2" conditionals="0" coveredconditionals="0" statements="2" coveredstatements="2" elements="4" coveredelements="4"/>
       </class>
-      <line num="16" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="1"/>
-      <line num="18" type="stmt" count="1"/>
-      <line num="26" type="method" name="render" visibility="public" complexity="1" crap="1" count="1"/>
-      <line num="28" type="stmt" count="1"/>
+      <line num="16" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="3"/>
+      <line num="18" type="stmt" count="3"/>
+      <line num="26" type="method" name="render" visibility="public" complexity="1" crap="1" count="3"/>
+      <line num="28" type="stmt" count="3"/>
       <metrics loc="31" ncloc="21" classes="1" methods="2" coveredmethods="2" conditionals="0" coveredconditionals="0" statements="2" coveredstatements="2" elements="4" coveredelements="4"/>
     </file>
     <file name="/home/runner/work/flatpack/flatpack/src/View/Components/RelationField.php">
       <class name="Flatpack\View\Components\RelationField" namespace="global">
-        <metrics complexity="22" methods="12" coveredmethods="12" conditionals="0" coveredconditionals="0" statements="65" coveredstatements="65" elements="77" coveredelements="77"/>
+        <metrics complexity="22" methods="12" coveredmethods="11" conditionals="0" coveredconditionals="0" statements="65" coveredstatements="64" elements="77" coveredelements="75"/>
       </class>
       <line num="82" type="method" name="__construct" visibility="public" complexity="1" crap="1" count="9"/>
       <line num="90" type="stmt" count="9"/>
@@ -1479,59 +1447,59 @@
       <line num="110" type="stmt" count="9"/>
       <line num="112" type="stmt" count="9"/>
       <line num="114" type="stmt" count="9"/>
-      <line num="115" type="stmt" count="3"/>
+      <line num="115" type="stmt" count="4"/>
       <line num="124" type="method" name="render" visibility="public" complexity="1" crap="1" count="4"/>
       <line num="126" type="stmt" count="4"/>
       <line num="134" type="method" name="getRelationshipModel" visibility="protected" complexity="2" crap="2" count="9"/>
       <line num="136" type="stmt" count="9"/>
-      <line num="137" type="stmt" count="3"/>
-      <line num="140" type="stmt" count="6"/>
+      <line num="137" type="stmt" count="2"/>
+      <line num="140" type="stmt" count="7"/>
       <line num="148" type="method" name="getRelationshipItems" visibility="protected" complexity="4" crap="4" count="9"/>
       <line num="150" type="stmt" count="9"/>
       <line num="152" type="stmt" count="9"/>
       <line num="154" type="stmt" count="9"/>
       <line num="156" type="stmt" count="9"/>
-      <line num="157" type="stmt" count="3"/>
-      <line num="160" type="stmt" count="6"/>
-      <line num="161" type="stmt" count="6"/>
-      <line num="162" type="stmt" count="6"/>
-      <line num="163" type="stmt" count="6"/>
-      <line num="165" type="stmt" count="6"/>
-      <line num="166" type="stmt" count="6"/>
-      <line num="167" type="stmt" count="6"/>
-      <line num="171" type="stmt" count="6"/>
+      <line num="157" type="stmt" count="2"/>
+      <line num="160" type="stmt" count="7"/>
+      <line num="161" type="stmt" count="7"/>
+      <line num="162" type="stmt" count="7"/>
+      <line num="163" type="stmt" count="7"/>
+      <line num="165" type="stmt" count="7"/>
+      <line num="166" type="stmt" count="7"/>
+      <line num="167" type="stmt" count="7"/>
+      <line num="171" type="stmt" count="7"/>
       <line num="179" type="method" name="getRelationId" visibility="protected" complexity="1" crap="1" count="9"/>
       <line num="181" type="stmt" count="9"/>
       <line num="189" type="method" name="getRelationDisplay" visibility="protected" complexity="1" crap="1" count="9"/>
       <line num="191" type="stmt" count="9"/>
-      <line num="199" type="method" name="getRelationKeyName" visibility="protected" complexity="4" crap="4" count="9"/>
+      <line num="199" type="method" name="getRelationKeyName" visibility="protected" complexity="4" crap="4.05" count="9"/>
       <line num="201" type="stmt" count="9"/>
-      <line num="202" type="stmt" count="4"/>
-      <line num="203" type="stmt" count="5"/>
-      <line num="204" type="stmt" count="1"/>
-      <line num="205" type="stmt" count="4"/>
+      <line num="202" type="stmt" count="6"/>
+      <line num="203" type="stmt" count="3"/>
+      <line num="204" type="stmt" count="0"/>
+      <line num="205" type="stmt" count="3"/>
       <line num="206" type="stmt" count="1"/>
-      <line num="209" type="stmt" count="3"/>
+      <line num="209" type="stmt" count="2"/>
       <line num="217" type="method" name="getRelationSelect" visibility="protected" complexity="1" crap="1" count="9"/>
       <line num="219" type="stmt" count="9"/>
       <line num="220" type="stmt" count="9"/>
       <line num="221" type="stmt" count="9"/>
       <line num="222" type="stmt" count="9"/>
-      <line num="230" type="method" name="getRelationOrderBy" visibility="protected" complexity="1" crap="1" count="6"/>
-      <line num="232" type="stmt" count="6"/>
-      <line num="234" type="stmt" count="6"/>
-      <line num="236" type="stmt" count="6"/>
-      <line num="237" type="stmt" count="6"/>
-      <line num="238" type="stmt" count="6"/>
-      <line num="240" type="stmt" count="6"/>
-      <line num="241" type="stmt" count="6"/>
-      <line num="242" type="stmt" count="6"/>
-      <line num="243" type="stmt" count="6"/>
-      <line num="244" type="stmt" count="6"/>
-      <line num="252" type="method" name="setupFormFields" visibility="protected" complexity="2" crap="2" count="3"/>
-      <line num="254" type="stmt" count="3"/>
-      <line num="256" type="stmt" count="3"/>
-      <line num="257" type="stmt" count="1"/>
+      <line num="230" type="method" name="getRelationOrderBy" visibility="protected" complexity="1" crap="1" count="7"/>
+      <line num="232" type="stmt" count="7"/>
+      <line num="234" type="stmt" count="7"/>
+      <line num="236" type="stmt" count="7"/>
+      <line num="237" type="stmt" count="7"/>
+      <line num="238" type="stmt" count="7"/>
+      <line num="240" type="stmt" count="7"/>
+      <line num="241" type="stmt" count="7"/>
+      <line num="242" type="stmt" count="7"/>
+      <line num="243" type="stmt" count="7"/>
+      <line num="244" type="stmt" count="7"/>
+      <line num="252" type="method" name="setupFormFields" visibility="protected" complexity="2" crap="2" count="4"/>
+      <line num="254" type="stmt" count="4"/>
+      <line num="256" type="stmt" count="4"/>
+      <line num="257" type="stmt" count="3"/>
       <line num="266" type="method" name="getRelationshipType" visibility="protected" complexity="2" crap="2" count="9"/>
       <line num="268" type="stmt" count="9"/>
       <line num="270" type="stmt" count="9"/>
@@ -1545,7 +1513,7 @@
       <line num="278" type="stmt" count="9"/>
       <line num="279" type="stmt" count="9"/>
       <line num="281" type="stmt" count="9"/>
-      <metrics loc="284" ncloc="179" classes="1" methods="12" coveredmethods="12" conditionals="0" coveredconditionals="0" statements="65" coveredstatements="65" elements="77" coveredelements="77"/>
+      <metrics loc="284" ncloc="179" classes="1" methods="12" coveredmethods="11" conditionals="0" coveredconditionals="0" statements="65" coveredstatements="64" elements="77" coveredelements="75"/>
     </file>
     <file name="/home/runner/work/flatpack/flatpack/src/View/Components/TagInput.php">
       <class name="Flatpack\View\Components\TagInput" namespace="global">
@@ -1556,24 +1524,22 @@
       <metrics loc="31" ncloc="16" classes="1" methods="1" coveredmethods="1" conditionals="0" coveredconditionals="0" statements="1" coveredstatements="1" elements="2" coveredelements="2"/>
     </file>
     <file name="/home/runner/work/flatpack/flatpack/src/helpers.php">
-      <line num="14" type="stmt" count="5"/>
-      <line num="15" type="stmt" count="0"/>
-      <line num="16" type="stmt" count="5"/>
-      <line num="28" type="stmt" count="1"/>
-      <line num="42" type="stmt" count="9"/>
-      <line num="58" type="stmt" count="12"/>
-      <line num="59" type="stmt" count="12"/>
-      <line num="60" type="stmt" count="12"/>
-      <line num="62" type="stmt" count="12"/>
-      <line num="63" type="stmt" count="10"/>
-      <line num="64" type="stmt" count="10"/>
-      <line num="65" type="stmt" count="10"/>
-      <line num="67" type="stmt" count="7"/>
-      <line num="70" type="stmt" count="10"/>
-      <line num="71" type="stmt" count="10"/>
-      <line num="74" type="stmt" count="12"/>
-      <metrics loc="77" ncloc="51" classes="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="16" coveredstatements="15" elements="16" coveredelements="15"/>
+      <line num="13" type="stmt" count="5"/>
+      <line num="24" type="stmt" count="1"/>
+      <line num="36" type="stmt" count="9"/>
+      <line num="49" type="stmt" count="12"/>
+      <line num="50" type="stmt" count="12"/>
+      <line num="51" type="stmt" count="12"/>
+      <line num="53" type="stmt" count="12"/>
+      <line num="54" type="stmt" count="10"/>
+      <line num="55" type="stmt" count="10"/>
+      <line num="56" type="stmt" count="10"/>
+      <line num="58" type="stmt" count="7"/>
+      <line num="61" type="stmt" count="10"/>
+      <line num="62" type="stmt" count="10"/>
+      <line num="65" type="stmt" count="12"/>
+      <metrics loc="67" ncloc="41" classes="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="14" coveredstatements="14" elements="14" coveredelements="14"/>
     </file>
-    <metrics files="51" loc="4874" ncloc="3288" classes="45" methods="235" coveredmethods="176" conditionals="0" coveredconditionals="0" statements="1042" coveredstatements="866" elements="1277" coveredelements="1042"/>
+    <metrics files="50" loc="4842" ncloc="3222" classes="44" methods="229" coveredmethods="201" conditionals="0" coveredconditionals="0" statements="1019" coveredstatements="940" elements="1248" coveredelements="1141"/>
   </project>
 </coverage>
