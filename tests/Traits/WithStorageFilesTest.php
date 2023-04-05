@@ -10,6 +10,7 @@ beforeEach(function () {
             getStorageDisk as public;
             getStoragePath as public;
             getFileName as public;
+            cleanUp as public;
         }
 
         public function __construct()
@@ -41,4 +42,8 @@ it('returns the entity path', function () {
 it('returns the file name', function () {
     $this->expect($this->trait->getFileName('foo-bar/foo/bar.baz/foo.bar'))
          ->toBe('foo.bar');
+});
+
+it('cleans up directory', function () {
+    $this->expect($this->trait->cleanUp())->toBe(true);
 });
