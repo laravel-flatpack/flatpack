@@ -2,6 +2,15 @@
 
 All notable changes to `laravel-flatpack` will be documented in this file.
 
+## v1.0.10 - 2023-04-08
+
+### What's Changed
+
+- Layout improvements https://github.com/laravel-flatpack/flatpack/pull/25
+- Test coverage improvements
+
+**Full Changelog**: https://github.com/laravel-flatpack/flatpack/compare/v1.0.9...v1.0.10
+
 ## v1.0.9 - 2023-03-28
 
 Improved test coverage. Minor fixes.
