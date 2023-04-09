@@ -5,39 +5,12 @@ namespace Flatpack\Http\Livewire;
 use Flatpack\Traits\WithActions;
 use Flatpack\Traits\WithComposition;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Arr;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
 
 class Table extends DataTableComponent
 {
     use WithActions;
     use WithComposition;
-
-    public bool $dumpFilters = false;
-
-    public bool $columnSelect = true;
-
-    public string $defaultSortColumn = 'id';
-
-    public string $defaultSortDirection = 'DESC';
-
-    public bool $reorderEnabled = false;
-
-    public array $bulkActions = [];
-
-    protected string $tableName = '';
-
-    protected $queryString = [
-        'filters' => [
-            'except' => null,
-        ],
-        'sorts' => [
-            'except' => null,
-        ],
-        'scope' => [
-            'except' => 'default',
-        ],
-    ];
 
     /**
      * Model class name.
@@ -67,114 +40,81 @@ class Table extends DataTableComponent
      */
     public $scope = 'default';
 
-    public function mount()
+    /**
+     * Setup list components.
+     *
+     * @return self
+     */
+    private function setComponents(): self
     {
+        // Bulk actions
         foreach ($this->composition['bulk'] ?? [] as $key => $options) {
             if (isset($options['action'])) {
                 $this->bulkActions[$options['action']] = $options['label'] ?? $key;
             }
         }
+
+        return $this;
     }
 
-    public function columns(): array
+    public function configure(): void
     {
-        $columns = [];
+        $this->setComponents()
+            ->setPrimaryKey((new $this->model())->getKeyName())
+            ->setTableRowUrl(function ($row) {
+                return route('admin.users.show', $row);
+            });
+    }
 
-        foreach ($this->composition['columns'] ?? [] as $attribute => $options) {
-            $label = $options['label'] ?? $attribute;
-            $column = Column::make($label, $attribute);
-
-            if (isset($options['sortable']) && $options['sortable']) {
-                $column->sortable();
-            }
-
-            if (isset($options['searchable']) && $options['searchable']) {
-                $column->searchable();
-            }
-
-            if (! (isset($options['invisible']) && $options['invisible'])) {
-                $column->selected();
-            }
-
-            $column->format($this->formatColumn($options));
-
-            if ((isset($options['type']) && $options['type'] === 'image')) {
-                $column->addClass('table-image-column');
-            }
-
-            if (isset($options['width'])) {
-                $column->setWidth($options['width']);
-            }
-
-            $columns[] = $column;
+    /**
+     * Clear or select all depending on what's selected when select all is changed
+     */
+    public function updatedSelectAll(): void
+    {
+        if (count($this->getSelected()) === (clone $this->baseQuery())->count()) {
+            $this->clearSelected();
+        } else {
+            $this->setAllSelected();
         }
-
-        return $columns;
     }
 
-    public function filters(): array
+    /**
+     * Set select all and get all ids for selected
+     */
+    public function setAllSelected(): void
     {
-        return [];
+        $this->setSelectAllEnabled();
+        $this->setSelected((clone $this->builder())->pluck($this->getPrimaryKey())->map(fn ($item) => (string)$item)->toArray());
     }
 
     /**
      * Query Builder
      *
-     * @return Illuminate\Database\Eloquent\Builder
+     * @return Builder
      */
-    private function modelQuery()
+    public function builder(): Builder
     {
-        return $this->model::query();
+        return $this->getModel()::query()->with($this->getRelationships());
     }
 
     /**
-     * Query Builder
+     * Execute database query.
      *
-     * @return Illuminate\Database\Eloquent\Builder
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator|\Illuminate\Contracts\Pagination\Paginator|\Illuminate\Database\Eloquent\Collection|static[]
      */
-    public function query(): Builder
+    protected function executeQuery()
     {
-        return $this->scopeQuery();
-    }
+        if ($this->paginationIsEnabled()) {
+            if ($this->isPaginationMethod('standard')) {
+                return $this->builder()->paginate($this->getPerPage() === -1 ? $this->getBuilder()->count() : $this->getPerPage(), ['*'], $this->getComputedPageName());
+            }
 
-    /**
-     * Apply model scopes to query
-     *
-     * @return Illuminate\Database\Eloquent\Builder
-     */
-    public function scopeQuery(): Builder
-    {
-        $query = $this->modelQuery();
-
-        if (! empty($this->scope) && $this->scope !== 'default') {
-            return $query->{$this->scope}();
+            if ($this->isPaginationMethod('simple')) {
+                return $this->builder()->simplePaginate($this->getPerPage() === -1 ? $this->getBuilder()->count() : $this->getPerPage(), ['*'], $this->getComputedPageName());
+            }
         }
 
-        return $query;
-    }
-
-    /**
-     * Every time the scope is updated, reset the selected checkboxes.
-     *
-     * @return void
-     */
-    public function updatedFilters(): void
-    {
-        if (isset($this->filters['search'])) {
-            $this->selected = [];
-            $this->resetBulk();
-        }
-    }
-
-    /**
-     * Every time the scope is updated, reset the selected checkboxes.
-     *
-     * @return void
-     */
-    public function updatedScope($value)
-    {
-        $this->selected = [];
-        $this->resetBulk();
+        return $this->builder()->get();
     }
 
     public function getTableRowUrl($row): string
@@ -194,46 +134,68 @@ class Table extends DataTableComponent
         return method_exists($row, 'trashed') && $row->trashed();
     }
 
-    public function action($action, $options = [])
+    /**
+     * Execute action.
+     *
+     * @param string $action
+     * @param array $options
+     * @return void
+     */
+    public function action($action, $options = []): void
     {
-        try {
-            $action = $this->getAction($action);
-            $action->run();
-        } catch (\Exception $e) {
-            $this->notifyError($e->getMessage());
-        }
+        $action = $this->getAction($action);
+        $action->run();
     }
 
+    /**
+     * Execute bulk action.
+     */
     public function bulkAction($action)
     {
-        $selected = $this->selectedKeys();
+        $selected = $this->getSelected();
         $action = $this->getAction($action)->setSelectedKeys($selected);
 
         $action->run();
 
         $this->selected = [];
         $this->resetBulk();
-
-        // Action success notification
-        if (method_exists($action, 'getMessage') && $action->isSuccess()) {
-            $this->notifySuccess($action->getMessage());
-        }
     }
 
-    public function render()
+    /**
+     * Table columns definition.
+     *
+     * @return array
+    */
+    public function columns(): array
     {
-        return view('flatpack::components.table')
-            ->with([
-                'scopes' => $this->getComposition('scopes'),
-                'toolbar' => $this->getComposition('toolbar'),
-                'columns' => $this->columns(),
-                'searchableColumns' => $this->getSearchableColumns(),
-                'rowView' => $this->rowView(),
-                'filtersView' => $this->filtersView(),
-                'customFilters' => $this->filters(),
-                'rows' => $this->getRowsProperty(),
-                'modalsView' => $this->modalsView(),
-            ]);
+        $columns = [];
+
+        foreach ($this->composition['columns'] ?? [] as $attribute => $options) {
+            $label = $options['label'] ?? $attribute;
+            $column = Column::make($label, $attribute);
+
+            if (isset($options['sortable']) && $options['sortable']) {
+                $column->sortable();
+            }
+
+            if (isset($options['searchable']) && $options['searchable']) {
+                $column->searchable();
+            }
+
+            if (! (isset($options['invisible']) && $options['invisible'])) {
+                $column->isSelectable();
+            }
+
+            if (isset($options['width'])) {
+                $column->setWidth($options['width']);
+            }
+
+            $column->format($this->formatColumn($options));
+
+            $columns[] = $column;
+        }
+
+        return $columns;
     }
 
     /**
@@ -244,45 +206,43 @@ class Table extends DataTableComponent
      */
     private function formatColumn($options)
     {
-        $type = Arr::get($options, 'type', 'default');
-        $format = Arr::get($options, 'format', 'Y-m-d H:i:s');
+        $type = data_get($options, 'type', 'default');
+        $format = data_get($options, 'format', 'Y-m-d H:i:s');
 
         $map = [
-            'default' => function ($value) {
-                return $value;
-            },
+            'default' => fn ($value) => $value,
             'datetime' => function ($value) use ($format) {
                 return method_exists($value, 'format') ? $value->format($format) : $value;
             },
-            'image' => function ($value) {
-                return view('flatpack::includes.table.cells.image', [
+            'image' => fn ($value) => view('flatpack::includes.table.cells.image', [
                     'src' => $value,
-                ]);
-            },
-            'boolean' => function ($value) {
-                return view('flatpack::includes.table.cells.boolean', [
-                    'boolean' => $value,
-                ]);
-            },
+            ]),
+            'boolean' => fn ($value) => view('flatpack::includes.table.cells.boolean', [
+                'boolean' => $value,
+            ]),
         ];
 
         return $map[$type] ?? $map['default'];
     }
 
-    private function notifySuccess($message)
+    /**
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
+     */
+    public function render()
     {
-        $this->emit('notify', [
-            "type" => "success",
-            "message" => $message,
-        ]);
-    }
+        $this->setupColumnSelect();
+        $this->setupPagination();
+        $this->setupSecondaryHeader();
+        $this->setupFooter();
+        $this->setupReordering();
 
-    private function notifyError($error, $errors = [])
-    {
-        return $this->emit('notify', [
-            "type" => "error",
-            "message" => $error,
-            "errors" => $errors,
-        ]);
+        return view('flatpack::components.table')
+            ->with([
+                'scopes' => $this->getComposition('scopes'),
+                'toolbar' => $this->getComposition('toolbar'),
+                'columns' => $this->getColumns(),
+                'rows' => $this->getRows(),
+                'customView' => $this->customView(),
+            ]);
     }
 }
