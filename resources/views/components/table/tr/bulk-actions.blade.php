@@ -13,7 +13,7 @@
 
     <tr 
         wire:key="bulk-select-message-{{ $table }}"
-        class="bg-primary-50 bg-opacity-50 dark:bg-gray-900 dark:text-white"
+        class="bg-primary-50 bg-opacity-30 dark:bg-gray-900 dark:text-white"
     >
         <x-flatpack::table.td.plain :colspan="$colspan">
             @if ($selectAll)

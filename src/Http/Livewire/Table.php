@@ -158,7 +158,6 @@ class Table extends DataTableComponent
         $action->run();
 
         $this->selected = [];
-        $this->resetBulk();
     }
 
     /**
