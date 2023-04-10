@@ -30,7 +30,7 @@
         @endif
 
         @if ($component->searchIsEnabled() && $component->searchVisibilityIsEnabled())
-            <div class="flex rounded-md shadow-sm">
+            <div class="md:flex w-full">
                 @php
                     $tableName = $component->getTableName();
                     $hasSearch = $component->hasSearch();
@@ -38,6 +38,7 @@
                 <x-input 
                     wire:model="{{ $tableName }}.search"
                     placeholder="{{ __('Search') }}"
+                    class="w-full"
                 >
                     <x-slot name="append">
                         @if ($hasSearch)
@@ -53,7 +54,6 @@
                         @endif
                     </x-slot>
                 </x-input>
-                
             </div>
         @endif
 
