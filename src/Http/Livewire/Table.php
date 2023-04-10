@@ -41,50 +41,22 @@ class Table extends DataTableComponent
     public $scope = 'default';
 
     /**
-     * Setup list components.
+     * Configure Table component.
      *
-     * @return self
+     * @return void
      */
-    private function setComponents(): self
-    {
-        // Bulk actions
-        foreach ($this->composition['bulk'] ?? [] as $key => $options) {
-            if (isset($options['action'])) {
-                $this->bulkActions[$options['action']] = $options['label'] ?? $key;
-            }
-        }
-
-        return $this;
-    }
-
     public function configure(): void
     {
         $this->setComponents()
             ->setPrimaryKey((new $this->model())->getKeyName())
             ->setTableRowUrl(function ($row) {
-                return route('admin.users.show', $row);
+                return route('flatpack.form', [
+                    'entity' => $this->entity,
+                    'id' => $row->id,
+                ]);
             });
-    }
 
-    /**
-     * Clear or select all depending on what's selected when select all is changed
-     */
-    public function updatedSelectAll(): void
-    {
-        if (count($this->getSelected()) === (clone $this->baseQuery())->count()) {
-            $this->clearSelected();
-        } else {
-            $this->setAllSelected();
-        }
-    }
-
-    /**
-     * Set select all and get all ids for selected
-     */
-    public function setAllSelected(): void
-    {
-        $this->setSelectAllEnabled();
-        $this->setSelected((clone $this->builder())->pluck($this->getPrimaryKey())->map(fn ($item) => (string)$item)->toArray());
+        $this->setBuilder($this->builder());
     }
 
     /**
@@ -98,35 +70,30 @@ class Table extends DataTableComponent
     }
 
     /**
-     * Execute database query.
+     * Setup base query builder with filters and sorting.
      *
-     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator|\Illuminate\Contracts\Pagination\Paginator|\Illuminate\Database\Eloquent\Collection|static[]
+     * @return Builder
      */
-    protected function executeQuery()
+    protected function baseQuery(): Builder
     {
-        if ($this->paginationIsEnabled()) {
-            if ($this->isPaginationMethod('standard')) {
-                return $this->builder()->paginate($this->getPerPage() === -1 ? $this->getBuilder()->count() : $this->getPerPage(), ['*'], $this->getComputedPageName());
-            }
+        $this->setBuilder($this->joinRelations());
 
-            if ($this->isPaginationMethod('simple')) {
-                return $this->builder()->simplePaginate($this->getPerPage() === -1 ? $this->getBuilder()->count() : $this->getPerPage(), ['*'], $this->getComputedPageName());
-            }
+        $this->setBuilder($this->applySearch());
+
+        $this->setBuilder($this->applyFilters());
+
+        if ($this->currentlyReorderingIsEnabled()) {
+            $this->setBuilder(
+                $this->getBuilder()->orderBy(
+                    $this->getDefaultReorderColumn(),
+                    $this->getDefaultReorderDirection()
+                )
+            );
+
+            return $this->getBuilder();
         }
 
-        return $this->builder()->get();
-    }
-
-    public function getTableRowUrl($row): string
-    {
-        if ($this->isTrashed($row)) {
-            return false;
-        }
-
-        return route('flatpack.form', [
-            'entity' => $this->entity,
-            'id' => $row->id,
-        ]);
+        return $this->applySorting();
     }
 
     public function isTrashed($row): bool
@@ -149,6 +116,9 @@ class Table extends DataTableComponent
 
     /**
      * Execute bulk action.
+     *
+     * @param string $action
+     * @return void
      */
     public function bulkAction($action)
     {
@@ -222,6 +192,23 @@ class Table extends DataTableComponent
         ];
 
         return $map[$type] ?? $map['default'];
+    }
+
+    /**
+     * Setup list components.
+     *
+     * @return self
+     */
+    private function setComponents(): self
+    {
+        // Bulk actions
+        foreach ($this->composition['bulk'] ?? [] as $key => $options) {
+            if (isset($options['action'])) {
+                $this->bulkActions[$options['action']] = $options['label'] ?? $key;
+            }
+        }
+
+        return $this;
     }
 
     /**
