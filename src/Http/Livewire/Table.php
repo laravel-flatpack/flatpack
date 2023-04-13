@@ -3,14 +3,19 @@
 namespace Flatpack\Http\Livewire;
 
 use Flatpack\Traits\WithActions;
+use Flatpack\Traits\WithColumns;
 use Flatpack\Traits\WithComposition;
+use Flatpack\Traits\WithFilters;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
 
 class Table extends DataTableComponent
 {
     use WithActions;
     use WithComposition;
+    use WithColumns;
+    use WithFilters;
 
     /**
      * Model class name.
@@ -34,11 +39,28 @@ class Table extends DataTableComponent
     public $composition = [];
 
     /**
-     * Query scope.
+     * Runs once, immediately after the component is instantiated.
      *
-     * @var null|string
+     * @param string $model
+     * @param string $entity
+     * @param array $composition
+     * @return void
      */
-    public $scope = 'default';
+    public function mount($model, $entity, $composition): void
+    {
+        $this->model = $model;
+        $this->entity = $entity;
+        $this->composition = $composition;
+
+        $this->{$this->tableName} = [
+            'sorts' => $this->{$this->tableName}['sorts'] ?? [],
+            'filters' => $this->{$this->tableName}['filters'] ?? [],
+            'columns' => $this->{$this->tableName}['columns'] ?? [],
+        ];
+
+        $this->setFilterOptions();
+        $this->setFilterDefaults();
+    }
 
     /**
      * Configure Table component.
@@ -47,14 +69,16 @@ class Table extends DataTableComponent
      */
     public function configure(): void
     {
-        $this->setComponents()
-            ->setPrimaryKey((new $this->model())->getKeyName())
-            ->setTableRowUrl(function ($row) {
-                return route('flatpack.form', [
-                    'entity' => $this->entity,
-                    'id' => $row->id,
-                ]);
-            });
+        $primaryKey = (new $this->model())->getKeyName();
+
+        $this->setupComponents()
+            ->setQueryStringDisabled()
+            ->setPrimaryKey($primaryKey)
+            ->setDefaultSort($primaryKey, 'desc')
+            ->setTableRowUrl(fn ($row) => route('flatpack.form', [
+                'entity' => $this->entity,
+                'id' => $row->id,
+            ]));
 
         $this->setBuilder($this->builder());
     }
@@ -77,9 +101,7 @@ class Table extends DataTableComponent
     protected function baseQuery(): Builder
     {
         $this->setBuilder($this->joinRelations());
-
         $this->setBuilder($this->applySearch());
-
         $this->setBuilder($this->applyFilters());
 
         if ($this->currentlyReorderingIsEnabled()) {
@@ -96,7 +118,13 @@ class Table extends DataTableComponent
         return $this->applySorting();
     }
 
-    public function isTrashed($row): bool
+    /**
+     * Check if a row is deleted.
+     *
+     * @param Model $row
+     * @return bool
+     */
+    public function isTrashed(Model $row): bool
     {
         return method_exists($row, 'trashed') && $row->trashed();
     }
@@ -131,77 +159,12 @@ class Table extends DataTableComponent
     }
 
     /**
-     * Table columns definition.
-     *
-     * @return array
-    */
-    public function columns(): array
-    {
-        $columns = [];
-
-        foreach ($this->composition['columns'] ?? [] as $attribute => $options) {
-            $label = $options['label'] ?? $attribute;
-            $column = Column::make($label, $attribute);
-
-            if (isset($options['sortable']) && $options['sortable']) {
-                $column->sortable();
-            }
-
-            if (isset($options['searchable']) && $options['searchable']) {
-                $column->searchable();
-            }
-
-            if (! (isset($options['invisible']) && $options['invisible'])) {
-                $column->isSelectable();
-            }
-
-            if (isset($options['width'])) {
-                $column->setWidth($options['width']);
-            }
-
-            $column->format($this->formatColumn($options));
-
-            $columns[] = $column;
-        }
-
-        return $columns;
-    }
-
-    /**
-     * Format column.
-     *
-     * @param array $options
-     * @return string
-     */
-    private function formatColumn($options)
-    {
-        $type = data_get($options, 'type', 'default');
-        $format = data_get($options, 'format', 'Y-m-d H:i:s');
-
-        $map = [
-            'default' => fn ($value) => $value,
-            'datetime' => function ($value) use ($format) {
-                return method_exists($value, 'format') ? $value->format($format) : $value;
-            },
-            'image' => fn ($value) => view('flatpack::includes.table.cells.image', [
-                    'src' => $value,
-            ]),
-            'boolean' => fn ($value) => view('flatpack::includes.table.cells.boolean', [
-                'boolean' => $value,
-            ]),
-        ];
-
-        return $map[$type] ?? $map['default'];
-    }
-
-    /**
      * Setup list components.
      *
      * @return self
      */
-    private function setComponents(): self
+    private function setupComponents(): self
     {
-        // Bulk actions
         foreach ($this->composition['bulk'] ?? [] as $key => $options) {
             if (isset($options['action'])) {
                 $this->bulkActions[$options['action']] = $options['label'] ?? $key;
@@ -224,7 +187,6 @@ class Table extends DataTableComponent
 
         return view('flatpack::components.table')
             ->with([
-                'scopes' => $this->getComposition('scopes'),
                 'toolbar' => $this->getComposition('toolbar'),
                 'columns' => $this->getColumns(),
                 'rows' => $this->getRows(),

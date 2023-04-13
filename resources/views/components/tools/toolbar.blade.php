@@ -9,8 +9,8 @@
 @endif
 
 
-<div class="md:flex md:justify-between mb-4 px-4 md:p-0">
-    <div class="w-full mb-4 md:mb-0 md:w-2/4 md:flex space-y-4 md:space-y-0 md:space-x-2">
+<div class="md:flex md:justify-between mb-4 px-4 space-y-4 md:p-0">
+    <div class="md:flex md:items-center space-y-4 md:space-y-0 md:space-x-2">
         @if ($component->hasConfigurableAreaFor('toolbar-left-start'))
             @include($component->getConfigurableAreaFor('toolbar-left-start'), $component->getParametersForConfigurableArea('toolbar-left-start'))
         @endif
@@ -30,7 +30,7 @@
         @endif
 
         @if ($component->searchIsEnabled() && $component->searchVisibilityIsEnabled())
-            <div class="md:flex w-full">
+            <div class="w-full">
                 @php
                     $tableName = $component->getTableName();
                     $hasSearch = $component->hasSearch();
@@ -70,8 +70,7 @@
                 <div>
                     <button
                         type="button"
-                        class="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:hover:bg-gray-600"
-
+                        class="inline-flex justify-center w-full px-4 py-2 text-base sm:text-sm shadow-sm rounded-md border bg-white focus:ring-1 focus:outline-none dark:bg-secondary-800 dark:border-secondary-600 dark:text-secondary-400 border-secondary-300 focus:ring-primary-500 focus:border-primary-500"
                         @if ($component->isFilterLayoutPopover())
                             x-on:click="open = !open"
                             aria-haspopup="true"
@@ -91,7 +90,7 @@
                             </span>
                         @endif
 
-                        <svg class="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none"
+                        <svg class="-mr-1 ml-2 h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none"
                             viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
@@ -109,18 +108,21 @@
                         x-transition:leave="transition ease-in duration-75"
                         x-transition:leave-start="transform opacity-100 scale-100"
                         x-transition:leave-end="transform opacity-0 scale-95"
-                        class="origin-top-left absolute left-0 mt-2 w-full md:w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 focus:outline-none z-50 dark:bg-gray-700 dark:text-white dark:divide-gray-600"
+                        class="origin-top-left absolute left-0 mt-2 w-full md:w-80 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 focus:outline-none z-50 dark:bg-gray-700 dark:text-white dark:divide-gray-600"
                         role="menu"
                         aria-orientation="vertical"
                         aria-labelledby="filters-menu"
                     >
                         @foreach($component->getVisibleFilters() as $filter)
-                                <div class="py-1" role="none">
-                                    <div class="block px-4 py-2 text-sm text-gray-700 space-y-1" role="menuitem"
-                                    id="{{ $component->getTableName() }}-filter-{{ $filter->getKey() }}-wrapper">
-                                        {{ $filter->render($component) }}
-                                    </div>
+                            <div class="py-1" role="none">
+                                <div
+                                    class="block px-4 py-2 text-sm text-gray-700 space-y-1"
+                                    role="menuitem"
+                                    id="{{ $component->getTableName() }}-filter-{{ $filter->getKey() }}-wrapper"
+                                >
+                                    {{ $filter->render($component) }}
                                 </div>
+                            </div>
                         @endforeach
 
                         @if ($component->hasAppliedVisibleFiltersWithValuesThatCanBeCleared())
@@ -150,7 +152,7 @@
             @include($component->getConfigurableAreaFor('toolbar-right-start'), $component->getParametersForConfigurableArea('toolbar-right-start'))
         @endif
 
-        @if ($component->showBulkActionsDropdown())
+        @if ($component->showBulkActionsDropdown() && count($this->selected))
             <div class="w-full md:w-auto mb-4 md:mb-0">
                 <div
                     x-data="{ open: false, childElementOpen: false  }"
@@ -216,7 +218,6 @@
                             <button
                                 x-on:click="open = !open"
                                 type="button"
-                                
                                 class="form-select block w-full pl-3 pr-10 py-2 text-base sm:text-sm shadow-sm rounded-md border bg-white focus:ring-1 focus:outline-none dark:bg-secondary-800 dark:border-secondary-600 dark:text-secondary-400 border-secondary-300 focus:ring-primary-500 focus:border-primary-500"
                                 aria-haspopup="true"
                                 x-bind:aria-expanded="open"
@@ -240,30 +241,6 @@
                     >
                         <div class="bg-white rounded-md shadow-xs dark:bg-gray-700 dark:text-white">
                             <div class="p-2" role="menu" aria-orientation="vertical" aria-labelledby="column-select-menu">
-                                <div>
-                                    <label
-                                        wire:loading.attr="disabled"
-                                        class="inline-flex items-center px-2 py-1 disabled:opacity-50 disabled:cursor-wait"
-                                    >
-                                        <input
-                                            class="form-checkbox rounded transition ease-in-out duration-100 
-                                                border-secondary-300 text-primary-600 focus:ring-primary-600 focus:border-primary-400
-                                                dark:border-secondary-500 dark:checked:border-secondary-600 dark:focus:ring-secondary-600
-                                                dark:focus:border-secondary-500 dark:bg-secondary-600 dark:text-secondary-600
-                                                dark:focus:ring-offset-secondary-800"
-                                            @if($component->allDefaultVisibleColumnsAreSelected())
-                                                checked
-                                                wire:click="deselectAllColumns"
-                                            @else
-                                                unchecked
-                                                wire:click="selectAllColumns"
-                                            @endif
-                                            wire:loading.attr="disabled"
-                                            type="checkbox"
-                                        />
-                                        <span class="ml-2">{{ __('All Columns') }}</span>
-                                    </label>
-                                </div>
                                 @foreach($component->getColumns() as $column)
                                     @if ($column->isVisible() && $column->isSelectable())
                                         <div wire:key="columnSelect-{{ $loop->index }}-{{ $component->getTableName() }}">

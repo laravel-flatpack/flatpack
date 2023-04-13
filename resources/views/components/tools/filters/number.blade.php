@@ -16,9 +16,10 @@
             wire:key="{{ $tableName }}-filter-{{ $filter->getKey() }}@if($filter->hasCustomPosition())-{{ $filter->getCustomPosition() }}@endif"
             id="{{ $tableName }}-filter-{{ $filter->getKey() }}@if($filter->hasCustomPosition())-{{ $filter->getCustomPosition() }}@endif"
             type="number"
+            @if($filter->getConfig('placeholder')) placeholder="{{ $filter->getConfig('placeholder') }}" @endif
             @if($filter->hasConfig('min')) min="{{ $filter->getConfig('min') }}" @endif
             @if($filter->hasConfig('max')) max="{{ $filter->getConfig('max') }}" @endif
-            class="block w-full border-gray-300 rounded-md shadow-sm transition duration-150 ease-in-out focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 dark:bg-gray-800 dark:text-white dark:border-gray-600"
+            class="placeholder-secondary-400 dark:bg-secondary-800 dark:text-secondary-400 dark:placeholder-secondary-500 border border-secondary-300 focus:ring-primary-500 focus:border-primary-500 dark:border-secondary-600 form-input block w-full sm:text-sm rounded-md transition ease-in-out duration-100 focus:outline-none shadow-sm"
         />
     </div>
 

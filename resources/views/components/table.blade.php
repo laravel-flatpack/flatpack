@@ -1,6 +1,6 @@
 <div class="flex flex-col w-full gap-0">
-    <div class="flex flex-row items-center justify-between w-full my-5">
-        <h1 class="text-3xl font-bold">{{ Str::ucfirst($entity) }}</h1>
+    <div class="flex flex-row items-center justify-between w-full my-5 mb-1">
+        <h1 class="text-2xl font-bold">{{ Str::ucfirst($entity) }}</h1>
         <div class="flex flex-row items-center justify-end gap-3">
             @include('flatpack::includes.toolbar', [
                 'elements' => $toolbar,

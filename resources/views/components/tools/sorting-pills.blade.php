@@ -6,8 +6,8 @@
 
 <div>
     @if ($component->sortingPillsAreEnabled() && $component->hasSorts())
-        <div class="mb-4 px-4 md:p-0">
-            <small class="text-gray-700 dark:text-white">@lang('Applied Sorting'):</small>
+        <div class="mb-2 px-4 md:p-0">
+            <div class="text-gray-500 dark:text-white font-bold uppercase text-2xs leading-4 inline-flex py-0.5">@lang('Sorting'):</div>
 
             @foreach($component->getSorts() as $columnSelectName => $direction)
                 @php
@@ -20,9 +20,10 @@
 
                 <span
                     wire:key="sorting-pill-{{ $columnSelectName }}"
-                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium leading-4 bg-indigo-100 text-indigo-800 capitalize dark:bg-indigo-200 dark:text-indigo-900"
+                    class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs leading-4 bg-indigo-100 text-indigo-800 capitalize dark:bg-indigo-200 dark:text-indigo-900"
                 >
-                    {{ $column->getSortingPillTitle() }}: {{ $column->getSortingPillDirection($component, $direction) }}
+                    <span class="font-medium">{{ $column->getSortingPillTitle() }}:</span>
+                    <span class="font-normal">{{ $column->getSortingPillDirection($component, $direction) }}</span>
 
                     <button
                         wire:click="clearSort('{{ $columnSelectName }}')"
@@ -41,7 +42,7 @@
                 wire:click.prevent="clearSorts"
                 class="focus:outline-none active:outline-none"
             >
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-200 dark:text-gray-900">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-normal bg-gray-100 text-gray-800 dark:bg-gray-200 dark:text-gray-900">
                     @lang('Clear')
                 </span>
             </button>
