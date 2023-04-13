@@ -13,6 +13,14 @@ it('displays posts in table component', function () {
         'entity' => 'posts',
         'model' => Post::class,
         'composition' => [
+            'toolbar' => [
+                'create' => [
+                    'label' => 'New Post',
+                    'icon' => 'plus',
+                    'link' => 'create',
+                    'style' => 'primary',
+                ],
+            ],
             'bulk' => [
                 'delete' => [
                     'label' => 'Delete',
@@ -50,7 +58,16 @@ it('displays posts in table component', function () {
         'delete' => 'Delete',
     ])
     ->call('render')
-    ->assertViewIs('flatpack::components.table');
+    ->assertViewIs('flatpack::components.table')
+    ->assertSee([
+        'Post title 1',
+        'Post title 2',
+        'Post title 3',
+    ])
+    ->set('selected', [1])
+    ->call('bulkAction', 'delete')
+    ->assertDontSee('Post title 1')
+    ->assertSet('selected', []);
 });
 
 it('search posts in table component', function () {

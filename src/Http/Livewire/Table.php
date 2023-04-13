@@ -104,42 +104,7 @@ class Table extends DataTableComponent
         $this->setBuilder($this->applySearch());
         $this->setBuilder($this->applyFilters());
 
-        if ($this->currentlyReorderingIsEnabled()) {
-            $this->setBuilder(
-                $this->getBuilder()->orderBy(
-                    $this->getDefaultReorderColumn(),
-                    $this->getDefaultReorderDirection()
-                )
-            );
-
-            return $this->getBuilder();
-        }
-
         return $this->applySorting();
-    }
-
-    /**
-     * Check if a row is deleted.
-     *
-     * @param Model $row
-     * @return bool
-     */
-    public function isTrashed(Model $row): bool
-    {
-        return method_exists($row, 'trashed') && $row->trashed();
-    }
-
-    /**
-     * Execute action.
-     *
-     * @param string $action
-     * @param array $options
-     * @return void
-     */
-    public function action($action, $options = []): void
-    {
-        $action = $this->getAction($action);
-        $action->run();
     }
 
     /**
