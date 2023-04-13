@@ -56,11 +56,9 @@ trait WithColumns
 
         $map = [
             'default' => fn ($value) => $value,
-            'datetime' => function ($value) use ($format) {
-                return method_exists($value, 'format') ? $value->format($format) : $value;
-            },
+            'datetime' => fn ($value) => (method_exists($value, 'format') ? $value->format($format) : $value),
             'image' => fn ($value) => view('flatpack::includes.table.cells.image', [
-                    'src' => $value,
+                'src' => $value,
             ]),
             'boolean' => fn ($value) => view('flatpack::includes.table.cells.boolean', [
                 'boolean' => $value,

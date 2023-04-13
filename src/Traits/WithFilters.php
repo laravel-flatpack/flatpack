@@ -3,7 +3,6 @@
 namespace Flatpack\Traits;
 
 use Flatpack\Http\Livewire\Filters\DateFilter;
-use Flatpack\Http\Livewire\Filters\DateTimeFilter;
 use Flatpack\Http\Livewire\Filters\MultiSelectFilter;
 use Flatpack\Http\Livewire\Filters\NumberFilter;
 use Flatpack\Http\Livewire\Filters\SelectFilter;
@@ -42,11 +41,7 @@ trait WithFilters
                 $idField = data_get($options, 'relation.id', 'id');
                 $nameField = data_get($options, 'relation.nameField', 'name');
                 $method = data_get($options, 'relation.name', data_get($options, 'relation', $key));
-                $relation = optional((new $this->model()))->{$method}()->getRelated();
-
-                if (is_null($relation)) {
-                    continue;
-                }
+                $relation = (new $this->model())->{$method}()->getRelated();
 
                 $this->composition['filters'][$key]['options'] =
                     $relation->orderBy($nameField, 'asc')
@@ -65,40 +60,35 @@ trait WithFilters
         $items = data_get($options, 'options', []);
 
         $map = [
-            'default' => TextFilter::make($label)
+            'default' => TextFilter::make($label, $key)
                 ->config($options)
                 ->filter(function (Builder $builder, string $value) use ($key) {
                     $builder->where($key, $value);
                 }),
-            'select' => SelectFilter::make($label)
+            'select' => SelectFilter::make($label, $key)
                 ->options($items)
                 ->config($options)
                 ->filter(function (Builder $builder, string $value) use ($key) {
                     $builder->where($key, $value);
                 }),
-            'multiselect' => MultiSelectFilter::make($label)
+            'multiselect' => MultiSelectFilter::make($label, $key)
                 ->options($items)
                 ->config($options)
-                ->filter(function (Builder $builder, string $value) use ($key) {
-                    $builder->where($key, $value);
+                ->filter(function (Builder $builder, array $value) use ($key) {
+                    $builder->whereIn($key, $value);
                 }),
-            'relation' => MultiSelectFilter::make($label)
+            'relation' => MultiSelectFilter::make($label, $key)
                 ->options($items)
                 ->config($options)
                 ->filter(function (Builder $builder, array $values) use ($key) {
                     $builder->whereHas($key, fn ($query) => $query->whereIn('categories.id', $values));
                 }),
-            'date' => DateFilter::make($label)
+            'date' => DateFilter::make($label, $key)
                 ->config($options)
                 ->filter(function (Builder $builder, string $value) use ($key) {
                     $builder->whereDate($key, '=', $value);
                 }),
-            'datetime' => DateTimeFilter::make($label)
-                ->config($options)
-                ->filter(function (Builder $builder, string $value) use ($key) {
-                    $builder->where($key, $value);
-                }),
-            'number' => NumberFilter::make($label)
+            'number' => NumberFilter::make($label, $key)
                 ->config($options)
                 ->filter(function (Builder $builder, string $value) use ($key) {
                     $builder->where($key, $value);
