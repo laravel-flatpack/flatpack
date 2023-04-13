@@ -72,18 +72,18 @@ return [
     | Middleware
     |--------------------------------------------------------------------------
     |
-    | Middleware to be applied to all Flatpack routes.
+    | Middleware to apply to all Flatpack routes.
     |
     */
     'middleware' => [
 
         'before' => [
-            // Middleware to be applied before FlatpackMiddleware.
+            // Middleware to apply before FlatpackMiddleware.
         ],
 
         'after' => [
-            // Middleware to be applied after FlatpackMiddleware.
-        ]
+            // Middleware to apply after FlatpackMiddleware.
+        ],
     ],
 
     /*
@@ -97,9 +97,9 @@ return [
     */
     'storage' => [
 
-        'disk' =>  env('FLATPACK_STORAGE_DISK', 'public'),
+        'disk' => env('FLATPACK_STORAGE_DISK', 'public'),
 
-        'path' =>  env('FLATPACK_STORAGE_PATH', 'uploads'),
+        'path' => env('FLATPACK_STORAGE_PATH', 'uploads'),
     ],
 
 ];
