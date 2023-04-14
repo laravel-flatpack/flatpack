@@ -7,7 +7,6 @@ use Flatpack\Traits\WithColumns;
 use Flatpack\Traits\WithComposition;
 use Flatpack\Traits\WithFilters;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
 
 class Table extends DataTableComponent

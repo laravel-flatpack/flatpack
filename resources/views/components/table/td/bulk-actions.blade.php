@@ -6,7 +6,7 @@
         $theme = $component->getTheme();
     @endphp
 
-    <x-livewire-tables::table.td.plain>
+    <td class="px-6 py-4 w-16 whitespace-nowrap text-sm font-normal dark:text-white">
         <input 
             wire:model="selected"
             type="checkbox" 
@@ -17,5 +17,5 @@
                     dark:focus:border-secondary-500 dark:bg-secondary-600 dark:text-secondary-600
                     dark:focus:ring-offset-secondary-800"
         />
-    </x-livewire-tables::table.td.plain>
+    </td>
 @endif

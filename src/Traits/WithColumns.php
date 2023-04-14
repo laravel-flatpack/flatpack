@@ -2,10 +2,10 @@
 
 namespace Flatpack\Traits;
 
+use Flatpack\Http\Livewire\Columns\BooleanColumn;
+use Flatpack\Http\Livewire\Columns\Column;
+use Flatpack\Http\Livewire\Columns\ImageColumn;
 use Illuminate\Support\Str;
-use Rappasoft\LaravelLivewireTables\Views\Column;
-use Rappasoft\LaravelLivewireTables\Views\Columns\BooleanColumn;
-use Rappasoft\LaravelLivewireTables\Views\Columns\ImageColumn;
 
 trait WithColumns
 {
@@ -43,7 +43,13 @@ trait WithColumns
 
         $map = [
             'default' => Column::make($label, $key),
-            'image' => ImageColumn::make($label, $key),
+            'image' => ImageColumn::make($label, $key)
+                ->location(
+                    fn ($row) => is_null($row->{$key}) ?
+                        flatpackAsset('flatpack/images/placeholder.png') :
+                        $row->{$key}
+                )
+                ->attributes(fn ($row) => [ 'alt' => $label ]),
             'boolean' => BooleanColumn::make($label, $key),
         ];
 
