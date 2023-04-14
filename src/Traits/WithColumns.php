@@ -2,7 +2,10 @@
 
 namespace Flatpack\Traits;
 
-use Flatpack\Http\Livewire\Column;
+use Illuminate\Support\Str;
+use Rappasoft\LaravelLivewireTables\Views\Column;
+use Rappasoft\LaravelLivewireTables\Views\Columns\BooleanColumn;
+use Rappasoft\LaravelLivewireTables\Views\Columns\ImageColumn;
 
 trait WithColumns
 {
@@ -16,55 +19,56 @@ trait WithColumns
         $columns = [];
 
         foreach ($this->composition['columns'] ?? [] as $attribute => $options) {
-            $label = $options['label'] ?? $attribute;
-            $column = Column::make($label, $attribute);
-
-            if (isset($options['sortable']) && $options['sortable']) {
-                $column->sortable();
-            }
-
-            if (isset($options['searchable']) && $options['searchable']) {
-                $column->searchable();
-            }
-
-            if (isset($options['invisible']) && $options['invisible']) {
-                $column->deselected();
-            }
-
-            if (isset($options['width'])) {
-                $column->setWidth($options['width']);
-            }
-
-            $column->format($this->formatColumn($options));
-
-            $columns[] = $column;
+            $columns[] = $this->createColumn($attribute, $options);
         }
 
         return $columns;
     }
 
     /**
-     * Format column.
+     * Create column.
      *
+     * @param string $key
      * @param array $options
      * @return string
      */
-    private function formatColumn($options)
+    private function createColumn($key, $options)
     {
         $type = data_get($options, 'type', 'default');
+        $label = data_get($options, 'label', $key);
         $format = data_get($options, 'format', 'Y-m-d H:i:s');
+        $sortable = data_get($options, 'sortable', false);
+        $searchable = data_get($options, 'searchable', false);
+        $invisible = data_get($options, 'invisible', false);
 
         $map = [
-            'default' => fn ($value) => $value,
-            'datetime' => fn ($value) => (method_exists($value, 'format') ? $value->format($format) : $value),
-            'image' => fn ($value) => view('flatpack::includes.table.cells.image', [
-                'src' => $value,
-            ]),
-            'boolean' => fn ($value) => view('flatpack::includes.table.cells.boolean', [
-                'boolean' => $value,
-            ]),
+            'default' => Column::make($label, $key),
+            'image' => ImageColumn::make($label, $key),
+            'boolean' => BooleanColumn::make($label, $key),
         ];
 
-        return $map[$type] ?? $map['default'];
+        $column = $map[$type] ?? $map['default'];
+
+        if ($sortable) {
+            $column->sortable();
+        }
+
+        if ($searchable) {
+            $column->searchable();
+        }
+
+        if ($invisible) {
+            $column->deselected();
+        }
+
+        if ($format) {
+            $column->format(fn ($value) => Str::of(
+                is_object($value) && method_exists($value, 'format') ?
+                    $value->format($format) :
+                    $value
+            )->toString());
+        }
+
+        return $column;
     }
 }

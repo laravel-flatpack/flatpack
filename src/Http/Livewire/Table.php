@@ -52,12 +52,6 @@ class Table extends DataTableComponent
         $this->entity = $entity;
         $this->composition = $composition;
 
-        $this->{$this->tableName} = [
-            'sorts' => $this->{$this->tableName}['sorts'] ?? [],
-            'filters' => $this->{$this->tableName}['filters'] ?? [],
-            'columns' => $this->{$this->tableName}['columns'] ?? [],
-        ];
-
         $this->setFilterOptions();
         $this->setFilterDefaults();
     }
@@ -72,7 +66,6 @@ class Table extends DataTableComponent
         $primaryKey = (new $this->model())->getKeyName();
 
         $this->setupComponents()
-            ->setQueryStringDisabled()
             ->setPrimaryKey($primaryKey)
             ->setDefaultSort($primaryKey, 'desc')
             ->setTableRowUrl(fn ($row) => route('flatpack.form', [
