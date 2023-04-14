@@ -40,13 +40,14 @@
                         <strong>{{ $selected }}</strong>
                         @lang('rows, do you want to select all')
                         @if(!$simplePagination) <strong>{{ number_format($rows->total()) }}</strong> @endif
+                        ?
                     </span>
 
                     <button
                         wire:click="setAllSelected"
                         wire:loading.attr="disabled"
                         type="button"
-                        class="ml-1 underline text-gray-700 text-sm leading-5 font-medium focus:outline-none focus:text-gray-800 focus:underline transition duration-150 ease-in-out dark:text-white dark:hover:text-gray-400"
+                        class="ml-1 underline text-gray-700 hover:text-gray-800 text-sm leading-5 font-medium focus:outline-none focus:text-gray-800 focus:underline transition duration-150 ease-in-out dark:text-white dark:hover:text-gray-400"
                     >
                         @lang('Select All')
                     </button>
@@ -55,7 +56,7 @@
                         wire:click="clearSelected"
                         wire:loading.attr="disabled"
                         type="button"
-                        class="ml-1 underline text-gray-700 text-sm leading-5 font-medium focus:outline-none focus:text-gray-800 focus:underline transition duration-150 ease-in-out dark:text-white dark:hover:text-gray-400"
+                        class="ml-1 underline text-gray-700 hover:text-gray-800 text-sm leading-5 font-medium focus:outline-none focus:text-gray-800 focus:underline transition duration-150 ease-in-out dark:text-white dark:hover:text-gray-400"
                     >
                         @lang('Deselect All')
                     </button>

@@ -9,7 +9,7 @@
 @endif
 
 
-<div class="md:flex md:justify-between mb-4 px-4 space-y-4 md:p-0">
+<div class="md:flex md:justify-between mb-4 px-4 space-y-4 md:space-y-0 md:p-0">
     <div class="md:flex md:items-center space-y-4 md:space-y-0 md:space-x-2">
         @if ($component->hasConfigurableAreaFor('toolbar-left-start'))
             @include($component->getConfigurableAreaFor('toolbar-left-start'), $component->getParametersForConfigurableArea('toolbar-left-start'))
@@ -247,7 +247,7 @@
                                             <label
                                                 wire:loading.attr="disabled"
                                                 wire:target="selectedColumns"
-                                                class="inline-flex items-center px-2 py-1 disabled:opacity-50 disabled:cursor-wait"
+                                                class="inline-flex items-center px-2 py-1 text-sm disabled:opacity-50 disabled:cursor-wait"
                                             >
                                                 <input
                                                     class="form-checkbox rounded transition ease-in-out duration-100 

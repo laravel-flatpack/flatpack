@@ -2,26 +2,11 @@
 
 namespace Flatpack\Http\Livewire\Filters;
 
-use DateTime;
 use Rappasoft\LaravelLivewireTables\DataTableComponent;
-use Rappasoft\LaravelLivewireTables\Views\Filter;
+use Rappasoft\LaravelLivewireTables\Views\Filters\DateFilter as Filter;
 
 class DateFilter extends Filter
 {
-    public function validate($value)
-    {
-        if (DateTime::createFromFormat('Y-m-d', $value) === false) {
-            return false;
-        }
-
-        return $value;
-    }
-
-    public function isEmpty($value): bool
-    {
-        return $value === '';
-    }
-
     public function render(DataTableComponent $component)
     {
         return view('flatpack::components.tools.filters.date', [
