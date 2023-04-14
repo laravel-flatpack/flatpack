@@ -51,15 +51,15 @@ class FlatpackMiddleware
         return $next($request);
     }
 
-    protected function authorize(Request $request)
+    /**
+     * Authorize Http Request for the current user.
+     * On local env, all users are allowed.
+     *
+     * @return bool
+     */
+    protected function authorize(Request $request): bool
     {
-        if (app()->environment('local')) {
-            return true;
-        }
-
-        $user = $request->user();
-
-        return $user->isFlatpackAdmin();
+        return app()->environment('local') || $request->user()->isFlatpackAdmin();
     }
 
     /**
