@@ -16,11 +16,11 @@
         class="bg-primary-50 bg-opacity-30 dark:bg-gray-900 dark:text-white"
     >
         <x-flatpack::table.td.plain :colspan="$colspan">
-            @if ($selectAll)
+            @if ($selectAll || $rows->total() == $selected)
                 <div wire:key="all-selected-{{ $table }}">
                     <span>
                         @lang('You are currently selecting all')
-                        @if(!$simplePagination) <strong>{{ number_format($rows->total()) }}</strong> @endif
+                        <strong>{{ number_format($rows->total()) }}</strong>
                         @lang('rows').
                     </span>
 
@@ -39,8 +39,7 @@
                         @lang('You have selected')
                         <strong>{{ $selected }}</strong>
                         @lang('rows, do you want to select all')
-                        @if(!$simplePagination) <strong>{{ number_format($rows->total()) }}</strong> @endif
-                        ?
+                        <strong>{{ number_format($rows->total()) }}</strong>?
                     </span>
 
                     <button
