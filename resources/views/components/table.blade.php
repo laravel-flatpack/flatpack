@@ -16,7 +16,6 @@
         @endif
 
         <x-livewire-tables::tools>
-            <x-flatpack::tools.sorting-pills />
             <x-flatpack::tools.filter-pills />
             <x-flatpack::tools.toolbar :entity="$entity" :model="$model" />
         </x-livewire-tables::tools>
