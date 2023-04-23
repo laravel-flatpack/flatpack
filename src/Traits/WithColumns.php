@@ -36,7 +36,7 @@ trait WithColumns
     {
         $type = data_get($options, 'type', 'default');
         $label = data_get($options, 'label', $key);
-        $format = data_get($options, 'format', 'Y-m-d H:i:s');
+        $format = data_get($options, 'format');
         $sortable = data_get($options, 'sortable', false);
         $searchable = data_get($options, 'searchable', false);
         $invisible = data_get($options, 'invisible', false);
@@ -69,7 +69,7 @@ trait WithColumns
 
         if ($format) {
             $column->format(fn ($value) => Str::of(
-                is_object($value) && method_exists($value, 'format') ?
+                ! is_null($format) && is_object($value) && method_exists($value, 'format') ?
                     $value->format($format) :
                     $value
             )->toString());

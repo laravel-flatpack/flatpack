@@ -164,6 +164,7 @@ it('search posts in table component', function () {
                     'lable' => 'Created',
                     'type' => 'datetime',
                     'sortable' => true,
+                    'format' => 'Y-m-d H:i:s',
                 ],
             ],
         ],
