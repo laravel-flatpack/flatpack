@@ -7,7 +7,7 @@ module.exports = {
     "./vendor/wireui/wireui/resources/**/*.blade.php",
     "./vendor/wireui/wireui/ts/**/*.ts",
     "./vendor/wireui/wireui/src/View/**/*.php",
-    "./vendor/rappasoft/laravel-livewire-tables/resources/views/tailwind/**/*.blade.php",
+    "./vendor/rappasoft/laravel-livewire-tables/resources/views/**/*.blade.php",
     "./resources/css/**/*.css",
     "./resources/js/**/*.js",
     "./resources/**/*.blade.php",

@@ -4,6 +4,40 @@ use Flatpack\View\Components\RelationField;
 
 it('creates a BelongsTo relation field component with options', function () {
     $options = [
+        'label' => 'Author',
+        'placeholder' => 'Select an author',
+        'type' => 'relation',
+        'relation' => [
+            'name' => 'author',
+            'display' => 'name',
+        ],
+    ];
+
+    $entry = new \Flatpack\Tests\Models\Post();
+
+    $field = new RelationField(
+        'author',
+        $options,
+        'posts',
+        \Flatpack\Tests\Models\Post::class,
+        $entry
+    );
+
+    $this->assertEquals('posts', $field->entity);
+    $this->assertEquals(\Flatpack\Tests\Models\Post::class, $field->model);
+
+    $this->assertEquals('relation', $field->type);
+    $this->assertEquals(false, $field->required);
+    $this->assertEquals(false, $field->readonly);
+    $this->assertEquals('Author', $field->label);
+    $this->assertEquals('Select an author', $field->placeholder);
+
+    $this->expect($field->render())
+         ->toBeInstanceOf(\Illuminate\Contracts\View\View::class);
+});
+
+it('creates a BelongsToMany relation field component with options', function () {
+    $options = [
         'label' => 'Category',
         'placeholder' => 'Select a category',
         'type' => 'relation',
@@ -12,6 +46,7 @@ it('creates a BelongsTo relation field component with options', function () {
             'display' => 'name',
         ],
     ];
+
     $entry = new \Flatpack\Tests\Models\Post();
 
     $field = new RelationField(
@@ -47,6 +82,7 @@ it('creates a HasMany relation field component with options', function () {
     ];
 
     $entry = new \Flatpack\Tests\Models\Category();
+
     $field = new RelationField(
         'posts',
         $options,

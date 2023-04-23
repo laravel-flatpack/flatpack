@@ -1,50 +1,13 @@
 <?php
 
 /*
- | Configuration for Flatpack.
+ | Configuration file for Flatpack.
+ | ----------------------------
  | https://laravel-flatpack.com
  |
  */
 
 return [
-
-    /*
-    |--------------------------------------------------------------------------
-    | Branding
-    |--------------------------------------------------------------------------
-    |
-    | The image and text to be displayed as the top element of the sidebar.
-    | Logo should be an absolute url or a relative path to the public directory.
-    |
-    */
-    'brand' => [
-
-        'name' => env('APP_NAME', 'Flatpack'),
-
-        'logo' => env('FLATPACK_LOGO', 'flatpack/images/logo.svg'),
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Directory
-    |--------------------------------------------------------------------------
-    |
-    | The directory where the Flatpack templates are stored, relative to
-    | the application root.
-    |
-    */
-    'directory' => env('FLATPACK_DIRECTORY', 'flatpack'),
-
-    /*
-    |--------------------------------------------------------------------------
-    | Route Prefix
-    |--------------------------------------------------------------------------
-    |
-    | Flatpack route prefix.
-    | Example: http://localhost/backend
-    |
-    */
-    'prefix' => env('FLATPACK_PREFIX', 'backend'),
 
     /*
     |--------------------------------------------------------------------------
@@ -69,22 +32,41 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Middleware
+    | Branding
     |--------------------------------------------------------------------------
     |
-    | Middleware to be applied to all Flatpack routes.
+    | The image and text to be displayed as the top element of the sidebar.
+    | Logo should be an absolute url or a relative path to the public directory.
     |
     */
-    'middleware' => [
+    'brand' => [
 
-        'before' => [
-            // Middleware to be applied before FlatpackMiddleware.
-        ],
+        'name' => env('APP_NAME', 'Flatpack'),
 
-        'after' => [
-            // Middleware to be applied after FlatpackMiddleware.
-        ]
+        'logo' => env('FLATPACK_LOGO', 'flatpack/images/logo.svg'),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Route Prefix
+    |--------------------------------------------------------------------------
+    |
+    | Flatpack route prefix.
+    | Example: http://localhost/backend
+    |
+    */
+    'prefix' => env('FLATPACK_PREFIX', 'backend'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Directory
+    |--------------------------------------------------------------------------
+    |
+    | The directory where the Flatpack templates are stored, relative to
+    | the application root.
+    |
+    */
+    'directory' => env('FLATPACK_DIRECTORY', 'flatpack'),
 
     /*
     |--------------------------------------------------------------------------
@@ -97,9 +79,33 @@ return [
     */
     'storage' => [
 
-        'disk' =>  env('FLATPACK_STORAGE_DISK', 'public'),
+        'disk' => env('FLATPACK_STORAGE_DISK', 'public'),
 
-        'path' =>  env('FLATPACK_STORAGE_PATH', 'uploads'),
+        'path' => env('FLATPACK_STORAGE_PATH', 'uploads'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Models directory
+    |--------------------------------------------------------------------------
+    |
+    | The directory where the Flatpack should find your Eloquent Models.
+    |
+    */
+    'models' => env('FLATPACK_MODELS', app_path('Models/')),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Middleware
+    |--------------------------------------------------------------------------
+    |
+    | Middleware to apply to before and/or after all Flatpack routes.
+    |
+    */
+    'middleware' => [
+
+        'before' => [],
+
+        'after' => [],
+    ],
 ];
