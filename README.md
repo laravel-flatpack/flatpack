@@ -16,24 +16,13 @@
 
 📕 [Documentation](https://laravel-flatpack.com)
 
----
+![Demo](.github/demo.gif)
 
 [Flatpack](https://laravel-flatpack.com) makes building fully functional user interfaces for admin panels easier than ever: as easy as editing few lines of a YAML file. 
 
 Besides providing a rich set of already built components and a solid stack to build a secure and intuitive experience for the users, it offers a fast and flexible solution for developers who want to have fun, try out new things and save precious time building up the an administration panels. 
 
-| Components included: |                                                                |
-| :------------------- |:-------------------------------------------------------------- |
-| WireUI components    | [Github](https://github.com/wireui/wireui)                     |
-| Livewire Tables      | [Github](https://github.com/rappasoft/laravel-livewire-tables) |
-| Livewire EditorJS    | [Github](https://github.com/maxeckel/livewire-editorjs)        |
-
-Flatpack is a reactive full-stack app, built with [TALL stack](https://tallstack.dev/):
-
-- [Tailwind](https://tailwindcss.com/)
-- [Alpine.js](https://alpinejs.dev/)
-- [Laravel](https://laravel.com/)
-- [Livewire](https://laravel-livewire.com/)
+Flatpack is a reactive full-stack app, built with [TALL stack](https://tallstack.dev/): [Tailwind](https://tailwindcss.com/), [Alpine.js](https://alpinejs.dev/), [Laravel](https://laravel.com/), [Livewire](https://laravel-livewire.com/)
 
 ---
 ## Quick Install
