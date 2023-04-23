@@ -39,18 +39,18 @@
         "@editorjs/raw": "^2.3.0",
         "@editorjs/underline": "^1.0.0",
         "@tailwindcss/aspect-ratio": "^0.4.0",
-        "@tailwindcss/forms": "^0.4.0",
+        "@tailwindcss/forms": "^0.5.3",
         "@tailwindcss/line-clamp": "^0.3.1",
         "@tailwindcss/typography": "^0.5.0",
-        "autoprefixer": "^10.4.2",
+        "autoprefixer": "^10.4.14",
         "cross-env": "^7.0.2",
         "laravel-mix": "^6.0.41",
         "postcss": "^8.4.5",
         "postcss-import": "^14.0.2",
         "resolve-url-loader": "^5.0.0",
-        "sass": "^1.49.9",
+        "sass": "^1.61.0",
         "sass-loader": "^12.6.0",
-        "tailwindcss": "^3.0.15",
+        "tailwindcss": "^3.3.1",
         "vue-template-compiler": "^2.6.12"
     },
     "dependencies": {
@@ -60,6 +60,6 @@
         "@editorjs/table": "^2.0.1",
         "@yaireo/tagify": "^4.9.8",
         "alpinejs": "^3.9.6",
-        "sweetalert2": "^11.4.2"
+        "sweetalert2": "^11.4.8"
     }
 }

@@ -22,7 +22,9 @@ it('redirects to login unauthenticated user', function () {
 
 it('returns error for non existing entity', function () {
     $response = actingAs($this->user)->get('/backend/foo');
+    $this->assertEquals(500, $response->status());
 
+    $response = actingAs($this->user)->get('/backend/categories');
     $this->assertEquals(500, $response->status());
 });
 

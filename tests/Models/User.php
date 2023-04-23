@@ -52,7 +52,7 @@ class User extends Authenticatable implements FlatpackUser
 
     public function isFlatpackAdmin(): bool
     {
-        return $this->id === 1;
+        return true;
     }
 
     /**

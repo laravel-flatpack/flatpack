@@ -1,5 +1,5 @@
 .navbar {
-  @apply fixed top-0 z-50 flex xl:sticky;
+  @apply fixed top-0 z-40 flex xl:sticky;
   @apply items-start justify-start w-full h-screen;
   @apply py-2 text-white bg-gray-800;
   max-width: 256px;
@@ -76,5 +76,5 @@
 }
 
 .top-bar-wrapper {
-  @apply sticky top-0 z-40 flex flex-row items-center justify-between w-full h-16 px-5 py-2 bg-gray-700;
+  @apply sticky top-0 z-30 flex items-center justify-between w-full h-16 px-5 py-2 bg-gray-700;
 }

@@ -22,14 +22,6 @@
   display: none;
 }
 
-.table-image-column {
-  @apply w-32;
-}
-
 body {
   @apply bg-gray-900;
-}
-
-.pill {
-  @apply inline-flex justify-center items-center transition-all ease-in duration-150 focus:ring-2 focus:ring-offset-2 hover:shadow-sm outline-none rounded-full gap-x-2 px-4 py-2 min-w-[60px] ring-primary-500 cursor-pointer;
 }

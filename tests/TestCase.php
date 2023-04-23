@@ -2,6 +2,7 @@
 
 namespace Flatpack\Tests;
 
+use Illuminate\Auth\SessionGuard;
 use Illuminate\Encryption\Encrypter;
 use Orchestra\Testbench\TestCase as Orchestra;
 
@@ -33,7 +34,12 @@ class TestCase extends Orchestra
         return [];
     }
 
-    public function getEnvironmentSetUp($app)
+    /**
+     * Setup testing environment.
+     *
+     * @return void
+     */
+    public function getEnvironmentSetUp($app): void
     {
         config()->set('database.default', 'testing');
 
@@ -46,5 +52,27 @@ class TestCase extends Orchestra
 
         include_once __DIR__.'/../database/migrations/create_test_tables.php.stub';
         (new \CreateTestTables())->up();
+    }
+
+    /**
+     * Reset current session auth.
+     *
+     * @return void
+     */
+    protected function resetAuth(array $guards = null): void
+    {
+        $guards = $guards ?: array_keys(config('auth.guards'));
+
+        foreach ($guards as $guard) {
+            $guard = $this->app['auth']->guard($guard);
+
+            if ($guard instanceof SessionGuard) {
+                $guard->logout();
+            }
+        }
+
+        $protectedProperty = new \ReflectionProperty($this->app['auth'], 'guards');
+        $protectedProperty->setAccessible(true);
+        $protectedProperty->setValue($this->app['auth'], []);
     }
 }

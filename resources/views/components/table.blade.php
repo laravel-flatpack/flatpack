@@ -9,52 +9,76 @@
             ])
         </div>
     </div>
-    <div>
-        <div
-            @if (is_numeric($refresh))
-                wire:poll.{{ $refresh }}ms
-            @elseif(is_string($refresh))
-                @if ($refresh === '.keep-alive' || $refresh === 'keep-alive')
-                    wire:poll.keep-alive
-                @elseif($refresh === '.visible' || $refresh === 'visible')
-                    wire:poll.visible
-                @else
-                    wire:poll="{{ $refresh }}"
-                @endif
+    
+    <x-livewire-tables::wrapper :component="$this">
+        @if ($this->hasConfigurableAreaFor('before-tools'))
+            @include($this->getConfigurableAreaFor('before-tools'), $this->getParametersForConfigurableArea('before-tools'))
+        @endif
+
+        <x-livewire-tables::tools>
+            <x-flatpack::tools.filter-pills />
+            <x-flatpack::tools.toolbar :entity="$entity" :model="$model" />
+        </x-livewire-tables::tools>
+
+        <x-livewire-tables::table>
+            <x-slot name="thead">
+                <x-flatpack::table.th.reorder />
+                <x-flatpack::table.th.bulk-actions />
+                <x-flatpack::table.th.row-contents />
+
+                @foreach($columns as $index => $column)
+                    @continue($column->isHidden())
+                    @continue($this->columnSelectIsEnabled() && ! $this->columnSelectIsEnabledForColumn($column))
+                    @continue($this->currentlyReorderingIsDisabled() && $column->isReorderColumn() && $this->hideReorderColumnUnlessReorderingIsEnabled())
+
+                    <x-flatpack::table.th :column="$column" :index="$index" />
+                @endforeach
+            </x-slot>
+
+            @if($this->secondaryHeaderIsEnabled() && $this->hasColumnsWithSecondaryHeader())
+                <x-flatpack::table.tr.secondary-header :rows="$rows" />
             @endif
-        >
-            @include('livewire-tables::includes.debug')
-            @include('livewire-tables::tailwind.includes.offline')
 
-            <div class="flex-col">
-                @include('livewire-tables::tailwind.includes.sorting-pills')
-                @include('livewire-tables::tailwind.includes.filter-pills')
+            <x-flatpack::table.tr.bulk-actions :rows="$rows" />
 
-                <div class="space-y-5">
-                    <div class="px-6 py-0 md:flex md:justify-between md:p-0">
-                        <div class="w-full mb-4 space-y-4 md:mb-0 md:w-2/4 md:flex md:space-y-0 md:space-x-2">
-                            @include('flatpack::includes.table.scopes')
-                            @include('flatpack::includes.table.reorder')
-                            @include('flatpack::includes.table.filters')
-                        </div>
+            @forelse ($rows as $rowIndex => $row)
+                <x-flatpack::table.tr :row="$row" :rowIndex="$rowIndex">
+                    <x-flatpack::table.td.reorder />
+                    <x-flatpack::table.td.bulk-actions :row="$row" />
+                    <x-flatpack::table.td.row-contents :rowIndex="$rowIndex" />
 
-                        <div class="flex flex-col md:flex-row md:items-center gap-3">
-                            
-                            @include('flatpack::includes.table.bulk-actions')
-                            @include('flatpack::includes.table.search')
-                            @include('flatpack::includes.table.column-select')
-                            
-                        </div>
-                    </div>
+                    @foreach($columns as $colIndex => $column)
+                        @continue($column->isHidden())
+                        @continue($this->columnSelectIsEnabled() && ! $this->columnSelectIsEnabledForColumn($column))
+                        @continue($this->currentlyReorderingIsDisabled() && $column->isReorderColumn() && $this->hideReorderColumnUnlessReorderingIsEnabled())
 
-                    @include('flatpack::includes.table.table')
-                    @include('flatpack::includes.table.pagination')
-                </div>
-            </div>
-        </div>
+                        <x-flatpack::table.td :column="$column" :colIndex="$colIndex">
+                            {{ $column->renderContents($row) }}
+                        </x-flatpack::table.td>
+                    @endforeach
+                </x-flatpack::table.tr>
 
-        @isset($modalsView)
-            @include($modalsView)
+                <x-flatpack::table.row-contents :row="$row" :rowIndex="$rowIndex" />
+            @empty
+                <x-flatpack::table.empty />
+            @endforelse
+
+            @if ($this->footerIsEnabled() && $this->hasColumnsWithFooter())
+                <x-slot name="tfoot">
+                    @if ($this->useHeaderAsFooterIsEnabled())
+                        <x-livewire-tables::table.tr.secondary-header :rows="$rows" />
+                    @else
+                        <x-livewire-tables::table.tr.footer :rows="$rows" />
+                    @endif
+                </x-slot>
+            @endif
+        </x-livewire-tables::table>
+
+        <x-livewire-tables::pagination :rows="$rows" />
+
+        @isset($customView)
+            @include($customView)
         @endisset
-    </div>
+    </x-livewire-tables::wrapper>
+
 </div>
