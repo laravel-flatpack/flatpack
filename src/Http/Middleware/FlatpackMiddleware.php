@@ -72,10 +72,6 @@ class FlatpackMiddleware
     {
         $route = $request->route();
 
-        if (! $route instanceof \Illuminate\Routing\Route) {
-            abort(404, 'Route not found.');
-        }
-
         if ($route->parameters() === [] && $route->getAction('as') === 'flatpack.home') {
             return true;
         }
