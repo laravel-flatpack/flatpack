@@ -2,6 +2,15 @@
 
 All notable changes to `laravel-flatpack` will be documented in this file.
 
+## v1.0.11 - 2023-04-23
+
+### What's Changed
+
+- Updated table component in https://github.com/laravel-flatpack/flatpack/pull/26
+- Layout fixes
+
+**Full Changelog**: https://github.com/laravel-flatpack/flatpack/compare/v1.0.10...v1.0.11
+
 ## v1.0.10 - 2023-04-08
 
 ### What's Changed
