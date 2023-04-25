@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 
 /**
  * Flatpack versioned assets.
@@ -13,15 +14,29 @@ function flatpackAsset($file)
     return asset($file) . "?v=" . \Flatpack\Flatpack::VERSION;
 }
 
-
 /**
- * Get Flatpack home url.
+ * Get Flatpack url.
  *
  * @return string
  */
-function flatpackUrl()
+function flatpackUrl($url = '')
 {
-    return "/" . config('flatpack.prefix', 'backend');
+    $url = Str::of($url)->trim('/');
+
+    $base = Str::of(config('flatpack.prefix', 'backend'))->trim('/');
+
+    return Str::start($base->toString() . ((! $url->isEmpty()) ? (Str::start($url->toString(), '/')) : ''), '/');
+}
+
+/**
+ * Convert to array.
+ *
+ * @param mixed $object
+ * @return array
+ */
+function toArray($object)
+{
+    return json_decode(json_encode($object), true);
 }
 
 /**
