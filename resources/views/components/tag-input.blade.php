@@ -6,21 +6,16 @@
         id="fields-{{ $key }}"
     />
 </div>
-@php
-    // Covert items to array of tags {value:1, name: 'foo'}
-    $tags = [];
-    foreach ($items as $optionValue => $display) {
-        $tags[] = [
-            'value' => $optionValue,
-            'name' => $display,
-            'exists' => true
-        ];
-    }
-    $items = json_encode($tags);
-@endphp
+@push('scripts')
 <script>
     document.addEventListener("DOMContentLoaded", () => {
-        const el = document.getElementById('fields-{{ $key }}');
-        Flatpack.taginput('{{ $key }}', el, JSON.parse(@js($items)), @js($canCreate));
+        Flatpack.taginput({
+            key: '{{ $key }}',
+            input: document.getElementById('fields-{{ $key }}'),
+            source: '{{ $source }}',
+            values: JSON.parse(@js(json_encode($tagInputItems))),
+            canCreate: {{ $canCreate ? 'true' : 'false' }},
+        });
     });
 </script>
+@endpush
