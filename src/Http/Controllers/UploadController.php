@@ -3,11 +3,33 @@
 namespace Flatpack\Http\Controllers;
 
 use Flatpack\Traits\WithActions;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 
 class UploadController extends Controller
 {
     use WithActions;
+
+    /**
+     * Model class name.
+     *
+     * @var string
+     */
+    public $model;
+
+    /**
+     * Entity name.
+     *
+     * @var string
+     */
+    public $entity;
+
+    /**
+     * Active record.
+     *
+     * @var Model
+     */
+    public $entry;
 
     public function store(Request $request, $entity, $id)
     {
