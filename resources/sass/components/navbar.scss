@@ -77,4 +77,26 @@
 
 .top-bar-wrapper {
   @apply sticky top-0 z-30 flex items-center justify-between w-full h-16 px-5 py-2 bg-gray-700;
+
+  button {
+    &.menu-toggle {
+      @apply flex items-center justify-center w-10 h-10 rounded bg-transparent hover:bg-gray-800;
+
+      .menu-show {
+        display: block;
+      }
+      .menu-hide {
+        display: none;
+      }
+
+      &.is-open {
+        .menu-show {
+          display: none;
+        }
+        .menu-hide {
+          display: block;
+        }
+      }
+    }
+  }
 }
