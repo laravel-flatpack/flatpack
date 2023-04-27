@@ -4,9 +4,6 @@
             @include('flatpack::includes.layout.navbar.brand')
             @include('flatpack::includes.layout.navbar.menu')
         </li>
-        <li class="navbar-group navbar-rail-bottom">
-            @include('flatpack::includes.layout.navbar.bottom')
-        </li>
     </ul>
     <button @click="navbar = !navbar" class="navbar-close">
         <x-icon name="x" style="outline" class="w-6 h-6" />

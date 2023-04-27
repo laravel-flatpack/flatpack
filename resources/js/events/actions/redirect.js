@@ -1,7 +1,7 @@
-const redirectAction = (url) => {
+const redirectAction = (url, timeout = 800) => {
   setTimeout(() => {
     window.location.href = url;
-  }, 800);
+  }, timeout);
 };
 
 export default redirectAction;
