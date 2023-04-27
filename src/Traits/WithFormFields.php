@@ -69,10 +69,6 @@ trait WithFormFields
     protected function bindFieldsToModel()
     {
         foreach ($this->onlyInputFields() as $key => $options) {
-            if ($this->isRelationship($key)) {
-                $this->syncRelationship($key);
-            }
-
             if (data_get($options, "disabled") === true ||
                 data_get($options, "readonly") === true ||
                 Str::contains($key, "_confirmation") ||
