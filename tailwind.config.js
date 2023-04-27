@@ -51,9 +51,6 @@ module.exports = {
         "3xs": "0.5rem",
         "2xs": "0.65rem",
       },
-      fontFamily: {
-        sans: ["Inter var", ...defaultTheme.fontFamily.sans],
-      },
       spacing: {
         2.2: "0.55rem",
         3.5: "0.875rem",

@@ -21,20 +21,6 @@
         tabindex="-1">
         <div class="relative max-h-60 soft-scrollbar overflow-auto border border-secondary-200 rounded-lg shadow-lg p-1 bg-white dark:bg-secondary-800 dark:border-secondary-600">
             <div>
-                <h6 class="block pl-2 pt-2 pb-1 text-xs text-secondary-600 sticky top-0 bg-white dark:bg-secondary-800 dark:text-secondary-400">
-                    {{ __('Settings') }}
-                </h6>
-                <a class="text-secondary-600 px-4 py-2 text-sm flex items-center cursor-pointer rounded-md transition-colors duration-150 hover:text-secondary-900 hover:bg-secondary-100 dark:text-secondary-400 dark:hover:bg-secondary-700">
-                    <x-icon name="cog" class="w-5 h-5 mr-2" />
-                    {{ __('Preferences') }}
-                </a>
-                <a class="text-secondary-600 px-4 py-2 text-sm flex items-center cursor-pointer rounded-md transition-colors duration-150 hover:text-secondary-900 hover:bg-secondary-100 dark:text-secondary-400 dark:hover:bg-secondary-700">
-                    <x-icon name="user-circle" class="w-5 h-5 mr-2" />
-                    {{ __('My Profile') }}
-                </a>
-            </div>
-            <div class="w-full my-1 border-t border-secondary-200 dark:border-secondary-600"></div>
-            <div>
                 <form method="POST" action="{{ route('flatpack.logout') }}" class="mb-0" role="none">
                 @csrf
                     <a href="{{ route('flatpack.logout') }}"
