@@ -134,7 +134,7 @@ class SearchBox extends Component
         }
 
         if (isset($selected['entity']) && isset($selected['id'])) {
-            $this->emit('redirect', flatpackUrl("/{$selected['entity']}/{$selected['id']}"));
+            $this->emit('redirect', flatpackUrl("/{$selected['entity']}/{$selected['id']}"), 0);
         }
     }
 
