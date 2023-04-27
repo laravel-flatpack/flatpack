@@ -29,17 +29,6 @@ function flatpackUrl($url = '')
 }
 
 /**
- * Convert to array.
- *
- * @param mixed $object
- * @return array
- */
-function toArray($object)
-{
-    return json_decode(json_encode($object), true);
-}
-
-/**
  * Get an option from the errors array.
  *
  * @param array $errors

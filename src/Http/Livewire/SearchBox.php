@@ -102,7 +102,7 @@ class SearchBox extends Component
                 ->limit(10)
                 ->get()
                 ->map(function ($result) use ($searchEntities) {
-                    $result = toArray($result);
+                    $result = collect($result)->toArray();
                     $entity = data_get($result, 'entity');
                     $result['icon'] = data_get($searchEntities, "{$entity}.icon");
 
