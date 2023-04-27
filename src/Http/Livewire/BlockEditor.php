@@ -4,13 +4,13 @@ namespace Flatpack\Http\Livewire;
 
 use Flatpack\Traits\WithActions;
 use Illuminate\Support\Facades\Storage;
-use Livewire\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 use Maxeckel\LivewireEditorjs\Http\Livewire\EditorJS;
 
 class BlockEditor extends EditorJS
 {
     use WithFileUploads;
+
     use WithActions;
 
     public $uploads = [];
@@ -61,27 +61,12 @@ class BlockEditor extends EditorJS
         $this->logLevel = "ERROR";
     }
 
-    public function completedImageUpload(string $uploadedFileName, string $eventName, $fileName = null)
-    {
-        /** @var TemporaryUploadedFile $tmpFile */
-        $tmpFile = collect($this->uploads)
-            ->filter(function (TemporaryUploadedFile $item) use ($uploadedFileName) {
-                return $item->getFilename() === $uploadedFileName;
-            })
-            ->first();
-
-        // When no file name is passed, we use the hashName of the tmp file
-        $storedFileName = $tmpFile->storeAs(
-            '/',
-            $fileName ?? $tmpFile->hashName(),
-            $this->uploadDisk
-        );
-
-        $this->dispatchBrowserEvent($eventName, [
-            'url' => Storage::disk($this->uploadDisk)->url($storedFileName),
-        ]);
-    }
-
+    /**
+     * Upload image from url.
+     *
+     * @param string $url
+     * @return mixed
+     */
     public function loadImageFromUrl(string $url)
     {
         $name = basename($url);
@@ -89,14 +74,24 @@ class BlockEditor extends EditorJS
 
         Storage::disk($this->downloadDisk)->put($name, $content);
 
-        return Storage::disk($this->downloadDisk)->url($name);
+        return  optional(Storage::disk($this->downloadDisk))->url($name);
     }
 
+    /**
+     * Emit save event to parent components.
+     *
+     * @return void
+     */
     public function save()
     {
         $this->emitUp("flatpack-editor:save", $this->editorId, $this->data);
     }
 
+    /**
+     * Render component.
+     *
+     * @return \Illuminate\Contracts\View\View
+     */
     public function render()
     {
         return view('flatpack::components.block-editor');

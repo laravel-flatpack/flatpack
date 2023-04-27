@@ -123,7 +123,7 @@ class SearchBox extends Component
      */
     public function selectResult($key = null)
     {
-        $id = ! is_null($key) ? $key : $this->highlightIndex;
+        $id = ! empty($key) ? $key : $this->highlightIndex;
 
         $selected = $this->results[$id] ?? null;
 
@@ -168,20 +168,18 @@ class SearchBox extends Component
                 ])
                 ->selectRaw("'{$entityName}' AS `entity`");
 
-            $query
-                ->whereNotNull($entity['column'])
-                ->where($entity['column'], 'like', "%{$this->search}%");
+            $query->whereNotNull($entity['column'])
+                ->where($entity['column'], 'LIKE', "%{$this->search}%");
 
             $queries[] = $query;
         }
 
         // Reduce all queries into a single one.
-
-        $queryBuilder = array_reduce($queries, function ($previous, $query) {
-            return is_null($previous) ? $query : $previous->union($query);
-        }, null);
-
-        return $queryBuilder;
+        return array_reduce(
+            $queries,
+            fn ($previous, $query) => empty($previous) ? $query : $previous->union($query),
+            null
+        );
     }
 
     /**
@@ -194,7 +192,6 @@ class SearchBox extends Component
         $composition = Arr::except(Flatpack::loadComposition()->getComposition(), '__global__');
 
         // Get searchable columns
-
         $searchable = Arr::map(
             $composition,
             fn ($value, $key) => array_keys(
@@ -213,9 +210,7 @@ class SearchBox extends Component
                     return null;
                 }
 
-                $icon = isset($composition[$entity]['list.yaml']) ?
-                    data_get($composition[$entity]['list.yaml'], 'icon') :
-                    null;
+                $icon = data_get($composition[$entity]['list.yaml'], 'icon');
 
                 $model = Flatpack::guessModelClass($entity);
 

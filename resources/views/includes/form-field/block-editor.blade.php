@@ -1,8 +1,8 @@
 @if ($type === 'block-editor')
     <livewire:flatpack.block-editor
-        :editor-id="$key"
+        :editorId="$key"
         :value="$entry->{$key}"
-        :read-only="$readonly"
+        :readOnly="$readonly"
         class="w-full"
     />
 @endif

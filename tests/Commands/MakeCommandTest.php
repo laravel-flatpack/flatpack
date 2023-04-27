@@ -6,4 +6,10 @@ test('artisan command that generates a new form and list', function () {
         ->expectsOutput("\nDone!\n")
         ->assertExitCode(0)
         ->assertSuccessful();
+
+    $this->artisan('make:flatpack Flatpack\Tests\Models\Post --force')
+        ->expectsOutput("\n 📦 Flatpack \n")
+        ->expectsOutput("\nDone!\n")
+        ->assertExitCode(0)
+        ->assertSuccessful();
 });
