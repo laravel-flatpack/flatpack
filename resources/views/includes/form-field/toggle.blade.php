@@ -1,9 +1,12 @@
 @if (strtolower($type ?? '') === 'toggle')
 <x-toggle
-    md
-    positive
+    x-on:change.debounce="Flatpack.form.inputChange($event, '{{ $key }}')"
+    wire:model.defer="fields.{{ $key }}"
+    wire:key="fields-{{ $key }}"
     :label="$label"
     :disabled="$disabled"
     :readonly="$readonly"
-    wire:model.defer="fields.{{ $key }}" />
+    positive
+    md
+/>
 @endif

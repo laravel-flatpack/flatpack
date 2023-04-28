@@ -1,9 +1,11 @@
 @if (strtolower($type ?? '') === 'text')
 <x-input
+    x-on:change.debounce="Flatpack.form.inputChange($event, '{{ $key }}')"
+    wire:model.defer="fields.{{ $key }}"
+    wire:key="fields-{{ $key }}"
     :label="$label"
     :placeholder="$placeholder"
     :disabled="$disabled"
     :readonly="$readonly"
-    wire:model.defer="fields.{{ $key }}"
 />
 @endif
