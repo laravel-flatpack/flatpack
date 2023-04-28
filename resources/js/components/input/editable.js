@@ -1,11 +1,6 @@
-const editableInstance = (dataProperty, inputId) => {
+const editableInstance = () => {
   return {
-    data: null,
     isEditing: false,
-
-    saveInput(data) {
-      this.$wire.set(dataProperty, data);
-    },
 
     toggleEditing() {
       this.isEditing = !this.isEditing;
@@ -13,22 +8,10 @@ const editableInstance = (dataProperty, inputId) => {
       if (this.isEditing) {
         this.$nextTick(() => this.$refs.input.focus());
       }
-
-      this.saveInput(this.data);
     },
 
     disableEditing() {
       this.isEditing = false;
-      this.saveInput(this.data);
-    },
-
-    undo() {
-      this.isEditing = false;
-      this.data = this.$wire.get(dataProperty);
-    },
-
-    initEditable() {
-      this.data = this.$wire.get(dataProperty);
     },
   };
 };

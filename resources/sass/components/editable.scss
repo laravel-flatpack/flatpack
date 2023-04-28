@@ -1,26 +1,30 @@
-.heading.editable {
-  @apply flex items-center justify-start gap-2 cursor-pointer;
+.editable-field-input,
+.editable-field-value {
+  @apply flex justify-start items-center gap-2 w-full;
+}
 
-  .editable-field-input {
-    @apply w-full max-w-full h-auto p-0 border-0;
-  }
+.editable {
+  @apply flex justify-start items-center h-10 w-full;
 
-  &:hover {
-    .input-field-placeholder {
-      @apply hover:border-dashed hover:border-gray-400;
-    } 
-    .edit-button-toggle {
-      @apply opacity-50;
+  .editable-field-value {
+    @apply flex cursor-pointer;
+
+    span {
+      @apply border-b-2 border-transparent border-solid hover:border-dashed hover:border-gray-400;
+      @apply inline-flex justify-start items-center p-0 text-left;
+      @apply overflow-ellipsis whitespace-nowrap overflow-hidden;
     }
   }
-  .input-field-placeholder {
-    @apply pt-0 pb-1 text-left border-b-2 border-transparent border-solid overflow-ellipsis whitespace-nowrap overflow-hidden;
+  .editable-field-input {
+    @apply hidden;
   }
 
-  .edit-button {
-    @apply inline-flex gap-2 p-0 m-0 text-sm text-gray-700 border border-transparent;
-  }
-  .edit-button-toggle {
-    @apply inline-flex gap-2 p-0 m-0 mb-1 text-sm text-gray-700 border border-transparent;
+  .is-editing {
+    .editable-field-value {
+      @apply hidden;
+    }
+    .editable-field-input {
+      @apply flex;
+    } 
   }
 }
