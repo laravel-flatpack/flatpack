@@ -128,6 +128,13 @@ class FormField extends Component
     public $options = [];
 
     /**
+     * Form type.
+     *
+     * @var string
+     */
+    public $formType;
+
+    /**
      * Create a new FormField instance.
      *
      * @param string $key
@@ -181,9 +188,9 @@ class FormField extends Component
         $this->required = $this->getFieldOption('required', false);
         $this->disabled = $this->getFieldOption('disabled', false);
         $this->readonly = $this->getFieldOption('readonly', false);
-        $this->value = $this->getFieldOption('value', optional($this->entry)->{$this->key});
         $this->items = $this->getFieldOption('items', []);
         $this->size = $this->getFieldOption('size', 'base');
+        $this->value = $this->getFieldOption('value', optional($this->entry)->{$this->key});
 
         if (in_array($this->type, [ 'relation', 'select', 'taginput' ])) {
             $this->relation = $this->getFieldOption('relation', false);

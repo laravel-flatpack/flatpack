@@ -1,4 +1,4 @@
-<div wire:ignore class="form-field-input">
+<div wire:ignore>
     <input
         wire:model="fields.{{ $key }}"
         placeholder="{{ $placeholder }}"

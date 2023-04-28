@@ -18,7 +18,7 @@
     }
 
     .form-field-input {
-      @apply block w-full transition duration-150 ease-in-out border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50;
+      @apply font-normal placeholder-secondary-400 border border-secondary-300 focus:ring-primary-500 focus:border-primary-500 form-input block w-full sm:text-sm rounded-md transition ease-in-out duration-100 focus:outline-none shadow-sm;
     }
 
     .form-field-errors {
@@ -55,7 +55,7 @@
 }
 
 .header-fieldset {
-  @apply mb-5;
+  @apply grid grid-cols-2 gap-2 items-center justify-start;
 
   .form-field {
     .form-field-elements.has-label {

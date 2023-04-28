@@ -5,19 +5,22 @@
     @apply w-full max-w-full h-auto p-0 border-0;
   }
 
+  &:hover {
+    .input-field-placeholder {
+      @apply hover:border-dashed hover:border-gray-400;
+    } 
+    .edit-button-toggle {
+      @apply opacity-50;
+    }
+  }
   .input-field-placeholder {
     @apply pt-0 pb-1 text-left border-b-2 border-transparent border-solid overflow-ellipsis whitespace-nowrap overflow-hidden;
-
-    &:hover {
-      @apply hover:border-dashed hover:border-gray-400;
-    }
   }
 
   .edit-button {
-    @apply inline-flex gap-2 p-0 m-0 text-sm text-gray-700 border border-transparent opacity-30;
-
-    &:hover {
-      @apply opacity-100;
-    }
+    @apply inline-flex gap-2 p-0 m-0 text-sm text-gray-700 border border-transparent;
+  }
+  .edit-button-toggle {
+    @apply inline-flex gap-2 p-0 m-0 mb-1 text-sm text-gray-700 border border-transparent;
   }
 }

@@ -6,13 +6,12 @@ const editableInstance = (dataProperty, inputId) => {
     saveInput(data) {
       this.$wire.set(dataProperty, data);
     },
+
     toggleEditing() {
       this.isEditing = !this.isEditing;
 
       if (this.isEditing) {
-        this.$nextTick(() => {
-          this.$refs.input.focus();
-        });
+        this.$nextTick(() => this.$refs.input.focus());
       }
 
       this.saveInput(this.data);
