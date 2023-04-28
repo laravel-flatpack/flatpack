@@ -9,7 +9,7 @@ const styles = {
 };
 
 const confirm = (text, options = {}) => {
-  const { title, action, cancel, style } = options;
+  const { allowOutsideClick, title, action, cancel, style } = options;
 
   const configuration = {
     title: title || '',
@@ -18,6 +18,7 @@ const confirm = (text, options = {}) => {
     showCancelButton: true,
     showCloseButton: true,
     focusConfirm: true,
+    allowOutsideClick: !!allowOutsideClick,
     confirmButtonColor: styles?.[style] || styles.default,
     confirmButtonText: action || 'Ok',
     cancelButtonText: cancel || 'Cancel',
