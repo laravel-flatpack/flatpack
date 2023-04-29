@@ -6,6 +6,7 @@ use Flatpack\Facades\Flatpack;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Livewire\Component;
 
@@ -168,8 +169,13 @@ class SearchBox extends Component
                 ])
                 ->selectRaw("'{$entityName}' AS `entity`");
 
-            $query->whereNotNull($entity['column'])
+            $query
+                ->whereNotNull($entity['column'])
                 ->where($entity['column'], 'LIKE', "%{$this->search}%");
+
+            if (Schema::hasColumn($entity['table'], 'deleted_at')) {
+                $query->whereNull('deleted_at');
+            }
 
             $queries[] = $query;
         }
