@@ -9,10 +9,9 @@
   .editable-field-value {
     @apply flex cursor-pointer;
 
-    span {
+    .editable-field-value-placeholder {
       @apply border-b-2 border-transparent border-solid hover:border-dashed hover:border-gray-400;
-      @apply inline-flex justify-start items-center p-0 text-left;
-      @apply overflow-ellipsis whitespace-nowrap overflow-hidden;
+      @apply block p-0 text-left truncate;
     }
   }
   .editable-field-input {

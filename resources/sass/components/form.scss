@@ -56,17 +56,4 @@
 
 .header-fieldset {
   @apply grid grid-cols-2 gap-2 items-center justify-start;
-
-  .form-field {
-    .form-field-elements.has-label {
-      @apply lg:flex-row lg:gap-2 lg:items-center;
-    }
-
-    .form-field-label {
-      @apply min-w-fit;
-    }
-    .form-field-input {
-      @apply lg:max-w-full;
-    }
-  }
 }
