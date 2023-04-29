@@ -6,14 +6,12 @@ use Livewire\Livewire;
 
 it('renders create relation component', function () {
     Livewire::test(CreateRelation::class, [
-        'composition' => [
-            'fields' => [
-                'name' => [
-                    'label' => 'Name',
-                ],
-                'slug' => [
-                    'label' => 'Slug',
-                ],
+        'formFields' => [
+            'name' => [
+                'label' => 'Name',
+            ],
+            'slug' => [
+                'label' => 'Slug',
             ],
         ],
         'model' => Category::class,
@@ -24,19 +22,17 @@ it('renders create relation component', function () {
 
 it('saves relation form fields', function () {
     Livewire::test(CreateRelation::class, [
-        'composition' => [
-            'fields' => [
-                'name' => [
-                    'label' => 'Name',
-                ],
-                'slug' => [
-                    'label' => 'Slug',
-                ],
+        'formFields' => [
+            'name' => [
+                'label' => 'Name',
+            ],
+            'slug' => [
+                'label' => 'Slug',
             ],
         ],
         'model' => Category::class,
     ])
-    ->set('fields', [
+    ->set('relationFields', [
         'name' => 'Lorem ipsum',
         'slug' => 'lorem-ipsum',
     ])
