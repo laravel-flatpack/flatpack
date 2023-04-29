@@ -129,6 +129,8 @@ class Flatpack
      */
     public function entityName($name = ''): string
     {
+        $name = collect(explode('\\', $name))->last();
+
         return Str::lower(Str::plural($name));
     }
 
