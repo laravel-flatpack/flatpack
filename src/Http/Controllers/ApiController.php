@@ -2,6 +2,7 @@
 
 namespace Flatpack\Http\Controllers;
 
+use Flatpack\Facades\Flatpack;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 
@@ -11,10 +12,15 @@ class ApiController extends Controller
     {
         $search = $request->query('search', '');
         $display = $request->query('display', 'name');
-        $model = new $request->flatpack['model']();
+        $model = Flatpack::guessModelClass($entity);
+        $model = new $model();
 
         $tableName = $model->getTable();
         $primaryKey = $model->getKeyName();
+
+        if (in_array($display, $model->getHidden())) {
+            return response()->json([]);
+        }
 
         $results = $model::select([
                 "{$primaryKey} AS value",

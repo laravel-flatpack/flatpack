@@ -4,6 +4,7 @@ namespace Flatpack;
 
 use Flatpack\Exceptions\ConfigurationException;
 use Flatpack\Exceptions\EntityNotFoundException;
+use Flatpack\Exceptions\ModelNotFoundException;
 use Flatpack\Exceptions\TemplateNotFoundException;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
@@ -144,7 +145,7 @@ class Flatpack
 
     private function getModelsDirectory()
     {
-        return app()->environment('testing') ? 'Flatpack\\Tests\\Models\\' : 'App\\';
+        return config('flatpack.models');
     }
 
     /**
@@ -155,23 +156,13 @@ class Flatpack
      */
     public function guessModelClass($name = ''): string
     {
-        $directory = $this->getModelsDirectory();
+        $modelClass = $this->getModelsDirectory() . $this->modelName($name);
 
-        $modelClass = $directory . $this->modelName($name);
-
-        if (class_exists($modelClass)) {
-            return $modelClass;
+        if (! class_exists($modelClass)) {
+            throw new ModelNotFoundException("Model '{$modelClass}' not found.", $name, $this->modelName($name));
         }
 
-        if (is_dir(app_path('Models/'))) {
-            $modelClass = $directory . 'Models\\' . $this->modelName($name);
-
-            if (class_exists($modelClass)) {
-                return $modelClass;
-            }
-        }
-
-        return $this->modelName($name);
+        return $modelClass;
     }
 
     /**

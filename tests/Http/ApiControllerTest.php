@@ -33,3 +33,13 @@ it('should ignore hidden fields', function () {
         ->assertStatus(200)
         ->assertJsonCount(0);
 });
+
+it('returns an error for non-existing entity', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->getJson(route('flatpack.api.suggestions', [
+            'entity' => 'foo',
+        ]))
+        ->assertStatus(500);
+});
