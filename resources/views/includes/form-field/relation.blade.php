@@ -3,5 +3,6 @@
         :key="$key"
         :options="$options"
         :entry="$entry"
+        :entity="$entity"
     />
 @endif

@@ -66,12 +66,15 @@ const tagInput = ({ key, input, values, canCreate, source }) => {
     tagify.whitelist = values;
     tagify.loading(true).dropdown.hide();
 
-    fetch(source + '&value=' + value, { signal: controller.signal })
-      .then(res => res.json())
-      .then(function (res) {
+    fetch(source + '&search=' + value, { signal: controller.signal })
+      .then(response => response.json())
+      .then(function (response) {
+        const newValues = [...response].map(
+          ({ value, display }) => ({ value, name: display })
+        );
         tagify.whitelist = [
           ...values,
-          ...res.data
+          ...newValues
         ]
         tagify.loading(false).dropdown.show(value)
       })
