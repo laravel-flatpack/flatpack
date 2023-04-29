@@ -37,7 +37,7 @@
                 @endphp
                 <x-input 
                     wire:model="{{ $tableName }}.search"
-                    placeholder="{{ __('Search') }}"
+                    placeholder="{{ __('Search :entity', ['entity' => $entity]) }}"
                     class="w-full"
                 >
                     <x-slot name="append">

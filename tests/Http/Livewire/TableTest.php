@@ -4,6 +4,18 @@ use Flatpack\Http\Livewire\Table;
 use Flatpack\Tests\Models\Post;
 use Livewire\Livewire;
 
+it('generates session key based on entity name', function () {
+    $table = new Table('posts');
+    $table->entity = 'posts';
+
+    expect($table->getColumnSelectSessionKey())
+        ->toBe('flatpack.table.select.posts');
+    expect($table->getReorderingSessionKey())
+        ->toBe('flatpack.table.reordering.posts');
+    expect($table->getReorderingBackupSessionKey())
+        ->toBe('flatpack.table.reordering-backup.posts');
+});
+
 it('displays posts in table component', function () {
     Post::create(['title' => 'Post title 1', 'status' => 3 ]);
     Post::create(['title' => 'Post title 2', 'status' => 4 ]);

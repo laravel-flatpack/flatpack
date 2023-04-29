@@ -14,6 +14,13 @@ class RelationField extends FormField
      *
      * @var string
      */
+    public $entity;
+
+    /**
+     * Form field name.
+     *
+     * @var string
+     */
     public $key;
 
     /**

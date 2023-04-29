@@ -132,7 +132,9 @@ class Table extends DataTableComponent
     }
 
     /**
-     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
+     * Render table component.
+     *
+     * @return \Illuminate\Contracts\View\View
      */
     public function render()
     {
@@ -149,5 +151,35 @@ class Table extends DataTableComponent
                 'rows' => $this->getRows(),
                 'customView' => $this->customView(),
             ]);
+    }
+
+    /**
+     * Column Select Session key.
+     *
+     * @return string
+     */
+    public function getColumnSelectSessionKey(): string
+    {
+        return 'flatpack.table.select.' . $this->entity;
+    }
+
+    /**
+     * Reordering Session key.
+     *
+     * @return string
+     */
+    public function getReorderingSessionKey(): string
+    {
+        return 'flatpack.table.reordering.' . $this->entity;
+    }
+
+    /**
+     * Reordering Backup Session key.
+     *
+     * @return string
+     */
+    public function getReorderingBackupSessionKey(): string
+    {
+        return 'flatpack.table.reordering-backup.' . $this->entity;
     }
 }

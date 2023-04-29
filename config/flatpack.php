@@ -2,8 +2,9 @@
 
 /*
  | Configuration file for Flatpack.
- | ----------------------------
- | https://laravel-flatpack.com
+ | --------------------------------
+ |
+ | More infos: https://laravel-flatpack.com/guide/configuration.html
  |
  */
 
@@ -92,7 +93,7 @@ return [
     | The directory where the Flatpack should find your Eloquent Models.
     |
     */
-    'models' => env('FLATPACK_MODELS', app_path('Models/')),
+    'models' => env('FLATPACK_MODELS', 'App\\Models\\'),
 
     /*
     |--------------------------------------------------------------------------

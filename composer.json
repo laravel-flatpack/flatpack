@@ -48,6 +48,7 @@
     },
     "autoload-dev": {
         "psr-4": {
+            "Flatpack\\Database\\Factories\\": "database/factories",
             "Flatpack\\Tests\\": "tests"
         }
     },

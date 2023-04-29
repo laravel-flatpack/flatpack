@@ -3,6 +3,7 @@
 namespace Flatpack\Tests;
 
 use Illuminate\Auth\SessionGuard;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Encryption\Encrypter;
 use Orchestra\Testbench\TestCase as Orchestra;
 
@@ -12,11 +13,9 @@ class TestCase extends Orchestra
     {
         parent::setUp();
 
-        /*
         Factory::guessFactoryNamesUsing(
             fn (string $modelName) => 'Flatpack\\Database\\Factories\\'.class_basename($modelName).'Factory'
         );
-        */
     }
 
     protected function getPackageProviders($app)
