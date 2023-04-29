@@ -3,7 +3,6 @@
 namespace Flatpack\Http\Middleware;
 
 use Flatpack\Exceptions\EntityNotFoundException;
-use Flatpack\Exceptions\ModelNotFoundException;
 use Flatpack\Facades\Flatpack;
 use Illuminate\Http\Request;
 
@@ -72,7 +71,10 @@ class FlatpackMiddleware
     {
         $route = $request->route();
 
-        if ($route->parameters() === [] && $route->getAction('as') === 'flatpack.home') {
+        if (in_array($route->getAction('as'), [
+            'flatpack.home',
+            'flatpack.api.suggestions',
+        ])) {
             return true;
         }
 
@@ -87,10 +89,6 @@ class FlatpackMiddleware
         $modelName = Flatpack::modelName($this->entity);
 
         $this->modelClass = Flatpack::guessModelClass($this->entity);
-
-        if (! class_exists($this->modelClass)) {
-            throw new ModelNotFoundException("Model '{$this->modelClass}' not found.", $this->entity, $modelName);
-        }
 
         if (! in_array($this->entity, $allowedValues)) {
             throw new EntityNotFoundException("Entity '{$this->entity}' not found.", $this->entity, $modelName);

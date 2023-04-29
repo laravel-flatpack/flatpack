@@ -40,7 +40,7 @@ class TagInput extends RelationField
         $entity = $this->getFieldOption('relation.entity', $this->getFieldOption('relation.name'));
         $search = $this->getFieldOption('relation.display', 'name');
 
-        return flatpackUrl("/api/suggestions/{$entity}?search={$search}");
+        return flatpackUrl("/api/suggestions/{$entity}?display={$search}");
     }
 
     /**

@@ -2,37 +2,44 @@
 
 namespace Flatpack\Http\Controllers;
 
+use Flatpack\Facades\Flatpack;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 
 class ApiController extends Controller
 {
     public function suggestions(Request $request, $entity)
     {
-        $value = $request->query('value', '');
+        $search = $request->query('search', '');
+        $display = $request->query('display', 'name');
+        $model = Flatpack::guessModelClass($entity);
+        $model = new $model();
 
-        if (strlen($value) < 2) {
-            return response()->json([
-                'entity' => $entity,
-                'data' => [],
-            ]);
+        $tableName = $model->getTable();
+        $primaryKey = $model->getKeyName();
+
+        if (in_array($display, $model->getHidden())) {
+            return response()->json([]);
         }
 
-        $column = $request->query('search', 'name');
-        $model = $request->flatpack['model'];
-        $primaryKey = (new $model())->getKeyName();
-
         $results = $model::select([
-                $primaryKey . ' AS value',
-                $column,
+                "{$primaryKey} AS value",
+                "{$display} AS display",
             ])
-            ->where($column, 'LIKE', "%{$value}%")
-            ->orderBy($column)
+            ->where($display, 'LIKE', "%{$search}%")
+            ->when(
+                $request->exists('selected'),
+                fn ($query) => $query->whereIn('id', $request->input('selected', [])),
+                fn ($query) => $query->limit(10)
+            )
+            ->when(
+                Schema::hasColumn($tableName, 'deleted_at'),
+                fn ($query) => $query->whereNull('deleted_at')
+            )
+            ->orderBy('display')
             ->take(10)
             ->get();
 
-        return response()->json([
-            'entity' => $entity,
-            'data' => $results,
-        ]);
+        return response()->json($results);
     }
 }
