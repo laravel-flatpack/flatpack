@@ -26,6 +26,8 @@
             </div>
         </div>
 
+        @livewireScripts
+
         <script src="{{ flatpackAsset('flatpack/js/flatpack.js') }}"></script>
     </body>
 </html>

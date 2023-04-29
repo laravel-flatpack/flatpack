@@ -1,10 +1,11 @@
 @if (strtolower($type ?? '') === 'textarea')
 <x-textarea
+    x-on:change.debounce="Flatpack.form.inputChange($event, '{{ $binding }}.{{ $key }}')"
+    wire:model.defer="{{ $binding }}.{{ $key }}"
+    wire:key="{{ $binding }}-{{ $key }}"
+    id="{{ $binding }}-{{ $key }}"
     :label="$label"
     :placeholder="$placeholder"
-    wire:model.defer="fields.{{ $key }}"
-    wire:key="fields-{{ $key }}"
-    id="fields-{{ $key }}"
     :disabled="$disabled"
     :readonly="$readonly"
 />

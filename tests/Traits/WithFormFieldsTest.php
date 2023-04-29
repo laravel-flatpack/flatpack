@@ -16,6 +16,8 @@ beforeEach(function () {
 
         public function __construct()
         {
+            $this->fieldsBinding = 'fields';
+
             $this->entry = new \Flatpack\Tests\Models\Post();
 
             $this->formFields = [

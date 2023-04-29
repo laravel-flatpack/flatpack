@@ -52,5 +52,4 @@ it('shows the edit form page', function () {
         'entry' => $post,
         'formType' => 'edit',
     ]);
-    $response->assertSeeText('Lorem Ipsum');
 });

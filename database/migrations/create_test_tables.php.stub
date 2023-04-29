@@ -27,6 +27,7 @@ class CreateTestTables extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id')->nullable();
             $table->string('title');
+            $table->string('slug')->nullable();
             $table->text('body')->nullable();
             $table->string('picture')->nullable();
             $table->boolean('status')->default(0);

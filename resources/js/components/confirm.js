@@ -9,18 +9,23 @@ const styles = {
 };
 
 const confirm = (text, options = {}) => {
-  const { title, action, cancel, style } = options;
+  const { allowOutsideClick, title, action, cancel, style } = options;
 
-  return Swal.fire({
-    title: title ?? "",
+  const configuration = {
+    title: title || '',
     text,
     reverseButtons: true,
     showCancelButton: true,
     showCloseButton: true,
-    confirmButtonColor: styles[style] ?? styles.default,
-    confirmButtonText: action ?? "Ok",
-    cancelButtonText: cancel ?? "Cancel",
-  });
+    focusConfirm: true,
+    allowOutsideClick: !!allowOutsideClick,
+    confirmButtonColor: styles?.[style] || styles.default,
+    confirmButtonText: action || 'Ok',
+    cancelButtonText: cancel || 'Cancel',
+    customClass: style
+  };
+
+  return Swal.fire(configuration);
 };
 
 export default confirm;

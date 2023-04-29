@@ -1,5 +1,6 @@
 <?php
 
+use Flatpack\Http\Controllers\ApiController;
 use Flatpack\Http\Controllers\Auth\AuthenticatedSessionController;
 use Flatpack\Http\Controllers\FormController;
 use Flatpack\Http\Controllers\HomeController;
@@ -17,6 +18,7 @@ Route::name('flatpack.')->group(function () {
         Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 
         Route::middleware('flatpack')->group(function () {
+            Route::get('/api/suggestions/{entity}', [ApiController::class,'suggestions'])->name('api.suggestions');
             Route::post('/{entity}/{id}/upload', [UploadController::class, 'store'])->name('upload');
             Route::get('/{entity}/{id}', [FormController::class, 'index'])->name('form');
             Route::get('/{entity}', [ListController::class, 'index'])->name('list');

@@ -32,7 +32,6 @@
   @apply placeholder-secondary-400 border-secondary-300 sm:text-sm transition ease-in-out duration-100 shadow-sm;
 
   &:hover {
-    border-color: #ccc;
     border-color: var(--tags-hover-border-color);
   }
 
@@ -41,8 +40,10 @@
 
     --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0
       var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+
     --tw-ring-shadow: var(--tw-ring-inset) 0 0 0
       calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+
     box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
       var(--tw-shadow);
   }
@@ -138,7 +139,7 @@
 .tagify__tag {
   display: inline-flex;
   align-items: center;
-  margin: 5px 0 5px 5px;
+  margin: 6px 0 6px 8px;
   position: relative;
   z-index: 1;
   outline: 0;
@@ -348,7 +349,7 @@
   @apply flex-grow inline-flex items-center min-h-[30px] min-w-[110px] m-1 relative whitespace-pre-wrap;
   padding: var(--tag-pad, 0.3em 0.5em);
   box-sizing: inherit;
-  line-height: normal;
+  line-height: 1.25rem;
   color: inherit;
   color: var(--input-color, inherit);
   &:focus {
@@ -508,19 +509,14 @@
   transform: translateY(2em);
 }
 .tagify__dropdown__item {
-  box-sizing: inherit;
-  padding: 0.3em 0.5em;
-  margin: 1px;
-  cursor: pointer;
-  border-radius: 2px;
-  position: relative;
-  outline: 0;
+  @apply text-sm box-border py-1 px-2 m-1 cursor-pointer rounded-sm relative outline-none;
 }
 .tagify__dropdown__item--active {
-  background: var(--tags-focus-border-color);
-  background: var(--tagify-dd-color-primary);
-  color: #fff;
+  @apply bg-secondary-100 text-black;
 }
 .tagify__dropdown__item:active {
   filter: brightness(105%);
+}
+.tagify__dropdown__footer {
+  @apply text-xs px-2 py-1 text-gray-500;
 }

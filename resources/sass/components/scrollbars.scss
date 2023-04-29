@@ -1,0 +1,22 @@
+.hide-scrollbar::-webkit-scrollbar {
+    display: none
+  }
+  
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none
+}
+
+.soft-scrollbar::-webkit-scrollbar {
+  @apply cursor-pointer;
+  height: 4px;
+  width: 4px
+}
+
+.soft-scrollbar::-webkit-scrollbar-track {
+  @apply cursor-pointer bg-gray-800;
+}
+
+.soft-scrollbar::-webkit-scrollbar-thumb {
+  @apply cursor-pointer bg-primary-900;
+}

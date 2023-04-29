@@ -1,80 +1,111 @@
 import Tagify from "@yaireo/tagify";
 
-const tagTemplate = (tagData) => `
-  <tag
-    title="${tagData.name}"
-    contenteditable='true'
-    spellcheck='true'
-    tabIndex="-1"
-    class="tagify__tag ${tagData.class ? tagData.class : ""}">
-    <x title='' class='tagify__tag__removeBtn' role='button' aria-label='remove tag'></x>
-    <div>
-      <span class='tagify__tag-text'>${tagData.name}</span>
-    </div>
-  </tag>
-`;
-
-const suggestionItemTemplate = (tagData) => `
-  <div
-    class='tagify__dropdown__item ${tagData.class ? tagData.class : ""}'
-    tabindex="0"
-    role="option">
-      <strong>${tagData.name}</strong>
-  </div>
+function tagTemplate(tagData) {
+  return `
+    <tag
+      title="${tagData.name}"
+      contenteditable='true'
+      spellcheck='true'
+      tabIndex="-1"
+      class="tagify__tag ${tagData.class ? tagData.class : ""}">
+      <x title='' class='tagify__tag__removeBtn' role='button' aria-label='remove tag'></x>
+      <div>
+        <span class='tagify__tag-text'>${tagData.name}</span>
+      </div>
+    </tag>
   `;
+}
 
-const taginput = (key, input, values, addNewEntries = false) => {
-  var tagify = new Tagify(input, {
-    tagTextProp: "name",
-    enforceWhitelist: !addNewEntries,
+function suggestionItemTemplate(tagData) {
+  return `
+      <div ${this.getAttributes(tagData)}
+          class='tagify__dropdown__item ${tagData.class ? tagData.class : ""}'
+          tabindex="0"
+          role="option">
+          <span>${tagData.name}</span>
+      </div>
+  `;
+}
+
+const tagInput = ({ key, input, values, canCreate, source }) => {
+
+  const tagify = new Tagify(input, {
+    tagTextProp: 'name',
+    enforceWhitelist: canCreate == false,
     whitelist: values,
     skipInvalid: false,
     editTags: false,
     dropdown: {
       closeOnSelect: true,
       maxItems: 3,
-      classname: "input-tags-list",
       searchKeys: ["name", "value"],
     },
-    originalInputValueFormat: (valuesArr) =>
-      valuesArr.map((item) => item.value),
+    originalInputValueFormat: items => items.map(item => item.value),
     templates: {
       tag: tagTemplate,
       dropdownItem: suggestionItemTemplate,
     },
   });
 
-  // Add new tag
-  tagify.on("add", (e) => {
-    setTimeout(() => {
-      const { data, tagify, index } = e?.detail;
-      const { whitelist } = tagify;
-      const isNew =
-        whitelist.map((item) => `${item.value}`).indexOf(data.value) === -1;
+  let controller;
 
-      if (isNew) {
-        // Create new tag Model
-        Livewire.emit(`flatpack-taginput:create`, key, data.value);
-        // Add to whitelist and sync value
-        Livewire.on(`flatpack-form:related-entity-created:${key}`, (value) => {
-          const newTag = { value: value, name: `${data.name}` };
-          // Update whitelist
-          whitelist.push(newTag);
-          // Update tag value
-          tagify.replaceTag(tagify.getTagElms()[index], newTag);
-        });
-      }
-    }, 0);
+  /**
+   * Listen to any keystrokes which modify tagify's input
+   */
+  tagify.on('input', ({ detail }) => {
+    const value = `${detail.value}`
+
+    if (value.length < 2) {
+      return false;
+    }
+
+    // https://developer.mozilla.org/en-US/docs/Web/API/AbortController/abort
+    controller && controller.abort();
+    controller = new AbortController();
+
+    tagify.whitelist = values;
+    tagify.loading(true).dropdown.hide();
+
+    fetch(source + '&value=' + value, { signal: controller.signal })
+      .then(res => res.json())
+      .then(function (res) {
+        tagify.whitelist = [
+          ...values,
+          ...res.data
+        ]
+        tagify.loading(false).dropdown.show(value)
+      })
   });
 
-  // listen to "change" events on the "original" input/textarea element
+  /**
+   * Listen to new tag event
+   */
+  tagify.on("add", (e) => {
+    const { data, tagify, index } = e?.detail;
+    const { whitelist } = tagify;
+    const isNew = whitelist.map(item => `${item.value}`).indexOf(data.value) === -1;
+
+    if (isNew && canCreate) {
+      Livewire.emit(`flatpack-taginput:create`, key, data.value);
+      Livewire.on(`flatpack-form:related-entity-created:${key}`, (value) => {
+        const newTag = { value, name: data.name };
+        whitelist.push(newTag);
+        tagify.replaceTag(tagify.getTagElms()[index], newTag);
+      });
+    }
+
+    return false;
+  });
+
+  /**
+   * Listen to "change" events on the "original" input element.
+   */
   tagify.DOM.originalInput.addEventListener("change", (e) => {
-    const { name, value } = e.target;
-    const key = name.replace("fields.", "");
+    const { value } = e.target;
     Livewire.emit("flatpack-taginput:change", key, value);
   });
 
   return tagify;
 };
 
-export default taginput;
+export default tagInput;

@@ -150,6 +150,67 @@ it('updates an existing post entry', function () {
     $this->assertTrue(Post::whereTitle('Lorem ipsum')->exists());
 });
 
+
+it('handles form field changes', function () {
+    $post = new Post();
+
+    Livewire::test(Form::class, [
+        'entity' => 'posts',
+        'model' => Post::class,
+        'entry' => $post,
+        'formType' => 'create',
+        'composition' => [
+            'header' => [
+                'title' => [
+                    'type' => 'editable',
+                    'size' => 'large',
+                    'placeholder' => 'Your post title...',
+                    'rules' => 'required|string',
+                ],
+                'slug' => [
+                    'type' => 'editable',
+                    'size' => 'small',
+                    'placeholder' => 'Your post url...',
+                    'rules' => 'required|string',
+                    'preset' => [
+                        'field' => 'title',
+                        'type' => 'slug',
+                    ],
+                ],
+            ],
+            'toolbar' => [
+                'save' => [
+                    'label' => 'Save',
+                    'action' => 'save',
+                ],
+            ],
+            'main' => [
+                'body' => [
+                    'type' => 'textarea',
+                    'rules' => 'required',
+                ],
+            ],
+        ],
+    ])
+    ->set('fields.title', 'Lorem ipsum')
+    ->set('fields.body', 'Lorem ipsum dolor sit amet...')
+    ->assertSet('fields', [
+        'title' => 'Lorem ipsum',
+        'slug' => 'lorem-ipsum',
+        'body' => 'Lorem ipsum dolor sit amet...',
+    ])
+    ->call('saveFieldsInputState', 'Lorem ipsum 2', 'fields.title')
+    ->assertSet('fields', [
+        'title' => 'Lorem ipsum 2',
+        'slug' => 'lorem-ipsum',
+        'body' => 'Lorem ipsum dolor sit amet...',
+    ])
+    ->call('action', 'save');
+
+    $this->assertFalse(Post::whereTitle('Testing title')->exists());
+    $this->assertTrue(Post::whereTitle('Lorem ipsum 2')->exists());
+});
+
 it('handles form field components state', function () {
     $post = Post::create([
         'title' => 'Testing title',

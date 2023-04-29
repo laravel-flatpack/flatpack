@@ -18,7 +18,21 @@ class CreateRelation extends Component
      *
      * @var array
      */
-    public $fields = [];
+    public $relationFields = [];
+
+    /**
+     * Form fields binding property.
+     *
+     * @var string
+     */
+    public $fieldsBinding;
+
+    /**
+     * Form fields composition.
+     *
+     * @var array
+     */
+    public $formFields = [];
 
     /**
      * Form field errors.
@@ -26,13 +40,6 @@ class CreateRelation extends Component
      * @var array
      */
     public $formErrors = [];
-
-    /**
-     * Form composition.
-     *
-     * @var array
-     */
-    public $composition = [];
 
     /**
      * Model class name.
@@ -50,20 +57,18 @@ class CreateRelation extends Component
 
     public function mount()
     {
+        $this->fieldsBinding = 'relationFields';
+
         $this->entry = new $this->model();
 
-        $this->formFields = $this->getMainComposition();
-
         foreach ($this->formFields as $key => $options) {
-            $this->fields[$key] = null;
+            $this->relationFields[$key] = null;
         }
     }
 
     public function render()
     {
-        return view('flatpack::components.create-relation', [
-            'main' => $this->getMainComposition(),
-        ]);
+        return view('flatpack::components.create-relation');
     }
 
     /**
@@ -73,7 +78,7 @@ class CreateRelation extends Component
     {
         $this->clearErrors();
 
-        $this->validateForm($this->fields, $this->onlyInputFields());
+        $this->validateForm($this->relationFields, $this->onlyInputFields());
 
         $this->save();
 
@@ -108,7 +113,7 @@ class CreateRelation extends Component
         $this->entry = new $model();
 
         foreach ($this->formFields as $key => $options) {
-            $this->entry->{$key} = $this->fields[$key] ?? null;
+            $this->entry->{$key} = $this->relationFields[$key] ?? null;
         }
 
         $this->entry->save();
@@ -121,6 +126,6 @@ class CreateRelation extends Component
 
     private function clearForm()
     {
-        $this->fields = [];
+        $this->relationFields = [];
     }
 }

@@ -138,35 +138,36 @@
 .swal2-actions:not(.swal2-loading) .swal2-styled:active {
   background-image: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2));
 }
-.swal2-loader {
+.swal2-loader,
+.swal2-footer {
   display: none;
 }
 .swal2-styled {
   @apply flex justify-center px-4 py-2 text-base font-medium border rounded-md shadow-sm sm:text-sm;
 }
 .swal2-styled:not([disabled]) {
-  cursor: pointer;
+  @apply cursor-pointer;
 }
 .swal2-styled.swal2-confirm,
 .swal2-styled.swal2-deny,
 .swal2-styled.swal2-cancel {
-  @apply flex justify-center px-4 py-2 text-base font-medium border rounded-md shadow-sm sm:text-sm;
-  @apply text-gray-700 bg-white border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500;
+  @apply flex justify-center px-4 py-2 text-base font-medium border border-transparent rounded-md shadow-sm sm:text-sm transition-all ease-in duration-150;
+  @apply focus:ring-2 focus:ring-offset-2 focus:outline-none;
 }
 .swal2-styled.swal2-confirm {
-  @apply text-white bg-gray-800 border-transparent hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500;
+  @apply text-white bg-primary-500 hover:bg-primary-600 ring-primary-500;
+}
+.danger .swal2-styled.swal2-confirm {
+  @apply text-white bg-red-800 hover:bg-red-700 focus:ring-red-500;
+}
+.swal2-styled.swal2-cancel {
+  @apply text-slate-500 bg-white hover:bg-slate-100 ring-primary-500 border-gray-300;
 }
 .swal2-styled.swal2-deny {
-  @apply text-white bg-red-800 border-transparent hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500;
-}
-.swal2-styled:focus {
-  @apply focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400;
+  @apply text-white bg-red-800 hover:bg-red-700 focus:ring-red-500;
 }
 .swal2-styled::-moz-focus-inner {
   border: 0;
-}
-.swal2-footer {
-  display: none;
 }
 .swal2-close {
   @apply z-20 items-center justify-center w-6 h-6 p-0 mr-0 overflow-hidden text-gray-400 bg-transparent border-0 border-none rounded-md cursor-pointer;
@@ -180,13 +181,16 @@
   font-family: monospace;
   font-size: 1.5rem;
   justify-self: end;
+
+  &:hover {
+    @apply text-black bg-transparent transform-none;
+  }
+
+  &::-moz-focus-inner {
+    border: 0;
+  }
 }
-.swal2-close:hover {
-  @apply text-black bg-transparent transform-none;
-}
-.swal2-close::-moz-focus-inner {
-  border: 0;
-}
+
 .swal2-html-container {
   @apply z-10 justify-center p-0 mx-3 my-5 overflow-auto text-base font-normal text-black break-words;
   word-wrap: break-word;
@@ -223,10 +227,12 @@
   margin-right: initial;
   margin-left: 0;
 }
+
 .swal2-rtl .swal2-timer-progress-bar {
   right: 0;
   left: auto;
 }
+
 @-webkit-keyframes swal2-show {
   0% {
     opacity: 0;
