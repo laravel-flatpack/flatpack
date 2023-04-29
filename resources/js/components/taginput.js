@@ -37,7 +37,7 @@ const tagInput = ({ key, input, values, canCreate, source }) => {
     editTags: false,
     dropdown: {
       closeOnSelect: true,
-      maxItems: 3,
+      maxItems: 10,
       searchKeys: ["name", "value"],
     },
     originalInputValueFormat: items => items.map(item => item.value),
