@@ -152,6 +152,7 @@ class Flatpack
      * Get the model class by the entity name.
      *
      * @param  string $name
+     * @throws ModelNotFoundException
      * @return string
      */
     public function guessModelClass($name = ''): string
