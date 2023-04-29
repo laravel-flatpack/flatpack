@@ -16,8 +16,8 @@
 
             <div class="editable-field-value">
                 <span 
-                    :class="{ 'text-gray-500': $wire.fields.{{ $key }} == null }"
-                    x-text="$wire.fields.{{ $key }} || '{{ $placeholder }}'"
+                    :class="{ 'text-gray-500': $wire.{{ $binding }}.{{ $key }} == null }"
+                    x-text="$wire.{{ $binding }}.{{ $key }} || '{{ $placeholder }}'"
                     x-on:click.stop="toggleEditing"></span>
                 
                 <button x-on:click.stop="toggleEditing" class="outline-none inline-flex justify-center items-center group transition-all ease-in duration-150 focus:ring-2 focus:ring-offset-2 hover:shadow-sm disabled:opacity-80 disabled:cursor-not-allowed rounded gap-x-2 text-sm px-4 py-2 ring-primary-600 text-primary-600 hover:bg-secondary-100 w-8 h-8">
@@ -27,9 +27,9 @@
     
             <div class="editable-field-input">
                 <input
-                    x-on:change.debounce="Flatpack.form.inputChange($event, '{{ $key }}')"
-                    wire:model.defer="fields.{{ $key }}"
-                    wire:key="fields-{{ $key }}"        
+                    x-on:change.debounce="Flatpack.form.inputChange($event, '{{ $binding }}.{{ $key }}')"
+                    wire:model.defer="{{ $binding }}.{{ $key }}"
+                    wire:key="{{ $binding }}-{{ $key }}"
                     x-ref="input"
                     x-on:click.away="toggleEditing"
                     x-on:keydown.enter="disableEditing"

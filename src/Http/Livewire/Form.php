@@ -25,6 +25,13 @@ class Form extends Component
     public $fields = [];
 
     /**
+     * Form fields binding property.
+     *
+     * @var string
+     */
+    public $fieldsBinding;
+
+    /**
      * Change form fields.
      *
      * @var array
@@ -93,6 +100,7 @@ class Form extends Component
      */
     public function mount()
     {
+        $this->fieldsBinding = 'fields';
         $this->formFields = $this->getAllCompositionFields();
         $this->bindModelToFields();
     }

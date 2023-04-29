@@ -16,6 +16,13 @@ class FormField extends Component
     public $entity;
 
     /**
+     * Form field property binding.
+     *
+     * @var string
+     */
+    public $binding;
+
+    /**
      * Model instance.
      *
      * @var \Illuminate\Database\Eloquent\Model
@@ -153,7 +160,8 @@ class FormField extends Component
         $options = [],
         $entry = null,
         $fieldErrors = [],
-        $formType = 'create'
+        $formType = 'create',
+        $binding = 'fields'
     ) {
         $this->key = $key;
         $this->options = $options;
@@ -162,6 +170,7 @@ class FormField extends Component
         $this->entry = $entry;
         $this->fieldErrors = $fieldErrors;
         $this->formType = $formType;
+        $this->binding = $binding;
 
         $this->initFormFieldProps();
     }

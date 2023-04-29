@@ -1,9 +1,10 @@
 <div wire:ignore>
     <input
-        wire:model="fields.{{ $key }}"
+        wire:key="{{ $binding }}-{{ $key }}"
+        wire:model="{{ $binding }}.{{ $key }}"
         placeholder="{{ $placeholder }}"
-        name="fields.{{ $key }}"
-        id="fields-{{ $key }}"
+        name="{{ $binding }}.{{ $key }}"
+        id="{{ $binding }}-{{ $key }}"
     />
 </div>
 @push('scripts')
@@ -11,7 +12,7 @@
     document.addEventListener("DOMContentLoaded", () => {
         Flatpack.taginput({
             key: '{{ $key }}',
-            input: document.getElementById('fields-{{ $key }}'),
+            input: document.getElementById('{{ $binding }}-{{ $key }}'),
             source: '{{ $source }}',
             values: JSON.parse(@js(json_encode($tagInputItems))),
             canCreate: {{ $canCreate ? 'true' : 'false' }},

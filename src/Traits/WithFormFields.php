@@ -7,6 +7,13 @@ use Illuminate\Support\Str;
 trait WithFormFields
 {
     /**
+     * Form fields binding property.
+     *
+     * @var string
+     */
+    public $fieldsBinding;
+
+    /**
      * Form fields composition.
      *
      * @var array
@@ -19,13 +26,6 @@ trait WithFormFields
      * @var array
      */
     public $changedFields = [];
-
-    /**
-     * Form fields values.
-     *
-     * @var array
-     */
-    public $fields = [];
 
     /**
     * Model instance.
@@ -59,11 +59,11 @@ trait WithFormFields
         foreach ($this->onlyInputFields() as $key => $options) {
             if ($this->entry->$key instanceof \Illuminate\Database\Eloquent\Collection) {
                 $id = optional($this->relation($key))->getRelatedKeyName();
-                $this->fields[$key] = $this->entry->$key->pluck($id)->toArray();
+                $this->{$this->fieldsBinding}[$key] = $this->entry->$key->pluck($id)->toArray();
             } elseif ($this->entry->$key instanceof \Illuminate\Database\Eloquent\Model) {
-                $this->fields[$key] = $this->entry->$key->getKey();
+                $this->{$this->fieldsBinding}[$key] = $this->entry->$key->getKey();
             } else {
-                $this->fields[$key] = $this->entry->$key;
+                $this->{$this->fieldsBinding}[$key] = $this->entry->$key;
             }
         }
     }
@@ -81,12 +81,12 @@ trait WithFormFields
                 Str::contains($key, "_confirmation") ||
                 $this->isRelationship($key) ||
                 ! isset($this->fields[$key]) ||
-                $this->fields[$key] === null
+                $this->{$this->fieldsBinding}[$key] === null
             ) {
                 continue;
             }
 
-            $this->entry->{$key} = $this->fields[$key];
+            $this->entry->{$key} = $this->{$this->fieldsBinding}[$key];
         }
     }
 
@@ -136,8 +136,10 @@ trait WithFormFields
     {
         foreach (collect($data) as $value) {
             $presets = [
-                'exact' => Str::of($value)->toString(),
                 'slug' => Str::of($value)->slug()->toString(),
+                'lower' => Str::of($value)->lower()->toString(),
+                'upper' => Str::of($value)->upper()->toString(),
+                'exact' => Str::of($value)->toString(),
             ];
 
             $fields = collect($this->onlyPresetFields())
@@ -145,9 +147,9 @@ trait WithFormFields
                 ->all();
 
             foreach ($fields as $field => $options) {
-                if (is_null(data_get($this->fields, $field)) && ! $this->hasChanges($field)) {
+                if (is_null(data_get($this->{$this->fieldsBinding}, $field)) && ! $this->hasChanges($field)) {
                     $value = $presets[data_get($options, 'preset.type', 'exact')];
-                    $this->fields[$field] = $value;
+                    $this->{$this->fieldsBinding}[$field] = $value;
                     $this->changedField($field, $value);
                 }
             }
@@ -165,7 +167,7 @@ trait WithFormFields
     {
         $field = $this->fieldKeyName($key);
 
-        $this->fields[$field] = $value;
+        $this->{$this->fieldsBinding}[$field] = $value;
 
         $this->changedFields = collect($this->changedFields)
             ->add($field)

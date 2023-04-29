@@ -6,7 +6,7 @@
             <label class="flex items-center justify-start cursor-pointer">
                 <input
                     type="checkbox"
-                    wire:model="fields.{{ $key }}"
+                    wire:model="{{ $binding }}.{{ $key }}"
                     class="border-gray-300 rounded shadow-sm text-primary-300 focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50"
                     value="{{ $optionValue }}"
                     />
@@ -20,7 +20,7 @@
         <div x-show="visible" x-cloak x-ref="modal">
             <x-flatpack-modal title="Create new {{ Str::singular($key) }}">
                 <livewire:flatpack.create-relation
-                    :composition="['fields' => $formFields]"
+                    :formFields="$formFields"
                     :model="$relationshipModel"
                 />
             </x-flatpack-modal>
