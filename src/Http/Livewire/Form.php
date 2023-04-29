@@ -7,7 +7,6 @@ use Flatpack\Traits\WithComposition;
 use Flatpack\Traits\WithFormFields;
 use Flatpack\Traits\WithFormValidation;
 use Flatpack\Traits\WithRelationships;
-use Illuminate\Support\Arr;
 use Livewire\Component;
 
 class Form extends Component
@@ -125,6 +124,8 @@ class Form extends Component
         $this->changedField($key, $value);
 
         $this->applyPreset($key, $value);
+
+        $this->validateForm($this->fields, $this->onlyInputFields());
     }
 
     /**
@@ -203,7 +204,7 @@ class Form extends Component
     public function createRelatedEntity($key, $data)
     {
         try {
-            $nameField = Arr::get($this->formFields, "$key.relation.display", "name");
+            $nameField = data_get($this->formFields, "$key.relation.display", "name");
 
             $created = $this->createRelationship(
                 $key,
@@ -231,8 +232,6 @@ class Form extends Component
                 'entity' => $this->entity,
             ]);
         }
-
-        $this->clearFormErrors();
 
         $this->beforeAction($action);
 
@@ -297,29 +296,6 @@ class Form extends Component
     }
 
     /**
-     * Clean up field errors.
-     *
-     * @param string $key
-     * @return void
-     */
-    protected function clearFieldError($key)
-    {
-        $field = $this->fieldKeyName($key);
-
-        unset($this->formErrors[$field]);
-    }
-
-    /**
-     * Clean up all form errors.
-     *
-     * @return void
-     */
-    protected function clearFormErrors()
-    {
-        $this->formErrors = [];
-    }
-
-    /**
      * Client-side redirect to the list page.
      *
      * @return \Livewire\Event
@@ -340,8 +316,8 @@ class Form extends Component
     private function notifySuccess($message)
     {
         $this->emit('notify', [
-            "type" => "success",
-            "message" => $message,
+            'type' => 'success',
+            'message' => $message,
         ]);
     }
 
@@ -355,9 +331,9 @@ class Form extends Component
     private function notifyError($message, $errors = [])
     {
         return $this->emit('notify', [
-            "type" => "error",
-            "message" => $message,
-            "errors" => $errors,
+            'type' => 'error',
+            'message' => $message,
+            'errors' => $errors,
         ]);
     }
 
