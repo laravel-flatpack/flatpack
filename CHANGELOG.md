@@ -2,6 +2,15 @@
 
 All notable changes to `laravel-flatpack` will be documented in this file.
 
+## v1.0.12 - 2023-04-29
+
+### What's Changed
+
+- chore(deps): bump dependabot/fetch-metadata from 1.3.6 to 1.4.0 in https://github.com/laravel-flatpack/flatpack/pull/27
+- Form and layout enhancements in https://github.com/laravel-flatpack/flatpack/pull/28
+
+**Full Changelog**: https://github.com/laravel-flatpack/flatpack/compare/v1.0.11...v1.0.12
+
 ## v1.0.11 - 2023-04-23
 
 ### What's Changed
