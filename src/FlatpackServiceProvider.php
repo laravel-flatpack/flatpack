@@ -10,6 +10,7 @@ use Flatpack\Http\Livewire\BlockEditor;
 use Flatpack\Http\Livewire\CreateRelation;
 use Flatpack\Http\Livewire\Form;
 use Flatpack\Http\Livewire\ImageUploader;
+use Flatpack\Http\Livewire\SearchBox;
 use Flatpack\Http\Livewire\Table;
 use Flatpack\Http\Middleware\Authenticate;
 use Flatpack\Http\Middleware\FlatpackMiddleware;
@@ -87,6 +88,7 @@ class FlatpackServiceProvider extends ServiceProvider
         Livewire::component('flatpack.create-relation', CreateRelation::class);
         Livewire::component('flatpack.image-uploader', ImageUploader::class);
         Livewire::component('flatpack.block-editor', BlockEditor::class);
+        Livewire::component('flatpack.search-box', SearchBox::class);
     }
 
     /**

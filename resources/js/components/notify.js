@@ -9,7 +9,7 @@ const notify = (type, message, description, options) => {
     title: formatMessage(message),
     description,
     icon: type,
-    timeout: 2000,
+    timeout: 800,
   });
 };
 

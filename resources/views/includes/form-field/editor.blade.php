@@ -3,14 +3,15 @@
         <div class="w-full max-w-full prose">
             <textarea
                 class="block w-full mx-auto transition duration-150 ease-in-out border-gray-300 resize-none input-editor"
-                wire:model.defer="fields.{{ $key }}"
-                wire:key="fields-{{ $key }}"
-                x-data="Flatpack.ckEditor.editorInstance('fields.{{ $key }}', 'ckeditor-field-{{ $key }}', {
+                wire:model.defer="{{ $binding }}.{{ $key }}"
+                wire:key="{{ $binding }}-{{ $key }}"
+                x-on:change.debounce="Flatpack.form.inputChange($event, '{{ $binding }}.{{ $key }}')"
+                x-data="Flatpack.ckEditor.editorInstance('{{ $binding }}.{{ $key }}', 'ckeditor-{{ $binding }}-{{ $key }}', {
                     upload: '{{ route('flatpack.upload', [ 'entity' => $entity, 'id' => $entry->id ?? 'create' ]) }}',
                     token: '{{ csrf_token() }}',
                 })"
                 x-init="initEditor()"
-                id="ckeditor-field-{{ $key }}">
+                id="ckeditor-{{ $binding }}-{{ $key }}">
             </textarea>
         </div>
     </div>

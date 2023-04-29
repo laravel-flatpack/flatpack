@@ -25,6 +25,37 @@ class TagInput extends RelationField
      */
     public function render()
     {
-        return view('flatpack::components.tag-input');
+        return view('flatpack::components.tag-input')
+            ->with('source', $this->getTagInputSource())
+            ->with('tagInputItems', $this->getTagInputItems());
+    }
+
+    /**
+     * Url for tag input suggestions.
+     *
+     * @return string
+     */
+    private function getTagInputSource()
+    {
+        $entity = $this->getFieldOption('relation.entity', $this->getFieldOption('relation.name'));
+        $search = $this->getFieldOption('relation.display', 'name');
+
+        return flatpackUrl("/api/suggestions/{$entity}?search={$search}");
+    }
+
+    /**
+     * Tag input initial value items.
+     *
+     * @return string
+     */
+    private function getTagInputItems()
+    {
+        return collect($this->value)
+            ->map(fn ($value) => [
+                'value' => $value->{$value->getKeyName()},
+                'name' => $value->{$this->getFieldOption('relation.display', 'name')},
+                'exists' => true,
+            ])
+            ->toArray();
     }
 }

@@ -2,18 +2,23 @@
 #  {{ model }} Form Definition
 # =======================================
 
+title: {{ model }}
+model: {{ namespacedModel }}
+
 toolbar:
   save:
     type: button
     label: Save
     action: save
     shortcut: s
+    style: primary
 
 main:
   id:
     label: ID
     readonly: true
 
+sidebar:
   created_at:
     label: Created
     type: datetime-picker

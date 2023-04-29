@@ -1,11 +1,12 @@
 <form class="flex flex-col w-full mb-0" wire:submit.prevent="submit">
     <div class="form-fieldset is-compact">
-    @foreach ($main as $key => $options)
+    @foreach ($formFields as $key => $options)
         <x-flatpack-form-field
             :key="$key"
             :options="$options"
             :entry="$entry"
             :model="$model"
+            :binding="$fieldsBinding"
         />
     @endforeach
     </div>

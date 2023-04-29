@@ -2,9 +2,13 @@
 #  {{ model }} List Definition
 # =======================================
 
+title: {{ model }}
+model: {{ namespacedModel }}
+
 toolbar:
   create:
     label: New {{ model }}
+    icon: plus
     link: create
     style: primary
     shortcut: enter

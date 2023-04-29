@@ -16,6 +16,13 @@ class FormField extends Component
     public $entity;
 
     /**
+     * Form field property binding.
+     *
+     * @var string
+     */
+    public $binding;
+
+    /**
      * Model instance.
      *
      * @var \Illuminate\Database\Eloquent\Model
@@ -128,6 +135,13 @@ class FormField extends Component
     public $options = [];
 
     /**
+     * Form type.
+     *
+     * @var string
+     */
+    public $formType;
+
+    /**
      * Create a new FormField instance.
      *
      * @param string $key
@@ -146,7 +160,8 @@ class FormField extends Component
         $options = [],
         $entry = null,
         $fieldErrors = [],
-        $formType = 'create'
+        $formType = 'create',
+        $binding = 'fields'
     ) {
         $this->key = $key;
         $this->options = $options;
@@ -155,6 +170,7 @@ class FormField extends Component
         $this->entry = $entry;
         $this->fieldErrors = $fieldErrors;
         $this->formType = $formType;
+        $this->binding = $binding;
 
         $this->initFormFieldProps();
     }
@@ -181,9 +197,9 @@ class FormField extends Component
         $this->required = $this->getFieldOption('required', false);
         $this->disabled = $this->getFieldOption('disabled', false);
         $this->readonly = $this->getFieldOption('readonly', false);
-        $this->value = $this->getFieldOption('value', optional($this->entry)->{$this->key});
         $this->items = $this->getFieldOption('items', []);
         $this->size = $this->getFieldOption('size', 'base');
+        $this->value = $this->getFieldOption('value', optional($this->entry)->{$this->key});
 
         if (in_array($this->type, [ 'relation', 'select', 'taginput' ])) {
             $this->relation = $this->getFieldOption('relation', false);

@@ -1,7 +1,8 @@
 @if (strtolower($type ?? '') === 'date-picker')
 <x-datetime-picker
-	without-timezone
-	without-time
+	x-on:change.debounce="Flatpack.form.inputChange($event, '{{ $binding }}.{{ $key }}')"
+	wire:model.defer="{{ $binding }}.{{ $key }}"
+	wire:key="{{ $binding }}-{{ $key }}"
 	:label="$label"
 	:placeholder="$placeholder"
 	:disabled="$disabled"
@@ -9,6 +10,7 @@
 	:min="data_get($options, 'min', false)"
 	:max="data_get($options, 'max', false)"
 	:parse-format="data_get($options, 'format.parse', 'YYYY-MM-DD')"
-	wire:model.defer="fields.{{ $key }}"
+	without-timezone
+	without-time
 />
 @endif

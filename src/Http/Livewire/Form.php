@@ -7,7 +7,6 @@ use Flatpack\Traits\WithComposition;
 use Flatpack\Traits\WithFormFields;
 use Flatpack\Traits\WithFormValidation;
 use Flatpack\Traits\WithRelationships;
-use Illuminate\Support\Arr;
 use Livewire\Component;
 
 class Form extends Component
@@ -24,6 +23,20 @@ class Form extends Component
      * @var array
      */
     public $fields = [];
+
+    /**
+     * Form fields binding property.
+     *
+     * @var string
+     */
+    public $fieldsBinding;
+
+    /**
+     * Change form fields.
+     *
+     * @var array
+     */
+    public $changedFields = [];
 
     /**
      * Form field errors.
@@ -77,30 +90,63 @@ class Form extends Component
         'flatpack-taginput:change' => 'saveTagInputState',
         'flatpack-taginput:create' => 'createRelatedEntity',
         'flatpack-relation:updated' => 'render',
+        'flatpack-form-field:updated' => 'saveFieldsInputState',
     ];
 
+    /**
+     * Mount component.
+     *
+     * @return void
+     */
     public function mount()
     {
+        $this->fieldsBinding = 'fields';
         $this->formFields = $this->getAllCompositionFields();
-
         $this->bindModelToFields();
     }
 
+    /**
+     * Render component.
+     *
+     * @return \Illuminate\Contracts\View\View
+     */
     public function render()
     {
         return view('flatpack::components.form', [
-            'header' => $this->getComposition('header'),
             'toolbar' => $this->getComposition('toolbar'),
-            'main' => $this->getMainComposition(),
             'sidebar' => $this->getComposition('sidebar'),
+            'header' => $this->getComposition('header'),
+            'main' => $this->getMainComposition(),
         ]);
     }
 
-    public function updated($name, $value)
+    /**
+     * On form field updated.
+     *
+     * @param string $name
+     * @param mixed $value
+     * @return void
+     */
+    public function updatedFields($value, $key)
     {
-        $this->setHasChanges($name, $value);
+        $this->changedField($key, $value);
 
-        $this->clearFieldError($name);
+        $this->applyPreset($key, $value);
+
+        $this->validateForm($this->fields, $this->onlyInputFields());
+    }
+
+    /**
+     * Save the state of the image uploader.
+     *
+     * @param array $images
+     * @return void
+     */
+    public function saveFieldsInputState($value, $key)
+    {
+        $this->changedField($key, $value);
+
+        $this->applyPreset($key, $value);
     }
 
     /**
@@ -111,9 +157,7 @@ class Form extends Component
      */
     public function saveImageUploaderState($key, $images)
     {
-        $this->setHasChanges($key, $images);
-
-        $this->fields[$key] = $images;
+        $this->changedField($key, $images);
 
         return $this->fields[$key];
     }
@@ -127,7 +171,7 @@ class Form extends Component
      */
     public function showImageUploaderError($message, $images)
     {
-        $this->notifyError($message);
+        $this->notifyError($message, $images);
     }
 
     /**
@@ -139,9 +183,7 @@ class Form extends Component
      */
     public function saveEditorState($key, $data)
     {
-        $this->setHasChanges($key, $data);
-
-        $this->fields[$key] = json_encode($data);
+        $this->changedField($key, json_encode($data));
 
         return $this->fields[$key];
     }
@@ -157,9 +199,7 @@ class Form extends Component
     {
         $tags = explode(',', $tags);
 
-        $this->setHasChanges($key, $tags);
-
-        $this->fields[$key] = $tags;
+        $this->changedField($key, $tags);
 
         return $this->fields[$key];
     }
@@ -172,7 +212,7 @@ class Form extends Component
     public function createRelatedEntity($key, $data)
     {
         try {
-            $nameField = Arr::get($this->formFields, "$key.relation.display", "name");
+            $nameField = data_get($this->formFields, "$key.relation.display", "name");
 
             $created = $this->createRelationship(
                 $key,
@@ -200,8 +240,6 @@ class Form extends Component
                 'entity' => $this->entity,
             ]);
         }
-
-        $this->clearFormErrors();
 
         $this->beforeAction($action);
 
@@ -256,82 +294,13 @@ class Form extends Component
         $this->bindModelToFields();
 
         if ($method === 'save') {
-            $this->entityId = $this->entry->getKey() ?? 'create';
-
             $this->emit('flatpack-form:saved', $this->fields, $this->entry->getKey());
-
             $this->emit('update_url', route('flatpack.form', [
                 'entity' => $this->entity,
                 'id' => $this->entry->getKey(),
             ]));
-
             $this->formType = 'edit';
         }
-
-        $this->hasChanges = false;
-    }
-
-    /**
-     * Clean up field errors.
-     *
-     * @param string $key
-     * @return void
-     */
-    protected function clearFieldError($key)
-    {
-        $field = $this->fieldKeyName($key);
-
-        unset($this->formErrors[$field]);
-    }
-
-    /**
-     * Clean up all form errors.
-     *
-     * @return void
-     */
-    protected function clearFormErrors()
-    {
-        $this->formErrors = [];
-    }
-
-    /**
-     * Set hasChanges flag if field has changed.
-     *
-     * @param string $key
-     * @param mixed $value
-     * @return void
-     */
-    private function setHasChanges($key, $value)
-    {
-        $field = $this->fieldKeyName($key);
-
-        $oldValue = $this->fields[$field] ?? null;
-
-        $this->hasChanges = $this->compareValues($oldValue, $value);
-    }
-
-    /**
-     * Encode and compare two values.
-     * Return true if they are different.
-     *
-     * @param  mixed $oldValue
-     * @param  mixed $newValue
-     * @return bool
-     */
-    private function compareValues($oldValue, $newValue)
-    {
-        return md5(json_encode($oldValue)) !== md5(json_encode($newValue));
-    }
-
-    /**
-     * Return the clean field key name.
-     *
-     * @param  string $key
-     * @return string
-     */
-    protected function fieldKeyName($name)
-    {
-        return str_replace('fields.', '', $name);
     }
 
     /**
@@ -355,8 +324,8 @@ class Form extends Component
     private function notifySuccess($message)
     {
         $this->emit('notify', [
-            "type" => "success",
-            "message" => $message,
+            'type' => 'success',
+            'message' => $message,
         ]);
     }
 
@@ -370,9 +339,9 @@ class Form extends Component
     private function notifyError($message, $errors = [])
     {
         return $this->emit('notify', [
-            "type" => "error",
-            "message" => $message,
-            "errors" => $errors,
+            'type' => 'error',
+            'message' => $message,
+            'errors' => $errors,
         ]);
     }
 

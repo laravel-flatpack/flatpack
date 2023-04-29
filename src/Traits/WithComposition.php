@@ -30,8 +30,8 @@ trait WithComposition
     {
         $composition = Arr::get($this->composition, $key, []);
 
-        return collect($composition)->filter(function ($item) {
-            return in_array(
+        return collect($composition)->filter(
+            fn ($item) => in_array(
                 $this->formType,
                 collect(Arr::get($item, 'form', [
                     null,
@@ -39,8 +39,8 @@ trait WithComposition
                     'create',
                     'edit',
                 ]))->toArray()
-            );
-        })->toArray();
+            )
+        )->toArray();
     }
 
     /**
