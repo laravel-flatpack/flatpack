@@ -3,10 +3,10 @@
     <li>
         <x-flatpack::navbar.item
             :key="$key"
-            :icon="Arr::get($item, 'icon')"
-            :title="Arr::get($item, 'title', '')"
-            :url="Arr::get($item, 'url', '#')"
-            :type="Arr::get($item, 'type')"
+            :icon="data_get($item, 'icon')"
+            :title="data_get($item, 'title', '')"
+            :url="data_get($item, 'url', '#')"
+            :type="data_get($item, 'type')"
             :current="($key === $current)"
         />
     </li>

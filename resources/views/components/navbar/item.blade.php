@@ -7,7 +7,7 @@
 ])
 <a href="{{ $url }}" {{ $attributes->class([
     'navbar-menu-item',
-    'is-pinned' => $type === 'featured',
+    'is-pinned' => $type === 'button',
     'is-active' => $current
 ])}}>
     <x-icon

@@ -131,7 +131,7 @@ class Flatpack
     {
         $name = collect(explode('\\', $name))->last();
 
-        return Str::lower(Str::plural($name));
+        return Str::of($name)->plural()->lower()->toString();
     }
 
     /**
@@ -142,10 +142,10 @@ class Flatpack
      */
     public function modelName($name = ''): string
     {
-        return Str::studly(Str::singular($name));
+        return Str::of($name)->singular()->studly()->toString();
     }
 
-    private function getModelsDirectory()
+    public function getModelsDirectory()
     {
         return config('flatpack.models');
     }
@@ -159,7 +159,7 @@ class Flatpack
      */
     public function guessModelClass($name = ''): string
     {
-        $modelClass = $this->getModelsDirectory() . $this->modelName($name);
+        $modelClass = Str::finish($this->getModelsDirectory(), '\\') . $this->modelName($name);
 
         if (! class_exists($modelClass)) {
             throw new ModelNotFoundException("Model '{$modelClass}' not found.", $name, $this->modelName($name));

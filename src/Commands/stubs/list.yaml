@@ -4,6 +4,7 @@
 
 title: {{ model }}
 model: {{ namespacedModel }}
+icon: {{ icon }}
 
 toolbar:
   create:

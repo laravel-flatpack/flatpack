@@ -4,6 +4,9 @@
 
 title: {{ model }}
 model: {{ namespacedModel }}
+icon: {{ icon }}
+
+{{ header }}
 
 toolbar:
   save:
@@ -13,18 +16,6 @@ toolbar:
     shortcut: s
     style: primary
 
-main:
-  id:
-    label: ID
-    readonly: true
+{{ fields }}
 
-sidebar:
-  created_at:
-    label: Created
-    type: datetime-picker
-    span: 1
-
-  updated_at:
-    label: Updated
-    type: datetime-picker
-    span: 1
+{{ sidebar }}
