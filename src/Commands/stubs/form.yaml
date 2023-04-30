@@ -2,7 +2,7 @@
 #  {{ model }} Form Definition
 # =======================================
 
-title: {{ model }}
+title: {{ title }}
 model: {{ namespacedModel }}
 icon: {{ icon }}
 

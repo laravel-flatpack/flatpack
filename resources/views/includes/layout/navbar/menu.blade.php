@@ -1,4 +1,4 @@
-<ul class="mt-10 navbar-items">
+<ul class="mt-6 navbar-items">
     @foreach ($navigation as $key => $item)
     <li>
         <x-flatpack::navbar.item

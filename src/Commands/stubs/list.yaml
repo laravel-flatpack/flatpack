@@ -2,7 +2,7 @@
 #  {{ model }} List Definition
 # =======================================
 
-title: {{ model }}
+title: {{ title }}
 model: {{ namespacedModel }}
 icon: {{ icon }}
 
@@ -14,25 +14,6 @@ toolbar:
     style: primary
     shortcut: enter
 
-bulk:
-  delete:
-    label: Delete
-    action: delete
-    confirm: true
+{{ bulk }}
 
-columns:
-  id:
-    label: ID
-    sortable: true
-
-  created_at:
-    label: Created
-    type: datetime
-    format: "M d, Y  h:i a"
-    sortable: true
-
-  updated_at:
-    label: Updated
-    type: datetime
-    format: "M d, Y  h:i a"
-    sortable: true
+{{ columns }}

@@ -168,6 +168,7 @@ class MakeCommand extends GeneratorCommand
         $replace = collect([
                 '{{ namespacedModel }}' => $this->getModelClass(),
                 '{{ model }}' => $this->getNameInput(),
+                '{{ title }}' => Str::headline($this->getEntityName()),
                 '{{ entity }}' => $this->getEntityName(),
                 '{{ icon }}' => $this->getIconOption(),
             ])
@@ -194,7 +195,8 @@ class MakeCommand extends GeneratorCommand
         }
 
         return [
-            '{{ columns }}' => $this->GeneratesListColumns($model),
+            '{{ columns }}' => $this->generatesListColumns($model),
+            '{{ bulk }}' => $this->generatesListBulkActions($model),
         ];
     }
 

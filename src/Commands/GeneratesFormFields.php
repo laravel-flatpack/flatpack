@@ -17,6 +17,7 @@ trait GeneratesFormFields
         $results = [
             $primary => [
                 'type' => 'heading',
+                'label' => Str::of($primary)->studly()->toString(),
                 'size' => 'large',
             ],
         ];

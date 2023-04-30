@@ -61,8 +61,8 @@ class Layout extends Component
      */
     private function setNavigation($navigation)
     {
-        $this->navigation = collect(config('flatpack.navigation', []))
-            ->merge(data_get($this->template, $navigation, []))
+        $this->navigation = collect(data_get($this->template, $navigation, []))
+            ->merge(config('flatpack.navigation', []))
             ->sortBy('order')
             ->toArray();
     }
