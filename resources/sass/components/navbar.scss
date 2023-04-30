@@ -14,6 +14,8 @@
 
     .navbar-rail-wrapper {
       .navbar-group {
+        @apply w-12;
+
         .navbar-items {
           li {
             @apply justify-center;
@@ -23,17 +25,12 @@
     }
   }
 
-  .navbar-item-text {
-    @apply w-full pr-2 overflow-hidden text-base text-left whitespace-nowrap text-ellipsis;
-    max-width: 166px;
-  }
-
   .navbar-close {
     @apply absolute right-0 mx-4 my-3 top-2 xl:hidden;
   }
 
   .navbar-rail-wrapper {
-    @apply flex flex-col justify-between w-full h-full px-4 pb-4 list-none;
+    @apply flex flex-col justify-between w-full h-full px-3 pb-4 list-none;
     min-width: auto;
     
     .navbar-group {
@@ -45,15 +42,31 @@
         li {
           @apply flex items-center justify-start w-full;
         }
+        
         .navbar-menu-item {
-          @apply flex items-center justify-start w-full gap-3 px-3 py-1 text-gray-400 hover:text-white;
+          @apply flex items-center justify-start w-full gap-3 px-3 py-1 outline-none;
+          @apply rounded transition-all ease-in duration-150;
+          @apply text-gray-400 hover:text-white;
 
-          &.is-pinned {
-            @apply w-full py-3 mb-6 bg-gray-900 rounded-md hover:bg-gray-700;
-          }
           &.is-active {
             @apply text-white;
           }
+        }
+
+        .navbar-menu-button {
+          @apply flex items-center justify-start w-full gap-3 px-3 py-3 mb-4 outline-none;
+          @apply rounded transition-all ease-in duration-150;
+          @apply text-gray-400 bg-primary-900 ring-primary-200;
+          @apply focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800;
+          @apply hover:bg-primary-500 hover:ring-primary-500 hover:shadow-sm;
+        }
+
+        .navbar-item-text {
+          @apply w-full pr-2 overflow-hidden text-sm text-left whitespace-nowrap text-ellipsis;
+        }
+
+        .navbar-item-icon {
+          @apply flex justify-center items-center min-w-[24px] h-[24px];
         }
       }
     }

@@ -6,8 +6,8 @@
             {{ $attributes->class([
                 'flex justify-start items-center gap-2 w-full' => true,
                 'text-3xl font-bold' => $size === 'large',
-                'text-xl font-normal' => $size === 'base' || $size === 'medium',
-                'text-sm font-normal' => $size === 'small',
+                'text-2xl font-bold' => $size === 'base' || $size === 'medium',
+                'text-xl font-medium' => $size === 'small',
             ]) }} 
         >
             @if (! empty($label))

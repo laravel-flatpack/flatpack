@@ -4,8 +4,6 @@ namespace Flatpack;
 
 use Flatpack\Commands\ActionCommand;
 use Flatpack\Commands\MakeCommand;
-use Flatpack\Commands\MakeFormCommand;
-use Flatpack\Commands\MakeListCommand;
 use Flatpack\Http\Livewire\BlockEditor;
 use Flatpack\Http\Livewire\CreateRelation;
 use Flatpack\Http\Livewire\Form;
@@ -61,8 +59,6 @@ class FlatpackServiceProvider extends ServiceProvider
     protected function registerCommands()
     {
         $this->commands([
-            MakeFormCommand::class,
-            MakeListCommand::class,
             MakeCommand::class,
             ActionCommand::class,
         ]);

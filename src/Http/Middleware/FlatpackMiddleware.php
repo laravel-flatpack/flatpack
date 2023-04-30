@@ -11,7 +11,7 @@ class FlatpackMiddleware
     /**
      * Flatpack template composition files options.
      */
-    protected $options = [];
+    protected $compositions = [];
 
     /**
      * Entity name.
@@ -34,8 +34,8 @@ class FlatpackMiddleware
     {
         abort_if(! $this->authorize($request), 401, 'Unauthorized.');
 
-        // Load and cache the flatpack template composition files.
-        $this->options = Flatpack::loadComposition()->getComposition();
+        // Load the flatpack template composition files.
+        $this->compositions = Flatpack::loadComposition()->getComposition();
 
         // Validate the current request.
         $this->validate($request);
@@ -44,7 +44,8 @@ class FlatpackMiddleware
         $request->flatpack = [
             'entity' => $this->entity,
             'model' => $this->modelClass,
-            'compositions' => $this->options,
+            'compositions' => $this->compositions,
+            'options' => $this->getOptions($this->compositions),
         ];
 
         return $next($request);
@@ -78,22 +79,45 @@ class FlatpackMiddleware
             return true;
         }
 
-        $allowedValues = array_values(
-            collect(array_keys($this->options))
-                ->filter(fn ($key) => $key !== '__global__')
-                ->toArray()
-        );
-
         $this->entity = $route->parameter('entity');
+
+        $this->modelClass = Flatpack::guessModelClass($this->entity);
 
         $modelName = Flatpack::modelName($this->entity);
 
-        $this->modelClass = Flatpack::guessModelClass($this->entity);
+        $allowedValues = array_values(array_keys($this->compositions));
 
         if (! in_array($this->entity, $allowedValues)) {
             throw new EntityNotFoundException("Entity '{$this->entity}' not found.", $this->entity, $modelName);
         }
 
         return true;
+    }
+
+    /**
+     * Get Flatpack entities options from compositions array.
+     *
+     * @param array $compositions
+     * @return array
+     */
+    private function getOptions($compositions)
+    {
+        $options = collect($compositions)
+            ->map(fn ($item) => collect($item)->mapWithKeys(
+                fn ($item, $key) => [str_replace('.yaml', '', $key) => $item]
+            ))
+            ->mapWithKeys(fn ($item, $key) => [
+                $key => [
+                    'icon' => data_get($item, 'list.icon', 'folder'),
+                    'model' => data_get($item, 'list.model', Flatpack::guessModelClass($key)),
+                    'title' => data_get($item, 'list.title', Flatpack::modelName($key)),
+                    'url' => route('flatpack.list', ['entity' => Flatpack::entityName($key)]),
+                    'order' => data_get($item, 'list.order', 99),
+                ],
+            ])
+            ->sortBy('order')
+            ->toArray();
+
+        return $options;
     }
 }
