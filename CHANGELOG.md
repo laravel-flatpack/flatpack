@@ -2,6 +2,16 @@
 
 All notable changes to `laravel-flatpack` will be documented in this file.
 
+## v1.0.13 - 2023-05-01
+
+### What's Changed
+
+- Auto complete suggestions in https://github.com/laravel-flatpack/flatpack/pull/29
+- Flatpack files generator in https://github.com/laravel-flatpack/flatpack/pull/30
+- fix: async data route in https://github.com/laravel-flatpack/flatpack/pull/31
+
+**Full Changelog**: https://github.com/laravel-flatpack/flatpack/compare/v1.0.12...v1.0.13
+
 ## v1.0.12 - 2023-04-29
 
 ### What's Changed
