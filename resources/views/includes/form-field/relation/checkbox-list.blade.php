@@ -1,6 +1,6 @@
 @if ($type === 'relation')
 <div class="w-full">
-    <ul class="w-full py-1 overflow-y-scroll list-none bg-gray-200 rounded-sm shadow-inner max-h-60">
+    <ul class="w-full py-1 soft-scrollbar overflow-y-auto list-none bg-gray-200 rounded-sm shadow-inner max-h-60">
         @foreach ($items as $optionValue => $display)
         <li class="mx-3 my-2">
             <label class="flex items-center justify-start cursor-pointer">
