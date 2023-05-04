@@ -22,6 +22,7 @@
             @include('flatpack::includes.form-field.image-upload')
             @include('flatpack::includes.form-field.button')
             @include('flatpack::includes.form-field.heading')
+            @include('flatpack::includes.form-field.section')
         </div>
 
         @include('flatpack::includes.form-field.errors')

@@ -45,6 +45,7 @@ trait WithFormFields
         "button",
         "label",
         "heading",
+        "section",
         "divider",
         "html",
     ];
