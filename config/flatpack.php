@@ -100,7 +100,7 @@ return [
     | Models directory
     |--------------------------------------------------------------------------
     |
-    | The directory where the Flatpack should find your Eloquent Models.
+    | The namespace where Flatpack should find your Eloquent Models.
     |
     */
     'models' => env('FLATPACK_MODELS', "App\\Models"),
