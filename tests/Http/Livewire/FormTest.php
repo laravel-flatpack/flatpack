@@ -106,7 +106,7 @@ it('creates a new post entry', function () {
 });
 
 it('updates an existing post entry', function () {
-    $post = Post::create([
+    $post = Post::factory()->create([
         'title' => 'Testing title',
     ]);
 
@@ -212,7 +212,7 @@ it('handles form field changes', function () {
 });
 
 it('handles form field components state', function () {
-    $post = Post::create([
+    $post = Post::factory()->create([
         'title' => 'Testing title',
     ]);
 
@@ -262,7 +262,7 @@ it('handles form field components state', function () {
 });
 
 it('creates a new related entry', function () {
-    $post = Post::create([
+    $post = Post::factory()->create([
         'title' => 'Lorem ipsum',
     ]);
 
@@ -329,7 +329,7 @@ it('creates a new related entry', function () {
 
 
 it('handles form failures and error messages', function () {
-    $post = Post::create([
+    $post = Post::factory()->create([
         'title' => 'Lorem ipsum',
     ]);
 

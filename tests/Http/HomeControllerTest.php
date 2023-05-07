@@ -3,10 +3,9 @@
 use Flatpack\Tests\Models\User;
 
 beforeEach(function () {
-    $this->user = User::create([
+    $this->user = User::factory()->create([
         'name' => 'User Name',
         'email' => 'example@demo.com',
-        'password' => 'password',
     ]);
 });
 

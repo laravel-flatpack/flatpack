@@ -27,7 +27,7 @@ it('returns the confirmation message for bulk action', function () {
 });
 
 it('handles the action for single entry', function () {
-    $entry = \Flatpack\Tests\Models\Post::create([
+    $entry = \Flatpack\Tests\Models\Post::factory()->create([
         'title' => 'Lorem ispum',
     ]);
 
