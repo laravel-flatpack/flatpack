@@ -1,5 +1,4 @@
 <x-flatpack-layout>
-
     <livewire:flatpack.form
         :model="$model"
         :entity="$entity"
@@ -7,7 +6,6 @@
         :composition="$composition"
         :formType="$formType"
         />
-
     @once
         @push('scripts')
             <script src="{{ asset('flatpack/js/form.js') }}"></script>

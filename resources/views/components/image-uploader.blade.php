@@ -15,20 +15,16 @@
                 {{ __("Uploading...") }}
             </div>
 
-            <p wire:loading.remove wire:target="rawImages" class="text-gray-400">
+            <p wire:loading.remove wire:target="rawImages" class="flex flex-col text-gray-400">
+                <span>{{ __('Drop files here to upload') }}</span>
+                <em>{{ __('or') }}</em>
+                <span>
                 @if ($multiple)
-                    Drop files here to upload
-                    <br />
-                    <em>or</em>
-                    <br />
-                    Select Files
+                    {{ __('Select Files') }}
                 @else
-                    Drop file here to upload
-                    <br />
-                    <em>or</em>
-                    <br />
-                    Select File
+                    {{ __('Select File') }}
                 @endif
+                </span>                
             </p>
         </div>
     </div>

@@ -14,9 +14,9 @@
 }
 
 .soft-scrollbar::-webkit-scrollbar-track {
-  @apply cursor-pointer bg-gray-800;
+  @apply cursor-pointer bg-transparent;
 }
 
 .soft-scrollbar::-webkit-scrollbar-thumb {
-  @apply cursor-pointer bg-primary-900;
+  @apply cursor-pointer bg-gray-500 bg-opacity-50;
 }
