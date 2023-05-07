@@ -2,6 +2,14 @@
 
 All notable changes to `laravel-flatpack` will be documented in this file.
 
+## v1.0.14 - 2023-05-07
+
+### What's Changed
+
+- Form section element in https://github.com/laravel-flatpack/flatpack/pull/32
+
+**Full Changelog**: https://github.com/laravel-flatpack/flatpack/compare/v1.0.13...v1.0.14
+
 ## v1.0.13 - 2023-05-01
 
 ### What's Changed
