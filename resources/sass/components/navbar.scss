@@ -1,8 +1,8 @@
 .navbar {
   @apply fixed top-0 z-40 flex xl:sticky;
   @apply items-start justify-start w-full h-screen;
-  @apply py-2 text-white bg-gray-800;
-  max-width: 256px;
+  @apply text-white bg-gray-800;
+  max-width: 240px;
 
   &.is-minimized {
     @apply hidden xl:flex xl:w-20 xl:justify-center xl:items-start;
@@ -30,8 +30,7 @@
   }
 
   .navbar-rail-wrapper {
-    @apply flex flex-col justify-between w-full h-full px-3 pb-4 list-none;
-    min-width: auto;
+    @apply flex flex-col justify-between w-full h-full px-4 py-2 list-none;
     
     .navbar-group {
       @apply flex flex-col items-center w-full text-center list-none;

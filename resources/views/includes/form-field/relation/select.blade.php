@@ -1,6 +1,7 @@
 @if ($type === 'relation')
     <x-select
         x-on:change.debounce="Flatpack.form.inputChange($event, '{{ $binding }}.{{ $key }}')"
+        wire:key="{{ $binding }}-{{ $key }}"
         wire:model.defer="{{ $binding }}.{{ $key }}"
         :placeholder="$placeholder"
         :label="$label"
