@@ -10,7 +10,6 @@ phpunit.xml
 phpstan.neon
 testbench.yaml
 vendor
-package-lock.json
 node_modules
 .php-cs-fixer.cache
 .phpunit.result.cache

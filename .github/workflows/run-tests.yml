@@ -54,18 +54,3 @@ jobs:
           coverage_badge_path: '.github/badge-coverage.svg'
           push_badge: true
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-  build:
-    name: Build JS/CSS for Production
-    runs-on: ubuntu-latest
-    needs: test
-    if: github.ref == 'refs/heads/main'
-    steps:
-      - uses: actions/checkout@v3
-      - name: NPM Build
-        run: |
-          npm install
-          npm run prod
-      - name: Commit changes
-        uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          commit_message: "chore: build assets"
