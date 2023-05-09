@@ -10,19 +10,19 @@
 
 📦 Administration panel for Laravel, ready to assemble.
 
-- Quickly create CRUD (Create, Read, Update, Delete) interfaces for your Eloquent models.
+- Quickly create a CMS for your Eloquent models.
 - Define components with simple and declarative YAML files.
 - Build a complete administration panel for your Laravel app in seconds.
 
-📕 [Documentation](https://laravel-flatpack.com)
-
-![Demo](.github/demo.gif)
+📕 [Official Documentation](https://laravel-flatpack.com)
 
 [Flatpack](https://laravel-flatpack.com) makes building fully functional user interfaces for admin panels easier than ever: as easy as editing few lines of a YAML file. 
 
 Besides providing a rich set of already built components and a solid stack to build a secure and intuitive experience for the users, it offers a fast and flexible solution for developers who want to have fun, try out new things and save precious time building up the an administration panels. 
 
-Flatpack is a reactive full-stack app, built with [TALL stack](https://tallstack.dev/): [Tailwind](https://tailwindcss.com/), [Alpine.js](https://alpinejs.dev/), [Laravel](https://laravel.com/), [Livewire](https://laravel-livewire.com/)
+Flatpack is a reactive full-stack app, built with [TALL stack](https://tallstack.dev/).
+
+![Demo](.github/demo.gif)
 
 ---
 ## Quick Install
@@ -38,6 +38,9 @@ Publish the config file and compiled assets:
 ```bash
 php artisan vendor:publish --tag="flatpack"
 ```
+
+💡 To make sure that the public assets are always up-to-date, you should add this command to the `post-update-cmd` list in your `composer.json` file.
+
 
 ## Usage
 
@@ -58,24 +61,31 @@ Now start assembling, grab the generated files and define how they should look!
 
 ## Examples
 
-- [Form example](#form)
-- [List example](#list)
-
-### Defining a form
-
+Defining a form:
 
 ```yaml
-# /flatpack/posts/form.yaml
+title: Post
+model: App\Models\Post
+icon: book-open
 
-fields:
-  name:
-    label: Name
+toolbar:
+  save:
+    type: button
+    label: Save
+    action: save
+    style: primary
+    shortcut: s
+
+main:
+  title:
+    label: Post Title
+    placeholder: Your Post Title
     type: text
 
-  description:
-    label: Description
-    type: textarea
+  body:
+    type: block-editor
 
+sidebar:
   created_at:
     label: Created
     type: datetime-picker
@@ -85,19 +95,29 @@ fields:
     type: datetime-picker
 ```
 
-### Defining a list
+Defining a list:
 
 ```yaml
-# /flatpack/posts/list.yaml
+title: Post
+model: App\Models\Post
+icon: book-open
+
+toolbar:
+  create:
+    label: New Post
+    icon: plus
+    link: create
+    style: primary
+    shortcut: enter
 
 columns:
   id:
     label: ID
     sortable: true
-    searchable: true
+    invisible: true
 
-  name:
-    label: Name
+  title:
+    label: Title
     sortable: true
     searchable: true
 
@@ -114,7 +134,7 @@ columns:
     sortable: true
 ```
 
-You can customise the yaml composition files by mapping your model's attributes, using components of differnt types and features: Data tables, text inputs, rich text editors, date pickers, tag pickers, searchable select menus, image upload, toggles and more.
+⚙️ You can customise the yaml composition files by mapping your model's attributes, using components of differnt types and features: Data tables, text inputs, rich text editors, date pickers, tag pickers, searchable select menus, image upload, toggles and more.
 
 📖 [Check out the documentation](https://laravel-flatpack.com/reference)
 

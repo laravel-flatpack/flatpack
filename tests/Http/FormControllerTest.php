@@ -4,10 +4,9 @@ use Flatpack\Tests\Models\Post;
 use Flatpack\Tests\Models\User;
 
 beforeEach(function () {
-    $this->user = User::create([
+    $this->user = User::factory()->create([
         'name' => 'User Name',
         'email' => 'example@demo.com',
-        'password' => 'password',
     ]);
 });
 
@@ -39,7 +38,7 @@ it('shows the create form page', function () {
 
 
 it('shows the edit form page', function () {
-    $post = Post::create([
+    $post = Post::factory()->create([
         'title' => 'Lorem Ipsum',
         'body' => 'Lorem ipsum dolor sit amet',
     ]);

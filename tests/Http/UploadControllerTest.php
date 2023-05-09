@@ -6,10 +6,9 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
 beforeEach(function () {
-    $this->user = User::create([
+    $this->user = User::factory()->create([
         'name' => 'User Name',
         'email' => 'example@demo.com',
-        'password' => 'password',
     ]);
 });
 
@@ -19,7 +18,7 @@ it('returns upload validation error', function () {
         'error' => 'Create the Post entry first.',
     ]);
 
-    $post = Post::create([
+    $post = Post::factory()->create([
         'title' => 'Lorem Ipsum',
     ]);
 
@@ -30,7 +29,7 @@ it('returns upload validation error', function () {
 });
 
 it('successfully uploads a file', function () {
-    $post = Post::create([
+    $post = Post::factory()->create([
         'title' => 'Lorem Ipsum',
     ]);
 

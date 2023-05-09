@@ -12,7 +12,7 @@ use Symfony\Component\Yaml\Yaml;
 
 class Flatpack
 {
-    public const VERSION = "1.0.11";
+    public const VERSION = "1.0.15";
 
     /**
      * The configuration files path.
@@ -94,11 +94,9 @@ class Flatpack
     {
         $files = collect(File::allFiles($this->path));
 
-        $files = $files->filter(function ($file) {
-            return $file->getExtension() === 'yaml';
-        });
-
-        return $files;
+        return $files
+            ->filter(fn ($file) => ! empty($file->getRelativePath()))
+            ->filter(fn ($file) => $file->getExtension() === 'yaml');
     }
 
     /**
@@ -112,10 +110,7 @@ class Flatpack
 
         foreach ($this->files as $file) {
             $entity = $file->getRelativePath();
-
-            $key = empty($entity) ? '__global__' : $entity;
-
-            $config[$key][$file->getFilename()] = Yaml::parseFile($file->getPathname());
+            $config[$entity][$file->getFilename()] = Yaml::parseFile($file->getPathname());
         }
 
         return $config;

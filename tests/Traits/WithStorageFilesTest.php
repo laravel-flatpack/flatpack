@@ -17,7 +17,9 @@ beforeEach(function () {
         {
             $this->files = [];
             $this->entity = 'posts';
-            $this->entry = Post::create(['title' => 'Lorem Ipsum']);
+            $this->entry = Post::factory()->create([
+                'title' => 'Lorem Ipsum',
+            ]);
         }
     };
 });

@@ -9,7 +9,9 @@
                     class="menu-toggle">
                     <x-icon name="menu" style="solid" class="w-5 h-5" />
                 </button>
-                <livewire:flatpack.search-box />
+                @if (config('flatpack.layout.search-box', false))
+                    <livewire:flatpack.search-box />
+                @endif
             </div>
             <div class="flex items-center justify-end gap-4 w-1/2">
                 @include('flatpack::components.user-menu')

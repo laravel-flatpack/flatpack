@@ -102,16 +102,15 @@ it('checks if the field is a valid relationship', function () {
 it('sync relationship models', function () {
     $this->trait->entry->title = 'Post title';
     $this->trait->entry->save();
-    $author = \Flatpack\Tests\Models\User::create([
+    $author = \Flatpack\Tests\Models\User::factory()->create([
         'name' => 'Test',
         'email' => 'test@test.com',
-        'password' => 'password',
     ]);
-    \Flatpack\Tests\Models\Category::create([
+    \Flatpack\Tests\Models\Category::factory()->create([
         'name' => 'Lorem Ipsum',
         'slug' => 'lorem ipsum',
     ]);
-    \Flatpack\Tests\Models\Category::create([
+    \Flatpack\Tests\Models\Category::factory()->create([
         'name' => 'Lorem Ipsum 2',
         'slug' => 'lorem ipsum 2',
     ]);

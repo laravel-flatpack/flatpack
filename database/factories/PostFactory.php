@@ -22,7 +22,6 @@ class PostFactory extends Factory
             'title' => $title,
             'slug' => Str::slug($title),
             'body' => $this->bodyBlocks(),
-            'excerpt' => fake()->text(160),
             'picture' => null,
             'status' => fake()->boolean(),
         ];
