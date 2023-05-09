@@ -95,11 +95,11 @@ class SearchBox extends Component
      */
     public function updatedSearch()
     {
-        if (Str::length($this->search) > 1) {
-            $searchEntities = $this->globalSearchEntities();
+        $searchEntities = $this->globalSearchEntities();
+        $query = $this->queryBuilder();
 
-            $this->results = $this->queryBuilder()
-                ->orderBy('display')
+        if (Str::length($this->search) > 1 && count($searchEntities) && ! is_null($query)) {
+            $this->results = $query->orderBy('display')
                 ->limit(10)
                 ->get()
                 ->map(function ($result) use ($searchEntities) {
@@ -195,39 +195,33 @@ class SearchBox extends Component
      */
     private function globalSearchEntities()
     {
-        $composition = Arr::except(Flatpack::loadComposition()->getComposition(), '__global__');
+        $compositions = Flatpack::loadComposition()->getComposition();
 
-        // Get searchable columns
-        $searchable = Arr::map(
-            $composition,
-            fn ($value, $key) => array_keys(
-                Arr::whereNotNull(
-                    Arr::map(
-                        Arr::get(Arr::get($value, 'list.yaml'), 'columns'),
-                        fn ($entry, $key) => Arr::get($entry, 'searchable')
+        return collect($compositions)
+            ->map(fn ($composition) => Arr::get($composition, 'list.yaml'))
+            ->map(fn ($composition) => Arr::get($composition, 'columns'))
+            ->map(
+                fn ($columns) => collect($columns)
+                    ->filter(
+                        fn ($column) => (
+                            Arr::has($column, 'searchable') &&
+                            Arr::get($column, 'searchable') === true
+                        )
                     )
-                )
+                    ->keys()
             )
-        );
-
-        return Arr::whereNotNull(
-            Arr::map($searchable, function ($values, $entity) use ($composition) {
-                if (count($values) === 0) {
-                    return null;
-                }
-
-                $icon = data_get($composition[$entity]['list.yaml'], 'icon');
-
+            ->filter(fn ($columns) => count($columns))
+            ->map(function ($values, $entity) use ($compositions) {
                 $model = Flatpack::guessModelClass($entity);
 
                 return [
-                    'icon' => $icon,
+                    'icon' => data_get($compositions[$entity]['list.yaml'], 'icon'),
                     'model' => $model,
                     'table' => (new $model())->getTable(),
                     'primaryKey' => (new $model())->getKeyName(),
                     'column' => Arr::first($values),
                 ];
             })
-        );
+            ->toArray();
     }
 }

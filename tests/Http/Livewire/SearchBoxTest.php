@@ -6,11 +6,11 @@ use Flatpack\Tests\Models\Post;
 use Livewire\Livewire;
 
 beforeEach(function () {
-    Post::create(['title' => 'Lorem ipsum.']);
-    Post::create(['title' => 'Lorem ipsum dolor sit amet.']);
-    Post::create(['title' => 'Sit amet lorem ipsum.']);
-    Post::create(['title' => 'Asperiores fugiat.']);
-    Category::create(['name' => 'Lorem ipsum...', 'slug' => 'lorem-ipsum']);
+    Post::factory()->create(['title' => 'Lorem ipsum.']);
+    Post::factory()->create(['title' => 'Lorem ipsum dolor sit amet.']);
+    Post::factory()->create(['title' => 'Sit amet lorem ipsum.']);
+    Post::factory()->create(['title' => 'Asperiores fugiat.']);
+    Category::factory()->create(['name' => 'Lorem ipsum...', 'slug' => 'lorem-ipsum']);
 });
 
 it('renders the search box component', function () {

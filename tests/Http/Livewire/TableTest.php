@@ -17,12 +17,12 @@ it('generates session key based on entity name', function () {
 });
 
 it('displays posts in table component', function () {
-    Post::create(['title' => 'Post title 1', 'status' => 3 ]);
-    Post::create(['title' => 'Post title 2', 'status' => 4 ]);
-    Post::create(['title' => 'Post title 3', 'status' => 4 ]);
-    Post::create(['title' => 'Post title 4', 'status' => 3 ]);
-    Post::create(['title' => 'Post title 5', 'status' => 2 ]);
-    Post::create(['title' => 'Post title 6', 'status' => 1 ]);
+    Post::factory()->create(['title' => 'Post title 1', 'status' => 3 ]);
+    Post::factory()->create(['title' => 'Post title 2', 'status' => 4 ]);
+    Post::factory()->create(['title' => 'Post title 3', 'status' => 4 ]);
+    Post::factory()->create(['title' => 'Post title 4', 'status' => 3 ]);
+    Post::factory()->create(['title' => 'Post title 5', 'status' => 2 ]);
+    Post::factory()->create(['title' => 'Post title 6', 'status' => 1 ]);
 
     Livewire::test(Table::class, [
         'entity' => 'posts',
@@ -108,12 +108,12 @@ it('displays posts in table component', function () {
 });
 
 it('search posts in table component', function () {
-    Post::create(['title' => 'Post title 1']);
-    Post::create(['title' => 'Post title 2', 'status' => 3 ]);
-    Post::create(['title' => 'Post title 3']);
-    Post::create(['title' => 'Lorem Ipsum']);
-    Post::create(['title' => 'Post title 5']);
-    Post::create(['title' => 'Post title 6']);
+    Post::factory()->create(['title' => 'Post title 1']);
+    Post::factory()->create(['title' => 'Post title 2', 'status' => 3 ]);
+    Post::factory()->create(['title' => 'Post title 3']);
+    Post::factory()->create(['title' => 'Lorem Ipsum']);
+    Post::factory()->create(['title' => 'Post title 5']);
+    Post::factory()->create(['title' => 'Post title 6']);
 
     Livewire::test(Table::class, [
         'entity' => 'posts',

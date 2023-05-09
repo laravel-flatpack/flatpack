@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
 it('uploads files to storage folder', function () {
-    $post = Post::create([
+    $post = Post::factory()->create([
         'title' => 'Lorem ipsum',
     ]);
 
@@ -45,7 +45,7 @@ it('uploads files to storage folder', function () {
 });
 
 it('handles multiple image uploads', function () {
-    $post = Post::create(['title' => 'Lorem ipsummmmm']);
+    $post = Post::factory()->create(['title' => 'Lorem ipsummmmm']);
 
     Livewire::test(ImageUploader::class, [
         'name' => 'picture',
@@ -70,7 +70,7 @@ it('handles multiple image uploads', function () {
 });
 
 it('handles existing images', function () {
-    $post = Post::create(['title' => 'Lorem ipsummmmm']);
+    $post = Post::factory()->create(['title' => 'Lorem ipsummmmm']);
 
     $path = "uploads/posts/{$post->id}";
     $file = "previous-image.jpg";
@@ -125,7 +125,7 @@ it('handles existing images', function () {
 });
 
 it('handles input errors', function () {
-    $post = Post::create(['title' => 'Lorem ipsummmmm']);
+    $post = Post::factory()->create(['title' => 'Lorem ipsummmmm']);
 
     Livewire::test(ImageUploader::class, [
         'name' => 'picture',
