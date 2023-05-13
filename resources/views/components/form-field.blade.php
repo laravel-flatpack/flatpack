@@ -23,6 +23,7 @@
             @include('flatpack::includes.form-field.button')
             @include('flatpack::includes.form-field.heading')
             @include('flatpack::includes.form-field.section')
+            @include('flatpack::includes.form-field.divider')
         </div>
 
         @include('flatpack::includes.form-field.errors')

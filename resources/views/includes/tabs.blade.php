@@ -1,16 +1,20 @@
 @if ($key === "tabs")
-<div x-data="{ openTab: 0, active: 'font-bold', inactive: 'font-normal' }" class="w-full col-span-full">
-    <ul class="flex w-full mx-auto border-b border-gray-300">
+<div x-data="{ openTab: 0, active: 'is-active', inactive: 'is-not-active' }" class="w-full col-span-full">
+    <ul aria-label="{{ __('Tabs') }}" class="tab-list-root">
         @foreach ($options as $tab => $tabOptions)
-        <li @click="openTab={{ $loop->index }}">
-            <a class="block p-2 px-3 cursor-pointer text-base" :class="openTab === @js($loop->index) ? active : inactive">
-                <span>{{ data_get($tabOptions, 'label', Str::ucfirst($tab)) }}</span>
-            </a>
+        <li>
+            <button
+                x-on:click="openTab={{ $loop->index }}"
+                :class="openTab === @js($loop->index) ? active : inactive"
+                class="tab-root"
+                value="{{ $loop->index }}">
+                <span class="tab-text">{{ data_get($tabOptions, 'label', Str::ucfirst($tab)) }}</span>
+            </button>
         </li>
         @endforeach
     </ul>
     <div class="w-full pt-4">
-    @foreach ($options as $tab => $tabOptions)
+        @foreach ($options as $tab => $tabOptions)
         <div x-show="openTab === {{ $loop->index }}">
             @include('flatpack::includes.form-fields', [
                 'fieldset' => 'form-fieldset',
@@ -18,7 +22,7 @@
                 'formErrors' => $formErrors,
             ])
         </div>
-    @endforeach
+        @endforeach
     </div>
 </div>
 @endif

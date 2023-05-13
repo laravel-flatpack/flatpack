@@ -1,0 +1,19 @@
+.tab-list-root {
+    @apply flex justify-start overflow-x-clip border-gray-300 space-x-4 border-b;
+
+    .tab-root {
+        @apply flex whitespace-nowrap max-w-xs truncate focus:outline-none focus:ring-0 px-1 py-2 -mb-px text-sm font-medium border-b-2;
+
+        &.is-active {
+            @apply text-primary-500 border-primary-500;
+        }
+
+        &.is-not-active {
+            @apply border-transparent text-gray-400 hover:text-gray-500 hover:border-gray-500;
+        }
+        
+        .tab-text {
+            @apply text-sm whitespace-nowrap;
+        }
+    }
+}
