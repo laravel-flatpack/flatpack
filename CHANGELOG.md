@@ -2,6 +2,15 @@
 
 All notable changes to `laravel-flatpack` will be documented in this file.
 
+## v1.0.15 - 2023-05-13
+
+### What's Changed
+
+- Search Box in https://github.com/laravel-flatpack/flatpack/pull/35
+- Layout fixes in https://github.com/laravel-flatpack/flatpack/pull/36
+
+**Full Changelog**: https://github.com/laravel-flatpack/flatpack/compare/v1.0.14...v1.0.15
+
 ## v1.0.14 - 2023-05-07
 
 ### What's Changed
