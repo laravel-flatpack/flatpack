@@ -13,6 +13,7 @@ const tailwindcss = require("tailwindcss");
 mix
   .js("resources/js/alpine.js", "public/js")
   .js("resources/js/flatpack.js", "public/js")
+  .js("resources/js/chart.js", "public/js")
   .js("resources/js/form.js", "public/js")
   .js("resources/js/list.js", "public/js")
   .js("resources/js/components/editor/editorjs.js", "public/js")
