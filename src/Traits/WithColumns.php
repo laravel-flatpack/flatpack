@@ -26,6 +26,19 @@ trait WithColumns
     }
 
     /**
+     * Table searchable columns.
+     *
+     * @return array
+    */
+    public function searchableColumns(): array
+    {
+        return collect($this->composition['columns'])
+            ->filter(fn ($item) => data_get($item, 'searchable', false))
+            ->keys()
+            ->toArray();
+    }
+
+    /**
      * Create column.
      *
      * @param string $key
