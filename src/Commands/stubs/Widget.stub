@@ -1,0 +1,19 @@
+<?php
+
+namespace App\Flatpack\Widgets;
+
+use Flatpack\Widgets\FlatpackWidget;
+use Flatpack\Contracts\FlatpackWidget as FlatpackWidgetContract;
+
+class {{ widgetName }} extends FlatpackWidget implements FlatpackWidgetContract
+{
+    /**
+     * Datasets to populate the widget.
+     *
+     * @return array
+     */
+    public function datasets()
+    {
+        //
+    }
+}

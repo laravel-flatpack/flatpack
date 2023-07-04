@@ -12,7 +12,7 @@ use Symfony\Component\Yaml\Yaml;
 
 class Flatpack
 {
-    public const VERSION = "1.0.15";
+    public const VERSION = "1.0";
 
     /**
      * The configuration files path.
