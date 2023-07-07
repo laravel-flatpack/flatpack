@@ -39,7 +39,7 @@ trait WithFilters
 
             if ('relation' === $type) {
                 $idField = data_get($options, 'relation.id', 'id');
-                $nameField = data_get($options, 'relation.nameField', 'name');
+                $nameField = data_get($options, 'relation.display', 'name');
                 $method = data_get($options, 'relation.name', data_get($options, 'relation', $key));
                 $relation = (new $this->model())->{$method}()->getRelated();
 
@@ -55,9 +55,11 @@ trait WithFilters
 
     private function createFilter($key, $options)
     {
+        $model = new $this->model();
         $type = data_get($options, 'type', 'default');
         $label = data_get($options, 'label', $key);
         $items = data_get($options, 'options', []);
+        $relation = data_get($options, 'relation.name', $key);
 
         $map = [
             'default' => TextFilter::make($label, $key)
@@ -80,8 +82,10 @@ trait WithFilters
             'relation' => MultiSelectFilter::make($label, $key)
                 ->options($items)
                 ->config($options)
-                ->filter(function (Builder $builder, array $values) use ($key) {
-                    $builder->whereHas($key, fn ($query) => $query->whereIn('categories.id', $values));
+                ->filter(function (Builder $builder, array $values) use ($key, $model, $relation) {
+                    $id = $model->{$relation}()->getRelated()->getKeyName();
+                    $table = $model->{$relation}()->getRelated()->getTable();
+                    $builder->whereHas($key, fn ($query) => $query->whereIn("{$table}.{$id}", $values));
                 }),
             'date' => DateFilter::make($label, $key)
                 ->config($options)

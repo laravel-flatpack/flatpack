@@ -12,24 +12,13 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Actions
+    | Models directory
     |--------------------------------------------------------------------------
     |
-    | Flatpack form or list actions. You can add your own actions here.
+    | The namespace where Flatpack should find your Eloquent Models.
     |
     */
-    'actions' => [
-
-        'save' => \Flatpack\Actions\Save::class,
-
-        'upload' => \Flatpack\Actions\Upload::class,
-
-        'delete' => \Flatpack\Actions\Delete::class,
-
-        'restore' => \Flatpack\Actions\Restore::class,
-
-        'empty-trash' => \Flatpack\Actions\EmptyTrash::class,
-    ],
+    'models' => env('FLATPACK_MODELS', "App\\Models"),
 
     /*
     |--------------------------------------------------------------------------
@@ -73,6 +62,37 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Dashboard
+    |--------------------------------------------------------------------------
+    |
+    | Define custom blocks for the home dashboard.
+    |
+    */
+    'dashboard' => [],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Actions
+    |--------------------------------------------------------------------------
+    |
+    | Flatpack form or list actions. You can add your own actions here.
+    |
+    */
+    'actions' => [
+
+        'save' => \Flatpack\Actions\Save::class,
+
+        'upload' => \Flatpack\Actions\Upload::class,
+
+        'delete' => \Flatpack\Actions\Delete::class,
+
+        'restore' => \Flatpack\Actions\Restore::class,
+
+        'empty-trash' => \Flatpack\Actions\EmptyTrash::class,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Route Prefix
     |--------------------------------------------------------------------------
     |
@@ -109,15 +129,6 @@ return [
         'path' => env('FLATPACK_STORAGE_PATH', 'uploads'),
     ],
 
-    /*
-    |--------------------------------------------------------------------------
-    | Models directory
-    |--------------------------------------------------------------------------
-    |
-    | The namespace where Flatpack should find your Eloquent Models.
-    |
-    */
-    'models' => env('FLATPACK_MODELS', "App\\Models"),
 
     /*
     |--------------------------------------------------------------------------

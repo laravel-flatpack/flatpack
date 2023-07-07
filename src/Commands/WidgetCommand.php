@@ -6,28 +6,28 @@ use Illuminate\Console\GeneratorCommand;
 use Illuminate\Support\Str;
 use Symfony\Component\Console\Input\InputOption;
 
-class ActionCommand extends GeneratorCommand
+class WidgetCommand extends GeneratorCommand
 {
     /**
      * The console command name.
      *
      * @var string
      */
-    protected $name = "flatpack:action";
+    protected $name = "flatpack:widget";
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = "Generate Flatpack action class";
+    protected $description = "Generate Flatpack widget class";
 
     /**
      * The type of class being generated.
      *
      * @var string
      */
-    protected $type = "Flatpack action class";
+    protected $type = "Flatpack Widget class";
 
     /**
      * Get the stub file for the generator.
@@ -36,7 +36,7 @@ class ActionCommand extends GeneratorCommand
      */
     protected function getStub()
     {
-        return $this->resolveStubPath("/stubs/Action.stub");
+        return $this->resolveStubPath("/stubs/Widget.stub");
     }
 
     /**
@@ -58,10 +58,10 @@ class ActionCommand extends GeneratorCommand
      */
     protected function buildClass($name)
     {
-        $actionName = $this->getNameInput();
+        $widgetName = $this->getNameInput();
 
         $replace = [
-            "{{ actionName }}" => $actionName,
+            "{{ widgetName }}" => $widgetName,
         ];
 
         return str_replace(
@@ -93,7 +93,7 @@ class ActionCommand extends GeneratorCommand
 
         $name = str_replace('/', '\\', $name);
 
-        $rootNamespace = $this->rootNamespace() . "Flatpack\\Actions";
+        $rootNamespace = $this->rootNamespace() . "Flatpack\\Widgets";
 
         if (Str::startsWith($name, $rootNamespace)) {
             return $name;

@@ -4,8 +4,10 @@ namespace Flatpack;
 
 use Flatpack\Commands\ActionCommand;
 use Flatpack\Commands\MakeCommand;
+use Flatpack\Commands\WidgetCommand;
 use Flatpack\Http\Livewire\BlockEditor;
 use Flatpack\Http\Livewire\CreateRelation;
+use Flatpack\Http\Livewire\Dashboard;
 use Flatpack\Http\Livewire\Form;
 use Flatpack\Http\Livewire\ImageUploader;
 use Flatpack\Http\Livewire\SearchBox;
@@ -61,6 +63,7 @@ class FlatpackServiceProvider extends ServiceProvider
         $this->commands([
             MakeCommand::class,
             ActionCommand::class,
+            WidgetCommand::class,
         ]);
     }
 
@@ -79,6 +82,7 @@ class FlatpackServiceProvider extends ServiceProvider
      */
     protected function registerLivewireComponents()
     {
+        Livewire::component('flatpack.dashboard', Dashboard::class);
         Livewire::component('flatpack.table', Table::class);
         Livewire::component('flatpack.form', Form::class);
         Livewire::component('flatpack.create-relation', CreateRelation::class);
@@ -101,6 +105,8 @@ class FlatpackServiceProvider extends ServiceProvider
             TagInput::class,
             Modal::class,
         ]);
+
+        $this->loadViewComponentsAs('flatpack-widget', config('flatpack.dashboard'));
     }
 
     /**
