@@ -27,7 +27,7 @@ Flatpack is a reactive full-stack app, built with [TALL stack](https://tallstack
 ---
 ## Quick Install
 
-You can install the package via composer:
+Install the package via composer:
 
 ```bash
 composer require flatpack/flatpack
@@ -39,7 +39,13 @@ Publish the config file and compiled assets:
 php artisan vendor:publish --tag="flatpack"
 ```
 
-💡 To make sure that the public assets are always up-to-date, you should add this command to the `post-update-cmd` list in your `composer.json` file.
+Note: To make sure that the public assets are always up-to-date, remember to add this command to the `post-update-cmd` list in your `composer.json` file.
+
+```json
+  "post-update-cmd": [
+      "@php artisan vendor:publish --tag=flatpack"
+  ],
+```
 
 
 ## Usage
@@ -52,12 +58,12 @@ php artisan make:flatpack Post
 
 This command will create two files:
 
-- A form template `/flatpack/posts/form.yaml`, that defines the layout composition of your posts form.
-- A list template `/flatpack/posts/list.yaml`, that defines the layout composition of your posts table with pagination.
+- A form template `/flatpack/posts/form.yaml`, that defines the posts form.
+- A list template `/flatpack/posts/list.yaml`, that defines the posts table with pagination.
 
-Let's check the result, visit `/backend/posts`.
+Let's check the result, visit [/backend/posts](http://localhost/backend/posts).
 
-Now start assembling, grab the generated files and define how they should look!
+Now start assembling, grab the generated files and map your model's attributes as you need.
 
 ## Examples
 
@@ -101,6 +107,7 @@ Defining a list:
 title: Post
 model: App\Models\Post
 icon: book-open
+order: 1
 
 toolbar:
   create:
