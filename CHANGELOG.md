@@ -2,6 +2,16 @@
 
 All notable changes to `laravel-flatpack` will be documented in this file.
 
+## v1.0.16 - 2023-07-07
+
+### What's Changed
+
+- Home dashboard widgets in https://github.com/laravel-flatpack/flatpack/pull/39
+- chore(deps): bump dependabot/fetch-metadata from 1.4.0 to 1.6.0 by @dependabot in https://github.com/laravel-flatpack/flatpack/pull/38
+- chore(deps): bump tough-cookie from 4.1.2 to 4.1.3 by @dependabot in https://github.com/laravel-flatpack/flatpack/pull/40
+
+**Full Changelog**: https://github.com/laravel-flatpack/flatpack/compare/v1.0.15...v1.0.16
+
 ## v1.0.15 - 2023-05-13
 
 ### What's Changed
