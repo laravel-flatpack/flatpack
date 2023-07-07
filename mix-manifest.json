@@ -1,6 +1,7 @@
 {
     "/public/js/alpine.js": "/public/js/alpine.js",
     "/public/js/flatpack.js": "/public/js/flatpack.js",
+    "/public/js/chart.js": "/public/js/chart.js",
     "/public/js/form.js": "/public/js/form.js",
     "/public/js/list.js": "/public/js/list.js",
     "/public/js/editorjs.js": "/public/js/editorjs.js",

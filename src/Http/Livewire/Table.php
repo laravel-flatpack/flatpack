@@ -63,9 +63,11 @@ class Table extends DataTableComponent
     public function configure(): void
     {
         $primaryKey = (new $this->model())->getKeyName();
+        $searchable = $this->searchableColumns();
 
         $this->setupComponents()
             ->setPrimaryKey($primaryKey)
+            ->setSearchVisibilityStatus(count($searchable))
             ->setDefaultSort($primaryKey, 'desc')
             ->setTableRowUrl(fn ($row) => route('flatpack.form', [
                 'entity' => $this->entity,

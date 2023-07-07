@@ -8,6 +8,7 @@
 @tailwind components;
 @tailwind utilities;
 
+@import "./components/chart.scss";
 @import "./components/scrollbars";
 @import "./components/alert";
 @import "./components/box";
