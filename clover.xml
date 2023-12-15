@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1702665432">
-  <project timestamp="1702665432">
+<coverage generated="1702666139">
+  <project timestamp="1702666139">
     <file name="/home/runner/work/flatpack/flatpack/src/Actions/Delete.php">
       <class name="Flatpack\Actions\Delete" namespace="global">
         <metrics complexity="10" methods="5" coveredmethods="5" conditionals="0" coveredconditionals="0" statements="23" coveredstatements="23" elements="28" coveredelements="28"/>
@@ -497,7 +497,7 @@
       <metrics loc="11" ncloc="11" classes="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="0" coveredstatements="0" elements="0" coveredelements="0"/>
     </file>
     <file name="/home/runner/work/flatpack/flatpack/src/Contracts/FlatpackUser.php">
-      <metrics loc="9" ncloc="9" classes="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="0" coveredstatements="0" elements="0" coveredelements="0"/>
+      <metrics loc="11" ncloc="11" classes="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="0" coveredstatements="0" elements="0" coveredelements="0"/>
     </file>
     <file name="/home/runner/work/flatpack/flatpack/src/Contracts/FlatpackWidget.php">
       <metrics loc="9" ncloc="9" classes="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="0" coveredstatements="0" elements="0" coveredelements="0"/>
@@ -2104,6 +2104,6 @@
       <line num="69" type="stmt" count="13"/>
       <metrics loc="71" ncloc="45" classes="0" methods="0" coveredmethods="0" conditionals="0" coveredconditionals="0" statements="16" coveredstatements="16" elements="16" coveredelements="16"/>
     </file>
-    <metrics files="66" loc="6030" ncloc="4151" classes="56" methods="288" coveredmethods="288" conditionals="0" coveredconditionals="0" statements="1431" coveredstatements="1431" elements="1719" coveredelements="1719"/>
+    <metrics files="66" loc="6032" ncloc="4153" classes="56" methods="288" coveredmethods="288" conditionals="0" coveredconditionals="0" statements="1431" coveredstatements="1431" elements="1719" coveredelements="1719"/>
   </project>
 </coverage>
