@@ -1,9 +1,12 @@
 @auth
 <div x-data="{open: false}" class="relative">
     <button @click="open = !open" aria-label="{{ __('User Options') }}" aria-expanded="true" aria-haspopup="true" class="flex items-center justify-center gap-2 text-sm text-gray-100 hover:text-white">
-        <x-icon name="user-circle" style="outline" class="w-6 h-6" />
-        <span>{{ $user->name }}</span>
-        <x-icon name="chevron-down" style="outline" class="w-3 h-3" />
+        <img
+            src="{{ $user->getFlatpackUserAvatar() }}"
+            alt="{{ $user->name }}"
+            class="w-6 h-6 rounded-full"
+        />
+        <x-icon name="chevron-down" style="outline" class="w-3 h-3 mx-1" />
     </button>
     <div x-show="open"
         x-transition:enter="transition ease-out duration-200"
