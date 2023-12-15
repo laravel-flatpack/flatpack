@@ -2,6 +2,16 @@
 
 All notable changes to `laravel-flatpack` will be documented in this file.
 
+## v1.0.17 - 2023-12-15
+
+### What's Changed
+
+* chore(deps): bump actions/checkout from 3 to 4 by @dependabot in https://github.com/laravel-flatpack/flatpack/pull/41
+* chore(deps): bump stefanzweifel/git-auto-commit-action from 4 to 5 by @dependabot in https://github.com/laravel-flatpack/flatpack/pull/42
+* Top Bar layout fixes by @faustoq in https://github.com/laravel-flatpack/flatpack/pull/43
+
+**Full Changelog**: https://github.com/laravel-flatpack/flatpack/compare/v1.0.16...v1.0.17
+
 ## v1.0.16 - 2023-07-07
 
 ### What's Changed
