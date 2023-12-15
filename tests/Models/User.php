@@ -62,4 +62,9 @@ class User extends Authenticatable implements FlatpackUser
     {
         return $this->hasMany(Post::class);
     }
+
+    public function getFlatpackUserAvatar()
+    {
+        return 'mock-avatar-url';
+    }
 }
