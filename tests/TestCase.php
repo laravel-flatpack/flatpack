@@ -1,66 +1,74 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Flatpack\Tests;
 
+use Flatpack\FlatpackServiceProvider;
+use Flatpack\Tests\Models\User;
 use Illuminate\Auth\SessionGuard;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Encryption\Encrypter;
+use Illuminate\Foundation\Application;
+use Inertia\Inertia;
+use Inertia\ServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
+use ReflectionProperty;
 
-class TestCase extends Orchestra
+abstract class TestCase extends Orchestra
 {
     protected function setUp(): void
     {
         parent::setUp();
 
         Factory::guessFactoryNamesUsing(
-            fn (string $modelName) => 'Flatpack\\Database\\Factories\\'.class_basename($modelName).'Factory'
+            fn (string $modelName): string => 'Flatpack\\Tests\\Database\\Factories\\' . class_basename($modelName) . 'Factory'
         );
+
+        $this->app->make('view')->replaceNamespace('flatpack', [__DIR__ . '/Support/views']);
+
+        Inertia::setRootView('flatpack::app');
     }
 
-    protected function getPackageProviders($app)
-    {
-        return [
-            \Flatpack\FlatpackServiceProvider::class,
-            \WireUi\Providers\WireUiServiceProvider::class,
-            \Rappasoft\LaravelLivewireTables\LaravelLivewireTablesServiceProvider::class,
-            \Livewire\LivewireServiceProvider::class,
-        ];
-    }
-
-    public function ignorePackageDiscoveriesFrom()
+    final public function ignorePackageDiscoveriesFrom(): array
     {
         return [];
     }
 
     /**
-     * Setup testing environment.
-     *
-     * @return void
+     * @param  Application  $app
      */
-    public function getEnvironmentSetUp($app): void
+    protected function getPackageProviders($app): array
     {
-        config()->set('database.default', 'testing');
+        return [
+            ServiceProvider::class,
+            FlatpackServiceProvider::class,
+        ];
+    }
 
-        config()->set('view.paths', [
-                __DIR__.'/../views',
-                resource_path('views'),
-            ]);
+    protected function defineEnvironment($app): void
+    {
+        $app['config']->set('database.default', 'testing');
+        $app['config']->set('database.connections.testing', [
+            'driver' => 'sqlite',
+            'database' => ':memory:',
+            'prefix' => '',
+            'foreign_key_constraints' => true,
+        ]);
+        $app['config']->set('auth.providers.users.model', User::class);
+        $app['config']->set('app.key', 'base64:' . base64_encode(random_bytes(32)));
+    }
 
-        config()->set('app.key', Encrypter::generateKey(config('app.cipher')));
-
-        include_once __DIR__.'/../database/migrations/create_test_tables.php.stub';
-        (new \CreateTestTables())->up();
+    protected function defineDatabaseMigrations(): void
+    {
+        $this->loadMigrationsFrom(__DIR__ . '/database/migrations');
     }
 
     /**
      * Reset current session auth.
-     *
-     * @return void
      */
-    protected function resetAuth(array $guards = null): void
+    protected function resetAuth(?array $guards = null): void
     {
-        $guards = $guards ?: array_keys(config('auth.guards'));
+        $guards = $guards !== null && $guards !== [] ? $guards : array_keys(config('auth.guards'));
 
         foreach ($guards as $guard) {
             $guard = $this->app['auth']->guard($guard);
@@ -70,7 +78,7 @@ class TestCase extends Orchestra
             }
         }
 
-        $protectedProperty = new \ReflectionProperty($this->app['auth'], 'guards');
+        $protectedProperty = new ReflectionProperty($this->app['auth'], 'guards');
         $protectedProperty->setAccessible(true);
         $protectedProperty->setValue($this->app['auth'], []);
     }

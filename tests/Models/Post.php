@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Flatpack\Tests\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -8,10 +10,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Post extends Model
+final class Post extends Model
 {
     use HasFactory;
     use SoftDeletes;
+
+    /**
+     * @var bool
+     */
+    public $timestamps = true;
 
     /**
      * The table associated with the model.
@@ -19,11 +26,6 @@ class Post extends Model
      * @var string
      */
     protected $table = 'posts';
-
-    /**
-     * @var bool
-     */
-    public $timestamps = true;
 
     /**
      * The attributes that are mass assignable.
@@ -39,9 +41,6 @@ class Post extends Model
         'status',
     ];
 
-    /**
-     * @return BelongsTo
-     */
     public function author(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
@@ -50,18 +49,15 @@ class Post extends Model
     /**
      * Post Categories
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     * @return BelongsToMany
      */
     public function categories()
     {
         return $this->belongsToMany(Category::class, 'posts_categories');
     }
 
-    /**
-     * @return BelongsToMany
-     */
-    public function tags(): BelongsToMany
-    {
-        return $this->belongsToMany(Tag::class, 'posts_tags');
-    }
+    // public function tags(): BelongsToMany
+    // {
+    //     return $this->belongsToMany(Tag::class, 'posts_tags');
+    // }
 }

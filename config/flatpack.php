@@ -1,147 +1,105 @@
 <?php
 
-/*
- | Configuration file for Flatpack.
- | --------------------------------
- |
- | More infos: https://laravel-flatpack.com/guide/configuration.html
- |
- */
+declare(strict_types=1);
+
+use Flatpack\Http\Controllers\FlatpackSessionController;
 
 return [
+    /*
+    |--------------------------------------------------------------------------
+    | Composition path
+    |--------------------------------------------------------------------------
+    |
+    | Directory containing entity folders (each with form.yaml / list.yaml).
+    |
+    */
+    'path' => base_path('flatpack'),
 
     /*
     |--------------------------------------------------------------------------
-    | Models directory
+    | Route prefix
     |--------------------------------------------------------------------------
-    |
-    | The namespace where Flatpack should find your Eloquent Models.
-    |
     */
-    'models' => env('FLATPACK_MODELS', "App\\Models"),
+    'prefix' => 'flatpack',
 
     /*
     |--------------------------------------------------------------------------
-    | Branding
+    | Authentication guard
     |--------------------------------------------------------------------------
     |
-    | The image and text to be displayed as the top element of the sidebar.
-    | Logo should be an absolute url or a relative path to the public directory.
+    | Used for Flatpack "guest" / "auth" route middleware (e.g. guest:web, auth:web).
     |
     */
-    'brand' => [
+    'guard' => env('FLATPACK_AUTH_GUARD', 'web'),
 
-        'name' => env('APP_NAME', 'Flatpack'),
-
-        'logo' => env('FLATPACK_LOGO', 'flatpack/images/logo.svg'),
+    /*
+    |--------------------------------------------------------------------------
+    | Login (POST /{prefix}/login)
+    |--------------------------------------------------------------------------
+    |
+    | "store" is the action that processes credentials. By default Flatpack uses
+    | session authentication (Auth::attempt). Point this to Fortify's
+    | AuthenticatedSessionController@store if you use Fortify, or any invokable
+    | [Controller::class, 'method'] your app provides.
+    |
+    | Example (Fortify):
+    | 'store' => [\Laravel\Fortify\Http\Controllers\AuthenticatedSessionController::class, 'store'],
+    |
+    */
+    'login' => [
+        'store' => [FlatpackSessionController::class, 'store'],
+        'throttle' => env('FLATPACK_LOGIN_THROTTLE', 'throttle:5,1'),
     ],
 
     /*
     |--------------------------------------------------------------------------
-    | Layout settings
+    | Unauthenticated Inertia / XHR behaviour
     |--------------------------------------------------------------------------
     |
-    | Define layout default settings.
+    | When true, registers exception-handler rules so AuthenticationException on
+    | Flatpack routes yields an HTML redirect (not JSON 401 / empty 401): a
+    | shouldRenderJsonWhen callback plus a renderable redirect to flatpack.login.
+    | Disable if you customize these yourself and merge Flatpack rules.
     |
-     */
-    'layout' => [
-
-        'search-box' => true,
-
-    ],
+    */
+    'register_json_exception_handler' => env('FLATPACK_REGISTER_JSON_EXCEPTION_HANDLER', true),
 
     /*
     |--------------------------------------------------------------------------
-    | Navigation menu
+    | Vite compiled assets
     |--------------------------------------------------------------------------
     |
-    | Define custom options for the sidebar menu.
+    | After `cd flatpack-package && npm install && npm run build`, the manifest
+    | lives at public/vendor/flatpack/build on the host. The build script also
+    | copies output into flatpack-package/public/build so you can commit it;
+    | on boot, that copy is synced to the host when the manifest is missing.
+    |
+    | The host app should override Inertia's HandleInertiaRequests::rootView() to
+    | return `flatpack::app` when FlatpackRequest::matches($request), so the
+    | Blade layout uses @vite(..., 'vendor/flatpack/build') (middleware order alone
+    | is not reliable).
     |
     */
-    'navigation' => [],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Dashboard
-    |--------------------------------------------------------------------------
-    |
-    | Define custom blocks for the home dashboard.
-    |
-    */
-    'dashboard' => [],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Actions
-    |--------------------------------------------------------------------------
-    |
-    | Flatpack form or list actions. You can add your own actions here.
-    |
-    */
-    'actions' => [
-
-        'save' => \Flatpack\Actions\Save::class,
-
-        'upload' => \Flatpack\Actions\Upload::class,
-
-        'delete' => \Flatpack\Actions\Delete::class,
-
-        'restore' => \Flatpack\Actions\Restore::class,
-
-        'empty-trash' => \Flatpack\Actions\EmptyTrash::class,
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Route Prefix
-    |--------------------------------------------------------------------------
-    |
-    | Flatpack route prefix.
-    | Example: http://localhost/backend
-    |
-    */
-    'prefix' => env('FLATPACK_PREFIX', 'backend'),
-
-    /*
-    |--------------------------------------------------------------------------
-    | Directory
-    |--------------------------------------------------------------------------
-    |
-    | The directory where the Flatpack templates are stored, relative to
-    | the application root.
-    |
-    */
-    'directory' => env('FLATPACK_DIRECTORY', 'flatpack'),
-
-    /*
-    |--------------------------------------------------------------------------
-    | File Storage
-    |--------------------------------------------------------------------------
-    |
-    | By default, Flatpack will use the default Laravel file storage.
-    | You can override this by setting your own file storage.
-    |
-    */
-    'storage' => [
-
-        'disk' => env('FLATPACK_STORAGE_DISK', 'public'),
-
-        'path' => env('FLATPACK_STORAGE_PATH', 'uploads'),
-    ],
-
+    'sync_compiled_assets_from_package' => env('FLATPACK_SYNC_COMPILED_ASSETS', true),
 
     /*
     |--------------------------------------------------------------------------
     | Middleware
     |--------------------------------------------------------------------------
     |
-    | Middleware to apply to before and/or after all Flatpack routes.
+    | Applied to all Flatpack HTTP routes. Add auth middleware in the host app.
     |
     */
-    'middleware' => [
+    'middleware' => ['web'],
 
-        'before' => [],
-
-        'after' => [],
-    ],
+    /*
+    |--------------------------------------------------------------------------
+    | Menu override
+    |--------------------------------------------------------------------------
+    |
+    | When non-empty, replaces filesystem-derived menu. Each item:
+    | 'slug' => ['name' => '', 'route' => '', 'icon' => '']
+    |
+    */
+    'menu' => [],
 ];

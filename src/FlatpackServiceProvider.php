@@ -1,152 +1,206 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Flatpack;
 
-use Flatpack\Commands\ActionCommand;
-use Flatpack\Commands\MakeCommand;
-use Flatpack\Commands\WidgetCommand;
-use Flatpack\Http\Livewire\BlockEditor;
-use Flatpack\Http\Livewire\CreateRelation;
-use Flatpack\Http\Livewire\Dashboard;
-use Flatpack\Http\Livewire\Form;
-use Flatpack\Http\Livewire\ImageUploader;
-use Flatpack\Http\Livewire\SearchBox;
-use Flatpack\Http\Livewire\Table;
-use Flatpack\Http\Middleware\Authenticate;
-use Flatpack\Http\Middleware\FlatpackMiddleware;
-use Flatpack\View\Components\ActionButton;
-use Flatpack\View\Components\FormField;
-use Flatpack\View\Components\GuestLayout;
-use Flatpack\View\Components\Layout;
-use Flatpack\View\Components\Modal;
-use Flatpack\View\Components\RelationField;
-use Flatpack\View\Components\TagInput;
-use Illuminate\Routing\Router;
+use Closure;
+use Flatpack\Actions\DefaultActionResolver;
+use Flatpack\Authorization\PolicyAwareFlatpackAuthorizer;
+use Flatpack\Composition\YamlCompositionLoader;
+use Flatpack\Contracts\Actions\ActionResolver;
+use Flatpack\Contracts\Authorization\FlatpackAuthorizer;
+use Flatpack\Contracts\Composition\CompositionLoader;
+use Flatpack\Contracts\Menu\MenuBuilder;
+use Flatpack\Http\FlatpackRequest;
+use Flatpack\Http\Middleware\ConfigureFlatpackViteAssets;
+use Flatpack\Http\Middleware\SetFlatpackInertiaRootView;
+use Flatpack\Http\Middleware\ShareFlatpackInertiaData;
+use Flatpack\Menu\FilesystemMenuBuilder;
+use Flatpack\Registration\RedirectCallbacks;
+use Illuminate\Auth\AuthenticationException;
+use Illuminate\Contracts\Debug\ExceptionHandler;
+use Illuminate\Contracts\Http\Kernel as HttpKernelContract;
+use Illuminate\Foundation\Exceptions\Handler;
+use Illuminate\Foundation\Http\Kernel as HttpKernel;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
-use Livewire\Livewire;
+use Override;
+use Throwable;
 
-class FlatpackServiceProvider extends ServiceProvider
+final class FlatpackServiceProvider extends ServiceProvider
 {
-    public function boot()
+    #[Override]
+    public function register(): void
+    {
+        $this->mergeConfigFrom(dirname(__DIR__) . '/config/flatpack.php', 'flatpack');
+        $this->registerContainerBindings();
+    }
+
+    public function boot(): void
+    {
+        $this->syncCompiledAssetsFromPackageIfNeeded();
+        $this->publishAssets();
+        $this->registerCommands();
+        $this->registerRoutes();
+        $this->registerViews();
+        $this->registerJsonExceptionHandling();
+        $this->configureHttpKernel();
+    }
+
+    protected function registerContainerBindings(): void
+    {
+        $this->app->singleton(CompositionLoader::class, fn ($app): YamlCompositionLoader => new YamlCompositionLoader(
+            $app->make('files'),
+            (string) $app['config']->get('flatpack.path', base_path('flatpack')),
+        ));
+
+        $this->app->singleton(FlatpackAuthorizer::class, PolicyAwareFlatpackAuthorizer::class);
+        $this->app->singleton(ActionResolver::class, DefaultActionResolver::class);
+        $this->app->singleton(MenuBuilder::class, FilesystemMenuBuilder::class);
+
+        $this->app->singleton(Flatpack::class, fn ($app): Flatpack => new Flatpack(
+            menuBuilder: $app->make(MenuBuilder::class),
+        ));
+    }
+
+    protected function configureHttpKernel(): void
+    {
+        $this->app->booted(function (): void {
+            // Must resolve the HttpKernel contract: Laravel binds it separately from the
+            // concrete Kernel class, so make(Kernel::class) mutates an unused instance.
+            $kernel = $this->app->make(HttpKernelContract::class);
+            if (! $kernel instanceof HttpKernel) {
+                return;
+            }
+
+            $kernel->prependMiddlewareToGroup('web', ConfigureFlatpackViteAssets::class);
+            $kernel->appendMiddlewareToGroup('web', ShareFlatpackInertiaData::class);
+            $kernel->appendMiddlewareToGroup('web', SetFlatpackInertiaRootView::class);
+            RedirectCallbacks::register();
+        });
+    }
+
+    /**
+     * Copy flatpack-package/public/build to the host when the manifest is missing
+     * (e.g. fresh clone or CI without running npm run build).
+     */
+    protected function syncCompiledAssetsFromPackageIfNeeded(): void
+    {
+        $packageBuild = $this->packageBuildPath();
+        if (! $this->shouldSyncCompiledAssets($packageBuild)) {
+            return;
+        }
+
+        File::ensureDirectoryExists(public_path('vendor/flatpack'));
+        File::copyDirectory($packageBuild, public_path('vendor/flatpack/build'));
+    }
+
+    protected function shouldSyncCompiledAssets(string $packageBuild): bool
+    {
+        if (! config('flatpack.sync_compiled_assets_from_package', true)) {
+            return false;
+        }
+
+        if (is_file(public_path('vendor/flatpack/build/manifest.json'))) {
+            return false;
+        }
+
+        if (is_file(public_path('vendor/flatpack/hot'))) {
+            return false;
+        }
+
+        return is_file($packageBuild . '/manifest.json');
+    }
+
+    protected function packageBuildPath(): string
+    {
+        return dirname(__DIR__) . '/public/build';
+    }
+
+    protected function publishAssets(): void
     {
         $this->publishes([
-            __DIR__ . '/../public' => public_path('flatpack'),
-            __DIR__ . '/../config/flatpack.php' => config_path('flatpack.php'),
+            dirname(__DIR__) . '/public' => public_path('vendor/flatpack'),
+            dirname(__DIR__) . '/config/flatpack.php' => config_path('flatpack.php'),
         ], 'flatpack');
-
-        $this->registerCommands();
-        $this->registerMiddleware();
-        $this->registerViews();
-        $this->registerViewComponents();
-        $this->registerLivewireComponents();
-        $this->registerRoutes();
     }
 
-    /**
-     * Register Flatpack.
-     */
-    public function register()
-    {
-        $this->mergeConfigFrom(__DIR__ . '/../config/flatpack.php', 'flatpack');
-
-        $this->app->bind('flatpack', function ($app) {
-            return new Flatpack();
-        });
-    }
-
-    /**
-     * Register commands.
-     */
-    protected function registerCommands()
+    protected function registerCommands(): void
     {
         $this->commands([
-            MakeCommand::class,
-            ActionCommand::class,
-            WidgetCommand::class,
+            // MakeCommand::class,
         ]);
     }
 
-    /**
-     * Register routes.
-     */
-    protected function registerRoutes()
+    protected function registerRoutes(): void
     {
-        Route::group($this->routeConfiguration(), function () {
-            $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
+        Route::middleware((array) config('flatpack.middleware', ['web']))
+            ->prefix((string) config('flatpack.prefix', 'flatpack'))
+            ->name('flatpack.')
+            ->group(dirname(__DIR__) . '/routes/web.php');
+    }
+
+    protected function registerViews(): void
+    {
+        $this->loadViewsFrom(dirname(__DIR__) . '/resources/views', 'flatpack');
+    }
+
+    /**
+     * Inertia / JSON Accept requests set expectsJson() true while unauthenticated users still
+     * need a redirect to the Flatpack login page. Also register a renderable so we redirect
+     * even when the auth middleware threw AuthenticationException with a null redirect URL
+     * (expectsJson was true at throw time).
+     */
+    protected function registerJsonExceptionHandling(): void
+    {
+        if (! config('flatpack.register_json_exception_handler', true)) {
+            return;
+        }
+
+        $this->callAfterResolving(ExceptionHandler::class, function (ExceptionHandler $handler): void {
+            if (! $handler instanceof Handler) {
+                return;
+            }
+
+            $handler->shouldRenderJsonWhen($this->shouldRenderJsonWhenCallback());
+            $handler->renderable($this->authenticationRedirectRenderable());
         });
     }
 
     /**
-     * Register Livewire components.
+     * @return Closure(Request, Throwable): bool
      */
-    protected function registerLivewireComponents()
+    protected function shouldRenderJsonWhenCallback(): Closure
     {
-        Livewire::component('flatpack.dashboard', Dashboard::class);
-        Livewire::component('flatpack.table', Table::class);
-        Livewire::component('flatpack.form', Form::class);
-        Livewire::component('flatpack.create-relation', CreateRelation::class);
-        Livewire::component('flatpack.image-uploader', ImageUploader::class);
-        Livewire::component('flatpack.block-editor', BlockEditor::class);
-        Livewire::component('flatpack.search-box', SearchBox::class);
+        return function (Request $request, Throwable $exception): bool {
+            if ($exception instanceof AuthenticationException) {
+                if ($request->header('X-Inertia') || FlatpackRequest::matches($request)) {
+                    return false;
+                }
+            }
+
+            return $request->expectsJson();
+        };
     }
 
     /**
-     * Register Blade view components.
+     * @return Closure(AuthenticationException, mixed): mixed
      */
-    protected function registerViewComponents()
+    protected function authenticationRedirectRenderable(): Closure
     {
-        $this->loadViewComponentsAs('flatpack', [
-            GuestLayout::class,
-            Layout::class,
-            ActionButton::class,
-            FormField::class,
-            RelationField::class,
-            TagInput::class,
-            Modal::class,
-        ]);
+        return function (AuthenticationException $exception, mixed $request): mixed {
+            if (! $request instanceof Request) {
+                return null;
+            }
 
-        $this->loadViewComponentsAs('flatpack-widget', config('flatpack.dashboard'));
-    }
+            if (! FlatpackRequest::matches($request)) {
+                return null;
+            }
 
-    /**
-     * Register views.
-     */
-    protected function registerViews()
-    {
-        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'flatpack');
-    }
-
-    /**
-     * Register route middleware.
-     */
-    protected function registerMiddleware()
-    {
-        $router = $this->app->make(Router::class);
-        $router->aliasMiddleware('flatpack-auth', Authenticate::class);
-        $router->aliasMiddleware('flatpack', FlatpackMiddleware::class);
-    }
-
-    /**
-     * Configure route group.
-     */
-    protected function routeConfiguration()
-    {
-        return [
-            'prefix' => config('flatpack.prefix', 'backend'),
-            'middleware' => $this->getRouteMiddleware(),
-        ];
-    }
-
-    /**
-     * Compose the list of middleware to be applied to the routes.
-     */
-    private function getRouteMiddleware()
-    {
-        return collect(['web'])
-            ->prepend(config('flatpack.middleware.before', []))
-            ->push(config('flatpack.middleware.after', []))
-            ->flatten()
-            ->toArray();
+            return redirect()->guest(route('flatpack.login'));
+        };
     }
 }

@@ -1,3 +1,0 @@
-<div>
-    Default column...
-</div>
