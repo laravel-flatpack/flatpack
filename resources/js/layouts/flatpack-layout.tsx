@@ -1,6 +1,6 @@
 import { Link, usePage } from '@inertiajs/react';
-import AppLogoIcon from '../components/app-logo-icon';
-import { dashboard as flatpackDashboard } from '../routes/flatpack';
+import AppLogoIcon from '@/components/app-logo-icon';
+import { dashboard as flatpackDashboard } from '@/routes/flatpack';
 
 type FlatpackMenuItem = {
     slug: string;

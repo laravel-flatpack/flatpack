@@ -1,3 +1,4 @@
+import { Form, Head } from '@inertiajs/react';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
 import { Button } from '@/components/ui/button';
@@ -5,9 +6,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
-import { Form, Head } from '@inertiajs/react';
-import FlatpackLayout from '../../layouts/flatpack-layout';
-import { store } from '../../routes/flatpack/login';
+import FlatpackLayout from '@/layouts/flatpack-layout';
+import { store } from '@/routes/flatpack/login';
 
 type Props = {
     status?: string;

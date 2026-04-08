@@ -1,6 +1,5 @@
-import { type VariantProps, cva } from 'class-variance-authority';
+import { cva, type VariantProps } from 'class-variance-authority';
 import type * as React from 'react';
-
 import { cn } from '@/lib/utils';
 
 const alertVariants = cva(
@@ -63,4 +62,4 @@ function AlertDescription({
     );
 }
 
-export { Alert, AlertTitle, AlertDescription };
+export { Alert, AlertDescription, AlertTitle };

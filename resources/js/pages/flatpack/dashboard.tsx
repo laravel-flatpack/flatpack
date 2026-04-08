@@ -1,6 +1,6 @@
 import { Head } from '@inertiajs/react';
-import { PlaceholderPattern } from '../../components/ui/placeholder-pattern';
-import FlatpackLayout from '../../layouts/flatpack-layout';
+import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
+import FlatpackLayout from '@/layouts/flatpack-layout';
 
 export default function FlatpackDashboard() {
     return (
