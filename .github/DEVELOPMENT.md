@@ -1,59 +1,71 @@
 # Development Guidelines
 
-Contributions are welcome! Please see [CONTRIBUTING](.github/CONTRIBUTING.md) for details.
+Contributions are welcome! Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
 
-You can find here some instructions that you may find useful during the local development. Happy coding!
+This document covers local frontend tooling for the **Flatpack Laravel package** (not a standalone Laravel app). Vite reads **only this package’s `.env`** (`envDir` in `vite.config.ts`); the host application’s `.env` is not used for `npm run dev` / `npm run build`.
 
-## Frontend development (Vite)
+## Frontend (Vite)
 
-Flatpack ships its own Inertia + React frontend under `resources/js` and `resources/css`. Vite is configured in this package; environment for the toolchain lives in **`flatpack-package/.env`** (not the host Laravel `.env`). Copy `.env.example` to `.env` and adjust as needed.
+Flatpack ships an Inertia + React UI under `resources/js` and `resources/css`.
 
-### Install dependencies
+### Install
 
-From the package directory:
+From the package root:
 
 ```bash
 npm install
 cp .env.example .env   # first time only
 ```
 
-### Where compiled assets are written
+### Environment variables (package `.env`)
 
-Production builds and the dev server write into a **public directory** that Laravel will serve. By default this is **`public/flatpack`** inside the package (`flatpack-package/public/flatpack`), which is suitable when you publish assets with Artisan.
+| Variable | Purpose |
+|----------|---------|
+| `VITE_APP_NAME` | Passed to the client as `import.meta.env.VITE_APP_NAME`. |
+| `VITE_HOST` / `VITE_PORT` | Dev server bind address and port (default **127.0.0.1** and **5174** so the host app’s Vite can keep **5173**). |
+| `FLATPACK_PUBLIC_DEST` | Where Vite writes **`build/`** (manifest + hashed assets) and the **`hot`** file during dev. See below. |
+| `VITE_FLATPACK_BASE` | Optional. Production `base` URL for built assets (default `/vendor/flatpack/build/`). |
 
-When you develop against a Laravel app in the same repository (for example `flatpack-package` next to the app root), set **`FLATPACK_PUBLIC_DEST`** in `flatpack-package/.env` so Vite writes straight into the host’s web root, for example:
+### Where assets go and how the host loads them
+
+Flatpack publishes its **`public/`** tree with `php artisan vendor:publish --tag=flatpack`, which copies it to the host’s **`public/vendor/flatpack/`**. Laravel’s `@vite` integration is pointed at that tree by `ConfigureFlatpackViteAssets` (manifest at **`public/vendor/flatpack/build/manifest.json`**, hot file at **`public/vendor/flatpack/hot`** when using the dev server).
+
+**Default (no `FLATPACK_PUBLIC_DEST`):** Vite writes to **`public/build`** inside this package. That matches what you ship and publish.
+
+**Developing against a host app on disk** (path repo, sibling folder, etc.): set **`FLATPACK_PUBLIC_DEST`** to the host’s **published** directory — the folder that **contains** `build/` and `hot`, not the `build` folder itself:
 
 ```env
-# Relative to flatpack-package/ — typical path-repo layout (sibling app)
-FLATPACK_PUBLIC_DEST=../public/vendor/flatpack
+# Example: host app is next to this repo
+FLATPACK_PUBLIC_DEST=../your-host-app/public/vendor/flatpack
 ```
 
-You can also use an absolute path. The Laravel app expects the Vite manifest at **`public/vendor/flatpack/build/manifest.json`** (see the `flatpack::app` Blade layout and `ConfigureFlatpackViteAssets` middleware), so the directory you set must end up as that `public/vendor/flatpack` tree on disk.
+Absolute paths are supported. If the last path segment is mistakenly `build`, the config warns and uses the parent directory.
 
-After each production build, the Vite config also mirrors the build output into **`flatpack-package/public/build`** so you can commit compiled assets with the package if you choose.
+When `FLATPACK_PUBLIC_DEST` points **outside** this package’s `public/`, each production build **syncs** `build/` back into **`public/build`** here so committed assets match what you tested on the host.
 
-### Watch mode (rebuild on save)
+### Inertia and SSR
 
-While you edit components, pages, or styles, run:
+The Vite config uses **`inertia({ ssr: false })`**. Flatpack is **client-rendered** only; Inertia’s Vite SSR dev endpoint is disabled so `react-dom/client` is not evaluated in Node during `npm run dev`.
+
+### Scripts
+
+| Command | Use case |
+|---------|----------|
+| **`npm run dev`** | Vite dev server + HMR. Prefer this while editing UI. Requires `FLATPACK_PUBLIC_DEST` aimed at the host’s `public/vendor/flatpack` if the host should load the dev server (via `hot`). |
+| **`npm run watch`** | `vite build --watch`. Rebuilds production bundles on save. Use when the host must read **on-disk** assets from `vendor/flatpack/build` without running the Vite server. |
+| **`npm run build`** | One-off production build (release, CI, or refreshing `public/build` before commit). |
+| **`npm run clean`** | Deletes the configured `build/` output (and this package’s `public/build`) without compiling. |
+
+`npm run build` and `npm run watch` run a **clean** of the relevant `build/` directories at the start of each compile so old hashed chunks are not left behind.
+
+### Laravel Vite plugin notes
+
+- The Laravel plugin may log **`APP_URL: undefined`** when this package’s `.env` has no `APP_URL`. It is harmless for package development; you can set `APP_URL` in the package `.env` if you want a value there.
+- **Full reload** paths in `vite.config.ts` include `../routes/**/*.php` and `../app/**/*.php` relative to this package. Those only exist in a **monorepo-style** layout; in a standalone clone they simply match nothing.
+
+### Linting and types
 
 ```bash
-npm run watch
-```
-
-This runs `vite build --watch`: on every change, assets are recompiled and written to the directory resolved from **`FLATPACK_PUBLIC_DEST`** (plus `build/` and `hot` when applicable). Keep this process running alongside your PHP application.
-
-### Dev server (HMR)
-
-For full Vite hot module replacement during development:
-
-```bash
-npm run dev
-```
-
-Ensure `VITE_HOST` and `VITE_PORT` in `flatpack-package/.env` match how you access the Vite server, and that the Laravel app’s Flatpack middleware can read the **`hot`** file under the same public directory you configured. The default port is **5174** so it does not clash with the host app’s Vite on **5173**.
-
-### One-off production build
-
-```bash
-npm run build
+npm run lint
+npm run types:check
 ```
