@@ -1,6 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
 import AppLogoIcon from '@/components/app-logo-icon';
-import { dashboard as flatpackDashboard } from '@/routes/flatpack';
 
 type FlatpackMenuItem = {
     slug: string;
@@ -12,6 +11,9 @@ type FlatpackMenuItem = {
 type FlatpackPageProps = {
     flatpack?: {
         menu?: FlatpackMenuItem[];
+        urls?: {
+            dashboard: string;
+        };
     };
 };
 
@@ -26,6 +28,7 @@ export default function FlatpackLayout({
         props: { flatpack },
     } = usePage<FlatpackPageProps>();
     const menu = flatpack?.menu ?? [];
+    const dashboardHref = flatpack?.urls?.dashboard;
 
     return (
         <div className="flex min-h-svh flex-col bg-background">
@@ -37,12 +40,14 @@ export default function FlatpackLayout({
                         </div>
                         <span className="font-medium">{title}</span>
                     </div>
-                    <Link
-                        href={flatpackDashboard.url()}
-                        className="text-sm text-muted-foreground hover:text-foreground"
-                    >
-                        Dashboard
-                    </Link>
+                    {dashboardHref && (
+                        <Link
+                            href={dashboardHref}
+                            className="text-sm text-muted-foreground hover:text-foreground"
+                        >
+                            Dashboard
+                        </Link>
+                    )}
                 </div>
             </header>
             {menu.length > 0 && (

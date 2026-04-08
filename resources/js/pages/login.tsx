@@ -1,4 +1,4 @@
-import { Form, Head } from '@inertiajs/react';
+import { Form, Head, usePage } from '@inertiajs/react';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
 import { Button } from '@/components/ui/button';
@@ -7,21 +7,37 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import FlatpackLayout from '@/layouts/flatpack-layout';
-import { store } from '@/routes/flatpack/login';
 
 type Props = {
     status?: string;
     canResetPassword: boolean;
     canRegister: boolean;
+    flatpack?: {
+        urls?: {
+            login: string;
+        };
+    };
 };
 
 export default function FlatpackLogin({ status }: Props) {
+    const {
+        props: { flatpack },
+    } = usePage<Props>();
+
+    const loginAction = flatpack?.urls?.login;
+    if (!loginAction) {
+        throw new Error(
+            'Flatpack login URL is missing from Inertia shared props.',
+        );
+    }
+
     return (
         <>
             <Head title="Log in" />
 
             <Form
-                {...store.form()}
+                action={loginAction}
+                method="post"
                 resetOnSuccess={['password']}
                 className="flex flex-col gap-6"
             >

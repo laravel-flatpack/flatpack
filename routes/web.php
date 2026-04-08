@@ -18,7 +18,7 @@ $guard = (string) config('flatpack.guard', 'web');
 */
 Route::middleware(['auth:' . $guard, EnsureFlatpackAccess::class])->group(function () {
     /** Dashboard route */
-    Route::get('/', fn () => Inertia::render('flatpack/dashboard', []))->name('dashboard');
+    Route::get('/', fn() => Inertia::render('dashboard', []))->name('dashboard');
 });
 
 require __DIR__ . '/guest.php';

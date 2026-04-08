@@ -7,6 +7,7 @@ use Flatpack\Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(TestCase::class, RefreshDatabase::class);
+
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Foundation\Exceptions\Handler;
@@ -40,7 +41,7 @@ test('authenticated users with flatpack access can visit flatpack dashboard', fu
     $response = $this->actingAs($user)->get(route('flatpack.dashboard'));
 
     $response->assertOk();
-    $response->assertInertia(fn ($page) => $page->component('flatpack/dashboard', false));
+    $response->assertInertia(fn($page) => $page->component('dashboard', false));
 });
 
 test('guests requesting flatpack with Accept application/json are redirected to flatpack login', function () {
@@ -49,4 +50,12 @@ test('guests requesting flatpack with Accept application/json are redirected to 
     ])->get('/flatpack');
 
     $response->assertRedirect(route('flatpack.login'));
+});
+
+test('flatpack inertia shares login and dashboard urls from named routes', function () {
+    $this->get(route('flatpack.login'))
+        ->assertInertia(fn ($page) => $page
+            ->where('flatpack.urls.login', route('flatpack.login.store'))
+            ->where('flatpack.urls.dashboard', route('flatpack.dashboard'))
+        );
 });

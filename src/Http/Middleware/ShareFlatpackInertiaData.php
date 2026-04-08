@@ -28,6 +28,10 @@ final readonly class ShareFlatpackInertiaData
                     static fn ($item): array => $item->toArray(),
                     $this->flatpack->menu(),
                 ),
+                'urls' => [
+                    'login' => route('flatpack.login.store'),
+                    'dashboard' => route('flatpack.dashboard'),
+                ],
             ]);
         }
 

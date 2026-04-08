@@ -22,7 +22,7 @@ final class FlatpackSessionController
     {
         $this->stashFlatpackIntendedUrl($request);
 
-        return Inertia::render('flatpack/login', [
+        return Inertia::render('login', [
             'canResetPassword' => false,
             'canRegister' => false,
             'status' => $request->session()->get('status'),
