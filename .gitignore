@@ -1,3 +1,6 @@
+.env
+.env.*
+!.env.example
 .idea
 .php_cs
 .php_cs.cache
@@ -13,3 +16,4 @@ vendor
 node_modules
 .php-cs-fixer.cache
 .phpunit.result.cache
+/public/*
