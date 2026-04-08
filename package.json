@@ -4,6 +4,7 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
+        "clean": "node ./scripts/clean-build.mjs",
         "build": "vite build",
         "watch": "vite build --watch",
         "lint": "biome check resources/js resources/css",

@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Point Laravel's Vite helper at the Flatpack build directory and hot file so @vite in
- * flatpack::app resolves assets from public/flatpack (including the dev server).
+ * flatpack::app resolves assets from the package public tree (default: public/build; dev hot file public/hot).
  */
 final class ConfigureFlatpackViteAssets
 {

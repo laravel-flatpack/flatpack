@@ -1,5 +1,5 @@
-import { cpSync, existsSync, mkdirSync } from 'node:fs';
-import { dirname, isAbsolute, resolve } from 'node:path';
+import { cpSync, existsSync, mkdirSync, rmSync } from 'node:fs';
+import { basename, dirname, isAbsolute, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import inertia from '@inertiajs/vite';
 import tailwindcss from '@tailwindcss/vite';
@@ -14,8 +14,13 @@ const packageRoot = dirname(fileURLToPath(import.meta.url));
  * Where Vite writes `build/` + `hot` for the consuming Laravel app's public tree.
  * Environment variables come only from this package's `.env` (see `envDir`).
  *
- * - Default: `/public/flatpack` relative to this package directory.
+ * - Default: `/public` relative to this package directory (build output in `public/build`).
  * - FLATPACK_PUBLIC_DEST: absolute path, or path relative to this package directory.
+ *   Must be the directory that **contains** `build/` and `hot` (e.g. `.../public/vendor/flatpack`),
+ *   not `.../public/vendor/flatpack/build`.
+ *
+ * Resolved paths are converted to a path relative to the package root before passing to
+ * `laravel-vite-plugin` (e.g. `../your-app/public/vendor/flatpack` when developing against a host app).
  */
 function resolvePublicFlatpackDir(
     packageDir: string,
@@ -24,15 +29,17 @@ function resolvePublicFlatpackDir(
     const trimmed = raw?.trim();
 
     if (!trimmed) {
-        return resolve(packageDir, 'public/flatpack');
+        return resolve(packageDir, 'public');
     }
 
     if (isAbsolute(trimmed)) {
         return resolve(trimmed);
     }
 
-    if (/^Users[\\/]/.test(trimmed)) {
-        return resolve('/', trimmed);
+    // `./Users/...` must not resolve under packageDir (would create repo/Users/.../public).
+    const forMacHomePath = trimmed.replace(/^\.\//, '');
+    if (/^Users[\\/]/.test(forMacHomePath)) {
+        return resolve('/', forMacHomePath);
     }
 
     return resolve(packageDir, trimmed);
@@ -45,10 +52,42 @@ export default defineConfig(({ mode, command }) => {
         /\/?$/,
         '/',
     );
-    const hostPublicFlatpack = resolvePublicFlatpackDir(
+    let hostPublicFlatpackAbs = resolvePublicFlatpackDir(
         packageRoot,
         env.FLATPACK_PUBLIC_DEST,
     );
+    if (basename(hostPublicFlatpackAbs) === 'build') {
+        console.warn(
+            '[flatpack] FLATPACK_PUBLIC_DEST should be the folder that contains build/ and hot (e.g. .../vendor/flatpack), not .../build. Using the parent directory.',
+        );
+        hostPublicFlatpackAbs = dirname(hostPublicFlatpackAbs);
+    }
+    const laravelPublicDirectory = relative(packageRoot, hostPublicFlatpackAbs).replace(
+        /\\/g,
+        '/',
+    );
+
+    /**
+     * Full replace of `build/` on every production build (including watch iterations).
+     * Needed for a Laravel package: published `public/build` must not accumulate stale hashed chunks.
+     */
+    const cleanFlatpackOutDirs = (): Plugin => ({
+        name: 'flatpack-clean-out-dirs',
+        apply: 'build',
+        buildStart() {
+            const dirs = [
+                resolve(hostPublicFlatpackAbs, 'build'),
+                resolve(packageRoot, 'public/build'),
+            ];
+            const seen = new Set<string>();
+            for (const dir of dirs) {
+                const key = resolve(dir);
+                if (seen.has(key)) continue;
+                seen.add(key);
+                rmSync(key, { recursive: true, force: true });
+            }
+        },
+    });
 
     const syncBuildToPackage = (): Plugin => ({
         name: 'flatpack-sync-build-to-package',
@@ -56,10 +95,14 @@ export default defineConfig(({ mode, command }) => {
         enforce: 'post',
         closeBundle() {
             setImmediate(() => {
-                const src = resolve(hostPublicFlatpack, 'build');
+                const src = resolve(hostPublicFlatpackAbs, 'build');
                 const dest = resolve(packageRoot, 'public/build');
 
                 if (!existsSync(resolve(src, 'manifest.json'))) {
+                    return;
+                }
+
+                if (resolve(src) === resolve(dest)) {
                     return;
                 }
 
@@ -76,9 +119,10 @@ export default defineConfig(({ mode, command }) => {
         // Without this, Rollup can emit dynamic imports against /build/... while Laravel serves from vendor/flatpack/build.
         base: command === 'build' ? flatpackPublicBase : '',
         plugins: [
+            cleanFlatpackOutDirs(),
             laravel({
                 input: ['resources/css/app.css', 'resources/js/app.tsx'],
-                publicDirectory: hostPublicFlatpack,
+                publicDirectory: laravelPublicDirectory || '.',
                 buildDirectory: 'build',
                 refresh: [
                     {
@@ -90,7 +134,9 @@ export default defineConfig(({ mode, command }) => {
                     },
                 ],
             }),
-            inertia(),
+            // Client-rendered Inertia only. Do not enable Vite's SSR dev endpoint (it would
+            // evaluate react-dom/client in Node and fail with "module is not defined").
+            inertia({ ssr: false }),
             react(),
             tailwindcss(),
             syncBuildToPackage(),
