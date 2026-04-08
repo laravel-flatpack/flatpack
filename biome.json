@@ -1,10 +1,28 @@
 {
-    "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+    "$schema": "https://biomejs.dev/schemas/2.4.10/schema.json",
+    "assist": {
+        "enabled": true,
+        "actions": {
+            "source": {
+                "organizeImports": {
+                    "level": "on",
+                    "options": {
+                        "groups": [
+                            ":URL:",
+                            ":BUN:",
+                            ":NODE:",
+                            ":PACKAGE_WITH_PROTOCOL:",
+                            ":PACKAGE:",
+                            ":ALIAS:",
+                            ":PATH:"
+                        ]
+                    }
+                }
+            }
+        }
+    },
     "files": {
-        "include": [
-            "resources/js/**/*",
-            "resources/css/**/*"
-        ]
+        "includes": ["resources/js/**", "resources/css/**"]
     },
     "formatter": {
         "enabled": true,
@@ -21,6 +39,9 @@
             },
             "style": {
                 "useSelfClosingElements": "off"
+            },
+            "suspicious": {
+                "noDocumentCookie": "off"
             }
         }
     },
@@ -31,6 +52,9 @@
         }
     },
     "css": {
+        "parser": {
+            "tailwindDirectives": true
+        },
         "formatter": {
             "indentStyle": "space",
             "indentWidth": 4,
