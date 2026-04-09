@@ -20,7 +20,7 @@ const DataTable = lazy(() =>
 export default function FlatpackDashboard() {
     return (
         <div className="flex flex-col gap-4 md:gap-6">
-            <Head title="Flatpack" />
+            <Head title="Dashboard" />
             <div className="flex flex-col gap-4">
                 <div className="relative min-h-[40vh] overflow-hidden rounded-xl border border-border">
                     <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />

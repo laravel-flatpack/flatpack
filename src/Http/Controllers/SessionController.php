@@ -13,7 +13,7 @@ use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
-final class FlatpackSessionController
+final class SessionController
 {
     /**
      * Show the Flatpack login page (no register / forgot password links from the package).

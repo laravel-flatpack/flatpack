@@ -7,16 +7,20 @@ namespace Flatpack;
 use Closure;
 use Flatpack\Actions\DefaultActionResolver;
 use Flatpack\Authorization\PolicyAwareFlatpackAuthorizer;
+use Flatpack\Composition\CompositionValues;
+use Flatpack\Composition\DefaultCompositionQuery;
+use Flatpack\Composition\EntityComposition;
 use Flatpack\Composition\YamlCompositionLoader;
 use Flatpack\Contracts\Actions\ActionResolver;
 use Flatpack\Contracts\Authorization\FlatpackAuthorizer;
 use Flatpack\Contracts\Composition\CompositionLoader;
-use Flatpack\Contracts\Menu\MenuBuilder;
+use Flatpack\Contracts\Composition\CompositionQuery;
+use Flatpack\Contracts\Menu\MenuBuilder as MenuBuilderContract;
 use Flatpack\Http\FlatpackRequest;
 use Flatpack\Http\Middleware\ConfigureFlatpackViteAssets;
 use Flatpack\Http\Middleware\SetFlatpackInertiaRootView;
 use Flatpack\Http\Middleware\ShareFlatpackInertiaData;
-use Flatpack\Menu\FilesystemMenuBuilder;
+use Flatpack\Menu\MenuBuilder;
 use Flatpack\Registration\RedirectCallbacks;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Debug\ExceptionHandler;
@@ -57,12 +61,23 @@ final class FlatpackServiceProvider extends ServiceProvider
             (string) $app['config']->get('flatpack.path', base_path('flatpack')),
         ));
 
+        $this->app->singleton(CompositionQuery::class, fn ($app): DefaultCompositionQuery => new DefaultCompositionQuery(
+            $app->make(CompositionLoader::class),
+        ));
+
+        $this->app->singleton(CompositionValues::class, fn (): CompositionValues => new CompositionValues);
+
+        $this->app->singleton(EntityComposition::class, fn ($app): EntityComposition => new EntityComposition(
+            $app->make(CompositionQuery::class),
+            $app->make(CompositionValues::class),
+        ));
+
         $this->app->singleton(FlatpackAuthorizer::class, PolicyAwareFlatpackAuthorizer::class);
         $this->app->singleton(ActionResolver::class, DefaultActionResolver::class);
-        $this->app->singleton(MenuBuilder::class, FilesystemMenuBuilder::class);
+        $this->app->singleton(MenuBuilderContract::class, MenuBuilder::class);
 
         $this->app->singleton(Flatpack::class, fn ($app): Flatpack => new Flatpack(
-            menuBuilder: $app->make(MenuBuilder::class),
+            menuBuilder: $app->make(MenuBuilderContract::class),
         ));
     }
 

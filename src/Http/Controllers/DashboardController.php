@@ -7,7 +7,7 @@ namespace Flatpack\Http\Controllers;
 use Inertia\Inertia;
 use Inertia\Response;
 
-final class FlatpackDashboardController
+final class DashboardController
 {
     public function index(): Response
     {

@@ -4,18 +4,19 @@ declare(strict_types=1);
 
 namespace Flatpack\Menu;
 
-use Flatpack\Contracts\Composition\CompositionLoader;
-use Flatpack\Contracts\Composition\CompositionNotFoundException;
-use Flatpack\Contracts\Menu\MenuBuilder;
-use Flatpack\Http\Controllers\FlatpackListController;
+use Flatpack\Composition\CompositionValues;
+use Flatpack\Contracts\Composition\CompositionQuery;
+use Flatpack\Contracts\Menu\MenuBuilder as MenuBuilderContract;
+use Flatpack\Http\Controllers\ListController;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Support\Str;
 
-final readonly class FilesystemMenuBuilder implements MenuBuilder
+final readonly class MenuBuilder implements MenuBuilderContract
 {
     public function __construct(
         private ConfigRepository $config,
-        private CompositionLoader $compositionLoader,
+        private CompositionQuery $compositions,
+        private CompositionValues $compositionValues,
     ) {}
 
     public function build(): array
@@ -81,50 +82,24 @@ final readonly class FilesystemMenuBuilder implements MenuBuilder
                 continue;
             }
 
+            $list = $this->compositions->optional($entry, 'list');
+            $displayName = $this->compositionValues->displayName($list);
+            $icon = $this->compositionValues->icon($list);
+
             $items[] = new MenuItem(
                 slug: $entry,
-                name: $this->resolveEntityName($entry),
-                icon: $this->resolveEntityIcon($entry),
-                route: action([FlatpackListController::class, 'index'], ['entity' => $entry]),
+                name: $displayName ?? Str::of($entry)
+                    ->replace(['-', '_'], ' ')
+                    ->title()
+                    ->plural()
+                    ->toString(),
+                icon: $icon ?? 'folder',
+                route: action([ListController::class, 'index'], ['entity' => $entry]),
             );
         }
 
         usort($items, fn (MenuItem $a, MenuItem $b): int => strcmp($a->name, $b->name));
 
         return $items;
-    }
-
-    private function resolveEntityName(string $slug): string
-    {
-        try {
-            $data = $this->compositionLoader->load($slug, 'list');
-
-            if (isset($data['name']) && is_string($data['name'])) {
-                return $data['name'];
-            }
-        } catch (CompositionNotFoundException) {
-            //
-        }
-
-        return Str::of($slug)
-            ->replace(['-', '_'], ' ')
-            ->title()
-            ->plural()
-            ->toString();
-    }
-
-    private function resolveEntityIcon(string $slug): string
-    {
-        try {
-            $data = $this->compositionLoader->load($slug, 'list');
-
-            if (isset($data['icon']) && is_string($data['icon'])) {
-                return $data['icon'];
-            }
-        } catch (CompositionNotFoundException) {
-            //
-        }
-
-        return 'folder';
     }
 }
