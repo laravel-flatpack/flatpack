@@ -7,8 +7,12 @@ use Flatpack\Http\Controllers\FlatpackFormController;
 use Flatpack\Http\Controllers\FlatpackListController;
 use Flatpack\Http\Middleware\EnsureFlatpackAccess;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 require __DIR__ . '/guest.php';
+
+Route::get('/example/dashboard', fn () => Inertia::render('example/dashboard'))->name('example.dashboard');
+Route::get('/example/login', fn () => Inertia::render('example/login'))->name('example.login');
 
 /*
 |--------------------------------------------------------------------------
