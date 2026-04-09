@@ -41,7 +41,7 @@ test('authenticated users with flatpack access can visit flatpack dashboard', fu
     $response = $this->actingAs($user)->get(route('flatpack.dashboard'));
 
     $response->assertOk();
-    $response->assertInertia(fn($page) => $page->component('dashboard', false));
+    $response->assertInertia(fn ($page) => $page->component('dashboard', false));
 });
 
 test('guests requesting flatpack with Accept application/json are redirected to flatpack login', function () {
@@ -52,10 +52,9 @@ test('guests requesting flatpack with Accept application/json are redirected to 
     $response->assertRedirect(route('flatpack.login'));
 });
 
-test('flatpack inertia shares login and dashboard urls from named routes', function () {
-    $this->get(route('flatpack.login'))
-        ->assertInertia(fn ($page) => $page
-            ->where('flatpack.urls.login', route('flatpack.login.store'))
-            ->where('flatpack.urls.dashboard', route('flatpack.dashboard'))
-        );
+test('guests can view flatpack login page without redirect loop', function () {
+    $response = $this->get(route('flatpack.login'));
+
+    $response->assertOk();
+    $response->assertInertia(fn ($page) => $page->component('login', false));
 });

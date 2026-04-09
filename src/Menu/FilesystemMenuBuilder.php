@@ -7,6 +7,7 @@ namespace Flatpack\Menu;
 use Flatpack\Contracts\Composition\CompositionLoader;
 use Flatpack\Contracts\Composition\CompositionNotFoundException;
 use Flatpack\Contracts\Menu\MenuBuilder;
+use Flatpack\Http\Controllers\FlatpackListController;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Support\Str;
 
@@ -85,7 +86,7 @@ final readonly class FilesystemMenuBuilder implements MenuBuilder
             $items[] = new MenuItem(
                 slug: $entry,
                 name: Str::of($name)->plural()->title()->toString(),
-                route: 'flatpack.' . $entry . '.index',
+                route: action([FlatpackListController::class, 'index'], ['entity' => $entry]),
                 icon: 'menu',
             );
         }

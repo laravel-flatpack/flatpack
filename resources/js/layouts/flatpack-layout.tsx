@@ -1,19 +1,7 @@
 import { Link, usePage } from '@inertiajs/react';
 import AppLogoIcon from '@/components/app-logo-icon';
-import { dashboard } from '@/routes/flatpack';
-
-type FlatpackMenuItem = {
-    slug: string;
-    name: string;
-    route: string;
-    icon: string;
-};
-
-type FlatpackPageProps = {
-    flatpack?: {
-        menu?: FlatpackMenuItem[];
-    };
-};
+import { getCurrentPath, getRoutePathname } from '@/lib/utils';
+import type { FlatpackPageProps } from '@/types/flatpack';
 
 export default function FlatpackLayout({
     title = 'Flatpack',
@@ -24,8 +12,11 @@ export default function FlatpackLayout({
 }) {
     const {
         props: { flatpack },
+        url,
     } = usePage<FlatpackPageProps>();
     const menu = flatpack?.menu ?? [];
+    const dashboardRoute = flatpack?.dashboardRoute ?? '/';
+    const currentPath = getCurrentPath(url);
 
     return (
         <div className="flex min-h-svh flex-col bg-background">
@@ -38,7 +29,7 @@ export default function FlatpackLayout({
                         <span className="font-medium">{title}</span>
                     </div>
                     <Link
-                        href={dashboard.url()}
+                        href={dashboardRoute}
                         className="text-sm text-muted-foreground hover:text-foreground"
                     >
                         Dashboard
@@ -49,12 +40,17 @@ export default function FlatpackLayout({
                 <nav className="border-b border-border bg-card/60">
                     <div className="mx-auto flex h-11 max-w-6xl items-center gap-4 overflow-x-auto px-4">
                         {menu.map((item) => (
-                            <span
+                            <Link
                                 key={item.slug}
-                                className="text-sm text-muted-foreground"
+                                href={item.route}
+                                className={
+                                    currentPath === getRoutePathname(item.route)
+                                        ? 'text-sm text-foreground'
+                                        : 'text-sm text-muted-foreground hover:text-foreground'
+                                }
                             >
                                 {item.name}
-                            </span>
+                            </Link>
                         ))}
                     </div>
                 </nav>

@@ -1,4 +1,4 @@
-import { Form, Head } from '@inertiajs/react';
+import { Form, Head, usePage } from '@inertiajs/react';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
 import { Button } from '@/components/ui/button';
@@ -7,21 +7,22 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import FlatpackLayout from '@/layouts/flatpack-layout';
-import { store } from '@/routes/flatpack/login';
+import type { FlatpackPageProps } from '@/types/flatpack';
+import type { FlatpackLoginProps } from '@/types/pages/flatpack';
 
-type Props = {
-    status?: string;
-    canResetPassword: boolean;
-    canRegister: boolean;
-};
+export default function FlatpackLogin({ status }: FlatpackLoginProps) {
+    const {
+        props: { flatpack },
+    } = usePage<FlatpackPageProps>();
+    const loginStoreRoute = flatpack?.loginStoreRoute ?? '/login';
 
-export default function FlatpackLogin({ status }: Props) {
     return (
         <>
             <Head title="Log in" />
 
             <Form
-                {...store.form()}
+                action={loginStoreRoute}
+                method="post"
                 resetOnSuccess={['password']}
                 className="flex flex-col gap-6"
             >

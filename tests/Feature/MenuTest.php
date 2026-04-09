@@ -47,8 +47,10 @@ test('flatpack builds default menu from filesystem path when no config override 
                 ->has('flatpack.menu', 2)
                 ->where('flatpack.menu.0.slug', 'categories')
                 ->where('flatpack.menu.0.name', 'Categories')
+                ->where('flatpack.menu.0.route', url('/flatpack/categories'))
                 ->where('flatpack.menu.1.slug', 'posts')
                 ->where('flatpack.menu.1.name', 'Posts')
+                ->where('flatpack.menu.1.route', url('/flatpack/posts'))
             );
     } finally {
         File::deleteDirectory($tempPath);
