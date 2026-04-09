@@ -9,8 +9,7 @@ import {
 } from '@/components/ui/sidebar';
 import { isSamePath } from '@/lib/utils';
 import type { FlatpackMenuItem } from '@/types/flatpack';
-import { icons } from './icons';
-import { Icon } from './ui/icon';
+import { LucideIconByName } from './icons';
 
 export function NavMain({
     items,
@@ -42,7 +41,7 @@ export function NavMain({
                                 isActive={isSamePath(currentPath, item.route)}
                             >
                                 <Link href={item.route}>
-                                    <Icon iconNode={icons[item.icon]} />
+                                    <LucideIconByName name={item.icon} />
                                     <span>{item.name}</span>
                                 </Link>
                             </SidebarMenuButton>

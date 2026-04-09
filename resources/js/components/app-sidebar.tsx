@@ -60,7 +60,7 @@ export function AppSidebar({
                             slug: 'dashboard',
                             name: 'Dashboard',
                             route: navigation.pages.dashboard,
-                            icon: 'dashboard',
+                            icon: 'layout-dashboard',
                         },
                         ...navigation.menu,
                     ]}
