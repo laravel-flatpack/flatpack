@@ -22,7 +22,7 @@ export function NavMain({
     return (
         <SidebarGroup>
             <SidebarGroupContent className="flex flex-col gap-2">
-                <SidebarMenu className="py-2">
+                <SidebarMenu className="py-2 mb-2">
                     <SidebarMenuItem className="flex items-center gap-2">
                         <SidebarMenuButton
                             tooltip="Quick Create"
