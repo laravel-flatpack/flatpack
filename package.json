@@ -14,7 +14,6 @@
     },
     "devDependencies": {
         "@biomejs/biome": "^2.4.10",
-        "@laravel/vite-plugin-wayfinder": "^0.1.7",
         "@types/node": "^22.13.5",
         "@types/react": "^19.2.0",
         "@types/react-dom": "^19.2.0",

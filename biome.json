@@ -24,9 +24,7 @@
     "files": {
         "includes": [
             "resources/js/**",
-            "resources/css/**",
-            "!!resources/js/routes/**",
-            "!!resources/js/wayfinder/**"
+            "resources/css/**"
         ]
     },
     "formatter": {
