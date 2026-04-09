@@ -63,6 +63,25 @@ final class FlatpackSessionController
         return redirect()->intended(route('flatpack.dashboard'));
     }
 
+    /**
+     * Destroy the Flatpack session using the configured guard.
+     */
+    public function destroy(Request $request): RedirectResponse
+    {
+        $guard = Auth::guard((string) config('flatpack.guard', 'web'));
+
+        if (! $guard instanceof StatefulGuard) {
+            abort(500, 'Flatpack logout requires a stateful guard (e.g. web).');
+        }
+
+        $guard->logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('flatpack.login');
+    }
+
     private function stashFlatpackIntendedUrl(Request $request): void
     {
         $intended = $request->session()->get('url.intended');

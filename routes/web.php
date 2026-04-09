@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Flatpack\Http\Controllers\FlatpackDashboardController;
 use Flatpack\Http\Controllers\FlatpackFormController;
 use Flatpack\Http\Controllers\FlatpackListController;
+use Flatpack\Http\Controllers\FlatpackSessionController;
 use Flatpack\Http\Middleware\EnsureFlatpackAccess;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -23,6 +24,9 @@ Route::get('/example/login', fn () => Inertia::render('example/login'))->name('e
 |
 */
 Route::middleware(['auth:' . config('flatpack.guard', 'web'), EnsureFlatpackAccess::class])->group(function () {
+    /** Logout route */
+    Route::post('logout', [FlatpackSessionController::class, 'destroy'])->name('logout');
+
     /** Dashboard route */
     Route::get('/', [FlatpackDashboardController::class, 'index'])->name('dashboard');
 

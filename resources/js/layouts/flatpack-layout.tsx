@@ -1,5 +1,6 @@
 import { Link, usePage } from '@inertiajs/react';
 import AppLogoIcon from '@/components/app-logo-icon';
+import { Button } from '@/components/ui/button';
 import { getCurrentPath, getRoutePathname } from '@/lib/utils';
 import type { FlatpackPageProps } from '@/types/flatpack';
 
@@ -14,8 +15,9 @@ export default function FlatpackLayout({
         props: { flatpack },
         url,
     } = usePage<FlatpackPageProps>();
-    const menu = flatpack?.menu ?? [];
-    const dashboardRoute = flatpack?.dashboardRoute ?? '/';
+    const { menu, pages } = flatpack;
+    const dashboardRoute = pages.dashboard;
+    const logoutRoute = pages.logout;
     const currentPath = getCurrentPath(url);
 
     return (
@@ -34,6 +36,11 @@ export default function FlatpackLayout({
                     >
                         Dashboard
                     </Link>
+                    <Button asChild variant="ghost" size="sm">
+                        <Link href={logoutRoute} method="post" as="button">
+                            Logout
+                        </Link>
+                    </Button>
                 </div>
             </header>
             {menu.length > 0 && (

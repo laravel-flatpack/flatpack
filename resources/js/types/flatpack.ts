@@ -6,9 +6,12 @@ export type FlatpackMenuItem = {
 };
 
 export type FlatpackPageProps = {
-    flatpack?: {
-        dashboardRoute?: string;
-        loginStoreRoute?: string;
-        menu?: FlatpackMenuItem[];
+    flatpack: {
+        menu: FlatpackMenuItem[];
+        pages: {
+            dashboard: string;
+            login: string;
+            logout: string;
+        };
     };
 };
