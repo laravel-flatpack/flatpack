@@ -60,4 +60,16 @@ final readonly class CompositionValues
 
         return null;
     }
+
+    /**
+     * @param  array<string, mixed>|null  $data
+     */
+    public function sortOrder(?array $data): int
+    {
+        if ($data === null) {
+            return 0;
+        }
+
+        return (int) ($data['sort_order'] ?? 0);
+    }
 }

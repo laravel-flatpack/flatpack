@@ -23,6 +23,7 @@ final readonly class ListController
             'name' => $list->name,
             'model' => $list->model,
             'icon' => $list->icon,
+            'order' => $list->order,
         ]);
     }
 }

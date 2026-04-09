@@ -11,6 +11,7 @@ final readonly class MenuItem
         public string $name,
         public string $route,
         public string $icon = 'menu',
+        public int $sortOrder = 0,
     ) {}
 
     /**

@@ -37,6 +37,7 @@ final readonly class MenuBuilder implements MenuBuilderContract
     private function menuFromConfig(array $items): array
     {
         $result = [];
+        $i = 0;
 
         foreach ($items as $slug => $entry) {
             if (! is_array($entry)) {
@@ -46,6 +47,7 @@ final readonly class MenuBuilder implements MenuBuilderContract
             $name = (string) ($entry['name'] ?? $slug);
             $route = (string) ($entry['route'] ?? '#');
             $icon = (string) ($entry['icon'] ?? 'folder');
+            $sortOrder = $i;
             $key = is_string($slug) ? $slug : (string) $name;
 
             $result[] = new MenuItem(
@@ -53,7 +55,10 @@ final readonly class MenuBuilder implements MenuBuilderContract
                 name: $name,
                 icon: $icon,
                 route: $route,
+                sortOrder: $sortOrder,
             );
+
+            $i++;
         }
 
         return $result;
@@ -85,6 +90,7 @@ final readonly class MenuBuilder implements MenuBuilderContract
             $list = $this->compositions->optional($entry, 'list');
             $displayName = $this->compositionValues->displayName($list);
             $icon = $this->compositionValues->icon($list);
+            $sortOrder = $this->compositionValues->sortOrder($list);
 
             $items[] = new MenuItem(
                 slug: $entry,
@@ -95,10 +101,24 @@ final readonly class MenuBuilder implements MenuBuilderContract
                     ->toString(),
                 icon: $icon ?? 'folder',
                 route: action([ListController::class, 'index'], ['entity' => $entry]),
+                sortOrder: $sortOrder,
             );
         }
 
-        usort($items, fn (MenuItem $a, MenuItem $b): int => strcmp($a->name, $b->name));
+        return $this->sortMenuItems($items);
+    }
+
+    /**
+     * @param  list<MenuItem>  $items
+     * @return list<MenuItem>
+     */
+    private function sortMenuItems(array $items): array
+    {
+        usort($items, function (MenuItem $a, MenuItem $b): int {
+            $byOrder = $a->sortOrder <=> $b->sortOrder;
+
+            return $byOrder !== 0 ? $byOrder : strcasecmp($a->name, $b->name);
+        });
 
         return $items;
     }
