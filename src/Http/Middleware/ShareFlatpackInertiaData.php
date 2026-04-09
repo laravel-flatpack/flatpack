@@ -7,6 +7,7 @@ namespace Flatpack\Http\Middleware;
 use Closure;
 use Flatpack\Flatpack;
 use Flatpack\Http\FlatpackRequest;
+use Flatpack\Http\Resources\FlatpackUser;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
@@ -28,11 +29,13 @@ final readonly class ShareFlatpackInertiaData
                     static fn ($item): array => $item->toArray(),
                     $this->flatpack->menu(),
                 ),
+                'secondaryMenu' => [],
                 'pages' => [
                     'dashboard' => route('flatpack.dashboard'),
                     'login' => route('flatpack.login'),
                     'logout' => route('flatpack.logout'),
                 ],
+                'user' => $request->user() ? FlatpackUser::make($request->user()) : null,
             ]);
         }
 
