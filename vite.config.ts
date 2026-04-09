@@ -1,12 +1,14 @@
+import { execSync } from 'node:child_process';
 import { cpSync, existsSync, mkdirSync, rmSync } from 'node:fs';
 import { basename, dirname, isAbsolute, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { wayfinder } from '@laravel/vite-plugin-wayfinder';
 import inertia from '@inertiajs/vite';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import laravel from 'laravel-vite-plugin';
-import { defineConfig, loadEnv  } from 'vite';
-import type {Plugin} from 'vite';
+import { defineConfig, loadEnv } from 'vite';
+import type { Plugin } from 'vite';
 
 const packageRoot = dirname(fileURLToPath(import.meta.url));
 
@@ -89,6 +91,17 @@ export default defineConfig(({ mode, command }) => {
         },
     });
 
+    const wayfinderPostprocess = (): Plugin => ({
+        name: 'flatpack-wayfinder-postprocess',
+        enforce: 'pre',
+        buildStart() {
+            execSync('node scripts/wayfinder-postprocess.mjs', {
+                cwd: packageRoot,
+                stdio: 'inherit',
+            });
+        },
+    });
+
     const syncBuildToPackage = (): Plugin => ({
         name: 'flatpack-sync-build-to-package',
         apply: 'build',
@@ -119,6 +132,19 @@ export default defineConfig(({ mode, command }) => {
         // Without this, Rollup can emit dynamic imports against /build/... while Laravel serves from vendor/flatpack/build.
         base: command === 'build' ? flatpackPublicBase : '',
         plugins: [
+            wayfinder({
+                path: 'resources/js',
+                command: `php ${resolve(packageRoot, 'vendor/bin/testbench')} wayfinder:generate`,
+                actions: false,
+                routes: true,
+                formVariants: true,
+                patterns: [
+                    'routes/**/*.php',
+                    'src/**/Http/**/*.php',
+                    'config/flatpack.php',
+                ],
+            }),
+            wayfinderPostprocess(),
             cleanFlatpackOutDirs(),
             laravel({
                 input: ['resources/css/app.css', 'resources/js/app.tsx'],

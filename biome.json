@@ -22,7 +22,12 @@
         }
     },
     "files": {
-        "includes": ["resources/js/**", "resources/css/**"]
+        "includes": [
+            "resources/js/**",
+            "resources/css/**",
+            "!!resources/js/routes/**",
+            "!!resources/js/wayfinder/**"
+        ]
     },
     "formatter": {
         "enabled": true,
