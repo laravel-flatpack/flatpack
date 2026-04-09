@@ -1,3 +1,4 @@
+import { router } from '@inertiajs/react';
 import {
     BellIcon,
     CircleUserRoundIcon,
@@ -21,15 +22,14 @@ import {
     SidebarMenuItem,
     useSidebar,
 } from '@/components/ui/sidebar';
+import type { FlatpackUser } from '@/types/flatpack';
 
 export function NavUser({
     user,
+    logoutRoute,
 }: {
-    user: {
-        name: string;
-        email: string;
-        avatar: string;
-    };
+    user: FlatpackUser;
+    logoutRoute: string;
 }) {
     const { isMobile } = useSidebar();
 
@@ -105,9 +105,11 @@ export function NavUser({
                             </DropdownMenuItem>
                         </DropdownMenuGroup>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem>
+                        <DropdownMenuItem
+                            onClick={() => router.post(logoutRoute)}
+                        >
                             <LogOutIcon />
-                            Log out
+                            Logout
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

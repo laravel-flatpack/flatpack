@@ -1,7 +1,9 @@
-import { Link, usePage } from '@inertiajs/react';
-import AppLogoIcon from '@/components/app-logo-icon';
-import { Button } from '@/components/ui/button';
-import { getCurrentPath, getRoutePathname } from '@/lib/utils';
+import { usePage } from '@inertiajs/react';
+import { TooltipProvider } from '@radix-ui/react-tooltip';
+import { AppSidebar } from '@/components/app-sidebar';
+import { SiteHeader } from '@/components/site-header';
+import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
+import { getCurrentPath } from '@/lib/utils';
 import type { FlatpackPageProps } from '@/types/flatpack';
 
 export default function FlatpackLayout({
@@ -15,56 +17,36 @@ export default function FlatpackLayout({
         props: { flatpack },
         url,
     } = usePage<FlatpackPageProps>();
-    const { menu, pages } = flatpack;
-    const dashboardRoute = pages.dashboard;
-    const logoutRoute = pages.logout;
+    const { menu, secondaryMenu, pages, user } = flatpack;
+    const navigation = { menu, secondaryMenu, pages, user };
     const currentPath = getCurrentPath(url);
 
     return (
-        <div className="flex min-h-svh flex-col bg-background">
-            <header className="border-b border-border bg-card">
-                <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-4">
-                    <div className="flex items-center gap-3">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-md">
-                            <AppLogoIcon className="size-9 fill-current text-[var(--foreground)] dark:text-white" />
+        <SidebarProvider
+            style={
+                {
+                    '--sidebar-width': 'calc(var(--spacing) * 72)',
+                    '--header-height': 'calc(var(--spacing) * 12)',
+                } as React.CSSProperties
+            }
+        >
+            <TooltipProvider delayDuration={0}>
+                <AppSidebar
+                    variant="inset"
+                    navigation={navigation}
+                    currentPath={currentPath}
+                />
+                <SidebarInset>
+                    <SiteHeader title={title} />
+                    <div className="flex flex-1 flex-col">
+                        <div className="@container/main flex flex-1 flex-col gap-2">
+                            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 lg:px-6">
+                                {children}
+                            </div>
                         </div>
-                        <span className="font-medium">{title}</span>
                     </div>
-                    <Link
-                        href={dashboardRoute}
-                        className="text-sm text-muted-foreground hover:text-foreground"
-                    >
-                        Dashboard
-                    </Link>
-                    <Button asChild variant="ghost" size="sm">
-                        <Link href={logoutRoute} method="post" as="button">
-                            Logout
-                        </Link>
-                    </Button>
-                </div>
-            </header>
-            {menu.length > 0 && (
-                <nav className="border-b border-border bg-card/60">
-                    <div className="mx-auto flex h-11 max-w-6xl items-center gap-4 overflow-x-auto px-4">
-                        {menu.map((item) => (
-                            <Link
-                                key={item.slug}
-                                href={item.route}
-                                className={
-                                    currentPath === getRoutePathname(item.route)
-                                        ? 'text-sm text-foreground'
-                                        : 'text-sm text-muted-foreground hover:text-foreground'
-                                }
-                            >
-                                {item.name}
-                            </Link>
-                        ))}
-                    </div>
-                </nav>
-            )}
-            <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col p-4 md:p-6">
-                {children}
-            </main>
-        </div>
+                </SidebarInset>
+            </TooltipProvider>
+        </SidebarProvider>
     );
 }

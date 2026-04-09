@@ -1,5 +1,5 @@
-import { CirclePlusIcon, MailIcon } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Link } from '@inertiajs/react';
+import { CirclePlusIcon } from 'lucide-react';
 import {
     SidebarGroup,
     SidebarGroupContent,
@@ -7,20 +7,22 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { isSamePath } from '@/lib/utils';
+import type { FlatpackMenuItem } from '@/types/flatpack';
+import { icons } from './icons';
+import { Icon } from './ui/icon';
 
 export function NavMain({
     items,
+    currentPath,
 }: {
-    items: {
-        title: string;
-        url: string;
-        icon?: React.ReactNode;
-    }[];
+    items: FlatpackMenuItem[];
+    currentPath: string;
 }) {
     return (
         <SidebarGroup>
             <SidebarGroupContent className="flex flex-col gap-2">
-                <SidebarMenu>
+                <SidebarMenu className="py-2">
                     <SidebarMenuItem className="flex items-center gap-2">
                         <SidebarMenuButton
                             tooltip="Quick Create"
@@ -29,22 +31,20 @@ export function NavMain({
                             <CirclePlusIcon />
                             <span>Quick Create</span>
                         </SidebarMenuButton>
-                        <Button
-                            size="icon"
-                            className="size-8 group-data-[collapsible=icon]:opacity-0"
-                            variant="outline"
-                        >
-                            <MailIcon />
-                            <span className="sr-only">Inbox</span>
-                        </Button>
                     </SidebarMenuItem>
                 </SidebarMenu>
                 <SidebarMenu>
                     {items.map((item) => (
-                        <SidebarMenuItem key={item.title}>
-                            <SidebarMenuButton tooltip={item.title}>
-                                {item.icon}
-                                <span>{item.title}</span>
+                        <SidebarMenuItem key={item.slug}>
+                            <SidebarMenuButton
+                                tooltip={item.name}
+                                asChild
+                                isActive={isSamePath(currentPath, item.route)}
+                            >
+                                <Link href={item.route}>
+                                    <Icon iconNode={icons[item.icon]} />
+                                    <span>{item.name}</span>
+                                </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                     ))}

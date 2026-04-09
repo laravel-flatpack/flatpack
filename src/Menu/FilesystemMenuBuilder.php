@@ -44,14 +44,14 @@ final readonly class FilesystemMenuBuilder implements MenuBuilder
 
             $name = (string) ($entry['name'] ?? $slug);
             $route = (string) ($entry['route'] ?? '#');
-            $icon = (string) ($entry['icon'] ?? 'menu');
+            $icon = (string) ($entry['icon'] ?? 'folder');
             $key = is_string($slug) ? $slug : (string) $name;
 
             $result[] = new MenuItem(
                 slug: $key,
                 name: $name,
-                route: $route,
                 icon: $icon,
+                route: $route,
             );
         }
 
@@ -81,13 +81,11 @@ final readonly class FilesystemMenuBuilder implements MenuBuilder
                 continue;
             }
 
-            $name = $this->resolveEntityName($entry);
-
             $items[] = new MenuItem(
                 slug: $entry,
-                name: Str::of($name)->plural()->title()->toString(),
+                name: $this->resolveEntityName($entry),
+                icon: $this->resolveEntityIcon($entry),
                 route: action([FlatpackListController::class, 'index'], ['entity' => $entry]),
-                icon: 'menu',
             );
         }
 
@@ -99,23 +97,34 @@ final readonly class FilesystemMenuBuilder implements MenuBuilder
     private function resolveEntityName(string $slug): string
     {
         try {
-            $data = $this->compositionLoader->load($slug, 'form');
+            $data = $this->compositionLoader->load($slug, 'list');
 
             if (isset($data['name']) && is_string($data['name'])) {
                 return $data['name'];
             }
         } catch (CompositionNotFoundException) {
-            try {
-                $data = $this->compositionLoader->load($slug, 'list');
-
-                if (isset($data['name']) && is_string($data['name'])) {
-                    return $data['name'];
-                }
-            } catch (CompositionNotFoundException) {
-                // fall through
-            }
+            //
         }
 
-        return ucfirst(str_replace(['-', '_'], ' ', $slug));
+        return Str::of($slug)
+            ->replace(['-', '_'], ' ')
+            ->title()
+            ->plural()
+            ->toString();
+    }
+
+    private function resolveEntityIcon(string $slug): string
+    {
+        try {
+            $data = $this->compositionLoader->load($slug, 'list');
+
+            if (isset($data['icon']) && is_string($data['icon'])) {
+                return $data['icon'];
+            }
+        } catch (CompositionNotFoundException) {
+            //
+        }
+
+        return 'folder';
     }
 }

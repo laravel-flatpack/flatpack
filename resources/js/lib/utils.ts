@@ -19,11 +19,20 @@ export function getCurrentPath(url: string): string {
     return url.split('?')[0];
 }
 
-export function getRoutePathname(route: string): string {
-    return new URL(
-        route,
+export function normalizePathname(value: string): string {
+    const fallbackOrigin =
         typeof window !== 'undefined'
             ? window.location.origin
-            : 'http://localhost',
-    ).pathname;
+            : 'http://localhost';
+    const pathname = new URL(value, fallbackOrigin).pathname;
+
+    return pathname.replace(/\/+$/, '') || '/';
+}
+
+export function getRoutePathname(route: string): string {
+    return normalizePathname(route);
+}
+
+export function isSamePath(a: string, b: string): boolean {
+    return normalizePathname(a) === normalizePathname(b);
 }

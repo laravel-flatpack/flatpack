@@ -1,23 +1,7 @@
-import {
-    CameraIcon,
-    ChartBarIcon,
-    CircleHelpIcon,
-    CommandIcon,
-    DatabaseIcon,
-    FileChartColumnIcon,
-    FileIcon,
-    FileTextIcon,
-    FolderIcon,
-    LayoutDashboardIcon,
-    ListIcon,
-    SearchIcon,
-    Settings2Icon,
-    UsersIcon,
-} from 'lucide-react';
-import type * as React from 'react';
-import { NavDocuments } from '@/components/nav-documents';
+import { CommandIcon } from 'lucide-react';
 import { NavMain } from '@/components/nav-main';
 import { NavSecondary } from '@/components/nav-secondary';
+import { NavSettings } from '@/components/nav-settings';
 import { NavUser } from '@/components/nav-user';
 import {
     Sidebar,
@@ -25,154 +9,81 @@ import {
     SidebarFooter,
     SidebarHeader,
     SidebarMenu,
-    SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import type { FlatpackMenuItem, FlatpackUser } from '@/types/flatpack';
 
-const data = {
-    user: {
-        name: 'shadcn',
-        email: 'm@example.com',
-        avatar: '/avatars/shadcn.jpg',
-    },
-    navMain: [
-        {
-            title: 'Dashboard',
-            url: '#',
-            icon: <LayoutDashboardIcon />,
-        },
-        {
-            title: 'Lifecycle',
-            url: '#',
-            icon: <ListIcon />,
-        },
-        {
-            title: 'Analytics',
-            url: '#',
-            icon: <ChartBarIcon />,
-        },
-        {
-            title: 'Projects',
-            url: '#',
-            icon: <FolderIcon />,
-        },
-        {
-            title: 'Team',
-            url: '#',
-            icon: <UsersIcon />,
-        },
-    ],
-    navClouds: [
-        {
-            title: 'Capture',
-            icon: <CameraIcon />,
-            isActive: true,
-            url: '#',
-            items: [
-                {
-                    title: 'Active Proposals',
-                    url: '#',
-                },
-                {
-                    title: 'Archived',
-                    url: '#',
-                },
-            ],
-        },
-        {
-            title: 'Proposal',
-            icon: <FileTextIcon />,
-            url: '#',
-            items: [
-                {
-                    title: 'Active Proposals',
-                    url: '#',
-                },
-                {
-                    title: 'Archived',
-                    url: '#',
-                },
-            ],
-        },
-        {
-            title: 'Prompts',
-            icon: <FileTextIcon />,
-            url: '#',
-            items: [
-                {
-                    title: 'Active Proposals',
-                    url: '#',
-                },
-                {
-                    title: 'Archived',
-                    url: '#',
-                },
-            ],
-        },
-    ],
-    navSecondary: [
-        {
-            title: 'Settings',
-            url: '#',
-            icon: <Settings2Icon />,
-        },
-        {
-            title: 'Get Help',
-            url: '#',
-            icon: <CircleHelpIcon />,
-        },
-        {
-            title: 'Search',
-            url: '#',
-            icon: <SearchIcon />,
-        },
-    ],
-    documents: [
-        {
-            name: 'Data Library',
-            url: '#',
-            icon: <DatabaseIcon />,
-        },
-        {
-            name: 'Reports',
-            url: '#',
-            icon: <FileChartColumnIcon />,
-        },
-        {
-            name: 'Word Assistant',
-            url: '#',
-            icon: <FileIcon />,
-        },
-    ],
-};
-
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar({
+    variant,
+    navigation,
+    currentPath,
+}: {
+    variant: 'sidebar' | 'floating' | 'inset';
+    navigation: {
+        menu: FlatpackMenuItem[];
+        secondaryMenu: FlatpackMenuItem[];
+        pages: {
+            dashboard: string;
+            login: string;
+            logout: string;
+        };
+        user: FlatpackUser | null;
+    };
+    currentPath: string;
+}) {
     return (
-        <Sidebar collapsible="offcanvas" {...props}>
+        <Sidebar
+            variant={variant}
+            collapsible="offcanvas"
+            navigation={navigation.menu}
+            secondaryNavigation={navigation.secondaryMenu}
+        >
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <SidebarMenuButton
-                            asChild
-                            className="data-[slot=sidebar-menu-button]:p-1.5!"
+                        <a
+                            href={navigation.pages.dashboard}
+                            className="flex items-center gap-2 py-1 data-[slot=sidebar-menu-button]:p-1.5!"
                         >
-                            <a href="/">
-                                <CommandIcon className="size-5!" />
-                                <span className="text-base font-semibold">
-                                    Acme Inc.
-                                </span>
-                            </a>
-                        </SidebarMenuButton>
+                            <CommandIcon className="size-5!" />
+                            <span className="text-base font-semibold">
+                                Flatpack
+                            </span>
+                        </a>
                     </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarHeader>
             <SidebarContent>
-                <NavMain items={data.navMain} />
-                <NavDocuments items={data.documents} />
-                <NavSecondary items={data.navSecondary} className="mt-auto" />
+                <NavMain
+                    items={[
+                        {
+                            slug: 'dashboard',
+                            name: 'Dashboard',
+                            route: navigation.pages.dashboard,
+                            icon: 'dashboard',
+                        },
+                        ...navigation.menu,
+                    ]}
+                    currentPath={currentPath}
+                />
+                <NavSecondary
+                    items={navigation.secondaryMenu}
+                    currentPath={currentPath}
+                    label="Links"
+                />
+                <NavSettings
+                    items={[]}
+                    currentPath={currentPath}
+                    className="mt-auto"
+                />
             </SidebarContent>
             <SidebarFooter>
-                <NavUser user={data.user} />
+                {navigation.user && (
+                    <NavUser
+                        user={navigation.user}
+                        logoutRoute={navigation.pages.logout}
+                    />
+                )}
             </SidebarFooter>
         </Sidebar>
     );

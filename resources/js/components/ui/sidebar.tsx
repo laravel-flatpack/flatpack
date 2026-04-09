@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/tooltip';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
+import type { FlatpackMenuItem } from '@/types/flatpack';
 
 const SIDEBAR_COOKIE_NAME = 'sidebar_state';
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
@@ -150,6 +151,8 @@ function SidebarProvider({
 }
 
 function Sidebar({
+    navigation,
+    secondaryNavigation,
     side = 'left',
     variant = 'sidebar',
     collapsible = 'offcanvas',
@@ -158,6 +161,8 @@ function Sidebar({
     dir,
     ...props
 }: React.ComponentProps<'div'> & {
+    navigation: FlatpackMenuItem[];
+    secondaryNavigation: FlatpackMenuItem[];
     side?: 'left' | 'right';
     variant?: 'sidebar' | 'floating' | 'inset';
     collapsible?: 'offcanvas' | 'icon' | 'none';
