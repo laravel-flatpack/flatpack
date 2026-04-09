@@ -3,21 +3,27 @@ import FlatpackLayout from '@/layouts/flatpack-layout';
 import type { FlatpackListPageProps } from '@/types/pages/flatpack';
 
 export default function FlatpackListPage({ entity }: FlatpackListPageProps) {
+    const pageTitle = entity ? `${entity} list` : '';
+
     return (
         <>
-            <Head title={`${entity} list`} />
+            {entity ? <Head title={pageTitle} /> : null}
             <div className="flex flex-col gap-2">
-                <h1 className="text-2xl font-semibold tracking-tight">
-                    {entity}
-                </h1>
+                {entity ? (
+                    <h1 className="text-2xl font-semibold tracking-tight">
+                        {entity}
+                    </h1>
+                ) : null}
                 <p className="text-muted-foreground">
-                    List view placeholder for the {entity} entity.
+                    {entity
+                        ? `List view placeholder for the ${entity} entity.`
+                        : 'List view placeholder.'}
                 </p>
             </div>
         </>
     );
 }
 
-FlatpackListPage.layout = (page: React.ReactNode) => (
-    <FlatpackLayout title="Flatpack admin">{page}</FlatpackLayout>
-);
+FlatpackListPage.layout = (page: React.ReactElement<FlatpackListPageProps>) => {
+    return <FlatpackLayout>{page}</FlatpackLayout>;
+};

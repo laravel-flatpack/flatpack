@@ -1,5 +1,5 @@
 export type FlatpackListPageProps = {
-    entity: string;
+    entity?: string;
 };
 
 export type FlatpackFormPageProps = {

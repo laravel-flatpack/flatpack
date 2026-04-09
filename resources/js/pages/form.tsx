@@ -24,6 +24,6 @@ export default function FlatpackFormPage({
     );
 }
 
-FlatpackFormPage.layout = (page: React.ReactNode) => (
-    <FlatpackLayout title="Flatpack admin">{page}</FlatpackLayout>
+FlatpackFormPage.layout = (page: React.ReactElement<FlatpackFormPageProps>) => (
+    <FlatpackLayout>{page}</FlatpackLayout>
 );

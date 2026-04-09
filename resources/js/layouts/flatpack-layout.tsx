@@ -7,7 +7,7 @@ import { getCurrentPath } from '@/lib/utils';
 import type { FlatpackPageProps } from '@/types/flatpack';
 
 export default function FlatpackLayout({
-    title = 'Flatpack',
+    title,
     children,
 }: {
     title?: string;
