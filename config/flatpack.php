@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Flatpack\Http\Controllers\FlatpackSessionController;
+use Flatpack\Http\Controllers\SessionController;
 
 return [
     /*
@@ -47,7 +47,7 @@ return [
     |
     */
     'login' => [
-        'store' => [FlatpackSessionController::class, 'store'],
+        'store' => [SessionController::class, 'store'],
         'throttle' => env('FLATPACK_LOGIN_THROTTLE', 'throttle:5,1'),
     ],
 
@@ -98,7 +98,7 @@ return [
     |--------------------------------------------------------------------------
     |
     | When non-empty, replaces filesystem-derived menu. Each item:
-    | 'slug' => ['name' => '', 'route' => '', 'icon' => '']
+    | 'slug' => ['name' => '', 'route' => '', 'icon' => '', 'sort_order' => 99]
     |
     */
     'menu' => [],
