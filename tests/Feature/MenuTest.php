@@ -30,14 +30,14 @@ test('flatpack shares menu from config override', function () {
         );
 });
 
-test('flatpack builds default menu from filesystem path when no config override is set', function () {
+test('flatpack builds default menu from filesystem path when menu override is null', function () {
     $tempPath = sys_get_temp_dir() . '/flatpack-menu-' . uniqid('', true);
 
     try {
         File::ensureDirectoryExists($tempPath . '/posts');
         File::ensureDirectoryExists($tempPath . '/categories');
         config()->set('flatpack.path', $tempPath);
-        config()->set('flatpack.menu', []);
+        config()->set('flatpack.menu', null);
 
         $user = User::factory()->create();
 
@@ -55,4 +55,16 @@ test('flatpack builds default menu from filesystem path when no config override 
     } finally {
         File::deleteDirectory($tempPath);
     }
+});
+
+test('flatpack supports an explicit empty menu override', function () {
+    config()->set('flatpack.menu', []);
+
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->get(route('flatpack.dashboard'))
+        ->assertInertia(fn ($page) => $page
+            ->where('flatpack.menu', [])
+        );
 });

@@ -4,6 +4,11 @@ export type FlatpackMenuItem = {
     icon: string;
 };
 
+export type FlatpackSecondaryMenu = {
+    label?: string;
+    items?: FlatpackMenuItem[];
+};
+
 export type FlatpackUser = {
     name: string;
     email: string;
@@ -12,16 +17,15 @@ export type FlatpackUser = {
 
 export type FlatpackPageProps = {
     flatpack: {
-        menu: FlatpackMenuItem[];
-        secondaryMenu: {
-            label?: string;
-            items?: FlatpackMenuItem[];
-        } | null;
+        quickAction?: FlatpackMenuItem;
+        menu: FlatpackMenuItem[] | null;
+        secondaryMenu?: FlatpackSecondaryMenu;
+        bottomMenu?: FlatpackSecondaryMenu;
         pages: {
             dashboard: string;
             login: string;
             logout: string;
         };
-        user: FlatpackUser | null;
+        user?: FlatpackUser;
     };
 };

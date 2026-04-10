@@ -11,7 +11,11 @@ import {
     SidebarMenu,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import type { FlatpackMenuItem, FlatpackUser } from '@/types/flatpack';
+import type {
+    FlatpackMenuItem,
+    FlatpackSecondaryMenu,
+    FlatpackUser,
+} from '@/types/flatpack';
 
 export function AppSidebar({
     variant,
@@ -20,20 +24,21 @@ export function AppSidebar({
 }: {
     variant: 'sidebar' | 'floating' | 'inset';
     navigation: {
-        menu: FlatpackMenuItem[];
-        secondaryMenu: {
-            label?: string;
-            items?: FlatpackMenuItem[];
-        } | null;
+        quickAction?: FlatpackMenuItem;
+        menu: FlatpackMenuItem[] | null;
+        secondaryMenu?: FlatpackSecondaryMenu;
+        bottomMenu?: FlatpackSecondaryMenu;
         pages: {
             dashboard: string;
             login: string;
             logout: string;
         };
-        user: FlatpackUser | null;
+        user?: FlatpackUser;
     };
     currentPath: string;
 }) {
+    const mainMenuItems = Array.isArray(navigation.menu) ? navigation.menu : [];
+
     return (
         <Sidebar variant={variant} collapsible="offcanvas">
             <SidebarHeader>
@@ -53,13 +58,14 @@ export function AppSidebar({
             </SidebarHeader>
             <SidebarContent>
                 <NavMain
+                    quickAction={navigation.quickAction}
                     items={[
                         {
                             name: 'Dashboard',
                             route: navigation.pages.dashboard,
                             icon: 'layout-dashboard',
                         },
-                        ...navigation.menu,
+                        ...mainMenuItems,
                     ]}
                     currentPath={currentPath}
                 />
@@ -69,7 +75,8 @@ export function AppSidebar({
                     currentPath={currentPath}
                 />
                 <NavSettings
-                    items={[]}
+                    label={navigation.bottomMenu?.label}
+                    items={navigation.bottomMenu?.items}
                     currentPath={currentPath}
                     className="mt-auto"
                 />

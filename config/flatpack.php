@@ -7,7 +7,7 @@ use Flatpack\Http\Controllers\SessionController;
 return [
     /*
     |--------------------------------------------------------------------------
-    | Composition path
+    | Composition files path
     |--------------------------------------------------------------------------
     |
     | Directory containing entity folders (each with form.yaml / list.yaml).
@@ -17,8 +17,11 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Route prefix
+    | Dashboard routes prefix
     |--------------------------------------------------------------------------
+    |
+    | The prefix for the Flatpack dashboard routes. Default: 'flatpack'.
+    |
     */
     'prefix' => 'flatpack',
 
@@ -34,16 +37,13 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Login (POST /{prefix}/login)
+    | Login route configuration
     |--------------------------------------------------------------------------
     |
     | "store" is the action that processes credentials. By default Flatpack uses
     | session authentication (Auth::attempt). Point this to Fortify's
     | AuthenticatedSessionController@store if you use Fortify, or any invokable
     | [Controller::class, 'method'] your app provides.
-    |
-    | Example (Fortify):
-    | 'store' => [\Laravel\Fortify\Http\Controllers\AuthenticatedSessionController::class, 'store'],
     |
     */
     'login' => [
@@ -94,14 +94,38 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Quick action
+    |--------------------------------------------------------------------------
+    |
+    | You can define the quick action button at the top of the sidebar.
+    | Set it to null to disable it.
+    |
+    | Example:
+    | 'quick_action' => [
+    |     'name' => 'Create Post',
+    |     'route' => '/flatpack/posts/create',
+    |     'icon' => 'plus'
+    | ],
+    |
+    */
+    'quick_action' => null,
+
+    /*
+    |--------------------------------------------------------------------------
     | Menu override
     |--------------------------------------------------------------------------
     |
-    | When non-empty, replaces filesystem-derived menu. Each item:
-    | 'slug' => ['name' => '', 'route' => '', 'icon' => '']
+    | Set to null to use filesystem-derived menu.
+    |
+    | When set, replaces filesystem-derived menu.
+    | Example:
+    | 'menu' => [
+    |     ['name' => 'Page Name', 'route' => '/path/to/page', 'icon' => 'book'],
+    |     ['name' => 'Page Name 2', 'route' => '/path/to/page-2', 'icon' => 'folder'],
+    | ],
     |
     */
-    'menu' => [],
+    'menu' => null,
 
     /*
     |--------------------------------------------------------------------------
@@ -115,10 +139,31 @@ return [
     | 'secondary_menu' => [
     |     'label' => 'Secondary Menu',
     |     'items' => [
-    |         ['name' => 'Item 1', 'route' => 'flatpack.item1.index', 'icon' => 'book'],
-    |         ['name' => 'Item 2', 'route' => 'flatpack.item2.index', 'icon' => 'folder'],
+    |         ['name' => 'Item 1', 'route' => '/path/to/page-1', 'icon' => 'book'],
+    |         ['name' => 'Item 2', 'route' => '/path/to/page-2', 'icon' => 'folder'],
     |     ],
     | ],
+    |
     */
     'secondary_menu' => null,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Bottom menu
+    |--------------------------------------------------------------------------
+    |
+    | You can define a bottom menu with a list of items.
+    | This menu is displayed in the sidebar at the bottom.
+    |
+    | Example:
+    | 'bottom_menu' => [
+    |     'label' => 'Settings',
+    |     'items' => [
+    |         ['name' => 'Item 1', 'route' => '/path/to/page-1', 'icon' => 'settings'],
+    |         ['name' => 'Item 2', 'route' => '/path/to/page-2', 'icon' => 'user'],
+    |     ],
+    | ],
+    |
+    */
+    'bottom_menu' => null,
 ];

@@ -1,41 +1,50 @@
 'use client';
 
+import { Link } from '@inertiajs/react';
 import type * as React from 'react';
 import {
     SidebarGroup,
     SidebarGroupContent,
+    SidebarGroupLabel,
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import type { FlatpackMenuItem } from '@/types/flatpack';
+import { LucideIconByName } from './icons';
 
 export function NavSettings({
+    label,
     items,
     currentPath,
     ...props
 }: {
-    items: {
-        title: string;
-        url: string;
-        icon: React.ReactNode;
-    }[];
+    label?: string;
+    items?: FlatpackMenuItem[];
     currentPath: string;
 } & React.ComponentPropsWithoutRef<typeof SidebarGroup>) {
+    if (items && items.length === 0) {
+        return null;
+    }
+
     return (
         <SidebarGroup {...props}>
             <SidebarGroupContent>
-                <SidebarMenu>
-                    {items.map((item) => (
-                        <SidebarMenuItem key={item.title}>
-                            <SidebarMenuButton asChild>
-                                <a href={item.url}>
-                                    {item.icon}
-                                    <span>{item.title}</span>
-                                </a>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                    ))}
-                </SidebarMenu>
+                {label && <SidebarGroupLabel>{label}</SidebarGroupLabel>}
+                {items && (
+                    <SidebarMenu>
+                        {items.map((item) => (
+                            <SidebarMenuItem key={item.route}>
+                                <SidebarMenuButton asChild>
+                                    <Link href={item.route}>
+                                        <LucideIconByName name={item.icon} />
+                                        <span>{item.name}</span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        ))}
+                    </SidebarMenu>
+                )}
             </SidebarGroupContent>
         </SidebarGroup>
     );

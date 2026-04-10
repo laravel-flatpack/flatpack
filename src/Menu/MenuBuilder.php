@@ -23,7 +23,11 @@ final readonly class MenuBuilder implements MenuBuilderContract
     {
         $override = $this->config->get('flatpack.menu');
 
-        if (is_array($override) && $override !== []) {
+        if ($override === null) {
+            return $this->menuFromFilesystem();
+        }
+
+        if (is_array($override)) {
             return $this->menuFromConfig($override);
         }
 

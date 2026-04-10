@@ -25,11 +25,13 @@ final readonly class ShareFlatpackInertiaData
     {
         if (FlatpackRequest::matches($request)) {
             Inertia::share('flatpack', [
+                'quickAction' => config('flatpack.quick_action'),
                 'menu' => array_map(
                     static fn ($item): array => $item->toArray(),
                     $this->flatpack->menu(),
                 ),
                 'secondaryMenu' => config('flatpack.secondary_menu'),
+                'bottomMenu' => config('flatpack.bottom_menu'),
                 'pages' => [
                     'dashboard' => route('flatpack.dashboard'),
                     'login' => route('flatpack.login'),
