@@ -40,13 +40,6 @@ const inputGroupAddonVariants = cva(
     },
 );
 
-function focusInputFromAddon(e: React.SyntheticEvent<HTMLDivElement>) {
-    if ((e.target as HTMLElement).closest('button')) {
-        return;
-    }
-    e.currentTarget.parentElement?.querySelector('input')?.focus();
-}
-
 function InputGroupAddon({
     className,
     align = 'inline-start',
@@ -58,13 +51,11 @@ function InputGroupAddon({
             data-slot="input-group-addon"
             data-align={align}
             className={cn(inputGroupAddonVariants({ align }), className)}
-            onClick={focusInputFromAddon}
-            onKeyDown={(e) => {
-                if (e.key !== 'Enter' && e.key !== ' ') {
+            onClick={(e) => {
+                if ((e.target as HTMLElement).closest('button')) {
                     return;
                 }
-                e.preventDefault();
-                focusInputFromAddon(e);
+                e.currentTarget.parentElement?.querySelector('input')?.focus();
             }}
             {...props}
         />

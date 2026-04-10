@@ -1,8 +1,8 @@
 import { usePage } from '@inertiajs/react';
-import { TooltipProvider } from '@radix-ui/react-tooltip';
 import { AppSidebar } from '@/components/app-sidebar';
 import { SiteHeader } from '@/components/site-header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { getCurrentPath } from '@/lib/utils';
 import type { FlatpackPageProps } from '@/types/flatpack';
 

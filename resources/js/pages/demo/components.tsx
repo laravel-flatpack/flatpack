@@ -1,17 +1,20 @@
 import { Head, usePage } from '@inertiajs/react';
-import { type ReactNode, useMemo } from 'react';
+import { type ReactNode, useMemo, useState } from 'react';
 import {
+    BlockEditorField,
     CheckboxField,
     ComboboxField,
     type ComboboxObjectItem,
     DatePickerField,
     DateRangePickerField,
+    RichTextField,
     SelectField,
     SwitchField,
     TextareaField,
     TextField,
     TimePickerField,
 } from '@/components/form-fields';
+import DemoLayout from '@/layouts/demo-layout';
 
 /** Slugs for `?type=` (`toggle` → `switch`). Combobox multi: `?type=combobox&multiple=true`. */
 export const demoComponentTypes = [
@@ -24,6 +27,8 @@ export const demoComponentTypes = [
     'time-picker',
     'checkbox',
     'switch',
+    'rich-text',
+    'block-editor',
 ] as const;
 
 export type DemoComponentType = (typeof demoComponentTypes)[number];
@@ -46,6 +51,8 @@ const titles: Record<NormalizedType, string> = {
     'time-picker': 'Time picker',
     checkbox: 'Checkbox',
     switch: 'Switch',
+    'rich-text': 'Rich Editor',
+    'block-editor': 'Block Editor',
 };
 
 function normalizeType(raw: string | null): NormalizedType | null {
@@ -207,6 +214,59 @@ function DemoSwitch() {
     );
 }
 
+function DemoRichText() {
+    const [exported, setExported] = useState('[]');
+
+    return (
+        <div className="flex flex-col gap-4">
+            <RichTextField
+                id="demo-rich-text"
+                label="Rich Editor"
+                placeholder="Start typing or type / for blocks…"
+                showFixedToolbar
+                helperText="Top toolbar + slash menu; same JSON model as Block Editor. Media uses local blob URLs until you wire uploads."
+                onValueChange={(value) =>
+                    setExported(JSON.stringify(value, null, 2))
+                }
+            />
+            <details className="text-sm">
+                <summary className="cursor-pointer text-muted-foreground">
+                    Exported JSON (Slate value)
+                </summary>
+                <pre className="mt-2 max-h-64 overflow-auto rounded-md border border-border bg-muted/40 p-3 font-mono text-xs">
+                    {exported}
+                </pre>
+            </details>
+        </div>
+    );
+}
+
+function DemoBlockEditor() {
+    const [exported, setExported] = useState('[]');
+
+    return (
+        <div className="flex flex-col gap-4">
+            <BlockEditorField
+                id="demo-block-editor"
+                label="Block Editor"
+                placeholder="Type / for blocks, or hover the gutter for + and drag…"
+                helperText="Notion-style: drag blocks, + inserts a paragraph below, right-click for block menu. No top toolbar."
+                onValueChange={(value) =>
+                    setExported(JSON.stringify(value, null, 2))
+                }
+            />
+            <details className="text-sm">
+                <summary className="cursor-pointer text-muted-foreground">
+                    Exported JSON (Slate value)
+                </summary>
+                <pre className="mt-2 max-h-64 overflow-auto rounded-md border border-border bg-muted/40 p-3 font-mono text-xs">
+                    {exported}
+                </pre>
+            </details>
+        </div>
+    );
+}
+
 const demos: Record<NormalizedType, () => ReactNode> = {
     text: DemoText,
     textarea: DemoTextarea,
@@ -217,6 +277,8 @@ const demos: Record<NormalizedType, () => ReactNode> = {
     'time-picker': DemoTimePicker,
     checkbox: DemoCheckbox,
     switch: DemoSwitch,
+    'rich-text': DemoRichText,
+    'block-editor': DemoBlockEditor,
 };
 
 const allTypesOrdered: NormalizedType[] = [
@@ -229,9 +291,11 @@ const allTypesOrdered: NormalizedType[] = [
     'time-picker',
     'checkbox',
     'switch',
+    'rich-text',
+    'block-editor',
 ];
 
-export default function DemoComponents() {
+function DemoComponents() {
     const { type: rawType } = usePage<PageProps>().props;
 
     const normalized = useMemo(() => normalizeType(rawType ?? null), [rawType]);
@@ -320,3 +384,9 @@ export default function DemoComponents() {
         </div>
     );
 }
+
+DemoComponents.layout = (page: React.ReactNode) => (
+    <DemoLayout>{page}</DemoLayout>
+);
+
+export default DemoComponents;

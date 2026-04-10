@@ -1,3 +1,4 @@
+export { BlockEditorField } from './block-editor';
 export { CheckboxField } from './checkbox';
 export {
     ComboboxField,
@@ -5,6 +6,7 @@ export {
 } from './combobox';
 export { DatePickerField } from './date-picker';
 export { DateRangePickerField } from './date-range-picker';
+export { RichTextField } from './rich-text';
 export { SelectField, type SelectFieldOption } from './select';
 export { SwitchField } from './switch';
 export { TextField } from './text';

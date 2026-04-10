@@ -59,7 +59,7 @@ const LoginForm = ({ loginAction }: { loginAction: string }) => (
                     <Field className="mt-4">
                         <Button
                             type="submit"
-                            size="xl"
+                            size="lg"
                             tabIndex={3}
                             disabled={processing}
                             data-test="login-button"
