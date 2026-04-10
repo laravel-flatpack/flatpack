@@ -1,13 +1,8 @@
 import type { LucideIcon } from 'lucide-react';
-import {
-    DynamicIcon,
-    dynamicIconImports,
-    type IconName,
-} from 'lucide-react/dynamic';
+import { flatpackMenuIcons } from './lucide-menu-icon-registry';
 
 /**
- * `lucide-react` dynamic imports are keyed by **kebab-case** ids (same strings as lucide.dev).
- * Use this to normalize config values (snake_case, PascalCase, `*Icon` suffix).
+ * Normalize config values (snake_case, PascalCase, `*Icon` suffix) toward Lucide kebab-case ids.
  */
 export function normalizeToLucideKebabCase(name: string): string {
     const trimmed = name.trim();
@@ -34,48 +29,46 @@ export function normalizeToLucideKebabCase(name: string): string {
         .toLowerCase();
 }
 
-function resolveLucideIconKey(name: string): IconName | null {
+function resolveMenuIconKey(
+    name: string,
+): keyof typeof flatpackMenuIcons | null {
     const trimmed = name.trim();
     if (!trimmed) {
         return null;
     }
 
-    if (Object.hasOwn(dynamicIconImports, trimmed)) {
-        return trimmed as IconName;
+    if (Object.hasOwn(flatpackMenuIcons, trimmed)) {
+        return trimmed as keyof typeof flatpackMenuIcons;
     }
 
     const kebab = normalizeToLucideKebabCase(trimmed);
-    if (Object.hasOwn(dynamicIconImports, kebab)) {
-        return kebab as IconName;
+    if (Object.hasOwn(flatpackMenuIcons, kebab)) {
+        return kebab as keyof typeof flatpackMenuIcons;
     }
 
     return null;
 }
 
 /**
- * Whether `name` resolves to a Lucide icon. Accepts kebab-case keys or common variants
- * (e.g. `book_open`, `BookOpen`, `BookOpenIcon` → `book-open`).
+ * Whether `name` resolves to a bundled menu icon.
  */
 export function hasLucideIcon(name: string): boolean {
-    return resolveLucideIconKey(name) !== null;
+    return resolveMenuIconKey(name) !== null;
 }
 
 /**
- * Loads the icon component for a valid name. Unknown names resolve to `null`.
- * Prefer {@link LucideIconByName} in React; this is for non-UI or imperative use.
+ * Resolves the icon component for a valid menu name. Unknown names resolve to `null`.
  */
 export async function loadLucideIcon(name: string): Promise<LucideIcon | null> {
-    const key = resolveLucideIconKey(name);
+    const key = resolveMenuIconKey(name);
     if (key === null) {
         return null;
     }
-    const mod = await dynamicIconImports[key]();
-    return mod.default;
+    return flatpackMenuIcons[key];
 }
 
 /**
- * Renders a Lucide icon by name. Lucide’s registry keys are kebab-case; input is normalized
- * and resolved to `null` if unknown (no console error; icons load on demand per name).
+ * Renders a menu icon by name. Unknown names render nothing (same as before when using dynamic Lucide).
  */
 export function LucideIconByName({
     name,
@@ -84,10 +77,11 @@ export function LucideIconByName({
     name: string;
     className?: string;
 }) {
-    const key = resolveLucideIconKey(name);
+    const key = resolveMenuIconKey(name);
     if (key === null) {
         return null;
     }
 
-    return <DynamicIcon name={key} className={className} />;
+    const Icon = flatpackMenuIcons[key];
+    return <Icon className={className} />;
 }
