@@ -9,6 +9,7 @@ use Flatpack\Http\Controllers\SessionController;
 use Flatpack\Http\Middleware\EnsureFlatpackAccess;
 use Illuminate\Support\Facades\Route;
 
+require __DIR__ . '/demo.php';
 require __DIR__ . '/guest.php';
 
 /*
