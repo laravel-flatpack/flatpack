@@ -1,0 +1,15 @@
+diff --git a/node_modules/@platejs/media/dist/react/index.js b/node_modules/@platejs/media/dist/react/index.js
+index 30d6b3c..84a881a 100644
+--- a/node_modules/@platejs/media/dist/react/index.js
++++ b/node_modules/@platejs/media/dist/react/index.js
+@@ -4726,8 +4726,9 @@ const withHistoryMark = (editor, fn) => {
+ };
+ const isHistoryMarking = (editor) => historyMarks.get(editor) ?? false;
+ const updateUploadHistory = (editor, node) => {
+-	const index = editor.history.undos.findLastIndex((batch$1) => batch$1[KEYS.placeholder] && batch$1.operations.some((operation) => operation.type === "insert_node" && operation.node.id === node.placeholderId));
++	const index = editor.history.undos.findLastIndex((batch$1) => batch$1[KEYS.placeholder] && batch$1.operations?.some((operation) => operation.type === "insert_node" && operation.node.id === node.placeholderId));
+ 	const batch = editor.history.undos[index];
++	if (index < 0 || !batch?.operations) return;
+ 	const newOperations = [];
+ 	for (const operation of batch.operations) {
+ 		if ((operation.type === "insert_node" && operation.node).id === node.placeholderId) {

@@ -4,7 +4,6 @@ import {
     AudioLines,
     ChevronRightIcon,
     Code2,
-    FileUp,
     Heading1Icon,
     Heading2Icon,
     Heading3Icon,
@@ -138,12 +137,6 @@ const groups: Group[] = [
                 keywords: ['sound'],
                 label: 'Audio',
                 value: KEYS.audio,
-            },
-            {
-                icon: <FileUp />,
-                keywords: ['attachment'],
-                label: 'File',
-                value: KEYS.file,
             },
         ].map((item) => ({
             ...item,

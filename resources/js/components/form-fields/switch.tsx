@@ -1,4 +1,4 @@
-import { Field, FieldLabel } from '../ui/field';
+import { Field, FieldTitle } from '../ui/field';
 import { Switch } from '../ui/switch';
 
 export const SwitchField = ({
@@ -10,10 +10,15 @@ export const SwitchField = ({
     label: string;
     defaultChecked?: boolean;
 }) => {
+    const labelId = `${id}-label`;
     return (
         <Field orientation="horizontal">
-            <Switch id={id} defaultChecked={defaultChecked} />
-            {label ? <FieldLabel htmlFor={id}>{label}</FieldLabel> : null}
+            <Switch
+                id={id}
+                defaultChecked={defaultChecked}
+                aria-labelledby={label ? labelId : undefined}
+            />
+            {label ? <FieldTitle id={labelId}>{label}</FieldTitle> : null}
         </Field>
     );
 };

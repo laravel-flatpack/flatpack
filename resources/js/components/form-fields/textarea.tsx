@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import { Field, FieldContent, FieldDescription, FieldLabel } from '../ui/field';
+import { Field, FieldContent, FieldDescription, FieldTitle } from '../ui/field';
 import { Textarea } from '../ui/textarea';
 
 export const TextareaField = ({
@@ -19,9 +19,10 @@ export const TextareaField = ({
     defaultValue?: string;
     className?: string;
 }) => {
+    const labelId = `${id}-label`;
     return (
         <Field>
-            {label ? <FieldLabel htmlFor={id}>{label}</FieldLabel> : null}
+            {label ? <FieldTitle id={labelId}>{label}</FieldTitle> : null}
             <FieldContent>
                 <Textarea
                     id={id}
@@ -29,6 +30,7 @@ export const TextareaField = ({
                     defaultValue={defaultValue}
                     rows={rows}
                     className={cn(className)}
+                    aria-labelledby={label ? labelId : undefined}
                 />
                 {helperText ? (
                     <FieldDescription>{helperText}</FieldDescription>

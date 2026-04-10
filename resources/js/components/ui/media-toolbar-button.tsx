@@ -2,13 +2,7 @@
 
 import { PlaceholderPlugin } from '@platejs/media/react';
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
-import {
-    AudioLinesIcon,
-    FileUpIcon,
-    FilmIcon,
-    ImageIcon,
-    LinkIcon,
-} from 'lucide-react';
+import { AudioLinesIcon, FilmIcon, ImageIcon, LinkIcon } from 'lucide-react';
 import { isUrl, KEYS } from 'platejs';
 import { useEditorRef } from 'platejs/react';
 import * as React from 'react';
@@ -52,12 +46,6 @@ const MEDIA_CONFIG: Record<
         icon: <AudioLinesIcon className="size-4" />,
         title: 'Insert Audio',
         tooltip: 'Audio',
-    },
-    [KEYS.file]: {
-        accept: ['*'],
-        icon: <FileUpIcon className="size-4" />,
-        title: 'Insert File',
-        tooltip: 'File',
     },
     [KEYS.img]: {
         accept: ['image/*'],
@@ -176,7 +164,6 @@ function MediaUrlDialogContent({
         setOpen(false);
         editor.tf.insertNodes({
             children: [{ text: '' }],
-            name: nodeType === KEYS.file ? url.split('/').pop() : undefined,
             type: nodeType,
             url,
         });

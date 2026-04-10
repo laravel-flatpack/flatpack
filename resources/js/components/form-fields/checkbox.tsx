@@ -1,5 +1,5 @@
 import { Checkbox } from '../ui/checkbox';
-import { Field, FieldLabel } from '../ui/field';
+import { Field, FieldTitle } from '../ui/field';
 
 export const CheckboxField = ({
     id,
@@ -10,10 +10,15 @@ export const CheckboxField = ({
     label: string;
     defaultChecked?: boolean;
 }) => {
+    const labelId = `${id}-label`;
     return (
         <Field orientation="horizontal">
-            <Checkbox id={id} defaultChecked={defaultChecked} />
-            {label ? <FieldLabel htmlFor={id}>{label}</FieldLabel> : null}
+            <Checkbox
+                id={id}
+                defaultChecked={defaultChecked}
+                aria-labelledby={label ? labelId : undefined}
+            />
+            {label ? <FieldTitle id={labelId}>{label}</FieldTitle> : null}
         </Field>
     );
 };

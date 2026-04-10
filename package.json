@@ -3,6 +3,7 @@
     "private": true,
     "type": "module",
     "scripts": {
+        "postinstall": "patch-package",
         "dev": "vite",
         "clean": "node ./scripts/clean-build.mjs",
         "build": "vite build",
@@ -19,6 +20,7 @@
         "@types/react": "^19.2.0",
         "@types/react-dom": "^19.2.0",
         "@vitejs/plugin-react": "^5.2.0",
+        "patch-package": "^8.0.1",
         "typescript": "^5.7.2"
     },
     "dependencies": {

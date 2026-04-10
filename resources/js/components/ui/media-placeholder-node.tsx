@@ -97,6 +97,7 @@ export const PlaceholderElement = withHOC(
             if (!uploadedFile) return;
 
             const path = editor.api.findPath(element);
+            if (!path) return;
 
             editor.tf.withoutSaving(() => {
                 editor.tf.removeNodes({ at: path });
@@ -121,7 +122,6 @@ export const PlaceholderElement = withHOC(
             });
 
             api.placeholder.removeUploadingFile(element.id as string);
-            // eslint-disable-next-line react-hooks/exhaustive-deps
         }, [
             uploadedFile,
             element.id,
@@ -149,8 +149,6 @@ export const PlaceholderElement = withHOC(
             if (!currentFiles) return;
 
             replaceCurrentPlaceholder(currentFiles);
-
-            // eslint-disable-next-line react-hooks/exhaustive-deps
         }, [
             element.id,
             replaceCurrentPlaceholder,

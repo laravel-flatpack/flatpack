@@ -1,6 +1,6 @@
 import type { Value } from 'platejs';
 import { RichTextEditor } from '@/components/editor/rich-text-editor';
-import { Field, FieldContent, FieldDescription, FieldLabel } from '../ui/field';
+import { Field, FieldContent, FieldDescription, FieldTitle } from '../ui/field';
 
 export const RichTextField = ({
     id,
@@ -19,12 +19,13 @@ export const RichTextField = ({
     showFixedToolbar?: boolean;
     onValueChange?: (value: Value) => void;
 }) => {
+    const labelId = `${id}-label`;
     return (
         <Field>
-            <FieldLabel htmlFor={id}>{label}</FieldLabel>
+            <FieldTitle id={labelId}>{label}</FieldTitle>
             <FieldContent>
                 <RichTextEditor
-                    id={id}
+                    labelId={labelId}
                     className={className}
                     placeholder={placeholder}
                     showFixedToolbar={showFixedToolbar}

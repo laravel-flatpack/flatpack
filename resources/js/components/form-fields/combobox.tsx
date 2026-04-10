@@ -11,7 +11,7 @@ import {
     ComboboxList,
     ComboboxValue,
 } from '../ui/combobox';
-import { Field, FieldContent, FieldDescription, FieldLabel } from '../ui/field';
+import { Field, FieldContent, FieldDescription, FieldTitle } from '../ui/field';
 
 export type ComboboxObjectItem = { value: string; label: string };
 
@@ -40,11 +40,12 @@ export const ComboboxField = ({
         null,
     );
     const [multiValue, setMultiValue] = useState<string[]>([]);
+    const labelId = `${id}-label`;
 
     if (multiple) {
         return (
             <Field>
-                {label ? <FieldLabel htmlFor={id}>{label}</FieldLabel> : null}
+                {label ? <FieldTitle id={labelId}>{label}</FieldTitle> : null}
                 <FieldContent>
                     <Combobox
                         items={[...multiItems]}
@@ -63,6 +64,7 @@ export const ComboboxField = ({
                             <ComboboxChipsInput
                                 id={id}
                                 placeholder={multiPlaceholder}
+                                aria-labelledby={label ? labelId : undefined}
                             />
                         </ComboboxChips>
                         <ComboboxContent>
@@ -86,7 +88,7 @@ export const ComboboxField = ({
 
     return (
         <Field>
-            {label ? <FieldLabel htmlFor={id}>{label}</FieldLabel> : null}
+            {label ? <FieldTitle id={labelId}>{label}</FieldTitle> : null}
             <FieldContent>
                 <Combobox
                     items={items}
@@ -98,6 +100,7 @@ export const ComboboxField = ({
                         placeholder={singlePlaceholder}
                         showClear={singleValue != null}
                         className="w-full max-w-sm rounded-3xl"
+                        aria-labelledby={label ? labelId : undefined}
                     />
                     <ComboboxContent>
                         <ComboboxList>

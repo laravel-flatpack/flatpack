@@ -4,7 +4,7 @@ import { type ReactNode, useState } from 'react';
 import type { DateRange } from 'react-day-picker';
 import { cn } from '@/lib/utils';
 import { Calendar } from '../ui/calendar';
-import { Field, FieldContent, FieldLabel } from '../ui/field';
+import { Field, FieldContent, FieldTitle } from '../ui/field';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 
 function formatRangeLabel(range: DateRange | undefined): ReactNode {
@@ -39,10 +39,11 @@ export const DateRangePickerField = ({
 }) => {
     const [open, setOpen] = useState(false);
     const [range, setRange] = useState<DateRange | undefined>();
+    const labelId = `${id}-label`;
 
     return (
         <Field>
-            {label ? <FieldLabel htmlFor={id}>{label}</FieldLabel> : null}
+            {label ? <FieldTitle id={labelId}>{label}</FieldTitle> : null}
             <FieldContent>
                 <Popover open={open} onOpenChange={setOpen}>
                     <PopoverTrigger asChild>
@@ -54,6 +55,7 @@ export const DateRangePickerField = ({
                                 open && 'border-ring ring-3 ring-ring/30',
                             )}
                             aria-expanded={open}
+                            aria-labelledby={label ? labelId : undefined}
                         >
                             <CalendarIcon className="mr-2 size-4 shrink-0 text-muted-foreground" />
                             {formatRangeLabel(range) ?? (

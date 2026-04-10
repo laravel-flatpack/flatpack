@@ -3,7 +3,10 @@
 import { normalizeStaticValue, type Value } from 'platejs';
 import { Plate, usePlateEditor } from 'platejs/react';
 import * as React from 'react';
-import { ensureDocumentHasBlock } from '@/components/editor/ensure-document-block';
+import {
+    ensureDocumentHasBlock,
+    ensureTrailingParagraphAfterVoid,
+} from '@/components/editor/ensure-document-block';
 import { RichTextEditorKit } from '@/components/editor/plugins/rich-text-editor-kit';
 import { RichTextToolbar } from '@/components/editor/rich-text-toolbar';
 import { Editor, EditorContainer } from '@/components/ui/editor';
@@ -12,7 +15,8 @@ import { cn } from '@/lib/utils';
 const emptyDoc: Value = [{ type: 'p', children: [{ text: '' }] }];
 
 export type RichTextEditorProps = {
-    id?: string;
+    /** `id` of the visible field caption; passed as `aria-labelledby` on the editable. */
+    labelId?: string;
     className?: string;
     placeholder?: string;
     readOnly?: boolean;
@@ -24,7 +28,7 @@ export type RichTextEditorProps = {
 };
 
 export function RichTextEditor({
-    id,
+    labelId,
     className,
     placeholder = 'Type / for commands…',
     readOnly,
@@ -47,12 +51,18 @@ export function RichTextEditor({
             editor={editor}
             readOnly={readOnly}
             onValueChange={({ editor: ed, value: next }) => {
+                if (readOnly) {
+                    onValueChange?.(next);
+                    return;
+                }
                 if (
-                    !readOnly &&
                     Array.isArray(next) &&
                     next.length === 0 &&
                     ensureDocumentHasBlock(ed)
                 ) {
+                    return;
+                }
+                if (ensureTrailingParagraphAfterVoid(ed)) {
                     return;
                 }
                 onValueChange?.(next);
@@ -65,23 +75,29 @@ export function RichTextEditor({
                         'focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2',
                         className,
                     )}
-                    id={id}
                 >
                     <RichTextToolbar />
                     <EditorContainer
                         variant="default"
                         className="min-h-[220px] max-h-[480px] flex-1 overflow-y-auto border-0 bg-transparent shadow-none ring-0 [&:focus-within]:ring-0"
                     >
-                        <Editor variant="select" placeholder={placeholder} />
+                        <Editor
+                            variant="select"
+                            placeholder={placeholder}
+                            aria-labelledby={labelId}
+                        />
                     </EditorContainer>
                 </div>
             ) : (
                 <EditorContainer
                     variant="select"
-                    id={id}
                     className={cn('min-h-[220px] max-h-[480px]', className)}
                 >
-                    <Editor variant="select" placeholder={placeholder} />
+                    <Editor
+                        variant="select"
+                        placeholder={placeholder}
+                        aria-labelledby={labelId}
+                    />
                 </EditorContainer>
             )}
         </Plate>

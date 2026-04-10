@@ -3,7 +3,7 @@ import { CalendarIcon } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Calendar } from '../ui/calendar';
-import { Field, FieldContent, FieldLabel } from '../ui/field';
+import { Field, FieldContent, FieldTitle } from '../ui/field';
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 
 export const DatePickerField = ({
@@ -17,10 +17,11 @@ export const DatePickerField = ({
 }) => {
     const [open, setOpen] = useState(false);
     const [date, setDate] = useState<Date | undefined>();
+    const labelId = `${id}-label`;
 
     return (
         <Field>
-            {label ? <FieldLabel htmlFor={id}>{label}</FieldLabel> : null}
+            {label ? <FieldTitle id={labelId}>{label}</FieldTitle> : null}
             <FieldContent>
                 <Popover open={open} onOpenChange={setOpen}>
                     <PopoverTrigger asChild>
@@ -32,6 +33,7 @@ export const DatePickerField = ({
                                 open && 'border-ring ring-3 ring-ring/30',
                             )}
                             aria-expanded={open}
+                            aria-labelledby={label ? labelId : undefined}
                         >
                             <CalendarIcon className="mr-2 size-4 shrink-0 text-muted-foreground" />
                             {date ? (

@@ -4,9 +4,8 @@ import PasswordInput from '@/components/password-input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
+import { Field, FieldGroup, FieldTitle } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import type { FlatpackPageProps } from '@/types/flatpack';
 
@@ -27,7 +26,7 @@ const LoginForm = ({ loginAction }: { loginAction: string }) => (
                         </p>
                     </div>
                     <Field>
-                        <FieldLabel htmlFor="email">Email address</FieldLabel>
+                        <FieldTitle id="email-label">Email address</FieldTitle>
                         <Input
                             id="email"
                             type="email"
@@ -37,11 +36,12 @@ const LoginForm = ({ loginAction }: { loginAction: string }) => (
                             tabIndex={1}
                             autoComplete="email"
                             placeholder="email@example.com"
+                            aria-labelledby="email-label"
                         />
                         <InputError message={errors.email} />
                     </Field>
                     <Field>
-                        <FieldLabel htmlFor="password">Password</FieldLabel>
+                        <FieldTitle id="password-label">Password</FieldTitle>
                         <PasswordInput
                             id="password"
                             name="password"
@@ -49,12 +49,23 @@ const LoginForm = ({ loginAction }: { loginAction: string }) => (
                             tabIndex={2}
                             autoComplete="current-password"
                             placeholder="Password"
+                            aria-labelledby="password-label"
                         />
                         <InputError message={errors.password} />
                     </Field>
                     <div className="flex items-center space-x-3">
-                        <Checkbox id="remember" name="remember" tabIndex={3} />
-                        <Label htmlFor="remember">Remember me</Label>
+                        <Checkbox
+                            id="remember"
+                            name="remember"
+                            tabIndex={3}
+                            aria-labelledby="remember-label"
+                        />
+                        <FieldTitle
+                            id="remember-label"
+                            className="font-normal text-muted-foreground"
+                        >
+                            Remember me
+                        </FieldTitle>
                     </div>
                     <Field className="mt-4">
                         <Button

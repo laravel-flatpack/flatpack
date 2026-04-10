@@ -3,7 +3,7 @@ import { CalendarIcon, ChevronDownIcon, ClockIcon } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Calendar } from '../ui/calendar';
-import { Field, FieldContent, FieldGroup, FieldLabel } from '../ui/field';
+import { Field, FieldContent, FieldGroup, FieldTitle } from '../ui/field';
 import {
     InputGroup,
     InputGroupAddon,
@@ -28,12 +28,14 @@ export const TimePickerField = ({
 }) => {
     const [open, setOpen] = useState(false);
     const [date, setDate] = useState<Date | undefined>();
+    const dateLabelId = `${dateId}-label`;
+    const timeLabelId = `${timeId}-label`;
 
     return (
         <FieldGroup className="max-w-md flex-row flex-wrap items-end gap-4">
             <Field className="min-w-0 flex-1">
                 {dateLabel ? (
-                    <FieldLabel htmlFor={dateId}>{dateLabel}</FieldLabel>
+                    <FieldTitle id={dateLabelId}>{dateLabel}</FieldTitle>
                 ) : null}
                 <FieldContent>
                     <Popover open={open} onOpenChange={setOpen}>
@@ -83,7 +85,7 @@ export const TimePickerField = ({
             </Field>
             <Field className="w-full min-w-[10rem] sm:w-36">
                 {timeLabel ? (
-                    <FieldLabel htmlFor={timeId}>{timeLabel}</FieldLabel>
+                    <FieldTitle id={timeLabelId}>{timeLabel}</FieldTitle>
                 ) : null}
                 <FieldContent>
                     <InputGroup className="rounded-3xl">
@@ -96,6 +98,9 @@ export const TimePickerField = ({
                             step={1}
                             defaultValue={timeDefaultValue}
                             className="appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
+                            aria-labelledby={
+                                timeLabel ? timeLabelId : undefined
+                            }
                         />
                     </InputGroup>
                 </FieldContent>

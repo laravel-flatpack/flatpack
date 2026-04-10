@@ -1,6 +1,6 @@
 import type { Value } from 'platejs';
 import { BlockEditor } from '@/components/editor/block-editor';
-import { Field, FieldContent, FieldDescription, FieldLabel } from '../ui/field';
+import { Field, FieldContent, FieldDescription, FieldTitle } from '../ui/field';
 
 export const BlockEditorField = ({
     id,
@@ -17,12 +17,13 @@ export const BlockEditorField = ({
     className?: string;
     onValueChange?: (value: Value) => void;
 }) => {
+    const labelId = `${id}-label`;
     return (
         <Field>
-            <FieldLabel htmlFor={id}>{label}</FieldLabel>
+            <FieldTitle id={labelId}>{label}</FieldTitle>
             <FieldContent>
                 <BlockEditor
-                    id={id}
+                    labelId={labelId}
                     className={className}
                     placeholder={placeholder}
                     onValueChange={onValueChange}

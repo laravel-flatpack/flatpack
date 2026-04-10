@@ -89,7 +89,3 @@ export function getErrorMessage(err: unknown) {
     }
     return 'Something went wrong, please try again later.';
 }
-
-export function showErrorToast(err: unknown) {
-    return toast.error(getErrorMessage(err));
-}

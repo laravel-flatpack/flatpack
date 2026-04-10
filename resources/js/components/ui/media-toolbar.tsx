@@ -60,7 +60,6 @@ export function MediaToolbar({
         if (!open && isEditing) {
             FloatingMediaStore.set('isEditing', false);
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [open, isEditing]);
 
     const element = useElement();

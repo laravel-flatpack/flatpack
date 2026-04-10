@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Field, FieldContent, FieldDescription, FieldLabel } from '../ui/field';
+import { Field, FieldContent, FieldDescription, FieldTitle } from '../ui/field';
 import {
     Select,
     SelectContent,
@@ -24,13 +24,18 @@ export const SelectField = ({
     helperText?: string;
 }) => {
     const [value, setValue] = useState(options[0]?.value ?? '');
+    const labelId = `${id}-label`;
 
     return (
         <Field>
-            {label ? <FieldLabel htmlFor={id}>{label}</FieldLabel> : null}
+            {label ? <FieldTitle id={labelId}>{label}</FieldTitle> : null}
             <FieldContent>
                 <Select value={value} onValueChange={setValue}>
-                    <SelectTrigger id={id} className="w-full max-w-sm">
+                    <SelectTrigger
+                        id={id}
+                        className="w-full max-w-sm"
+                        aria-labelledby={label ? labelId : undefined}
+                    >
                         <SelectValue placeholder={placeholder} />
                     </SelectTrigger>
                     <SelectContent>

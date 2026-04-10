@@ -1,4 +1,4 @@
-import { Field, FieldContent, FieldDescription, FieldLabel } from '../ui/field';
+import { Field, FieldContent, FieldDescription, FieldTitle } from '../ui/field';
 import { Input } from '../ui/input';
 
 export const TextField = ({
@@ -14,15 +14,17 @@ export const TextField = ({
     helperText?: string;
     defaultValue?: string;
 }) => {
+    const labelId = `${id}-label`;
     return (
         <Field>
-            {label ? <FieldLabel htmlFor={id}>{label}</FieldLabel> : null}
+            {label ? <FieldTitle id={labelId}>{label}</FieldTitle> : null}
             <FieldContent>
                 <Input
                     id={id}
                     type="text"
                     placeholder={placeholder}
                     defaultValue={defaultValue}
+                    aria-labelledby={label ? labelId : undefined}
                 />
                 {helperText ? (
                     <FieldDescription>{helperText}</FieldDescription>
