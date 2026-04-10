@@ -48,6 +48,32 @@
             }
         }
     },
+    "overrides": [
+        {
+            "includes": ["resources/js/components/ui/**/*.tsx"],
+            "linter": {
+                "rules": {
+                    "a11y": {
+                        "noStaticElementInteractions": "off",
+                        "useFocusableInteractive": "off",
+                        "useKeyWithClickEvents": "off",
+                        "useMediaCaption": "off"
+                    },
+                    "correctness": {
+                        "useExhaustiveDependencies": "off"
+                    },
+                    "style": {
+                        "noNonNullAssertion": "off"
+                    },
+                    "suspicious": {
+                        "noArrayIndexKey": "off",
+                        "noExplicitAny": "off",
+                        "noNonNullAssertedOptionalChain": "off"
+                    }
+                }
+            }
+        }
+    ],
     "javascript": {
         "formatter": {
             "quoteStyle": "single",
