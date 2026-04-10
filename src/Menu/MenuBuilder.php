@@ -37,7 +37,6 @@ final readonly class MenuBuilder implements MenuBuilderContract
     private function menuFromConfig(array $items): array
     {
         $result = [];
-        $i = 0;
 
         foreach ($items as $slug => $entry) {
             if (! is_array($entry)) {
@@ -47,7 +46,6 @@ final readonly class MenuBuilder implements MenuBuilderContract
             $name = (string) ($entry['name'] ?? $slug);
             $route = (string) ($entry['route'] ?? '#');
             $icon = (string) ($entry['icon'] ?? 'folder');
-            $sortOrder = $i;
             $key = is_string($slug) ? $slug : (string) $name;
 
             $result[] = new MenuItem(
@@ -55,10 +53,8 @@ final readonly class MenuBuilder implements MenuBuilderContract
                 name: $name,
                 icon: $icon,
                 route: $route,
-                sortOrder: $sortOrder,
             );
 
-            $i++;
         }
 
         return $result;

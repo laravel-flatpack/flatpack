@@ -67,9 +67,9 @@ final readonly class CompositionValues
     public function sortOrder(?array $data): int
     {
         if ($data === null) {
-            return 0;
+            return 99;
         }
 
-        return (int) ($data['sort_order'] ?? 0);
+        return (int) ($data['sort_order'] ?? 99);
     }
 }

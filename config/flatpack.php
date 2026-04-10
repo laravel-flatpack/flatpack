@@ -98,7 +98,7 @@ return [
     |--------------------------------------------------------------------------
     |
     | When non-empty, replaces filesystem-derived menu. Each item:
-    | 'slug' => ['name' => '', 'route' => '', 'icon' => '', 'sort_order' => 99]
+    | 'slug' => ['name' => '', 'route' => '', 'icon' => '']
     |
     */
     'menu' => [],
