@@ -1,5 +1,4 @@
 export type FlatpackMenuItem = {
-    slug: string;
     name: string;
     route: string;
     icon: string;
@@ -14,7 +13,10 @@ export type FlatpackUser = {
 export type FlatpackPageProps = {
     flatpack: {
         menu: FlatpackMenuItem[];
-        secondaryMenu: FlatpackMenuItem[];
+        secondaryMenu: {
+            label?: string;
+            items?: FlatpackMenuItem[];
+        } | null;
         pages: {
             dashboard: string;
             login: string;

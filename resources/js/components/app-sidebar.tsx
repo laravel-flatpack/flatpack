@@ -21,7 +21,10 @@ export function AppSidebar({
     variant: 'sidebar' | 'floating' | 'inset';
     navigation: {
         menu: FlatpackMenuItem[];
-        secondaryMenu: FlatpackMenuItem[];
+        secondaryMenu: {
+            label?: string;
+            items?: FlatpackMenuItem[];
+        } | null;
         pages: {
             dashboard: string;
             login: string;
@@ -32,12 +35,7 @@ export function AppSidebar({
     currentPath: string;
 }) {
     return (
-        <Sidebar
-            variant={variant}
-            collapsible="offcanvas"
-            navigation={navigation.menu}
-            secondaryNavigation={navigation.secondaryMenu}
-        >
+        <Sidebar variant={variant} collapsible="offcanvas">
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>
@@ -57,7 +55,6 @@ export function AppSidebar({
                 <NavMain
                     items={[
                         {
-                            slug: 'dashboard',
                             name: 'Dashboard',
                             route: navigation.pages.dashboard,
                             icon: 'layout-dashboard',
@@ -67,9 +64,9 @@ export function AppSidebar({
                     currentPath={currentPath}
                 />
                 <NavSecondary
-                    items={navigation.secondaryMenu}
+                    label={navigation.secondaryMenu?.label}
+                    items={navigation.secondaryMenu?.items}
                     currentPath={currentPath}
-                    label="Links"
                 />
                 <NavSettings
                     items={[]}

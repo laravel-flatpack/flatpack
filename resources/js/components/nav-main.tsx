@@ -34,7 +34,7 @@ export function NavMain({
                 </SidebarMenu>
                 <SidebarMenu>
                     {items.map((item) => (
-                        <SidebarMenuItem key={item.slug}>
+                        <SidebarMenuItem key={item.route}>
                             <SidebarMenuButton
                                 tooltip={item.name}
                                 asChild

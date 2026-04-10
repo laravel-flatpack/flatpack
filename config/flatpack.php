@@ -102,4 +102,23 @@ return [
     |
     */
     'menu' => [],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Secondary menu
+    |--------------------------------------------------------------------------
+    |
+    | You can define a secondary menu with a label and a list of items.
+    | This menu is displayed in the sidebar below the main menu.
+    |
+    | Example:
+    | 'secondary_menu' => [
+    |     'label' => 'Secondary Menu',
+    |     'items' => [
+    |         ['name' => 'Item 1', 'route' => 'flatpack.item1.index', 'icon' => 'book'],
+    |         ['name' => 'Item 2', 'route' => 'flatpack.item2.index', 'icon' => 'folder'],
+    |     ],
+    | ],
+    */
+    'secondary_menu' => null,
 ];

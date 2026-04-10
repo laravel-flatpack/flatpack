@@ -29,7 +29,7 @@ final readonly class ShareFlatpackInertiaData
                     static fn ($item): array => $item->toArray(),
                     $this->flatpack->menu(),
                 ),
-                'secondaryMenu' => [],
+                'secondaryMenu' => config('flatpack.secondary_menu'),
                 'pages' => [
                     'dashboard' => route('flatpack.dashboard'),
                     'login' => route('flatpack.login'),

@@ -1,89 +1,53 @@
 'use client';
 
-import {
-    FolderIcon,
-    MoreHorizontalIcon,
-    ShareIcon,
-    Trash2Icon,
-} from 'lucide-react';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { Link } from '@inertiajs/react';
 import {
     SidebarGroup,
     SidebarGroupLabel,
     SidebarMenu,
-    SidebarMenuAction,
     SidebarMenuButton,
     SidebarMenuItem,
-    useSidebar,
 } from '@/components/ui/sidebar';
+import { isSamePath } from '@/lib/utils';
 import type { FlatpackMenuItem } from '@/types/flatpack';
+import { LucideIconByName } from './icons';
 
 export function NavSecondary({
     label,
     items,
-    // currentPath,
+    currentPath,
 }: {
     label?: string;
-    items: FlatpackMenuItem[];
+    items?: FlatpackMenuItem[];
     currentPath: string;
 }) {
-    const { isMobile } = useSidebar();
+    // const { isMobile } = useSidebar();
 
-    if (items.length === 0) {
+    if (items && items.length === 0) {
         return null;
     }
 
     return (
         <SidebarGroup className="group-data-[collapsible=icon]:hidden">
             {label && <SidebarGroupLabel>{label}</SidebarGroupLabel>}
-            <SidebarMenu>
-                {items.map((item) => (
-                    <SidebarMenuItem key={item.name}>
-                        <SidebarMenuButton asChild>
-                            <a href={item.route}>
-                                {item.icon}
-                                <span>{item.name}</span>
-                            </a>
-                        </SidebarMenuButton>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <SidebarMenuAction
-                                    showOnHover
-                                    className="rounded-sm data-[state=open]:bg-accent"
-                                >
-                                    <MoreHorizontalIcon />
-                                    <span className="sr-only">More</span>
-                                </SidebarMenuAction>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent
-                                className="w-24 rounded-lg"
-                                side={isMobile ? 'bottom' : 'right'}
-                                align={isMobile ? 'end' : 'start'}
+            {items && (
+                <SidebarMenu>
+                    {items.map((item) => (
+                        <SidebarMenuItem key={item.route}>
+                            <SidebarMenuButton
+                                tooltip={item.name}
+                                asChild
+                                isActive={isSamePath(currentPath, item.route)}
                             >
-                                <DropdownMenuItem>
-                                    <FolderIcon />
-                                    <span>Open</span>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                    <ShareIcon />
-                                    <span>Share</span>
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem variant="destructive">
-                                    <Trash2Icon />
-                                    <span>Delete</span>
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </SidebarMenuItem>
-                ))}
-            </SidebarMenu>
+                                <Link href={item.route}>
+                                    <LucideIconByName name={item.icon} />
+                                    <span>{item.name}</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    ))}
+                </SidebarMenu>
+            )}
         </SidebarGroup>
     );
 }
