@@ -16,6 +16,9 @@ export function SiteHeader({ title }: { title?: string }) {
                     </>
                 )}
             </div>
+            {/*<div className="flex px-4 lg:px-6">
+                SearchBar
+            </div>*/}
         </header>
     );
 }
