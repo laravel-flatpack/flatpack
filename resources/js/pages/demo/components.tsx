@@ -1,13 +1,28 @@
 import { Head, usePage } from '@inertiajs/react';
+import { format } from 'date-fns';
+import { CalendarIcon, ChevronDownIcon, ClockIcon } from 'lucide-react';
 import { type ReactNode, useMemo, useState } from 'react';
+import type { DateRange } from 'react-day-picker';
+import { Calendar } from '@/components/ui/calendar';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
     Field,
     FieldContent,
     FieldDescription,
+    FieldGroup,
     FieldLabel,
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import {
+    InputGroup,
+    InputGroupAddon,
+    InputGroupInput,
+} from '@/components/ui/input-group';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover';
 import {
     Select,
     SelectContent,
@@ -17,12 +32,16 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
+import { cn } from '@/lib/utils';
 
 /** Slugs for `?type=` — `toggle` is accepted as an alias for `switch`. */
 export const demoComponentTypes = [
     'text',
     'textarea',
     'select',
+    'date-picker',
+    'date-range-picker',
+    'time-picker',
     'checkbox',
     'switch',
 ] as const;
@@ -39,6 +58,9 @@ const titles: Record<NormalizedType, string> = {
     text: 'Text input',
     textarea: 'Textarea',
     select: 'Select',
+    'date-picker': 'Date picker',
+    'date-range-picker': 'Date range picker',
+    'time-picker': 'Time picker',
     checkbox: 'Checkbox',
     switch: 'Switch',
 };
@@ -112,6 +134,193 @@ function DemoSelect() {
     );
 }
 
+function DemoDatePicker() {
+    const [open, setOpen] = useState(false);
+    const [date, setDate] = useState<Date | undefined>();
+
+    return (
+        <Field>
+            <FieldLabel htmlFor="demo-date-picker">Date</FieldLabel>
+            <FieldContent>
+                <Popover open={open} onOpenChange={setOpen}>
+                    <PopoverTrigger asChild>
+                        <button
+                            id="demo-date-picker"
+                            type="button"
+                            className={cn(
+                                'flex h-9 w-full min-w-0 max-w-sm items-center justify-start rounded-3xl border border-transparent bg-input/50 px-3 py-1 text-left text-base font-normal text-foreground transition-[color,box-shadow,background-color] outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 md:text-sm',
+                                open && 'border-ring ring-3 ring-ring/30',
+                            )}
+                            aria-expanded={open}
+                        >
+                            <CalendarIcon className="mr-2 size-4 shrink-0 text-muted-foreground" />
+                            {date ? (
+                                format(date, 'PPP')
+                            ) : (
+                                <span className="text-muted-foreground">
+                                    Pick a date
+                                </span>
+                            )}
+                        </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                            mode="single"
+                            selected={date}
+                            onSelect={(d) => {
+                                setDate(d);
+                                setOpen(false);
+                            }}
+                        />
+                    </PopoverContent>
+                </Popover>
+            </FieldContent>
+        </Field>
+    );
+}
+
+function formatRangeLabel(range: DateRange | undefined): ReactNode {
+    if (!range?.from) {
+        return null;
+    }
+    if (!range.to) {
+        return (
+            <>
+                {format(range.from, 'PPP')}
+                <span className="text-muted-foreground"> — …</span>
+            </>
+        );
+    }
+    return (
+        <>
+            {format(range.from, 'PPP')}
+            <span className="text-muted-foreground"> — </span>
+            {format(range.to, 'PPP')}
+        </>
+    );
+}
+
+function DemoDateRangePicker() {
+    const [open, setOpen] = useState(false);
+    const [range, setRange] = useState<DateRange | undefined>();
+
+    return (
+        <Field>
+            <FieldLabel htmlFor="demo-date-range-picker">Dates</FieldLabel>
+            <FieldContent>
+                <Popover open={open} onOpenChange={setOpen}>
+                    <PopoverTrigger asChild>
+                        <button
+                            id="demo-date-range-picker"
+                            type="button"
+                            className={cn(
+                                'flex h-9 w-full min-w-0 max-w-md items-center justify-start truncate rounded-3xl border border-transparent bg-input/50 px-3 py-1 text-left text-base font-normal text-foreground transition-[color,box-shadow,background-color] outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 md:text-sm',
+                                open && 'border-ring ring-3 ring-ring/30',
+                            )}
+                            aria-expanded={open}
+                        >
+                            <CalendarIcon className="mr-2 size-4 shrink-0 text-muted-foreground" />
+                            {formatRangeLabel(range) ?? (
+                                <span className="text-muted-foreground">
+                                    Pick a date range
+                                </span>
+                            )}
+                        </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                            mode="range"
+                            numberOfMonths={2}
+                            selected={range}
+                            onSelect={(next) => {
+                                setRange(next);
+                                if (next?.from && next.to) {
+                                    setOpen(false);
+                                }
+                            }}
+                        />
+                    </PopoverContent>
+                </Popover>
+            </FieldContent>
+        </Field>
+    );
+}
+
+function DemoTimePicker() {
+    const [open, setOpen] = useState(false);
+    const [date, setDate] = useState<Date | undefined>();
+
+    return (
+        <FieldGroup className="max-w-md flex-row flex-wrap items-end gap-4">
+            <Field className="min-w-0 flex-1">
+                <FieldLabel htmlFor="demo-time-picker-date">Date</FieldLabel>
+                <FieldContent>
+                    <Popover open={open} onOpenChange={setOpen}>
+                        <PopoverTrigger asChild>
+                            <button
+                                id="demo-time-picker-date"
+                                type="button"
+                                className={cn(
+                                    'flex h-9 w-full min-w-[8.5rem] items-center justify-between gap-2 rounded-3xl border border-transparent bg-input/50 px-3 py-1 text-left text-base font-normal text-foreground transition-[color,box-shadow,background-color] outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 md:text-sm',
+                                    open && 'border-ring ring-3 ring-ring/30',
+                                )}
+                                aria-expanded={open}
+                            >
+                                <span className="flex min-w-0 flex-1 items-center gap-2">
+                                    <CalendarIcon className="size-4 shrink-0 text-muted-foreground" />
+                                    <span
+                                        className={cn(
+                                            'min-w-0 truncate',
+                                            !date && 'text-muted-foreground',
+                                        )}
+                                    >
+                                        {date
+                                            ? format(date, 'PPP')
+                                            : 'Select date'}
+                                    </span>
+                                </span>
+                                <ChevronDownIcon className="size-4 shrink-0 text-muted-foreground" />
+                            </button>
+                        </PopoverTrigger>
+                        <PopoverContent
+                            className="w-auto overflow-hidden p-0"
+                            align="start"
+                        >
+                            <Calendar
+                                mode="single"
+                                captionLayout="dropdown"
+                                defaultMonth={date}
+                                selected={date}
+                                onSelect={(d) => {
+                                    setDate(d);
+                                    setOpen(false);
+                                }}
+                            />
+                        </PopoverContent>
+                    </Popover>
+                </FieldContent>
+            </Field>
+            <Field className="w-full min-w-[10rem] sm:w-36">
+                <FieldLabel htmlFor="demo-time-picker-time">Time</FieldLabel>
+                <FieldContent>
+                    <InputGroup className="rounded-3xl">
+                        <InputGroupAddon>
+                            <ClockIcon />
+                        </InputGroupAddon>
+                        <InputGroupInput
+                            type="time"
+                            id="demo-time-picker-time"
+                            step={1}
+                            defaultValue="10:30:00"
+                            className="appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
+                        />
+                    </InputGroup>
+                </FieldContent>
+            </Field>
+        </FieldGroup>
+    );
+}
+
 function DemoCheckbox() {
     return (
         <Field orientation="horizontal">
@@ -134,6 +343,9 @@ const demos: Record<NormalizedType, () => ReactNode> = {
     text: DemoText,
     textarea: DemoTextarea,
     select: DemoSelect,
+    'date-picker': DemoDatePicker,
+    'date-range-picker': DemoDateRangePicker,
+    'time-picker': DemoTimePicker,
     checkbox: DemoCheckbox,
     switch: DemoSwitch,
 };
@@ -142,6 +354,9 @@ const allTypesOrdered: NormalizedType[] = [
     'text',
     'textarea',
     'select',
+    'date-picker',
+    'date-range-picker',
+    'time-picker',
     'checkbox',
     'switch',
 ];
