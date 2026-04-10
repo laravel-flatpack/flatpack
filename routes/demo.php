@@ -12,5 +12,6 @@ Route::get(
         'type' => $request->query('type') !== null && $request->query('type') !== ''
             ? (string) $request->query('type')
             : null,
+        'multiple' => $request->boolean('multiple'),
     ])
 )->name('demo.components');

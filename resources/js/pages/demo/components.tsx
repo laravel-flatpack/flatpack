@@ -1,44 +1,24 @@
 import { Head, usePage } from '@inertiajs/react';
-import { format } from 'date-fns';
-import { CalendarIcon, ChevronDownIcon, ClockIcon } from 'lucide-react';
-import { type ReactNode, useMemo, useState } from 'react';
-import type { DateRange } from 'react-day-picker';
-import { Calendar } from '@/components/ui/calendar';
-import { Checkbox } from '@/components/ui/checkbox';
+import { type ReactNode, useMemo } from 'react';
 import {
-    Field,
-    FieldContent,
-    FieldDescription,
-    FieldGroup,
-    FieldLabel,
-} from '@/components/ui/field';
-import { Input } from '@/components/ui/input';
-import {
-    InputGroup,
-    InputGroupAddon,
-    InputGroupInput,
-} from '@/components/ui/input-group';
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from '@/components/ui/popover';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { Textarea } from '@/components/ui/textarea';
-import { cn } from '@/lib/utils';
+    CheckboxField,
+    ComboboxField,
+    type ComboboxObjectItem,
+    DatePickerField,
+    DateRangePickerField,
+    SelectField,
+    SwitchField,
+    TextareaField,
+    TextField,
+    TimePickerField,
+} from '@/components/form-fields';
 
-/** Slugs for `?type=` — `toggle` is accepted as an alias for `switch`. */
+/** Slugs for `?type=` (`toggle` → `switch`). Combobox multi: `?type=combobox&multiple=true`. */
 export const demoComponentTypes = [
     'text',
     'textarea',
     'select',
+    'combobox',
     'date-picker',
     'date-range-picker',
     'time-picker',
@@ -50,6 +30,8 @@ export type DemoComponentType = (typeof demoComponentTypes)[number];
 
 type PageProps = {
     type: string | null;
+    /** When `type` is `combobox`, mirrors Flatpack YAML `multiple: true` for that field. */
+    multiple: boolean;
 };
 
 type NormalizedType = DemoComponentType;
@@ -58,6 +40,7 @@ const titles: Record<NormalizedType, string> = {
     text: 'Text input',
     textarea: 'Textarea',
     select: 'Select',
+    combobox: 'Combobox',
     'date-picker': 'Date picker',
     'date-range-picker': 'Date range picker',
     'time-picker': 'Time picker',
@@ -79,263 +62,148 @@ function normalizeType(raw: string | null): NormalizedType | null {
     return null;
 }
 
+const DEMO_COMBOBOX_ITEMS: ComboboxObjectItem[] = Array.from(
+    { length: 200 },
+    (_, i) => ({
+        value: `opt-${i + 1}`,
+        label: `Option ${String(i + 1).padStart(3, '0')}`,
+    }),
+);
+
+const DEMO_COMBOBOX_MULTI_ITEMS = [
+    'Next.js',
+    'SvelteKit',
+    'Nuxt.js',
+    'Remix',
+    'Astro',
+] as const;
+
 function DemoText() {
     return (
-        <Field>
-            <FieldLabel htmlFor="demo-text">Label</FieldLabel>
-            <FieldContent>
-                <Input
-                    id="demo-text"
-                    type="text"
-                    placeholder="Placeholder"
-                    defaultValue=""
-                />
-                <FieldDescription>Optional helper text.</FieldDescription>
-            </FieldContent>
-        </Field>
+        <TextField
+            id="demo-text"
+            label="Label"
+            placeholder="Placeholder"
+            defaultValue=""
+            helperText="Optional helper text."
+        />
     );
 }
 
 function DemoTextarea() {
     return (
-        <Field>
-            <FieldLabel htmlFor="demo-textarea">Message</FieldLabel>
-            <FieldContent>
-                <Textarea
-                    id="demo-textarea"
-                    placeholder="Type something…"
-                    rows={5}
-                    className="field-sizing-fixed resize-y min-h-0"
-                />
-            </FieldContent>
-        </Field>
+        <TextareaField
+            id="demo-textarea"
+            label="Message"
+            placeholder="Type something…"
+            rows={5}
+            className="field-sizing-fixed resize-y min-h-0"
+        />
     );
 }
 
 function DemoSelect() {
-    const [value, setValue] = useState('a');
+    return (
+        <SelectField
+            id="demo-select"
+            label="Choose"
+            placeholder="Pick an option"
+            options={[
+                { value: 'a', label: 'Option A' },
+                { value: 'b', label: 'Option B' },
+                { value: 'c', label: 'Option C' },
+            ]}
+        />
+    );
+}
+
+function DemoCombobox() {
+    const { type, multiple } = usePage<PageProps>().props;
+    const isMultiple =
+        Boolean(multiple) && type?.trim().toLowerCase() === 'combobox';
 
     return (
-        <Field>
-            <FieldLabel htmlFor="demo-select">Choose</FieldLabel>
-            <FieldContent>
-                <Select value={value} onValueChange={setValue}>
-                    <SelectTrigger id="demo-select" className="w-full max-w-sm">
-                        <SelectValue placeholder="Pick an option" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="a">Option A</SelectItem>
-                        <SelectItem value="b">Option B</SelectItem>
-                        <SelectItem value="c">Option C</SelectItem>
-                    </SelectContent>
-                </Select>
-            </FieldContent>
-        </Field>
+        <ComboboxField
+            id="demo-combobox"
+            label={isMultiple ? 'Frameworks' : 'Choose'}
+            multiple={isMultiple}
+            items={DEMO_COMBOBOX_ITEMS}
+            multiItems={DEMO_COMBOBOX_MULTI_ITEMS}
+            singlePlaceholder="Search or pick…"
+            multiPlaceholder="Add framework…"
+            singleDescription={
+                <>
+                    Like select, but typeahead and filtering for long option
+                    lists. Set{' '}
+                    <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">
+                        multiple: true
+                    </code>{' '}
+                    on the field in YAML for multi-select (chips); preview with{' '}
+                    <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">
+                        {'?type=combobox&multiple=true'}
+                    </code>
+                    .
+                </>
+            }
+            multiDescription={
+                <>
+                    Enabled when the field sets{' '}
+                    <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">
+                        multiple: true
+                    </code>{' '}
+                    in Flatpack YAML (this preview uses{' '}
+                    <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">
+                        {'?type=combobox&multiple=true'}
+                    </code>
+                    ).
+                </>
+            }
+        />
     );
 }
 
 function DemoDatePicker() {
-    const [open, setOpen] = useState(false);
-    const [date, setDate] = useState<Date | undefined>();
-
     return (
-        <Field>
-            <FieldLabel htmlFor="demo-date-picker">Date</FieldLabel>
-            <FieldContent>
-                <Popover open={open} onOpenChange={setOpen}>
-                    <PopoverTrigger asChild>
-                        <button
-                            id="demo-date-picker"
-                            type="button"
-                            className={cn(
-                                'flex h-9 w-full min-w-0 max-w-sm items-center justify-start rounded-3xl border border-transparent bg-input/50 px-3 py-1 text-left text-base font-normal text-foreground transition-[color,box-shadow,background-color] outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 md:text-sm',
-                                open && 'border-ring ring-3 ring-ring/30',
-                            )}
-                            aria-expanded={open}
-                        >
-                            <CalendarIcon className="mr-2 size-4 shrink-0 text-muted-foreground" />
-                            {date ? (
-                                format(date, 'PPP')
-                            ) : (
-                                <span className="text-muted-foreground">
-                                    Pick a date
-                                </span>
-                            )}
-                        </button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                            mode="single"
-                            selected={date}
-                            onSelect={(d) => {
-                                setDate(d);
-                                setOpen(false);
-                            }}
-                        />
-                    </PopoverContent>
-                </Popover>
-            </FieldContent>
-        </Field>
-    );
-}
-
-function formatRangeLabel(range: DateRange | undefined): ReactNode {
-    if (!range?.from) {
-        return null;
-    }
-    if (!range.to) {
-        return (
-            <>
-                {format(range.from, 'PPP')}
-                <span className="text-muted-foreground"> — …</span>
-            </>
-        );
-    }
-    return (
-        <>
-            {format(range.from, 'PPP')}
-            <span className="text-muted-foreground"> — </span>
-            {format(range.to, 'PPP')}
-        </>
+        <DatePickerField
+            id="demo-date-picker"
+            label="Date"
+            emptyLabel="Pick a date"
+        />
     );
 }
 
 function DemoDateRangePicker() {
-    const [open, setOpen] = useState(false);
-    const [range, setRange] = useState<DateRange | undefined>();
-
     return (
-        <Field>
-            <FieldLabel htmlFor="demo-date-range-picker">Dates</FieldLabel>
-            <FieldContent>
-                <Popover open={open} onOpenChange={setOpen}>
-                    <PopoverTrigger asChild>
-                        <button
-                            id="demo-date-range-picker"
-                            type="button"
-                            className={cn(
-                                'flex h-9 w-full min-w-0 max-w-md items-center justify-start truncate rounded-3xl border border-transparent bg-input/50 px-3 py-1 text-left text-base font-normal text-foreground transition-[color,box-shadow,background-color] outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 md:text-sm',
-                                open && 'border-ring ring-3 ring-ring/30',
-                            )}
-                            aria-expanded={open}
-                        >
-                            <CalendarIcon className="mr-2 size-4 shrink-0 text-muted-foreground" />
-                            {formatRangeLabel(range) ?? (
-                                <span className="text-muted-foreground">
-                                    Pick a date range
-                                </span>
-                            )}
-                        </button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                            mode="range"
-                            numberOfMonths={2}
-                            selected={range}
-                            onSelect={(next) => {
-                                setRange(next);
-                                if (next?.from && next.to) {
-                                    setOpen(false);
-                                }
-                            }}
-                        />
-                    </PopoverContent>
-                </Popover>
-            </FieldContent>
-        </Field>
+        <DateRangePickerField
+            id="demo-date-range-picker"
+            label="Dates"
+            emptyLabel="Pick a date range"
+        />
     );
 }
 
 function DemoTimePicker() {
-    const [open, setOpen] = useState(false);
-    const [date, setDate] = useState<Date | undefined>();
-
     return (
-        <FieldGroup className="max-w-md flex-row flex-wrap items-end gap-4">
-            <Field className="min-w-0 flex-1">
-                <FieldLabel htmlFor="demo-time-picker-date">Date</FieldLabel>
-                <FieldContent>
-                    <Popover open={open} onOpenChange={setOpen}>
-                        <PopoverTrigger asChild>
-                            <button
-                                id="demo-time-picker-date"
-                                type="button"
-                                className={cn(
-                                    'flex h-9 w-full min-w-[8.5rem] items-center justify-between gap-2 rounded-3xl border border-transparent bg-input/50 px-3 py-1 text-left text-base font-normal text-foreground transition-[color,box-shadow,background-color] outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 md:text-sm',
-                                    open && 'border-ring ring-3 ring-ring/30',
-                                )}
-                                aria-expanded={open}
-                            >
-                                <span className="flex min-w-0 flex-1 items-center gap-2">
-                                    <CalendarIcon className="size-4 shrink-0 text-muted-foreground" />
-                                    <span
-                                        className={cn(
-                                            'min-w-0 truncate',
-                                            !date && 'text-muted-foreground',
-                                        )}
-                                    >
-                                        {date
-                                            ? format(date, 'PPP')
-                                            : 'Select date'}
-                                    </span>
-                                </span>
-                                <ChevronDownIcon className="size-4 shrink-0 text-muted-foreground" />
-                            </button>
-                        </PopoverTrigger>
-                        <PopoverContent
-                            className="w-auto overflow-hidden p-0"
-                            align="start"
-                        >
-                            <Calendar
-                                mode="single"
-                                captionLayout="dropdown"
-                                defaultMonth={date}
-                                selected={date}
-                                onSelect={(d) => {
-                                    setDate(d);
-                                    setOpen(false);
-                                }}
-                            />
-                        </PopoverContent>
-                    </Popover>
-                </FieldContent>
-            </Field>
-            <Field className="w-full min-w-[10rem] sm:w-36">
-                <FieldLabel htmlFor="demo-time-picker-time">Time</FieldLabel>
-                <FieldContent>
-                    <InputGroup className="rounded-3xl">
-                        <InputGroupAddon>
-                            <ClockIcon />
-                        </InputGroupAddon>
-                        <InputGroupInput
-                            type="time"
-                            id="demo-time-picker-time"
-                            step={1}
-                            defaultValue="10:30:00"
-                            className="appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
-                        />
-                    </InputGroup>
-                </FieldContent>
-            </Field>
-        </FieldGroup>
+        <TimePickerField
+            dateId="demo-time-picker-date"
+            timeId="demo-time-picker-time"
+            dateLabel="Date"
+            timeLabel="Time"
+            dateEmptyLabel="Select date"
+            timeDefaultValue="10:30:00"
+        />
     );
 }
 
 function DemoCheckbox() {
     return (
-        <Field orientation="horizontal">
-            <Checkbox id="demo-checkbox" defaultChecked />
-            <FieldLabel htmlFor="demo-checkbox">Accept terms</FieldLabel>
-        </Field>
+        <CheckboxField id="demo-checkbox" label="Accept terms" defaultChecked />
     );
 }
 
 function DemoSwitch() {
     return (
-        <Field orientation="horizontal">
-            <Switch id="demo-switch" defaultChecked />
-            <FieldLabel htmlFor="demo-switch">Airplane mode</FieldLabel>
-        </Field>
+        <SwitchField id="demo-switch" label="Airplane mode" defaultChecked />
     );
 }
 
@@ -343,6 +211,7 @@ const demos: Record<NormalizedType, () => ReactNode> = {
     text: DemoText,
     textarea: DemoTextarea,
     select: DemoSelect,
+    combobox: DemoCombobox,
     'date-picker': DemoDatePicker,
     'date-range-picker': DemoDateRangePicker,
     'time-picker': DemoTimePicker,
@@ -354,6 +223,7 @@ const allTypesOrdered: NormalizedType[] = [
     'text',
     'textarea',
     'select',
+    'combobox',
     'date-picker',
     'date-range-picker',
     'time-picker',
