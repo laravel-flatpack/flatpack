@@ -34,7 +34,6 @@
         "@fontsource-variable/inter": "^5.2.8",
         "@inertiajs/react": "^3.0.0",
         "@inertiajs/vite": "^3.0.0",
-        "@platejs/ai": "^52.3.22",
         "@platejs/basic-nodes": "^52.3.10",
         "@platejs/basic-styles": "^52.3.10",
         "@platejs/callout": "^52.3.10",

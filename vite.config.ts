@@ -146,6 +146,8 @@ export default defineConfig(({ mode, command }) => {
             dedupe: ['react', 'react-dom', 'scheduler'],
             alias: {
                 '@': resolve(packageRoot, 'resources/js'),
+                // dash-video-element dynamically imports dashjs; serve UMD from CDN instead of bundling.
+                dashjs: resolve(packageRoot, 'resources/js/shims/dashjs-cdn.ts'),
                 react: resolve(packageRoot, 'node_modules/react'),
                 'react-dom': resolve(packageRoot, 'node_modules/react-dom'),
                 'react-dom/client': resolve(packageRoot, 'node_modules/react-dom/client.js'),
