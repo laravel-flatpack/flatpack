@@ -20,7 +20,7 @@ import { ToolbarGroup } from '@/components/ui/toolbar';
 
 /**
  * Must render inside `<Plate>` (same scope as the editor). Used by
- * {@link RichTextEditor} when `showFixedToolbar` is true.
+ * {@link RichTextEditor} and {@link BlockEditor} when `showFixedToolbar` is true.
  */
 export function RichTextToolbar() {
     return (

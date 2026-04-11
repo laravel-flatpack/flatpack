@@ -3,6 +3,8 @@ export type FlatpackListPageProps = {
     name?: string;
     model?: string;
     icon?: string;
+    order?: number;
+    schema?: Record<string, unknown> | null;
 };
 
 export type FlatpackFormPageProps = {
@@ -12,4 +14,5 @@ export type FlatpackFormPageProps = {
     icon?: string;
     record: string | null;
     mode: 'create' | 'edit';
+    schema?: Record<string, unknown> | null;
 };

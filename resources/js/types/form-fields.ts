@@ -48,7 +48,10 @@ type RichTextFieldProps = FormFieldBase &
     WithPlaceholder & {
         showFixedToolbar?: boolean;
     };
-type BlockEditorFieldProps = FormFieldBase & WithPlaceholder;
+type BlockEditorFieldProps = FormFieldBase &
+    WithPlaceholder & {
+        showFixedToolbar?: boolean;
+    };
 
 export type FormFieldProps =
     | ({ type: 'text' } & TextFieldProps)
