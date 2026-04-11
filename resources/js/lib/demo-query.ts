@@ -1,5 +1,14 @@
 import type { FormFieldProps } from '@/types/form-fields';
 
+/** Query keys used only to pick which demo field to show — never merged into field props. */
+const DEMO_ROUTING_QUERY_KEYS = new Set([
+    'type',
+    'demo',
+    'component',
+    'field',
+    'debugDemo',
+]);
+
 /** Keys allowed to merge from the URL into {@link FormFieldProps} (`type` is always ignored). */
 const DEMO_QUERY_FIELD_KEYS = new Set([
     'label',
@@ -43,7 +52,61 @@ export function coerceQueryParamValue(raw: string): unknown {
     return safeDecodeURIComponent(raw);
 }
 
-/** Normalizes Inertia/Laravel `query` into flat string values (last value wins for arrays). */
+/**
+ * Parse the current visit URL’s query string into flat string values (last value wins per key).
+ * Use with Inertia’s `page.url` so demo params match the address bar even if server props differ.
+ */
+export function parseSearchParamsFromUrl(url: string): Record<string, string> {
+    try {
+        const base =
+            typeof globalThis !== 'undefined' &&
+            typeof (globalThis as unknown as { location?: { origin?: string } })
+                .location?.origin === 'string'
+                ? (globalThis as unknown as { location: { origin: string } })
+                      .location.origin
+                : 'http://localhost';
+        const u = new URL(url, base);
+        const out: Record<string, string> = {};
+        for (const key of new Set(u.searchParams.keys())) {
+            const values = u.searchParams.getAll(key);
+            const last = values[values.length - 1];
+            if (last !== undefined) {
+                out[key] = last;
+            }
+        }
+        return out;
+    } catch {
+        return {};
+    }
+}
+
+/**
+ * Reads the demo “which field” selector from merged query params.
+ * Order avoids collisions: some stacks add a bare `?type=`; prefer `?demo=text`.
+ */
+export function pickDemoComponentSelector(
+    flat: Record<string, string>,
+): string {
+    const keys = ['demo', 'component', 'field', 'type'] as const;
+    for (const key of keys) {
+        const v = flat[key];
+        if (typeof v === 'string' && v.trim() !== '') {
+            return v.trim();
+        }
+    }
+    return '';
+}
+
+/** Parse `window.location.search` (or the same shape) into a flat map. */
+export function parseLocationSearch(search: string): Record<string, string> {
+    if (search === '' || search === '?') {
+        return {};
+    }
+    const q = search.startsWith('?') ? search : `?${search}`;
+    return parseSearchParamsFromUrl(`http://localhost${q}`);
+}
+
+/** Normalizes Inertia/Laravel query maps into flat string values (last value wins for arrays). */
 export function flattenDemoQuery(
     query: Record<string, unknown> | undefined | null,
 ): Record<string, string> {
@@ -72,8 +135,8 @@ export function flattenDemoQuery(
 }
 
 /**
- * Merges optional URL query fields into catalog props. Skips `type` (routing only) and
- * unknown keys so arbitrary query params do not become stray React props.
+ * Merges optional URL query fields into catalog props. Skips routing keys (`type`, `demo`, …)
+ * and unknown keys so arbitrary query params do not become stray React props.
  */
 export function mergeQueryOverridesIntoFormFieldProps(
     props: FormFieldProps,
@@ -81,7 +144,7 @@ export function mergeQueryOverridesIntoFormFieldProps(
 ): FormFieldProps {
     const patch: Record<string, unknown> = {};
     for (const [k, v] of Object.entries(flat)) {
-        if (k === 'type' || !DEMO_QUERY_FIELD_KEYS.has(k)) {
+        if (DEMO_ROUTING_QUERY_KEYS.has(k) || !DEMO_QUERY_FIELD_KEYS.has(k)) {
             continue;
         }
         patch[k] = coerceQueryParamValue(v);

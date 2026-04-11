@@ -3,27 +3,62 @@ import {
     type ReactNode,
     Suspense,
     useCallback,
+    useEffect,
     useMemo,
     useState,
 } from 'react';
 import DemoLayout from '@/layouts/demo-layout';
 import {
     buildDemoFieldRenderProps,
-    demoComponentByType,
-    demoComponentTypes,
+    type DemoLazyFieldMap,
+    demoCatalogToByType,
+    demoCatalogToTypes,
     flattenDemoQuery,
-    lazyFieldByType,
+    lazyFieldMapFromCatalog,
     normalizeDemoComponentType,
+    parseLocationSearch,
+    parseSearchParamsFromUrl,
+    pickDemoComponentSelector,
 } from '@/lib/demo';
 import type {
     DemoComponentCatalogEntry,
     DemoComponentsInertiaProps,
+    DemoComponentType,
 } from '@/types/demo';
 
-export {
-    type DemoComponentType,
-    demoComponentTypes,
-} from '@/lib/demo';
+export type { DemoComponentType };
+
+/**
+ * Opt-in only (no automatic dev banner):
+ * - `?debugDemo=1` or `true` on the demo URL
+ */
+function useDemoQueryDebugEnabled(flatQuery: Record<string, string>): boolean {
+    if (flatQuery.debugDemo === '1' || flatQuery.debugDemo === 'true') {
+        return true;
+    }
+    return false;
+}
+
+function DemoQueryDebugDump({ data }: { data: unknown }) {
+    return (
+        <div
+            className="rounded-md border border-amber-500/60 bg-amber-500/10 p-4 font-mono text-xs text-foreground mb-8"
+            data-slot="demo-query-debug"
+        >
+            <p className="mb-2 font-sans font-semibold text-amber-950 dark:text-amber-100">
+                Demo query debug — also logged as{' '}
+                <code className="rounded bg-black/10 px-1 dark:bg-white/10">
+                    [flatpack demo/components]
+                </code>
+                . Enable with{' '}
+                <code className="rounded bg-black/10 px-1">?debugDemo=1</code> .
+            </p>
+            <pre className="max-h-[min(70vh,520px)] overflow-auto whitespace-pre-wrap break-words">
+                {JSON.stringify(data, null, 2)}
+            </pre>
+        </div>
+    );
+}
 
 function formatDemoLiveValue(value: unknown): string {
     return JSON.stringify(
@@ -36,9 +71,11 @@ function formatDemoLiveValue(value: unknown): string {
 function DemoFieldPreview({
     entry,
     queryOverrides,
+    lazyByType,
 }: {
     entry: DemoComponentCatalogEntry;
     queryOverrides: Record<string, string>;
+    lazyByType: DemoLazyFieldMap;
 }) {
     const [liveValue, setLiveValue] = useState<unknown>(null);
 
@@ -55,7 +92,7 @@ function DemoFieldPreview({
         [entry, queryOverrides, onValueChange],
     );
 
-    const LazyField = lazyFieldByType[entry.props.type];
+    const LazyField = lazyByType[entry.props.type];
 
     return (
         <div className="flex flex-col gap-4">
@@ -85,21 +122,115 @@ function DemoFieldPreview({
 }
 
 function DemoComponents() {
-    const { query } = usePage<DemoComponentsInertiaProps>().props;
+    const inertiaPage = usePage<DemoComponentsInertiaProps>();
+    const { query, catalog } = inertiaPage.props;
 
-    const flatQuery = useMemo(() => flattenDemoQuery(query), [query]);
+    const demoComponentByType = useMemo(
+        () => demoCatalogToByType(catalog),
+        [catalog],
+    );
+    const demoComponentTypes = useMemo(
+        () => demoCatalogToTypes(catalog),
+        [catalog],
+    );
+    const lazyFieldByType = useMemo(
+        () => lazyFieldMapFromCatalog(catalog),
+        [catalog],
+    );
 
-    const rawType = flatQuery.type;
+    const browserSearch =
+        typeof window !== 'undefined' ? window.location.search : '';
+
+    const { flatQuery, queryLayers } = useMemo(() => {
+        const fromServer = flattenDemoQuery(query);
+        const fromInertiaUrl = parseSearchParamsFromUrl(inertiaPage.url);
+        const fromAddressBar = parseLocationSearch(browserSearch);
+        // Address bar wins (matches what the user sees); then Inertia URL; then server props.
+        const merged = { ...fromServer, ...fromInertiaUrl, ...fromAddressBar };
+        return {
+            flatQuery: merged,
+            queryLayers: { fromServer, fromInertiaUrl, fromAddressBar },
+        };
+    }, [query, inertiaPage.url, browserSearch]);
+
+    const showQueryDebug = useDemoQueryDebugEnabled(flatQuery);
+
+    const queryDebugPayload = useMemo(() => {
+        const selectorPick = pickDemoComponentSelector(flatQuery);
+        const trimmed = selectorPick.trim().toLowerCase();
+        const norm = normalizeDemoComponentType(
+            trimmed !== '' ? trimmed : null,
+            demoComponentByType,
+        );
+        return {
+            step: 'demo/components query resolution',
+            inertia: {
+                component: inertiaPage.component,
+                url: inertiaPage.url,
+                version: inertiaPage.version,
+                propsTopLevelKeys: Object.keys(inertiaPage.props).sort(),
+            },
+            rawProps: {
+                query:
+                    query === undefined
+                        ? '(undefined — not sent by server)'
+                        : query,
+                catalogEntryCount: catalog.length,
+            },
+            browser:
+                typeof window === 'undefined'
+                    ? null
+                    : {
+                          href: window.location.href,
+                          search: window.location.search,
+                          pathname: window.location.pathname,
+                      },
+            queryLayers,
+            flatQueryMerged: flatQuery,
+            selector: {
+                raw: selectorPick,
+                trimmedLower: trimmed,
+            },
+            normalized: norm,
+            flags: {
+                requestedUnknown: trimmed !== '' && norm === null,
+            },
+        };
+    }, [
+        catalog,
+        demoComponentByType,
+        inertiaPage.component,
+        inertiaPage.props,
+        inertiaPage.url,
+        inertiaPage.version,
+        query,
+        flatQuery,
+        queryLayers,
+    ]);
+
+    useEffect(() => {
+        if (!showQueryDebug) {
+            return;
+        }
+        console.log('[flatpack demo/components]', queryDebugPayload);
+    }, [showQueryDebug, queryDebugPayload]);
+
+    const debugPanel = showQueryDebug ? (
+        <DemoQueryDebugDump data={queryDebugPayload} />
+    ) : null;
+
+    const selectorRaw = pickDemoComponentSelector(flatQuery);
+    const selectorTrimmed = selectorRaw.trim().toLowerCase();
     const normalized = useMemo(
         () =>
             normalizeDemoComponentType(
-                rawType !== undefined && rawType !== '' ? rawType : null,
+                selectorTrimmed !== '' ? selectorTrimmed : null,
+                demoComponentByType,
             ),
-        [rawType],
+        [selectorTrimmed, demoComponentByType],
     );
 
-    const requestedUnknown =
-        rawType !== undefined && rawType !== '' && normalized === null;
+    const requestedUnknown = selectorTrimmed !== '' && normalized === null;
 
     const headTitle =
         normalized !== null
@@ -110,16 +241,21 @@ function DemoComponents() {
         return (
             <div className="flex flex-col gap-4 p-6">
                 <Head title="Components" />
+                {debugPanel}
                 <p className="text-sm text-muted-foreground">
                     Unknown component type{' '}
                     <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-foreground">
-                        {rawType}
+                        {selectorRaw}
                     </code>
                     . Use a valid{' '}
                     <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono">
-                        ?type=
+                        ?demo=
                     </code>{' '}
-                    value or open this page without query parameters to see all
+                    (or{' '}
+                    <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono">
+                        ?type=
+                    </code>
+                    ) or open this page without those parameters to see all
                     components.
                 </p>
             </div>
@@ -134,9 +270,11 @@ function DemoComponents() {
                 data-slot="demo-components-single"
             >
                 <Head title={headTitle} />
+                {debugPanel}
                 <DemoFieldPreview
                     entry={demoComponentByType[normalized]}
                     queryOverrides={flatQuery}
+                    lazyByType={lazyFieldByType}
                 />
             </div>
         );
@@ -148,6 +286,7 @@ function DemoComponents() {
             data-slot="demo-components-all"
         >
             <Head title={headTitle} />
+            {debugPanel}
             <div className="flex flex-col gap-2">
                 <h1 className="text-2xl font-semibold tracking-tight">
                     Components
@@ -155,11 +294,14 @@ function DemoComponents() {
                 <p className="text-sm text-muted-foreground">
                     Preview Flatpack UI primitives. Use{' '}
                     <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">
-                        ?type=text
+                        ?demo=text
                     </code>{' '}
-                    (and similar) to show a single component for documentation
-                    iframes. Optional query keys override catalog props for a
-                    single component (for example{' '}
+                    (or{' '}
+                    <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">
+                        ?type=text
+                    </code>
+                    ) to show one field. Optional query keys override catalog
+                    props (for example{' '}
                     <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">
                         placeholder
                     </code>
@@ -186,12 +328,15 @@ function DemoComponents() {
                             <h2 className="text-lg font-medium tracking-tight">
                                 {demoComponentByType[key].title}
                             </h2>
-                            <p className="text-sm text-muted-foreground">{demoComponentByType[key].description}</p>
+                            <p className="text-sm text-muted-foreground">
+                                {demoComponentByType[key].description}
+                            </p>
                         </div>
                         <div className="rounded-xl border border-border bg-card/30 p-6">
                             <DemoFieldPreview
                                 entry={demoComponentByType[key]}
                                 queryOverrides={{}}
+                                lazyByType={lazyFieldByType}
                             />
                         </div>
                     </section>

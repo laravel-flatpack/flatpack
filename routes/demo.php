@@ -2,13 +2,7 @@
 
 declare(strict_types=1);
 
-use Illuminate\Http\Request;
+use Flatpack\Http\Controllers\DemoController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
-Route::get(
-    '/demo',
-    fn(Request $request) => Inertia::render('demo/components', [
-        'query' => $request->query(),
-    ])
-)->name('demo.components');
+Route::get('/demo', [DemoController::class, 'index'])->name('demo.components');

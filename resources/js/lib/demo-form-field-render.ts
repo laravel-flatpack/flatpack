@@ -1,14 +1,5 @@
 import type { FormFieldProps, FormFieldType } from '@/types/form-fields';
-
-type RenderContext = {
-    entryId: string;
-    onValueChange: (value: unknown) => void;
-};
-
-type FieldRenderFn = (
-    props: FormFieldProps,
-    ctx: RenderContext,
-) => Record<string, unknown>;
+import type { FieldRenderFn, RenderContext } from '@/types/demo-form-field-render';
 
 function renderTextTextareaSelect(props: FormFieldProps, ctx: RenderContext) {
     const { type: _t, ...rest } = props as Extract<
