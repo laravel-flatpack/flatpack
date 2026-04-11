@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Flatpack\Http\Controllers;
 
 use Flatpack\Composition\EntityComposition;
-use Inertia\Inertia;
+use Flatpack\Http\Responses\FlatpackResponse;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Inertia\Response;
 
 final readonly class FormController
@@ -14,26 +16,35 @@ final readonly class FormController
         private EntityComposition $entityComposition,
     ) {}
 
-    public function create(string $entity): Response
+    public function create(Request $request, string $entity): Response|JsonResponse
     {
         $form = $this->entityComposition->formFor($entity);
+        $schema = $this->entityComposition->formSchema($entity);
 
-        return Inertia::render('form', [
+        return FlatpackResponse::inertia('form', [
             'entity' => $entity,
             'name' => $form->name,
             'model' => $form->model,
             'icon' => $form->icon,
             'record' => null,
             'mode' => 'create',
-        ]);
+            'schema' => $schema,
+        ], $request->boolean('json'));
     }
 
-    public function edit(string $entity, string $record): Response
+    public function edit(Request $request, string $entity, string $record): Response|JsonResponse
     {
-        return Inertia::render('form', [
+        $form = $this->entityComposition->formFor($entity);
+        $schema = $this->entityComposition->formSchema($entity);
+
+        return FlatpackResponse::inertia('form', [
             'entity' => $entity,
+            'name' => $form->name,
+            'model' => $form->model,
+            'icon' => $form->icon,
             'record' => $record,
             'mode' => 'edit',
-        ]);
+            'schema' => $schema,
+        ], $request->boolean('json'));
     }
 }

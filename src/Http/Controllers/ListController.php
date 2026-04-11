@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Flatpack\Http\Controllers;
 
 use Flatpack\Composition\EntityComposition;
-use Inertia\Inertia;
+use Flatpack\Http\Responses\FlatpackResponse;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Inertia\Response;
 
 final readonly class ListController
@@ -14,16 +16,18 @@ final readonly class ListController
         private EntityComposition $entityComposition,
     ) {}
 
-    public function index(string $entity): Response
+    public function index(Request $request, string $entity): Response|JsonResponse
     {
         $list = $this->entityComposition->listFor($entity);
+        $schema = $this->entityComposition->listSchema($entity);
 
-        return Inertia::render('list', [
+        return FlatpackResponse::inertia('list', [
             'entity' => $entity,
             'name' => $list->name,
             'model' => $list->model,
             'icon' => $list->icon,
             'order' => $list->order,
-        ]);
+            'schema' => $schema,
+        ], $request->boolean('json'));
     }
 }

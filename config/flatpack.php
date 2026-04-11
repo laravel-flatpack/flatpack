@@ -23,7 +23,19 @@ return [
     | The prefix for the Flatpack dashboard routes. Default: 'flatpack'.
     |
     */
-    'prefix' => 'flatpack',
+    'prefix' => env('FLATPACK_PREFIX', 'flatpack'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Dashboard entity name
+    |--------------------------------------------------------------------------
+    |
+    | The entity name for the dashboard page. Default: 'dashboard'.
+    | This is the name of the folder in the flatpack path that contains the 
+    | dashboard list.yaml file.
+    |
+    */
+    'dashboard_entity' => env('FLATPACK_DASHBOARD_ENTITY', 'dashboard'),
 
     /*
     |--------------------------------------------------------------------------

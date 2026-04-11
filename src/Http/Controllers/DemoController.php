@@ -4,18 +4,19 @@ declare(strict_types=1);
 
 namespace Flatpack\Http\Controllers;
 
+use Flatpack\Http\Responses\FlatpackResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Inertia\Response;
 
 final class DemoController
 {
-    public function index(Request $request): Response
+    public function index(Request $request): Response|JsonResponse
     {
-        return Inertia::render('demo/components', [
+        return FlatpackResponse::inertia('demo/components', [
             'query' => $request->query(),
             'catalog' => $this->catalog(),
-        ]);
+        ], $request->boolean('json'));
     }
 
     /**
@@ -155,6 +156,7 @@ final class DemoController
                     'label' => 'Rich text label',
                     'placeholder' => 'Enter your rich text here',
                     'helperText' => 'A helper text for the rich text input field.',
+                    'showFixedToolbar' => true,
                 ],
                 'output' => [
                     'show' => true,
@@ -171,6 +173,7 @@ final class DemoController
                     'label' => 'Block editor label',
                     'placeholder' => 'Type / for blocks, or hover the gutter for + and drag…',
                     'helperText' => 'Notion-style: drag blocks, + inserts a paragraph below, right-click for block menu. No top toolbar.',
+                    'showFixedToolbar' => true,
                 ],
                 'output' => [
                     'show' => true,

@@ -38,4 +38,24 @@ final readonly class EntityComposition
             icon: $this->values->icon($data),
         );
     }
+
+    /**
+     * Raw list composition YAML (null if missing).
+     *
+     * @return array<string, mixed>|null
+     */
+    public function listSchema(string $entity): ?array
+    {
+        return $this->compositions->optional($entity, 'list');
+    }
+
+    /**
+     * Raw form composition YAML (null if missing).
+     *
+     * @return array<string, mixed>|null
+     */
+    public function formSchema(string $entity): ?array
+    {
+        return $this->compositions->optional($entity, 'form');
+    }
 }
