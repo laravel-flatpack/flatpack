@@ -31,7 +31,7 @@ return [
     |--------------------------------------------------------------------------
     |
     | The entity name for the dashboard page. Default: 'dashboard'.
-    | This is the name of the folder in the flatpack path that contains the 
+    | This is the name of the folder in the flatpack path that contains the
     | dashboard list.yaml file.
     |
     */

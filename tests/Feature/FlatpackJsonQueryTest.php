@@ -7,12 +7,15 @@ use Flatpack\Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
 
+use function Pest\Laravel\actingAs;
+
 uses(TestCase::class, RefreshDatabase::class);
 
 test('flatpack dashboard returns empty JSON resource when json query is true and no dashboard schema', function () {
-    $user = User::factory()->create();
+    /** @var User $user */
+    $user = User::factory()->createOne();
 
-    $payload = $this->actingAs($user)
+    $payload = actingAs($user)
         ->getJson(route('flatpack.dashboard', ['json' => true]))
         ->assertOk()
         ->json();
@@ -31,9 +34,10 @@ widgets: []
 YAML);
         config()->set('flatpack.path', $tempPath);
 
-        $user = User::factory()->create();
+        /** @var User $user */
+        $user = User::factory()->createOne();
 
-        $this->actingAs($user)
+        actingAs($user)
             ->getJson(route('flatpack.dashboard', ['json' => true]))
             ->assertOk()
             ->assertJson([
@@ -58,9 +62,10 @@ model: App\Models\Post
 YAML);
         config()->set('flatpack.path', $tempPath);
 
-        $user = User::factory()->create();
+        /** @var User $user */
+        $user = User::factory()->createOne();
 
-        $this->actingAs($user)
+        actingAs($user)
             ->getJson(route('flatpack.entities.index', ['entity' => 'posts', 'json' => true]))
             ->assertOk()
             ->assertJson([
@@ -85,9 +90,10 @@ fields: []
 YAML);
         config()->set('flatpack.path', $tempPath);
 
-        $user = User::factory()->create();
+        /** @var User $user */
+        $user = User::factory()->createOne();
 
-        $this->actingAs($user)
+        actingAs($user)
             ->getJson(route('flatpack.entities.create', ['entity' => 'posts', 'json' => true]))
             ->assertOk()
             ->assertJson([
@@ -109,9 +115,10 @@ test('flatpack entity edit returns JSON schema when json query is true', functio
         File::put($tempPath . '/posts/form.yaml', "name: Post\n");
         config()->set('flatpack.path', $tempPath);
 
-        $user = User::factory()->create();
+        /** @var User $user */
+        $user = User::factory()->createOne();
 
-        $this->actingAs($user)
+        actingAs($user)
             ->getJson(route('flatpack.entities.edit', [
                 'entity' => 'posts',
                 'record' => '1',
@@ -125,9 +132,10 @@ test('flatpack entity edit returns JSON schema when json query is true', functio
 });
 
 test('flatpack demo returns JSON catalog when json query is true', function () {
-    $user = User::factory()->create();
+    /** @var User $user */
+    $user = User::factory()->createOne();
 
-    $this->actingAs($user)
+    actingAs($user)
         ->getJson(route('flatpack.demo.components', ['json' => true]))
         ->assertOk()
         ->assertJsonStructure(['catalog'])

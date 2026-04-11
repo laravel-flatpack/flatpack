@@ -1,4 +1,9 @@
 {
+    "intelephense.environment.includePaths": [
+        "vendor/pestphp",
+        "vendor/phpunit/phpunit",
+        "vendor/laravel/framework"
+    ],
     "editor.formatOnSave": true,
     "[javascript]": {
         "editor.defaultFormatter": "biomejs.biome"
