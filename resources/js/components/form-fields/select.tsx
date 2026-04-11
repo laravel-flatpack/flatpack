@@ -41,7 +41,7 @@ export const SelectField = ({
                 >
                     <SelectTrigger
                         id={id}
-                        className="w-full max-w-sm"
+                        className="w-full"
                         aria-labelledby={label ? labelId : undefined}
                     >
                         <SelectValue placeholder={placeholder} />

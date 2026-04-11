@@ -30,7 +30,15 @@ export const RichTextField = ({
         <Field>
             <FieldTitle id={labelId}>{label}</FieldTitle>
             <FieldContent>
-                <Suspense fallback={<PlateEditorFallback />}>
+                <Suspense
+                    fallback={
+                        <PlateEditorFallback
+                            variant="rich-text"
+                            showFixedToolbar={showFixedToolbar}
+                            className={className}
+                        />
+                    }
+                >
                     <RichTextEditorLazy
                         labelId={labelId}
                         className={className}

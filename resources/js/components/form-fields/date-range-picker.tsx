@@ -53,7 +53,7 @@ export const DateRangePickerField = ({
                             id={id}
                             type="button"
                             className={cn(
-                                'flex h-9 w-full min-w-0 max-w-md items-center justify-start truncate rounded-3xl border border-transparent bg-input/50 px-3 py-1 text-left text-base font-normal text-foreground transition-[color,box-shadow,background-color] outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 md:text-sm',
+                                'flex h-9 w-full min-w-0 items-center justify-start truncate rounded-3xl border border-transparent bg-input/50 px-3 py-1 text-left text-base font-normal text-foreground transition-[color,box-shadow,background-color] outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 md:text-sm',
                                 open && 'border-ring ring-3 ring-ring/30',
                             )}
                             aria-expanded={open}

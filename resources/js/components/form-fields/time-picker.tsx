@@ -35,7 +35,7 @@ export const TimePickerField = ({
     const timeLabelId = `${timeId}-label`;
 
     return (
-        <FieldGroup className="max-w-md flex-row flex-wrap items-end gap-4">
+        <FieldGroup className="w-full flex-row flex-wrap items-end gap-4">
             <Field className="min-w-0 flex-1">
                 {dateLabel ? (
                     <FieldTitle id={dateLabelId}>{dateLabel}</FieldTitle>

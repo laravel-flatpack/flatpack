@@ -58,7 +58,7 @@ export const ComboboxField = ({
                             onValueChange?.(v);
                         }}
                     >
-                        <ComboboxChips className="max-w-sm">
+                        <ComboboxChips className="w-full">
                             <ComboboxValue>
                                 {multiValue.map((item) => (
                                     <ComboboxChip key={item}>

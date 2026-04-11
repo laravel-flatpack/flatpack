@@ -30,7 +30,15 @@ export const BlockEditorField = ({
         <Field>
             <FieldTitle id={labelId}>{label}</FieldTitle>
             <FieldContent>
-                <Suspense fallback={<PlateEditorFallback />}>
+                <Suspense
+                    fallback={
+                        <PlateEditorFallback
+                            variant="block"
+                            showFixedToolbar={showFixedToolbar}
+                            className={className}
+                        />
+                    }
+                >
                     <BlockEditorLazy
                         labelId={labelId}
                         className={className}
