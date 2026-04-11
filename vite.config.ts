@@ -48,7 +48,7 @@ function resolvePublicFlatpackDir(
 export default defineConfig(({ mode, command }) => {
     const env = loadEnv(mode, packageRoot, '');
     /** Must match the public URL segment where Flatpack assets are served (see flatpack::app @vite). */
-    const flatpackPublicBase = (env.VITE_FLATPACK_BASE || '/vendor/flatpack/build/').replace(
+    const flatpackPublicBase = ('/vendor/flatpack/build/').replace(
         /\/?$/,
         '/',
     );
@@ -157,8 +157,8 @@ export default defineConfig(({ mode, command }) => {
             },
         },
         server: {
-            host: env.VITE_HOST || '127.0.0.1',
-            port: env.VITE_PORT ? Number(env.VITE_PORT) : 5174,
+            host: env.FLATPACK_VITE_HOST || '127.0.0.1',
+            port: env.FLATPACK_VITE_PORT ? Number(env.FLATPACK_VITE_PORT) : 5174,
             strictPort: true,
             cors: true,
         },
