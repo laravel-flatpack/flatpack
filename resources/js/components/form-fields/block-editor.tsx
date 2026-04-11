@@ -1,6 +1,12 @@
 import type { Value } from 'platejs';
-import { BlockEditor } from '@/components/editor/block-editor';
+import { lazy, Suspense } from 'react';
 import { Field, FieldContent, FieldDescription, FieldTitle } from '../ui/field';
+import { PlateEditorFallback } from './plate-editor-fallback';
+
+const BlockEditorLazy = lazy(async () => {
+    const m = await import('@/components/editor/block-editor');
+    return { default: m.BlockEditor };
+});
 
 export const BlockEditorField = ({
     id,
@@ -22,12 +28,14 @@ export const BlockEditorField = ({
         <Field>
             <FieldTitle id={labelId}>{label}</FieldTitle>
             <FieldContent>
-                <BlockEditor
-                    labelId={labelId}
-                    className={className}
-                    placeholder={placeholder}
-                    onValueChange={onValueChange}
-                />
+                <Suspense fallback={<PlateEditorFallback />}>
+                    <BlockEditorLazy
+                        labelId={labelId}
+                        className={className}
+                        placeholder={placeholder}
+                        onValueChange={onValueChange}
+                    />
+                </Suspense>
                 {helperText ? (
                     <FieldDescription>{helperText}</FieldDescription>
                 ) : null}

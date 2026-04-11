@@ -1,6 +1,12 @@
 import type { Value } from 'platejs';
-import { RichTextEditor } from '@/components/editor/rich-text-editor';
+import { lazy, Suspense } from 'react';
 import { Field, FieldContent, FieldDescription, FieldTitle } from '../ui/field';
+import { PlateEditorFallback } from './plate-editor-fallback';
+
+const RichTextEditorLazy = lazy(async () => {
+    const m = await import('@/components/editor/rich-text-editor');
+    return { default: m.RichTextEditor };
+});
 
 export const RichTextField = ({
     id,
@@ -24,13 +30,15 @@ export const RichTextField = ({
         <Field>
             <FieldTitle id={labelId}>{label}</FieldTitle>
             <FieldContent>
-                <RichTextEditor
-                    labelId={labelId}
-                    className={className}
-                    placeholder={placeholder}
-                    showFixedToolbar={showFixedToolbar}
-                    onValueChange={onValueChange}
-                />
+                <Suspense fallback={<PlateEditorFallback />}>
+                    <RichTextEditorLazy
+                        labelId={labelId}
+                        className={className}
+                        placeholder={placeholder}
+                        showFixedToolbar={showFixedToolbar}
+                        onValueChange={onValueChange}
+                    />
+                </Suspense>
                 {helperText ? (
                     <FieldDescription>{helperText}</FieldDescription>
                 ) : null}
