@@ -13,7 +13,7 @@ final class DemoController
 {
     public function index(Request $request): Response|JsonResponse
     {
-        return FlatpackResponse::inertia('demo/components', [
+        return FlatpackResponse::inertia('demo', [
             'query' => $request->query(),
             'catalog' => $this->catalog(),
         ], $request->boolean('json'));

@@ -178,4 +178,15 @@ return [
     |
     */
     'bottom_menu' => null,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Enable demo page
+    |--------------------------------------------------------------------------
+    |
+    | Whether to enable the demo page. Default: false.
+    | The demo page displays all the components and their props in a table.
+    |
+    */
+    'enable_demo' => env('FLATPACK_ENABLE_DEMO', false),
 ];

@@ -17,4 +17,7 @@
             <directory>src</directory>
         </include>
     </source>
+    <php>
+        <env name="FLATPACK_ENABLE_DEMO" value="true"/>
+    </php>
 </phpunit>
