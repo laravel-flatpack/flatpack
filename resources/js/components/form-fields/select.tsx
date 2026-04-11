@@ -16,12 +16,14 @@ export const SelectField = ({
     placeholder,
     options,
     helperText,
+    onValueChange,
 }: {
     id: string;
     label: string;
     placeholder: string;
     options: SelectFieldOption[];
     helperText?: string;
+    onValueChange?: (value: string) => void;
 }) => {
     const [value, setValue] = useState(options[0]?.value ?? '');
     const labelId = `${id}-label`;
@@ -30,7 +32,13 @@ export const SelectField = ({
         <Field>
             {label ? <FieldTitle id={labelId}>{label}</FieldTitle> : null}
             <FieldContent>
-                <Select value={value} onValueChange={setValue}>
+                <Select
+                    value={value}
+                    onValueChange={(v) => {
+                        setValue(v);
+                        onValueChange?.(v);
+                    }}
+                >
                     <SelectTrigger
                         id={id}
                         className="w-full max-w-sm"

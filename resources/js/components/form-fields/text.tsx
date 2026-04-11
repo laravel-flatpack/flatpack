@@ -7,12 +7,14 @@ export const TextField = ({
     placeholder,
     helperText,
     defaultValue = '',
+    onValueChange,
 }: {
     id: string;
     label: string;
     placeholder: string;
     helperText?: string;
     defaultValue?: string;
+    onValueChange?: (value: string) => void;
 }) => {
     const labelId = `${id}-label`;
     return (
@@ -25,6 +27,7 @@ export const TextField = ({
                     placeholder={placeholder}
                     defaultValue={defaultValue}
                     aria-labelledby={label ? labelId : undefined}
+                    onChange={(e) => onValueChange?.(e.target.value)}
                 />
                 {helperText ? (
                     <FieldDescription>{helperText}</FieldDescription>

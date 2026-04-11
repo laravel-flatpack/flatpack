@@ -10,6 +10,7 @@ export const TextareaField = ({
     helperText,
     defaultValue = '',
     className,
+    onValueChange,
 }: {
     id: string;
     label: string;
@@ -18,6 +19,7 @@ export const TextareaField = ({
     helperText?: string;
     defaultValue?: string;
     className?: string;
+    onValueChange?: (value: string) => void;
 }) => {
     const labelId = `${id}-label`;
     return (
@@ -31,6 +33,7 @@ export const TextareaField = ({
                     rows={rows}
                     className={cn(className)}
                     aria-labelledby={label ? labelId : undefined}
+                    onChange={(e) => onValueChange?.(e.target.value)}
                 />
                 {helperText ? (
                     <FieldDescription>{helperText}</FieldDescription>

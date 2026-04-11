@@ -12,22 +12,25 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 
 export const TimePickerField = ({
-    dateId,
-    timeId,
+    id,
     dateLabel,
     timeLabel,
     dateEmptyLabel,
     timeDefaultValue,
+    onValueChange,
 }: {
-    dateId: string;
-    timeId: string;
+    id: string;
     dateLabel: string;
     timeLabel: string;
     dateEmptyLabel: string;
     timeDefaultValue: string;
+    onValueChange?: (value: { date: Date | undefined; time: string }) => void;
 }) => {
+    const dateId = `${id}-date`;
+    const timeId = `${id}-time`;
     const [open, setOpen] = useState(false);
     const [date, setDate] = useState<Date | undefined>();
+    const [time, setTime] = useState(timeDefaultValue);
     const dateLabelId = `${dateId}-label`;
     const timeLabelId = `${timeId}-label`;
 
@@ -77,6 +80,7 @@ export const TimePickerField = ({
                                 onSelect={(d) => {
                                     setDate(d);
                                     setOpen(false);
+                                    onValueChange?.({ date: d, time });
                                 }}
                             />
                         </PopoverContent>
@@ -101,6 +105,11 @@ export const TimePickerField = ({
                             aria-labelledby={
                                 timeLabel ? timeLabelId : undefined
                             }
+                            onChange={(e) => {
+                                const next = e.target.value;
+                                setTime(next);
+                                onValueChange?.({ date, time: next });
+                            }}
                         />
                     </InputGroup>
                 </FieldContent>

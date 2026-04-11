@@ -10,10 +10,12 @@ export const DatePickerField = ({
     id,
     label,
     emptyLabel,
+    onValueChange,
 }: {
     id: string;
     label: string;
     emptyLabel: string;
+    onValueChange?: (value: Date | undefined) => void;
 }) => {
     const [open, setOpen] = useState(false);
     const [date, setDate] = useState<Date | undefined>();
@@ -52,6 +54,7 @@ export const DatePickerField = ({
                             onSelect={(d) => {
                                 setDate(d);
                                 setOpen(false);
+                                onValueChange?.(d);
                             }}
                         />
                     </PopoverContent>

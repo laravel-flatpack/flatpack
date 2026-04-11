@@ -25,6 +25,7 @@ export const ComboboxField = ({
     multiPlaceholder,
     singleDescription,
     multiDescription,
+    onValueChange,
 }: {
     id: string;
     label: string;
@@ -35,6 +36,7 @@ export const ComboboxField = ({
     multiPlaceholder: string;
     singleDescription?: ReactNode;
     multiDescription?: ReactNode;
+    onValueChange?: (value: unknown) => void;
 }) => {
     const [singleValue, setSingleValue] = useState<ComboboxObjectItem | null>(
         null,
@@ -51,7 +53,10 @@ export const ComboboxField = ({
                         items={[...multiItems]}
                         multiple
                         value={multiValue}
-                        onValueChange={setMultiValue}
+                        onValueChange={(v) => {
+                            setMultiValue(v);
+                            onValueChange?.(v);
+                        }}
                     >
                         <ComboboxChips className="max-w-sm">
                             <ComboboxValue>
@@ -93,7 +98,10 @@ export const ComboboxField = ({
                 <Combobox
                     items={items}
                     value={singleValue}
-                    onValueChange={setSingleValue}
+                    onValueChange={(v) => {
+                        setSingleValue(v);
+                        onValueChange?.(v);
+                    }}
                 >
                     <ComboboxInput
                         id={id}

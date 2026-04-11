@@ -7,11 +7,8 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get(
-    'demo/components',
-    fn (Request $request) => Inertia::render('demo/components', [
-        'type' => $request->query('type') !== null && $request->query('type') !== ''
-            ? (string) $request->query('type')
-            : null,
-        'multiple' => $request->boolean('multiple'),
+    '/demo',
+    fn(Request $request) => Inertia::render('demo/components', [
+        'query' => $request->query(),
     ])
 )->name('demo.components');

@@ -32,10 +32,12 @@ export const DateRangePickerField = ({
     id,
     label,
     emptyLabel,
+    onValueChange,
 }: {
     id: string;
     label: string;
     emptyLabel: string;
+    onValueChange?: (value: DateRange | undefined) => void;
 }) => {
     const [open, setOpen] = useState(false);
     const [range, setRange] = useState<DateRange | undefined>();
@@ -72,6 +74,7 @@ export const DateRangePickerField = ({
                             selected={range}
                             onSelect={(next) => {
                                 setRange(next);
+                                onValueChange?.(next);
                                 if (next?.from && next.to) {
                                     setOpen(false);
                                 }
