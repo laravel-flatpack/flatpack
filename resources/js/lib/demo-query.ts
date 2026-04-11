@@ -4,9 +4,9 @@ import type { FormFieldProps } from '@/types/form-fields';
 const DEMO_ROUTING_QUERY_KEYS = new Set([
     'type',
     'demo',
-    'component',
     'field',
-    'debugDemo',
+    'widget',
+    'column',
 ]);
 
 /** Keys allowed to merge from the URL into {@link FormFieldProps} (`type` is always ignored). */
@@ -33,7 +33,7 @@ function safeDecodeURIComponent(raw: string): string {
     }
 }
 
-export function coerceQueryParamValue(raw: string): unknown {
+function coerceQueryParamValue(raw: string): unknown {
     const t = raw.trim();
     const lower = t.toLowerCase();
     if (lower === 'true' || lower === '1') {
@@ -82,13 +82,11 @@ export function parseSearchParamsFromUrl(url: string): Record<string, string> {
 
 /**
  * Reads the demo “which field” selector from merged query params.
- * Order avoids collisions: some stacks add a bare `?type=`; prefer `?demo=text`.
  */
 export function pickDemoComponentSelector(
     flat: Record<string, string>,
 ): string {
-    const keys = ['demo', 'component', 'field', 'type'] as const;
-    for (const key of keys) {
+    for (const key of DEMO_ROUTING_QUERY_KEYS) {
         const v = flat[key];
         if (typeof v === 'string' && v.trim() !== '') {
             return v.trim();
@@ -104,6 +102,20 @@ export function parseLocationSearch(search: string): Record<string, string> {
     }
     const q = search.startsWith('?') ? search : `?${search}`;
     return parseSearchParamsFromUrl(`http://localhost${q}`);
+}
+
+/**
+ * Merges demo query sources: address bar wins, then Inertia URL, then server props.
+ */
+export function mergeDemoFlatQuery(input: {
+    query: Record<string, unknown>;
+    inertiaUrl: string;
+    locationSearch: string;
+}): Record<string, string> {
+    const fromServer = flattenDemoQuery(input.query);
+    const fromInertiaUrl = parseSearchParamsFromUrl(input.inertiaUrl);
+    const fromAddressBar = parseLocationSearch(input.locationSearch);
+    return { ...fromServer, ...fromInertiaUrl, ...fromAddressBar };
 }
 
 /** Normalizes Inertia/Laravel query maps into flat string values (last value wins for arrays). */
@@ -150,4 +162,22 @@ export function mergeQueryOverridesIntoFormFieldProps(
         patch[k] = coerceQueryParamValue(v);
     }
     return { ...props, ...patch, type: props.type } as FormFieldProps;
+}
+
+/**
+ * When `showValue` is present in the merged query (e.g. `?showValue=true`), overrides the
+ * catalog’s live-value panel. Omit the key to use the catalog default. Not merged into field props.
+ */
+export function resolveDemoShowValue(
+    entry: { showValue: boolean },
+    flat: Record<string, string>,
+): boolean {
+    if (!Object.hasOwn(flat, 'showValue')) {
+        return entry.showValue;
+    }
+    const coerced = coerceQueryParamValue(flat.showValue);
+    if (typeof coerced === 'boolean') {
+        return coerced;
+    }
+    return entry.showValue;
 }

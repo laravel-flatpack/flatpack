@@ -1,63 +1,60 @@
 import { Head, usePage } from '@inertiajs/react';
+import { ChevronDown, RadioIcon } from 'lucide-react';
 import {
     type ReactNode,
     Suspense,
     useCallback,
-    useEffect,
     useMemo,
     useState,
 } from 'react';
+import {
+    FieldLoading,
+    type FieldLoadingProps,
+} from '@/components/field-loading';
+import {
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 import DemoLayout from '@/layouts/demo-layout';
 import {
     buildDemoFieldRenderProps,
     type DemoLazyFieldMap,
     demoCatalogToByType,
-    demoCatalogToTypes,
-    flattenDemoQuery,
     lazyFieldMapFromCatalog,
-    normalizeDemoComponentType,
-    parseLocationSearch,
-    parseSearchParamsFromUrl,
-    pickDemoComponentSelector,
+    resolveDemoComponentSelection,
 } from '@/lib/demo';
+import { mergeDemoFlatQuery, resolveDemoShowValue } from '@/lib/demo-query';
 import type {
     DemoComponentCatalogEntry,
     DemoComponentsInertiaProps,
-    DemoComponentType,
 } from '@/types/demo';
 
-export type { DemoComponentType };
+const FIELD_LOADING_TEXT_TYPES = new Set([
+    'text',
+    'date-picker',
+    'date-range-picker',
+    'time-picker',
+    'select',
+    'combobox',
+]);
 
-/**
- * Opt-in only (no automatic dev banner):
- * - `?debugDemo=1` or `true` on the demo URL
- */
-function useDemoQueryDebugEnabled(flatQuery: Record<string, string>): boolean {
-    if (flatQuery.debugDemo === '1' || flatQuery.debugDemo === 'true') {
-        return true;
-    }
-    return false;
-}
+const FIELD_LOADING_TEXTAREA_TYPES = new Set([
+    'textarea',
+    'rich-text',
+    'block-editor',
+]);
 
-function DemoQueryDebugDump({ data }: { data: unknown }) {
-    return (
-        <div
-            className="rounded-md border border-amber-500/60 bg-amber-500/10 p-4 font-mono text-xs text-foreground mb-8"
-            data-slot="demo-query-debug"
-        >
-            <p className="mb-2 font-sans font-semibold text-amber-950 dark:text-amber-100">
-                Demo query debug — also logged as{' '}
-                <code className="rounded bg-black/10 px-1 dark:bg-white/10">
-                    [flatpack demo/components]
-                </code>
-                . Enable with{' '}
-                <code className="rounded bg-black/10 px-1">?debugDemo=1</code> .
-            </p>
-            <pre className="max-h-[min(70vh,520px)] overflow-auto whitespace-pre-wrap break-words">
-                {JSON.stringify(data, null, 2)}
-            </pre>
-        </div>
-    );
+function fieldLoadingPropsForEntry(
+    entry: DemoComponentCatalogEntry,
+): FieldLoadingProps {
+    const { type, label, helperText } = entry.props;
+    return {
+        label: Boolean(label),
+        helperText: Boolean(helperText),
+        textField: FIELD_LOADING_TEXT_TYPES.has(type),
+        textareaField: FIELD_LOADING_TEXTAREA_TYPES.has(type),
+    };
 }
 
 function formatDemoLiveValue(value: unknown): string {
@@ -71,10 +68,13 @@ function formatDemoLiveValue(value: unknown): string {
 function DemoFieldPreview({
     entry,
     queryOverrides,
+    demoQueryFlat,
     lazyByType,
 }: {
     entry: DemoComponentCatalogEntry;
     queryOverrides: Record<string, string>;
+    /** Merged URL query for demo-only flags (e.g. `showValue`), not field prop overrides. */
+    demoQueryFlat: Record<string, string>;
     lazyByType: DemoLazyFieldMap;
 }) {
     const [liveValue, setLiveValue] = useState<unknown>(null);
@@ -94,28 +94,43 @@ function DemoFieldPreview({
 
     const LazyField = lazyByType[entry.props.type];
 
+    const fieldLoadingProps = useMemo(
+        () => fieldLoadingPropsForEntry(entry),
+        [entry],
+    );
+
+    const showLiveValue = resolveDemoShowValue(entry, demoQueryFlat);
+
     return (
         <div className="flex flex-col gap-4">
-            <Suspense
-                fallback={
-                    <div className="text-sm text-muted-foreground">
-                        Loading…
-                    </div>
-                }
-            >
+            <Suspense fallback={<FieldLoading {...fieldLoadingProps} />}>
                 <LazyField {...fieldProps} />
             </Suspense>
-            {entry.output?.show ? (
-                <div className="flex flex-col gap-1">
-                    <span className="text-xs font-medium text-muted-foreground">
-                        {entry.output.label}
-                    </span>
-                    <pre className="max-h-48 overflow-auto rounded-md border bg-muted/30 p-3 text-xs">
-                        {liveValue === null || liveValue === undefined
-                            ? 'null'
-                            : formatDemoLiveValue(liveValue)}
-                    </pre>
-                </div>
+            {showLiveValue ? (
+                <Collapsible defaultOpen={true}>
+                    <CollapsibleTrigger
+                        className="flex w-full items-center justify-between gap-2 rounded-md px-3 py-3 text-left text-muted-foreground outline-none transition-colors hover:bg-muted/40 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 [&[data-state=open]>svg]:rotate-180"
+                        type="button"
+                    >
+                        <div className="flex items-center gap-2">
+                            <RadioIcon className="size-4 shrink-0" />
+                            <span className="text-xs font-medium">
+                                Live Value
+                            </span>
+                        </div>
+                        <ChevronDown
+                            aria-hidden
+                            className="size-4 shrink-0 transition-transform duration-200"
+                        />
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                        <pre className="mt-2 max-h-48 overflow-auto rounded-md border bg-muted/30 p-3 text-xs">
+                            {liveValue === null || liveValue === undefined
+                                ? 'null'
+                                : formatDemoLiveValue(liveValue)}
+                        </pre>
+                    </CollapsibleContent>
+                </Collapsible>
             ) : null}
         </div>
     );
@@ -125,123 +140,42 @@ function DemoComponents() {
     const inertiaPage = usePage<DemoComponentsInertiaProps>();
     const { query, catalog } = inertiaPage.props;
 
-    const demoComponentByType = useMemo(
-        () => demoCatalogToByType(catalog),
-        [catalog],
-    );
-    const demoComponentTypes = useMemo(
-        () => demoCatalogToTypes(catalog),
-        [catalog],
-    );
-    const lazyFieldByType = useMemo(
-        () => lazyFieldMapFromCatalog(catalog),
+    const catalogDerived = useMemo(
+        () => ({
+            byType: demoCatalogToByType(catalog),
+            lazyByType: lazyFieldMapFromCatalog(catalog),
+            orderedTypes: catalog.map((e) => e.props.type),
+        }),
         [catalog],
     );
 
     const browserSearch =
         typeof window !== 'undefined' ? window.location.search : '';
 
-    const { flatQuery, queryLayers } = useMemo(() => {
-        const fromServer = flattenDemoQuery(query);
-        const fromInertiaUrl = parseSearchParamsFromUrl(inertiaPage.url);
-        const fromAddressBar = parseLocationSearch(browserSearch);
-        // Address bar wins (matches what the user sees); then Inertia URL; then server props.
-        const merged = { ...fromServer, ...fromInertiaUrl, ...fromAddressBar };
-        return {
-            flatQuery: merged,
-            queryLayers: { fromServer, fromInertiaUrl, fromAddressBar },
-        };
-    }, [query, inertiaPage.url, browserSearch]);
-
-    const showQueryDebug = useDemoQueryDebugEnabled(flatQuery);
-
-    const queryDebugPayload = useMemo(() => {
-        const selectorPick = pickDemoComponentSelector(flatQuery);
-        const trimmed = selectorPick.trim().toLowerCase();
-        const norm = normalizeDemoComponentType(
-            trimmed !== '' ? trimmed : null,
-            demoComponentByType,
-        );
-        return {
-            step: 'demo/components query resolution',
-            inertia: {
-                component: inertiaPage.component,
-                url: inertiaPage.url,
-                version: inertiaPage.version,
-                propsTopLevelKeys: Object.keys(inertiaPage.props).sort(),
-            },
-            rawProps: {
-                query:
-                    query === undefined
-                        ? '(undefined — not sent by server)'
-                        : query,
-                catalogEntryCount: catalog.length,
-            },
-            browser:
-                typeof window === 'undefined'
-                    ? null
-                    : {
-                          href: window.location.href,
-                          search: window.location.search,
-                          pathname: window.location.pathname,
-                      },
-            queryLayers,
-            flatQueryMerged: flatQuery,
-            selector: {
-                raw: selectorPick,
-                trimmedLower: trimmed,
-            },
-            normalized: norm,
-            flags: {
-                requestedUnknown: trimmed !== '' && norm === null,
-            },
-        };
-    }, [
-        catalog,
-        demoComponentByType,
-        inertiaPage.component,
-        inertiaPage.props,
-        inertiaPage.url,
-        inertiaPage.version,
-        query,
-        flatQuery,
-        queryLayers,
-    ]);
-
-    useEffect(() => {
-        if (!showQueryDebug) {
-            return;
-        }
-        console.log('[flatpack demo/components]', queryDebugPayload);
-    }, [showQueryDebug, queryDebugPayload]);
-
-    const debugPanel = showQueryDebug ? (
-        <DemoQueryDebugDump data={queryDebugPayload} />
-    ) : null;
-
-    const selectorRaw = pickDemoComponentSelector(flatQuery);
-    const selectorTrimmed = selectorRaw.trim().toLowerCase();
-    const normalized = useMemo(
+    const flatQuery = useMemo(
         () =>
-            normalizeDemoComponentType(
-                selectorTrimmed !== '' ? selectorTrimmed : null,
-                demoComponentByType,
-            ),
-        [selectorTrimmed, demoComponentByType],
+            mergeDemoFlatQuery({
+                query,
+                inertiaUrl: inertiaPage.url,
+                locationSearch: browserSearch,
+            }),
+        [query, inertiaPage.url, browserSearch],
     );
 
-    const requestedUnknown = selectorTrimmed !== '' && normalized === null;
+    const { selectorRaw, normalized, requestedUnknown } = useMemo(
+        () => resolveDemoComponentSelection(flatQuery, catalogDerived.byType),
+        [flatQuery, catalogDerived.byType],
+    );
 
     const headTitle =
         normalized !== null
-            ? `${demoComponentByType[normalized].title} — Components`
+            ? `${catalogDerived.byType[normalized].title} — Components`
             : 'Components';
 
     if (requestedUnknown) {
         return (
             <div className="flex flex-col gap-4 p-6">
-                <Head title="Components" />
-                {debugPanel}
+                <Head title={headTitle} />
                 <p className="text-sm text-muted-foreground">
                     Unknown component type{' '}
                     <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-foreground">
@@ -249,13 +183,9 @@ function DemoComponents() {
                     </code>
                     . Use a valid{' '}
                     <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono">
-                        ?demo=
-                    </code>{' '}
-                    (or{' '}
-                    <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono">
                         ?type=
-                    </code>
-                    ) or open this page without those parameters to see all
+                    </code>{' '}
+                    or open this page without those parameters to see all
                     components.
                 </p>
             </div>
@@ -270,11 +200,11 @@ function DemoComponents() {
                 data-slot="demo-components-single"
             >
                 <Head title={headTitle} />
-                {debugPanel}
                 <DemoFieldPreview
-                    entry={demoComponentByType[normalized]}
+                    entry={catalogDerived.byType[normalized]}
                     queryOverrides={flatQuery}
-                    lazyByType={lazyFieldByType}
+                    demoQueryFlat={flatQuery}
+                    lazyByType={catalogDerived.lazyByType}
                 />
             </div>
         );
@@ -286,7 +216,6 @@ function DemoComponents() {
             data-slot="demo-components-all"
         >
             <Head title={headTitle} />
-            {debugPanel}
             <div className="flex flex-col gap-2">
                 <h1 className="text-2xl font-semibold tracking-tight">
                     Components
@@ -294,11 +223,11 @@ function DemoComponents() {
                 <p className="text-sm text-muted-foreground">
                     Preview Flatpack UI primitives. Use{' '}
                     <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">
-                        ?demo=text
-                    </code>{' '}
-                    (or{' '}
+                        ?type=
+                    </code>
+                    (or
                     <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">
-                        ?type=text
+                        ?demo=text
                     </code>
                     ) to show one field. Optional query keys override catalog
                     props (for example{' '}
@@ -313,11 +242,19 @@ function DemoComponents() {
                     <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">
                         showFixedToolbar
                     </code>
-                    ).
+                    ). Use{' '}
+                    <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">
+                        showValue=true
+                    </code>{' '}
+                    or{' '}
+                    <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">
+                        showValue=false
+                    </code>{' '}
+                    to toggle the live value panel.
                 </p>
             </div>
             <div className="flex flex-col gap-12">
-                {demoComponentTypes.map((key) => (
+                {catalogDerived.orderedTypes.map((key) => (
                     <section
                         key={key}
                         id={`demo-${key}`}
@@ -326,17 +263,18 @@ function DemoComponents() {
                     >
                         <div className="flex flex-col gap-1">
                             <h2 className="text-lg font-medium tracking-tight">
-                                {demoComponentByType[key].title}
+                                {catalogDerived.byType[key].title}
                             </h2>
                             <p className="text-sm text-muted-foreground">
-                                {demoComponentByType[key].description}
+                                {catalogDerived.byType[key].description}
                             </p>
                         </div>
                         <div className="rounded-xl border border-border bg-card/30 p-6">
                             <DemoFieldPreview
-                                entry={demoComponentByType[key]}
+                                entry={catalogDerived.byType[key]}
                                 queryOverrides={{}}
-                                lazyByType={lazyFieldByType}
+                                demoQueryFlat={flatQuery}
+                                lazyByType={catalogDerived.lazyByType}
                             />
                         </div>
                     </section>

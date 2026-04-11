@@ -1,6 +1,9 @@
 import type { ComponentType, LazyExoticComponent } from 'react';
 import { formFieldPropsToRenderProps } from '@/lib/demo-form-field-render';
-import { mergeQueryOverridesIntoFormFieldProps } from '@/lib/demo-query';
+import {
+    mergeQueryOverridesIntoFormFieldProps,
+    pickDemoComponentSelector,
+} from '@/lib/demo-query';
 import { loadField } from '@/lib/form';
 import type {
     DemoComponentCatalogEntry,
@@ -8,13 +11,6 @@ import type {
 } from '@/types/demo';
 import type { FormFieldType } from '@/types/form-fields';
 
-export {
-    flattenDemoQuery,
-    mergeQueryOverridesIntoFormFieldProps,
-    parseLocationSearch,
-    parseSearchParamsFromUrl,
-    pickDemoComponentSelector,
-} from '@/lib/demo-query';
 export type { DemoComponentType };
 
 export type DemoLazyFieldMap = Record<
@@ -32,13 +28,6 @@ export function demoCatalogToByType(
     >;
 }
 
-/** Ordered list of field `type` discriminants from the catalog. */
-export function demoCatalogToTypes(
-    catalog: DemoComponentCatalogEntry[],
-): DemoComponentType[] {
-    return catalog.map((e) => e.props.type);
-}
-
 export function normalizeDemoComponentType(
     raw: string | null,
     byType: Record<string, DemoComponentCatalogEntry>,
@@ -51,6 +40,24 @@ export function normalizeDemoComponentType(
         return lower as DemoComponentType;
     }
     return null;
+}
+
+export function resolveDemoComponentSelection(
+    flatQuery: Record<string, string>,
+    byType: Record<string, DemoComponentCatalogEntry>,
+): {
+    selectorRaw: string;
+    normalized: DemoComponentType | null;
+    requestedUnknown: boolean;
+} {
+    const selectorRaw = pickDemoComponentSelector(flatQuery);
+    const selectorTrimmed = selectorRaw.trim().toLowerCase();
+    const normalized =
+        selectorTrimmed === ''
+            ? null
+            : normalizeDemoComponentType(selectorTrimmed, byType);
+    const requestedUnknown = selectorTrimmed !== '' && normalized === null;
+    return { selectorRaw, normalized, requestedUnknown };
 }
 
 /** Lazy field chunks for each distinct `props.type` in the catalog. */

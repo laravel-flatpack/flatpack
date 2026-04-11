@@ -5,7 +5,7 @@ type DemoEntryBase = {
     title: string;
     description: string;
     value: unknown;
-    output?: FormFieldOutput;
+    showValue: boolean;
 };
 
 export type DemoComponentCatalogEntry = DemoEntryBase & {

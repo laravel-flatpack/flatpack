@@ -37,6 +37,7 @@ final class DemoController
                     'placeholder' => 'Enter your text here',
                     'helperText' => 'A helper text for the text input field.',
                 ],
+                'showValue' => false,
                 'value' => null,
             ],
             [
@@ -49,6 +50,7 @@ final class DemoController
                     'placeholder' => 'Enter your text here',
                     'helperText' => 'A helper text for the textarea input field.',
                 ],
+                'showValue' => false,
                 'value' => null,
             ],
             [
@@ -66,6 +68,7 @@ final class DemoController
                         ['value' => 'c', 'label' => 'Option C'],
                     ],
                 ],
+                'showValue' => false,
                 'value' => null,
             ],
             [
@@ -84,6 +87,7 @@ final class DemoController
                     ],
                     'multiple' => true,
                 ],
+                'showValue' => false,
                 'value' => null,
             ],
             [
@@ -96,6 +100,7 @@ final class DemoController
                     'placeholder' => 'Select a date',
                     'helperText' => 'A helper text for the date picker input field.',
                 ],
+                'showValue' => false,
                 'value' => null,
             ],
             [
@@ -108,6 +113,7 @@ final class DemoController
                     'placeholder' => 'Select a date range',
                     'helperText' => 'A helper text for the date range picker input field.',
                 ],
+                'showValue' => false,
                 'value' => null,
             ],
             [
@@ -123,6 +129,7 @@ final class DemoController
                     'timeDefaultValue' => '09:00:00',
                     'helperText' => 'A helper text for the time picker input field.',
                 ],
+                'showValue' => false,
                 'value' => null,
             ],
             [
@@ -134,6 +141,7 @@ final class DemoController
                     'label' => 'Checkbox label',
                     'helperText' => 'A helper text for the checkbox input field.',
                 ],
+                'showValue' => false,
                 'value' => null,
             ],
             [
@@ -145,6 +153,7 @@ final class DemoController
                     'label' => 'Switch label',
                     'helperText' => 'A helper text for the switch input field.',
                 ],
+                'showValue' => false,
                 'value' => null,
             ],
             [
@@ -158,10 +167,7 @@ final class DemoController
                     'helperText' => 'A helper text for the rich text input field.',
                     'showFixedToolbar' => true,
                 ],
-                'output' => [
-                    'show' => true,
-                    'label' => 'Exported JSON (value)',
-                ],
+                'showValue' => true,
                 'value' => null,
             ],
             [
@@ -175,10 +181,7 @@ final class DemoController
                     'helperText' => 'Notion-style: drag blocks, + inserts a paragraph below, right-click for block menu. No top toolbar.',
                     'showFixedToolbar' => true,
                 ],
-                'output' => [
-                    'show' => true,
-                    'label' => 'Exported JSON (value)',
-                ],
+                'showValue' => true,
                 'value' => null,
             ],
         ];
