@@ -9,6 +9,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Response;
 
+use function fake;
+
 final class DemoController
 {
     public function index(Request $request): Response|JsonResponse
@@ -184,6 +186,104 @@ final class DemoController
                 ],
                 'showValue' => true,
                 'value' => null,
+            ],
+            [
+                'id' => 'data-table',
+                'title' => 'Data table',
+                'description' => 'A data table input field.',
+                'props' => [
+                    'type' => 'table',
+                    'label' => 'Data table label',
+                    'helperText' => 'A helper text for the data table input field.',
+                    'checkboxes' => true,
+                    'reorderable' => true,
+                    'actions' => [],
+                    'columns' => [
+                        [
+                            'id' => 'id',
+                            'label' => 'ID',
+                            'sortable' => true,
+                            'searchable' => true,
+                        ],
+                        [
+                            'id' => 'name',
+                            'label' => 'Name',
+                            'editable' => true,
+                            'detailDrawer' => true,
+                            'sortable' => true,
+                            'searchable' => true,
+                        ],
+                        [
+                            'id' => 'email',
+                            'label' => 'Email',
+                            'editable' => true,
+                            'sortable' => true,
+                            'searchable' => true,
+                        ],
+                        [
+                            'id' => 'status',
+                            'label' => 'Status',
+                            'type' => 'select',
+                            'sortable' => true,
+                            'options' => [
+                                ['value' => 'active', 'label' => 'Active', 'color' => 'green'],
+                                ['value' => 'inactive', 'label' => 'Inactive', 'color' => 'red'],
+                                ['value' => 'pending', 'label' => 'Pending', 'color' => 'yellow'],
+                            ],
+                        ],
+                        [
+                            'id' => 'created_at',
+                            'label' => 'Created at',
+                            'type' => 'date',
+                            'format' => 'Y-m-d',
+                            'timezone' => 'UTC',
+                            'sortable' => true,
+                            'searchable' => true,
+                            'invisible' => true,
+                        ],
+                        [
+                            'id' => 'updated_at',
+                            'label' => 'Updated at',
+                            'type' => 'date',
+                            'format' => 'Y-m-d',
+                            'timezone' => 'UTC',
+                            'sortable' => true,
+                            'searchable' => true,
+                            'invisible' => true,
+                        ],
+                        [
+                            'id' => 'actions',
+                            'label' => 'Actions',
+                            'type' => 'actions',
+                            'invisible' => false,
+                            'buttons' => [
+                                'edit' => [
+                                    'label' => 'Edit',
+                                    'icon' => 'edit',
+                                    'action' => 'edit',
+                                ],
+                                'delete' => [
+                                    'label' => 'Delete',
+                                    'icon' => 'delete',
+                                    'action' => 'delete',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                'showValue' => true,
+                'value' => array_map(
+                    static fn(): array => [
+                        'id' => fake()->uuid(),
+                        'name' => fake()->name(),
+                        'email' => fake()->email(),
+                        'status' => fake()->randomElement(['active', 'inactive', 'pending']),
+                        'created_at' => fake()->dateTime()->format('Y-m-d H:i:s'),
+                        'updated_at' => fake()->dateTime()->format('Y-m-d H:i:s'),
+                        'sort_order' => fake()->numberBetween(1, 100),
+                    ],
+                    range(1, 25),
+                ),
             ],
         ];
     }

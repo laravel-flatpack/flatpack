@@ -9,7 +9,8 @@ export const TableField = ({
     columns,
     data,
     checkboxes,
-    onValueChange: _onValueChange,
+    reorderable,
+    onValueChange,
 }: {
     id: string;
     label: string;
@@ -17,6 +18,7 @@ export const TableField = ({
     columns: FlatpackDataTableColumn[];
     data: Record<string, unknown>[];
     checkboxes?: boolean;
+    reorderable?: boolean | string;
     onValueChange?: (value: unknown) => void;
 }) => {
     const labelId = `${id}-label`;
@@ -29,6 +31,8 @@ export const TableField = ({
                     columns={columns}
                     data={data}
                     checkboxes={checkboxes}
+                    reorderable={reorderable}
+                    onValueChange={onValueChange}
                 />
                 {helperText ? (
                     <FieldDescription>{helperText}</FieldDescription>

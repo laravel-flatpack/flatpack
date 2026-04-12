@@ -64,6 +64,11 @@ type TableFieldProps = FormFieldBase & {
     data?: Record<string, unknown>[];
     checkboxes?: boolean;
     actions?: unknown[];
+    /**
+     * When set, shows a drag handle per row and allows reordering (updates row order and reindexes the order column).
+     * `true` uses `sort_order`; a string uses that column id.
+     */
+    reorderable?: boolean | string;
 };
 
 export type FormFieldProps =
