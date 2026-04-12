@@ -68,9 +68,6 @@
     "minimum-stability": "stable",
     "prefer-stable": true,
     "scripts": {
-        "check": "composer run frontend:check && composer run lint && composer run rector && composer run phpstan",
-        "check:test": "composer run check && composer run test",
-        "frontend:check": "npm run types:check && npm run lint:fix",
         "lint": "pint",
         "lint:test": "pint --test",
         "phpstan": "phpstan analyse --memory-limit=512M",

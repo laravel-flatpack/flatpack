@@ -1,7 +1,4 @@
-import type {
-    FieldRenderFn,
-    RenderContext,
-} from '@/types/form-field-render';
+import type { FieldRenderFn, RenderContext } from '@/types/form-field-render';
 import type { FormFieldProps, FormFieldType } from '@/types/form-fields';
 
 function renderTextTextareaSelect(props: FormFieldProps, ctx: RenderContext) {

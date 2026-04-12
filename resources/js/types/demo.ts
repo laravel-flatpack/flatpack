@@ -1,4 +1,4 @@
-import type { FormFieldOutput, FormFieldProps } from '@/types/form-fields';
+import type { FormFieldProps } from '@/types/form-fields';
 
 type DemoEntryBase = {
     id: string;

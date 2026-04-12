@@ -11,17 +11,28 @@
         "lint": "biome check resources/js resources/css",
         "lint:fix": "biome check --write resources/js resources/css",
         "format": "biome format --write resources/js resources/css",
-        "types:check": "tsc --noEmit"
+        "types:check": "tsc --noEmit",
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "test:backend": "composer run test",
+        "validate": "npm run validate:backend && npm run validate:frontend && npm run test:backend && npm run test",
+        "validate:backend": "composer run lint && composer run rector && composer run phpstan",
+        "validate:frontend": "npm run format && npm run lint:fix && npm run types:check"
     },
     "devDependencies": {
         "@biomejs/biome": "^2.4.10",
+        "@testing-library/jest-dom": "^6.9.1",
+        "@testing-library/react": "^16.3.2",
+        "@testing-library/user-event": "^14.6.1",
         "@types/lodash": "^4.17.24",
         "@types/node": "^22.13.5",
         "@types/react": "^19.2.0",
         "@types/react-dom": "^19.2.0",
         "@vitejs/plugin-react": "^5.2.0",
+        "jsdom": "^29.0.2",
         "patch-package": "^8.0.1",
-        "typescript": "^5.7.2"
+        "typescript": "^5.7.2",
+        "vitest": "^4.1.4"
     },
     "dependencies": {
         "@ariakit/react": "^0.4.25",
