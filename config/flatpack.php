@@ -3,6 +3,9 @@
 declare(strict_types=1);
 
 use Flatpack\Http\Controllers\SessionController;
+use Flatpack\Actions\Handlers\DeleteRecordHandler;
+use Flatpack\Actions\Handlers\EditRecordHandler;
+use Flatpack\Actions\Handlers\SaveRecordHandler;
 
 return [
     /*
@@ -36,6 +39,22 @@ return [
     |
     */
     'dashboard_entity' => env('FLATPACK_DASHBOARD_ENTITY', 'dashboard'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Flatpack actions
+    |--------------------------------------------------------------------------
+    |
+    | The actions for forms and lists. Default: ['save', 'delete'].
+    | You can add your own actions by adding a class that implements
+    | the Flatpack\Contracts\Actions\FlatpackAction interface.
+    |
+    */
+    'actions' => [
+        'edit' => EditRecordHandler::class,
+        'save' => SaveRecordHandler::class,
+        'delete' => DeleteRecordHandler::class,
+    ],
 
     /*
     |--------------------------------------------------------------------------
