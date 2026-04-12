@@ -3,6 +3,8 @@
  * Mirrors the shape sent from `DemoController` / future list controllers.
  */
 
+import type { ReactNode } from 'react';
+
 /** Drives the read-only select cell leading icon in {@link DataTable}. */
 export type FlatpackDataTableSelectOptionStatus =
     | 'success'
@@ -59,4 +61,38 @@ export type FlatpackDataTableColumn = {
     detailDrawer?: boolean;
     /** Start hidden; user can show via column picker. */
     invisible?: boolean;
+};
+
+export type BuildDataTableColumnDefsOptions = {
+    checkboxes?: boolean;
+    reorderable?: boolean;
+    onCellChange?: (rowId: string, columnId: string, value: unknown) => void;
+    onRowReplace?: (rowId: string, nextRow: Record<string, unknown>) => void;
+};
+
+export type DataTableProps = {
+    /** Field id for accessibility (from form binding context). */
+    id: string;
+    columns: FlatpackDataTableColumn[];
+    data: Record<string, unknown>[];
+    checkboxes?: boolean;
+    /**
+     * Enables a drag handle column and row reordering. `true` reindexes `sort_order`; a string reindexes that column id.
+     */
+    reorderable?: boolean | string;
+    onValueChange?: (value: unknown) => void;
+    className?: string;
+    /** Leading toolbar slot (e.g. view tabs). Renders left of the Columns control. */
+    toolbarStart?: ReactNode;
+    /** Slot after the Columns menu (e.g. primary action such as “Add section”). */
+    toolbarAfterColumns?: ReactNode;
+    /**
+     * When this table is wrapped in a parent `Tabs` root, set to the tab value that should
+     * show the grid + pagination (e.g. `"outline"`). Wraps those sections in `TabsContent`.
+     */
+    primaryTabPanelValue?: string;
+    /**
+     * Extra `TabsContent` nodes for other tab values, rendered as siblings after the primary panel.
+     */
+    tabPanels?: ReactNode;
 };
