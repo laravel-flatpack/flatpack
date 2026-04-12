@@ -15,9 +15,8 @@
         "test": "vitest run",
         "test:watch": "vitest",
         "test:backend": "composer run test",
-        "validate": "npm run validate:backend && npm run validate:frontend && npm run test:backend && npm run test",
-        "validate:backend": "composer run lint && composer run rector && composer run phpstan",
-        "validate:frontend": "npm run format && npm run lint:fix && npm run types:check"
+        "check": "npm run format && npm run lint:fix && npm run types:check && npm run test",
+        "check:all": "npm run check && composer run check"
     },
     "devDependencies": {
         "@biomejs/biome": "^2.4.10",

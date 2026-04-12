@@ -72,6 +72,7 @@
         "lint:test": "pint --test",
         "phpstan": "phpstan analyse --memory-limit=512M",
         "rector": "rector --dry-run",
-        "test": "pest"
+        "test": "pest",
+        "check": "composer run lint && composer run rector && composer run phpstan && composer run test"
     }
 }
