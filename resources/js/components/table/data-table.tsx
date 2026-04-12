@@ -67,7 +67,6 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { TabsContent } from '@/components/ui/tabs';
 import { reindexReorderColumn, stableRowId } from '@/lib/data-table-utils';
 import { cn } from '@/lib/utils';
 import type { DataTableProps } from '@/types/data-table';
@@ -88,8 +87,6 @@ export function DataTable({
     className,
     toolbarStart,
     toolbarAfterColumns,
-    primaryTabPanelValue,
-    tabPanels,
 }: DataTableProps) {
     const reorderKey =
         reorderableProp === true
@@ -495,18 +492,6 @@ export function DataTable({
         </>
     );
 
-    const primaryPanel =
-        primaryTabPanelValue != null ? (
-            <TabsContent
-                value={primaryTabPanelValue}
-                className="relative flex flex-col gap-4 overflow-auto outline-none"
-            >
-                {tableAndFooter}
-            </TabsContent>
-        ) : (
-            tableAndFooter
-        );
-
     return (
         <div
             className={cn('flex w-full flex-col gap-4', className)}
@@ -563,8 +548,7 @@ export function DataTable({
                 </div>
             </div>
 
-            {primaryPanel}
-            {tabPanels}
+            {tableAndFooter}
         </div>
     );
 }

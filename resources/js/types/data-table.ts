@@ -82,17 +82,8 @@ export type DataTableProps = {
     reorderable?: boolean | string;
     onValueChange?: (value: unknown) => void;
     className?: string;
-    /** Leading toolbar slot (e.g. view tabs). Renders left of the Columns control. */
+    /** Leading toolbar slot. Renders left of the Columns control. */
     toolbarStart?: ReactNode;
     /** Slot after the Columns menu (e.g. primary action such as “Add section”). */
     toolbarAfterColumns?: ReactNode;
-    /**
-     * When this table is wrapped in a parent `Tabs` root, set to the tab value that should
-     * show the grid + pagination (e.g. `"outline"`). Wraps those sections in `TabsContent`.
-     */
-    primaryTabPanelValue?: string;
-    /**
-     * Extra `TabsContent` nodes for other tab values, rendered as siblings after the primary panel.
-     */
-    tabPanels?: ReactNode;
 };
