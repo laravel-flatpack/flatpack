@@ -15,6 +15,7 @@ import {
     verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import {
+    type Column,
     type ColumnFiltersState,
     flexRender,
     getCoreRowModel,
@@ -34,6 +35,7 @@ import {
     ChevronsLeftIcon,
     ChevronsRightIcon,
     Columns3Icon,
+    SearchIcon,
 } from 'lucide-react';
 import * as React from 'react';
 import { buildDataTableColumnDefs } from '@/components/table/data-table-column-defs';
@@ -50,6 +52,7 @@ import {
     DropdownMenuContent,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
     Select,
@@ -96,6 +99,11 @@ export function DataTable({
               : null;
     const isReorderable = reorderKey !== null;
 
+    const hasSearchableColumns = React.useMemo(
+        () => schemaColumns.some((col) => col.searchable === true),
+        [schemaColumns],
+    );
+
     const [data, setData] = React.useState<Record<string, unknown>[]>(
         () => initialData,
     );
@@ -125,6 +133,7 @@ export function DataTable({
     }, [schemaLeafOrder]);
     const [columnFilters, setColumnFilters] =
         React.useState<ColumnFiltersState>([]);
+    const [globalFilter, setGlobalFilter] = React.useState('');
     const [sorting, setSorting] = React.useState<SortingState>([]);
     const [pagination, setPagination] = React.useState({
         pageIndex: 0,
@@ -188,6 +197,14 @@ export function DataTable({
         ],
     );
 
+    const getColumnCanGlobalFilter = React.useCallback(
+        (column: Column<Record<string, unknown>, unknown>) => {
+            const col = schemaColumns.find((c) => c.id === column.id);
+            return col?.searchable === true;
+        },
+        [schemaColumns],
+    );
+
     const dndSensors = useSensors(
         useSensor(MouseSensor, {}),
         useSensor(TouchSensor, {}),
@@ -204,6 +221,7 @@ export function DataTable({
             columnOrder,
             rowSelection,
             columnFilters,
+            globalFilter,
             pagination,
         },
         getRowId: (row, index) => stableRowId(row, index),
@@ -211,9 +229,12 @@ export function DataTable({
         onRowSelectionChange: setRowSelection,
         onSortingChange: setSorting,
         onColumnFiltersChange: setColumnFilters,
+        onGlobalFilterChange: setGlobalFilter,
         onColumnVisibilityChange: setColumnVisibility,
         onColumnOrderChange: setColumnOrder,
         onPaginationChange: setPagination,
+        globalFilterFn: 'includesString',
+        getColumnCanGlobalFilter,
         getCoreRowModel: getCoreRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
         getSortedRowModel: getSortedRowModel(),
@@ -501,50 +522,73 @@ export function DataTable({
             <span id={tableLabelId} className="sr-only">
                 Data table
             </span>
-            <div
-                className={cn(
-                    'flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center',
-                    toolbarStart != null
-                        ? 'sm:justify-between'
-                        : 'sm:justify-end',
-                )}
-            >
-                {toolbarStart != null ? (
-                    <div className="flex min-w-0 flex-col gap-2 @4xl/main:flex-row @4xl/main:items-center">
-                        {toolbarStart}
+
+            <div className="flex items-center justify-between">
+                {hasSearchableColumns ? (
+                    <div className="relative w-full max-w-md">
+                        <Label htmlFor={`${id}-search`} className="sr-only">
+                            Search rows
+                        </Label>
+                        <SearchIcon
+                            className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+                            aria-hidden
+                        />
+                        <Input
+                            id={`${id}-search`}
+                            type="search"
+                            value={globalFilter}
+                            onChange={(e) => setGlobalFilter(e.target.value)}
+                            placeholder="Filter rows…"
+                            className="h-9 pl-9"
+                            autoComplete="off"
+                        />
                     </div>
                 ) : null}
-                <div className="flex items-center justify-end gap-2">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm">
-                                <Columns3Icon data-icon="inline-start" />
-                                Columns
-                                <ChevronDownIcon data-icon="inline-end" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48">
-                            {table
-                                .getAllColumns()
-                                .filter(
-                                    (column) =>
-                                        typeof column.accessorFn !==
-                                            'undefined' && column.getCanHide(),
-                                )
-                                .map((column) => (
-                                    <DropdownMenuCheckboxItem
-                                        key={column.id}
-                                        checked={column.getIsVisible()}
-                                        onCheckedChange={(value) =>
-                                            column.toggleVisibility(!!value)
-                                        }
-                                    >
-                                        {columnVisibilityMenuLabel(column)}
-                                    </DropdownMenuCheckboxItem>
-                                ))}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                    {toolbarAfterColumns}
+                <div
+                    className={cn(
+                        'flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center',
+                        toolbarStart != null
+                            ? 'sm:justify-between'
+                            : 'sm:justify-end',
+                    )}
+                >
+                    {toolbarStart != null ? (
+                        <div className="flex min-w-0 flex-col gap-2 @4xl/main:flex-row @4xl/main:items-center">
+                            {toolbarStart}
+                        </div>
+                    ) : null}
+                    <div className="flex items-center justify-end gap-2">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" size="sm">
+                                    <Columns3Icon data-icon="inline-start" />
+                                    Columns
+                                    <ChevronDownIcon data-icon="inline-end" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-48">
+                                {table
+                                    .getAllColumns()
+                                    .filter(
+                                        (column) =>
+                                            typeof column.accessorFn !==
+                                                'undefined' && column.getCanHide(),
+                                    )
+                                    .map((column) => (
+                                        <DropdownMenuCheckboxItem
+                                            key={column.id}
+                                            checked={column.getIsVisible()}
+                                            onCheckedChange={(value) =>
+                                                column.toggleVisibility(!!value)
+                                            }
+                                        >
+                                            {columnVisibilityMenuLabel(column)}
+                                        </DropdownMenuCheckboxItem>
+                                    ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                        {toolbarAfterColumns}
+                    </div>
                 </div>
             </div>
 

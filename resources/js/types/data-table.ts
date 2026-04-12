@@ -51,6 +51,7 @@ export type FlatpackDataTableColumn = {
     timezone?: string;
     /** When `true`, the column header toggles sort (TanStack Table). Omitted or `false` = not sortable. */
     sortable?: boolean;
+    /** When true, the column is included in the data table toolbar search (substring match, case-insensitive). */
     searchable?: boolean;
     /** When true, cell is edited inline (text, select, or date by `type`). Ignored for `actions`. */
     editable?: boolean;
