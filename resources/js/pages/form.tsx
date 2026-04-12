@@ -2,6 +2,11 @@ import { Head } from '@inertiajs/react';
 import FlatpackLayout from '@/layouts/flatpack-layout';
 import type { FlatpackFormPageProps } from '@/types/pages/flatpack';
 
+/**
+ * When `FormController` supplies a field schema (`FormFieldProps[]`), render each field with
+ * `loadField` from `@/lib/form` and `mapFormFieldPropsToComponentProps` from `@/lib/form-field-props`
+ * (same approach as the components demo).
+ */
 export default function FlatpackFormPage({
     entity,
     record,

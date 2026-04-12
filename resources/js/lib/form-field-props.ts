@@ -1,20 +1,26 @@
-import type { FieldRenderFn, RenderContext } from '@/types/form-field-render';
+import type {
+    FormFieldPropsMapper,
+    FormFieldRenderContext,
+} from '@/types/form-field-render';
 import type { FormFieldProps, FormFieldType } from '@/types/form-fields';
 
-function renderTextTextareaSelect(props: FormFieldProps, ctx: RenderContext) {
+function mapTextTextareaSelect(
+    props: FormFieldProps,
+    ctx: FormFieldRenderContext,
+) {
     const { type: _t, ...rest } = props as Extract<
         FormFieldProps,
         { type: 'text' | 'textarea' | 'select' }
     >;
     return {
         ...rest,
-        id: ctx.entryId,
+        id: ctx.fieldId,
         placeholder: rest.placeholder ?? '',
         onValueChange: ctx.onValueChange,
     };
 }
 
-function renderCheckboxSwitch(props: FormFieldProps, ctx: RenderContext) {
+function mapCheckboxSwitch(props: FormFieldProps, ctx: FormFieldRenderContext) {
     const {
         type: _t,
         helperText: _h,
@@ -22,27 +28,27 @@ function renderCheckboxSwitch(props: FormFieldProps, ctx: RenderContext) {
     } = props as Extract<FormFieldProps, { type: 'checkbox' | 'switch' }>;
     return {
         ...rest,
-        id: ctx.entryId,
+        id: ctx.fieldId,
         onValueChange: ctx.onValueChange,
     };
 }
 
-function renderRichBlock(props: FormFieldProps, ctx: RenderContext) {
+function mapRichBlock(props: FormFieldProps, ctx: FormFieldRenderContext) {
     const { type: _t, ...rest } = props as Extract<
         FormFieldProps,
         { type: 'rich-text' | 'block-editor' }
     >;
     return {
         ...rest,
-        id: ctx.entryId,
+        id: ctx.fieldId,
         onValueChange: ctx.onValueChange,
     };
 }
 
-function renderCombobox(props: FormFieldProps, ctx: RenderContext) {
+function mapCombobox(props: FormFieldProps, ctx: FormFieldRenderContext) {
     const p = props as Extract<FormFieldProps, { type: 'combobox' }>;
     return {
-        id: ctx.entryId,
+        id: ctx.fieldId,
         label: p.label,
         multiple: p.multiple ?? false,
         items: p.options.map((o) => ({
@@ -58,30 +64,33 @@ function renderCombobox(props: FormFieldProps, ctx: RenderContext) {
     };
 }
 
-function renderDatePicker(props: FormFieldProps, ctx: RenderContext) {
+function mapDatePicker(props: FormFieldProps, ctx: FormFieldRenderContext) {
     const p = props as Extract<FormFieldProps, { type: 'date-picker' }>;
     return {
-        id: ctx.entryId,
+        id: ctx.fieldId,
         label: p.label,
         emptyLabel: p.placeholder ?? 'Pick a date',
         onValueChange: ctx.onValueChange,
     };
 }
 
-function renderDateRangePicker(props: FormFieldProps, ctx: RenderContext) {
+function mapDateRangePicker(
+    props: FormFieldProps,
+    ctx: FormFieldRenderContext,
+) {
     const p = props as Extract<FormFieldProps, { type: 'date-range-picker' }>;
     return {
-        id: ctx.entryId,
+        id: ctx.fieldId,
         label: p.label,
         emptyLabel: p.placeholder ?? 'Pick a range',
         onValueChange: ctx.onValueChange,
     };
 }
 
-function renderTimePicker(props: FormFieldProps, ctx: RenderContext) {
+function mapTimePicker(props: FormFieldProps, ctx: FormFieldRenderContext) {
     const p = props as Extract<FormFieldProps, { type: 'time-picker' }>;
     return {
-        id: ctx.entryId,
+        id: ctx.fieldId,
         dateLabel: p.dateLabel ?? p.label,
         timeLabel: p.timeLabel ?? 'Time',
         dateEmptyLabel: p.datePlaceholder ?? p.placeholder ?? '',
@@ -90,23 +99,27 @@ function renderTimePicker(props: FormFieldProps, ctx: RenderContext) {
     };
 }
 
-const formFieldTypeToRenderProps: Record<FormFieldType, FieldRenderFn> = {
-    text: renderTextTextareaSelect,
-    textarea: renderTextTextareaSelect,
-    select: renderTextTextareaSelect,
-    checkbox: renderCheckboxSwitch,
-    switch: renderCheckboxSwitch,
-    'rich-text': renderRichBlock,
-    'block-editor': renderRichBlock,
-    combobox: renderCombobox,
-    'date-picker': renderDatePicker,
-    'date-range-picker': renderDateRangePicker,
-    'time-picker': renderTimePicker,
+const formFieldTypeToMapper: Record<FormFieldType, FormFieldPropsMapper> = {
+    text: mapTextTextareaSelect,
+    textarea: mapTextTextareaSelect,
+    select: mapTextTextareaSelect,
+    checkbox: mapCheckboxSwitch,
+    switch: mapCheckboxSwitch,
+    'rich-text': mapRichBlock,
+    'block-editor': mapRichBlock,
+    combobox: mapCombobox,
+    'date-picker': mapDatePicker,
+    'date-range-picker': mapDateRangePicker,
+    'time-picker': mapTimePicker,
 };
 
-export function formFieldPropsToRenderProps(
+/**
+ * Maps canonical {@link FormFieldProps} (e.g. from PHP schema / demo catalog) to the prop
+ * bags expected by components under `components/form-fields/*`.
+ */
+export function mapFormFieldPropsToComponentProps(
     props: FormFieldProps,
-    ctx: RenderContext,
+    context: FormFieldRenderContext,
 ): Record<string, unknown> {
-    return formFieldTypeToRenderProps[props.type](props, ctx);
+    return formFieldTypeToMapper[props.type](props, context);
 }

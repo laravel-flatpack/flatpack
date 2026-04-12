@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
-import { formFieldPropsToRenderProps } from '@/lib/demo-form-field-render';
+import { mapFormFieldPropsToComponentProps } from '@/lib/form-field-props';
 import type { FormFieldProps } from '@/types/form-fields';
 
-const ctx = { entryId: 'entry-1', onValueChange: vi.fn() };
+const context = { fieldId: 'field-1', onValueChange: vi.fn() };
 
-describe('formFieldPropsToRenderProps', () => {
+describe('mapFormFieldPropsToComponentProps', () => {
     it('maps text field props', () => {
         const props: FormFieldProps = {
             type: 'text',
@@ -12,13 +12,13 @@ describe('formFieldPropsToRenderProps', () => {
             placeholder: 'Type here',
             helperText: 'hint',
         };
-        const out = formFieldPropsToRenderProps(props, ctx);
+        const out = mapFormFieldPropsToComponentProps(props, context);
         expect(out).toMatchObject({
-            id: 'entry-1',
+            id: 'field-1',
             label: 'Name',
             placeholder: 'Type here',
             helperText: 'hint',
-            onValueChange: ctx.onValueChange,
+            onValueChange: context.onValueChange,
         });
         expect(out).not.toHaveProperty('type');
     });
@@ -28,7 +28,7 @@ describe('formFieldPropsToRenderProps', () => {
             type: 'textarea',
             label: 'T',
         };
-        const out = formFieldPropsToRenderProps(props, ctx);
+        const out = mapFormFieldPropsToComponentProps(props, context);
         expect(out.placeholder).toBe('');
     });
 
@@ -39,23 +39,23 @@ describe('formFieldPropsToRenderProps', () => {
             placeholder: 'p',
             rows: 10,
         };
-        const out = formFieldPropsToRenderProps(props, ctx);
+        const out = mapFormFieldPropsToComponentProps(props, context);
         expect(out.rows).toBe(10);
     });
 
-    it('maps checkbox without helperText in render props', () => {
+    it('maps checkbox without helperText in component props', () => {
         const props: FormFieldProps = {
             type: 'checkbox',
             label: 'OK',
             helperText: 'ignored',
             defaultChecked: true,
         };
-        const out = formFieldPropsToRenderProps(props, ctx);
+        const out = mapFormFieldPropsToComponentProps(props, context);
         expect(out).toMatchObject({
-            id: 'entry-1',
+            id: 'field-1',
             label: 'OK',
             defaultChecked: true,
-            onValueChange: ctx.onValueChange,
+            onValueChange: context.onValueChange,
         });
         expect(out).not.toHaveProperty('helperText');
     });
@@ -72,7 +72,7 @@ describe('formFieldPropsToRenderProps', () => {
             ],
             multiple: true,
         };
-        const out = formFieldPropsToRenderProps(props, ctx);
+        const out = mapFormFieldPropsToComponentProps(props, context);
         expect(out.items).toEqual([
             { value: 'a', label: 'A' },
             { value: 'b', label: 'B' },
@@ -87,7 +87,7 @@ describe('formFieldPropsToRenderProps', () => {
             label: 'Date',
             placeholder: 'Choose',
         };
-        const out = formFieldPropsToRenderProps(props, ctx);
+        const out = mapFormFieldPropsToComponentProps(props, context);
         expect(out.emptyLabel).toBe('Choose');
     });
 
@@ -97,7 +97,7 @@ describe('formFieldPropsToRenderProps', () => {
             label: 'When',
             placeholder: 'p',
         };
-        const out = formFieldPropsToRenderProps(props, ctx);
+        const out = mapFormFieldPropsToComponentProps(props, context);
         expect(out).toMatchObject({
             dateLabel: 'When',
             timeLabel: 'Time',

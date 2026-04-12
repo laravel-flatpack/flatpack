@@ -1,10 +1,10 @@
 import type { ComponentType, LazyExoticComponent } from 'react';
-import { formFieldPropsToRenderProps } from '@/lib/demo-form-field-render';
 import {
     mergeQueryOverridesIntoFormFieldProps,
     pickDemoComponentSelector,
 } from '@/lib/demo-query';
 import { loadField } from '@/lib/form';
+import { mapFormFieldPropsToComponentProps } from '@/lib/form-field-props';
 import type {
     DemoComponentCatalogEntry,
     DemoComponentType,
@@ -81,8 +81,8 @@ export function buildDemoFieldRenderProps(
         entry.props,
         options.queryOverrides,
     );
-    return formFieldPropsToRenderProps(merged, {
-        entryId: entry.id,
+    return mapFormFieldPropsToComponentProps(merged, {
+        fieldId: entry.id,
         onValueChange: options.onValueChange,
     });
 }
