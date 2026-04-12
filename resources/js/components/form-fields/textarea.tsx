@@ -30,7 +30,7 @@ export const TextareaField = ({
                     id={id}
                     placeholder={placeholder}
                     defaultValue={defaultValue}
-                    rows={10}
+                    rows={rows}
                     className={cn(className)}
                     aria-labelledby={label ? labelId : undefined}
                     onChange={(e) => onValueChange?.(e.target.value)}
