@@ -89,7 +89,9 @@ export function buildDemoFieldRenderProps(
                       ? (entry.value as Record<string, unknown>[])
                       : [],
               }
-            : merged;
+            : merged.type === 'select'
+              ? { ...merged, value: entry.value }
+              : merged;
     return mapFormFieldPropsToComponentProps(propsForField, {
         fieldId: entry.id,
         onValueChange: options.onValueChange,

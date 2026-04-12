@@ -32,6 +32,8 @@ type TextareaFieldProps = FormFieldBase &
 type SelectFieldProps = FormFieldBase &
     WithPlaceholder & {
         options: SelectFieldOption[];
+        /** Current value (`null` / omitted = no selection, show placeholder). */
+        value?: unknown;
     };
 type ComboboxFieldProps = FormFieldBase &
     WithPlaceholder & {

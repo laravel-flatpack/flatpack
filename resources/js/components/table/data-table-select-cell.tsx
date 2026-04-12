@@ -9,6 +9,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { CLEAR_SELECT_ITEM_VALUE } from '@/lib/flatpack-select';
 import { selectOptionLeadingIcon } from '@/lib/select-option-leading-icon';
 import type { FlatpackDataTableColumn } from '@/types/data-table';
 
@@ -39,8 +40,10 @@ export function DataTableSelectCell({
                     {col.label}
                 </Label>
                 <Select
-                    value={str !== '' && validOption ? str : undefined}
-                    onValueChange={(v) => commit(v)}
+                    value={str !== '' && validOption ? str : ''}
+                    onValueChange={(v) =>
+                        commit(v === CLEAR_SELECT_ITEM_VALUE ? null : v)
+                    }
                 >
                     <SelectTrigger
                         id={controlId}
@@ -51,6 +54,11 @@ export function DataTableSelectCell({
                     </SelectTrigger>
                     <SelectContent align="end">
                         <SelectGroup>
+                            <SelectItem value={CLEAR_SELECT_ITEM_VALUE}>
+                                <span className="text-muted-foreground">
+                                    Choose…
+                                </span>
+                            </SelectItem>
                             {options.map((o) => (
                                 <SelectItem key={o.value} value={o.value}>
                                     <span className="flex items-center gap-2">
