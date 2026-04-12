@@ -274,7 +274,7 @@ final class DemoController
                 ],
                 'showValue' => true,
                 'value' => array_map(
-                    static fn (): array => [
+                    static fn(): array => [
                         'id' => fake()->uuid(),
                         'name' => fake()->name(),
                         'email' => fake()->email(),

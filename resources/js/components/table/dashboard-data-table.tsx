@@ -94,8 +94,8 @@ const DASHBOARD_COLUMNS: FlatpackDataTableColumn[] = [
         type: 'actions',
         buttons: {
             edit: { label: 'Edit', icon: 'edit', action: 'edit' },
-            copy: { label: 'Make a copy', action: 'copy' },
-            favorite: { label: 'Favorite', action: 'favorite' },
+            copy: { label: 'Make a copy', icon: 'copy', action: 'copy' },
+            favorite: { label: 'Favorite', icon: 'star', action: 'favorite' },
             delete: {
                 label: 'Delete',
                 icon: 'delete',

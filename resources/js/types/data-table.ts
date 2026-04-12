@@ -2,6 +2,7 @@
  * Column schema for {@link DataTable} (Flatpack list views, demo `type=table`, etc.).
  * Mirrors the shape sent from `DemoController` / future list controllers.
  */
+
 /** Drives the read-only select cell leading icon in {@link DataTable}. */
 export type FlatpackDataTableSelectOptionStatus =
     | 'success'
@@ -13,6 +14,11 @@ export type FlatpackDataTableColumnOption = {
     value: string;
     label: string;
     status?: FlatpackDataTableSelectOptionStatus;
+};
+
+/** TanStack `ColumnDef.meta` for schema-driven columns (e.g. Columns menu display name). */
+export type FlatpackDataTableColumnMeta = {
+    label: string;
 };
 
 /**

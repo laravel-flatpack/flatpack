@@ -46,11 +46,13 @@ import {
     CircleCheckIcon,
     CircleXIcon,
     Columns3Icon,
+    CopyIcon,
     EllipsisVerticalIcon,
     GripVerticalIcon,
     LoaderIcon,
     type LucideIcon,
     PencilIcon,
+    StarIcon,
     Trash2Icon,
 } from 'lucide-react';
 import * as React from 'react';
@@ -98,6 +100,7 @@ import { cn } from '@/lib/utils';
 import type {
     FlatpackDataTableActionButton,
     FlatpackDataTableColumn,
+    FlatpackDataTableColumnMeta,
     FlatpackDataTableColumnOption,
     FlatpackDataTableSelectOptionStatus,
 } from '@/types/data-table';
@@ -150,10 +153,30 @@ function iconForAction(iconOrKey?: string): LucideIcon | null {
     if (k === 'edit' || k === 'pencil') {
         return PencilIcon;
     }
+    if (k === 'copy' || k === 'duplicate' || k === 'clone') {
+        return CopyIcon;
+    }
+    if (k === 'star' || k === 'favorite' || k === 'favourite') {
+        return StarIcon;
+    }
     if (k === 'delete' || k === 'trash' || k === 'remove') {
         return Trash2Icon;
     }
     return null;
+}
+
+/** Max characters before appending `...` in row action menu labels (keeps one-line layout). */
+const ACTION_MENU_LABEL_MAX_CHARS = 28;
+
+function truncateActionMenuLabel(
+    label: string,
+    maxLen = ACTION_MENU_LABEL_MAX_CHARS,
+): string {
+    if (label.length <= maxLen) {
+        return label;
+    }
+    const take = Math.max(0, maxLen - 3);
+    return `${label.slice(0, take)}...`;
 }
 
 function actionIsDestructive(
@@ -185,6 +208,34 @@ function ActionsCell({
         actionIsDestructive(key, cfg),
     );
 
+    const actionRowLabel = (
+        cfg: FlatpackDataTableActionButton,
+        actionKey: string,
+    ) => {
+        const Icon = iconForAction(cfg.icon) ?? iconForAction(actionKey);
+        const displayLabel = truncateActionMenuLabel(cfg.label);
+        const charTruncated = displayLabel !== cfg.label;
+        return (
+            <span className="flex items-center gap-2">
+                {Icon ? (
+                    <Icon
+                        className="size-3.5 shrink-0 opacity-70"
+                        aria-hidden
+                    />
+                ) : null}
+                <span
+                    className={cn(
+                        'whitespace-nowrap',
+                        charTruncated && 'min-w-0 max-w-full truncate',
+                    )}
+                    title={charTruncated ? cfg.label : undefined}
+                >
+                    {displayLabel}
+                </span>
+            </span>
+        );
+    };
+
     return (
         <div className="flex justify-end">
             <DropdownMenu>
@@ -199,25 +250,13 @@ function ActionsCell({
                         <span className="sr-only">Open row actions</span>
                     </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="min-w-32">
+                <DropdownMenuContent align="end" className="min-w-44 max-w-xs">
                     {primary.map(([actionKey, cfg]) => {
                         const template = cfg.href ?? cfg.url ?? '';
                         const resolved = template
                             ? interpolateRowPlaceholders(template, row)
                             : '';
-                        const Icon =
-                            iconForAction(cfg.icon) ?? iconForAction(actionKey);
-                        const label = (
-                            <span className="flex items-center gap-2">
-                                {Icon ? (
-                                    <Icon
-                                        className="size-3.5 shrink-0 opacity-70"
-                                        aria-hidden
-                                    />
-                                ) : null}
-                                {cfg.label}
-                            </span>
-                        );
+                        const label = actionRowLabel(cfg, actionKey);
 
                         if (resolved) {
                             const external = /^https?:\/\//i.test(resolved);
@@ -268,19 +307,7 @@ function ActionsCell({
                         const resolved = template
                             ? interpolateRowPlaceholders(template, row)
                             : '';
-                        const Icon =
-                            iconForAction(cfg.icon) ?? iconForAction(actionKey);
-                        const label = (
-                            <span className="flex items-center gap-2">
-                                {Icon ? (
-                                    <Icon
-                                        className="size-3.5 shrink-0 opacity-70"
-                                        aria-hidden
-                                    />
-                                ) : null}
-                                {cfg.label}
-                            </span>
-                        );
+                        const label = actionRowLabel(cfg, actionKey);
 
                         if (resolved) {
                             const external = /^https?:\/\//i.test(resolved);
@@ -901,6 +928,9 @@ export function buildDataTableColumnDefs(
         defs.push({
             id: col.id,
             accessorKey: col.id,
+            meta: {
+                label: col.label,
+            } satisfies FlatpackDataTableColumnMeta,
             header: columnSortable
                 ? ({ column }) => (
                       <DataTableColumnHeader
@@ -936,6 +966,19 @@ export function buildDataTableColumnDefs(
     }
 
     return defs;
+}
+
+function columnVisibilityMenuLabel(
+    column: Column<Record<string, unknown>, unknown>,
+): string {
+    const meta = column.columnDef.meta as
+        | FlatpackDataTableColumnMeta
+        | undefined;
+    if (meta?.label) {
+        return meta.label;
+    }
+    const header = column.columnDef.header;
+    return typeof header === 'string' ? header : column.id;
 }
 
 function visibilityFromSchema(
@@ -1514,16 +1557,12 @@ export function DataTable({
                                 .map((column) => (
                                     <DropdownMenuCheckboxItem
                                         key={column.id}
-                                        className="capitalize"
                                         checked={column.getIsVisible()}
                                         onCheckedChange={(value) =>
                                             column.toggleVisibility(!!value)
                                         }
                                     >
-                                        {typeof column.columnDef.header ===
-                                        'string'
-                                            ? column.columnDef.header
-                                            : column.id}
+                                        {columnVisibilityMenuLabel(column)}
                                     </DropdownMenuCheckboxItem>
                                 ))}
                         </DropdownMenuContent>
