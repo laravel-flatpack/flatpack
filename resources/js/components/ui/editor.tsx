@@ -3,7 +3,13 @@
 import type { VariantProps } from 'class-variance-authority';
 import { cva } from 'class-variance-authority';
 import type { PlateContentProps, PlateViewProps } from 'platejs/react';
-import { PlateContainer, PlateContent, PlateView } from 'platejs/react';
+import {
+    PlateContainer,
+    PlateContent,
+    PlateView,
+    useEditorReadOnly,
+    useEditorRef,
+} from 'platejs/react';
 import type * as React from 'react';
 import { cn } from '@/lib/utils';
 
@@ -35,8 +41,31 @@ const editorContainerVariants = cva(
 export function EditorContainer({
     className,
     variant,
+    onPointerDownCapture,
     ...props
 }: React.ComponentProps<'div'> & VariantProps<typeof editorContainerVariants>) {
+    const editor = useEditorRef();
+    const readOnly = useEditorReadOnly();
+
+    const handlePointerDownCapture = (
+        event: React.PointerEvent<HTMLDivElement>,
+    ) => {
+        onPointerDownCapture?.(event);
+        if (event.defaultPrevented || readOnly) {
+            return;
+        }
+        const root = event.currentTarget;
+        const slateRoot = root.querySelector('[data-slate-editor="true"]');
+        if (!slateRoot) {
+            return;
+        }
+        if (slateRoot.contains(event.target as Node)) {
+            return;
+        }
+        event.preventDefault();
+        editor.tf.focus({ edge: 'end' });
+    };
+
     return (
         <PlateContainer
             className={cn(
@@ -44,6 +73,7 @@ export function EditorContainer({
                 editorContainerVariants({ variant }),
                 className,
             )}
+            onPointerDownCapture={handlePointerDownCapture}
             {...props}
         />
     );
