@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { DASHBOARD_TABLE_INPUT_CLASS } from '@/components/table/data-table-constants';
-import { formatCellValue } from '@/components/table/data-table-utils';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { formatCellValue } from '@/lib/data-table-utils';
 
 export function DataTableEditableTextCell({
     value,

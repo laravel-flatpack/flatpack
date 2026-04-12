@@ -1,5 +1,5 @@
-import { formatCellValue } from '@/components/table/data-table-utils';
 import { Badge } from '@/components/ui/badge';
+import { formatCellValue } from '@/lib/data-table-utils';
 
 export function DataTableBadgeCell({ value }: { value: unknown }) {
     const text = formatCellValue(value);

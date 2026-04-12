@@ -1,11 +1,11 @@
 import { DASHBOARD_TABLE_INPUT_CLASS } from '@/components/table/data-table-constants';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
     dateInputSegment,
     formatCellValue,
     mergeCommittedDate,
-} from '@/components/table/data-table-utils';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+} from '@/lib/data-table-utils';
 import { cn } from '@/lib/utils';
 import type { FlatpackDataTableColumn } from '@/types/data-table';
 

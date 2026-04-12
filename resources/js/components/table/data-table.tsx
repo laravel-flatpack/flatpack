@@ -43,10 +43,6 @@ import {
     visibilityFromSchema,
 } from '@/components/table/data-table-column-visibility';
 import { DataTableDraggableRow } from '@/components/table/data-table-draggable-row';
-import {
-    reindexReorderColumn,
-    stableRowId,
-} from '@/components/table/data-table-utils';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -72,6 +68,7 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { TabsContent } from '@/components/ui/tabs';
+import { reindexReorderColumn, stableRowId } from '@/lib/data-table-utils';
 import { cn } from '@/lib/utils';
 import type { DataTableProps } from '@/types/data-table';
 

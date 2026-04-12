@@ -8,7 +8,6 @@ import {
     Trash2Icon,
 } from 'lucide-react';
 import { truncateActionMenuLabel } from '@/components/table/data-table-constants';
-import { interpolateRowPlaceholders } from '@/components/table/data-table-utils';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -17,6 +16,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { interpolateRowPlaceholders } from '@/lib/data-table-utils';
 import { cn } from '@/lib/utils';
 import type { FlatpackDataTableActionButton } from '@/types/data-table';
 

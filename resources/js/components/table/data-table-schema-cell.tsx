@@ -3,10 +3,7 @@ import { DataTableDateCell } from '@/components/table/data-table-date-cell';
 import { DataTableRowDetailDrawer } from '@/components/table/data-table-row-drawer';
 import { DataTableSelectCell } from '@/components/table/data-table-select-cell';
 import { DataTableEditableTextCell } from '@/components/table/data-table-text-cell';
-import {
-    cellControlDomId,
-    formatCellValue,
-} from '@/components/table/data-table-utils';
+import { cellControlDomId, formatCellValue } from '@/lib/data-table-utils';
 import type { FlatpackDataTableColumn } from '@/types/data-table';
 
 export function DataTableSchemaCell({

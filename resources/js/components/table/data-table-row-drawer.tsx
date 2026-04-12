@@ -1,10 +1,4 @@
 import * as React from 'react';
-import {
-    columnEditableInDrawer,
-    dateInputSegment,
-    formatCellValue,
-    mergeCommittedDate,
-} from '@/components/table/data-table-utils';
 import { Button } from '@/components/ui/button';
 import {
     Drawer,
@@ -26,6 +20,12 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { useIsMobile } from '@/hooks/use-mobile';
+import {
+    columnEditableInDrawer,
+    dateInputSegment,
+    formatCellValue,
+    mergeCommittedDate,
+} from '@/lib/data-table-utils';
 import type { FlatpackDataTableColumn } from '@/types/data-table';
 
 function DrawerRowField({
