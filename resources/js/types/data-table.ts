@@ -10,7 +10,8 @@ export type FlatpackDataTableSelectOptionStatus =
     | 'success'
     | 'pending'
     | 'warning'
-    | 'error';
+    | 'error'
+    | 'info';
 
 export type FlatpackDataTableColumnOption = {
     value: string;

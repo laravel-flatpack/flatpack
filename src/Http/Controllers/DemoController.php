@@ -66,9 +66,11 @@ final class DemoController
                     'placeholder' => 'Select an option',
                     'helperText' => 'A helper text for the select input field.',
                     'options' => [
-                        ['value' => 'a', 'label' => 'Option A'],
-                        ['value' => 'b', 'label' => 'Option B'],
-                        ['value' => 'c', 'label' => 'Option C'],
+                        ['value' => 'a', 'label' => 'Option A', 'status' => 'success'],
+                        ['value' => 'b', 'label' => 'Option B', 'status' => 'warning'],
+                        ['value' => 'c', 'label' => 'Option C', 'status' => 'error'],
+                        ['value' => 'd', 'label' => 'Option D', 'status' => 'info'],
+                        ['value' => 'e', 'label' => 'Option E', 'status' => 'pending'],
                     ],
                 ],
                 'showValue' => false,
@@ -274,7 +276,7 @@ final class DemoController
                 ],
                 'showValue' => true,
                 'value' => array_map(
-                    static fn (): array => [
+                    static fn(): array => [
                         'id' => fake()->uuid(),
                         'name' => fake()->name(),
                         'email' => fake()->email(),

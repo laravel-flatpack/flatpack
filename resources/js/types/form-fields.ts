@@ -1,8 +1,12 @@
-import type { FlatpackDataTableColumn } from '@/types/data-table';
+import type {
+    FlatpackDataTableColumn,
+    FlatpackDataTableSelectOptionStatus,
+} from '@/types/data-table';
 
 export type SelectFieldOption = {
     value: string;
     label: string;
+    status?: FlatpackDataTableSelectOptionStatus;
 };
 
 export type FormFieldOutput = {

@@ -2,6 +2,7 @@ import {
     AlertTriangleIcon,
     CircleCheckIcon,
     CircleXIcon,
+    InfoIcon,
     LoaderIcon,
 } from 'lucide-react';
 import type * as React from 'react';
@@ -16,7 +17,7 @@ const SELECT_OPTION_STATUS_ICONS: Record<
 > = {
     success: (
         <CircleCheckIcon
-            className="size-3.5 shrink-0 fill-green-500 dark:fill-green-400"
+            className="size-3.5 shrink-0 text-green-600 dark:text-green-400"
             aria-hidden
         />
     ),
@@ -35,11 +36,17 @@ const SELECT_OPTION_STATUS_ICONS: Record<
             aria-hidden
         />
     ),
+    info: (
+        <InfoIcon
+            className="size-3.5 shrink-0 text-blue-600 dark:text-blue-400"
+            aria-hidden
+        />
+    ),
 };
 
-/** Leading icon from option `status` (set in column schema, e.g. PHP). */
+/** Leading icon from option `status` (form selects, data table cells, column schema from PHP, etc.). */
 export function selectOptionLeadingIcon(
-    option: FlatpackDataTableColumnOption | undefined,
+    option: Pick<FlatpackDataTableColumnOption, 'status'> | undefined,
 ): React.ReactNode {
     const s = option?.status;
     if (s === undefined) {

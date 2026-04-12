@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { selectOptionLeadingIcon } from '@/lib/select-option-leading-icon';
+import type { SelectFieldOption } from '@/types/form-fields';
 import { Field, FieldContent, FieldDescription, FieldTitle } from '../ui/field';
 import {
     Select,
@@ -8,7 +10,7 @@ import {
     SelectValue,
 } from '../ui/select';
 
-export type SelectFieldOption = { value: string; label: string };
+export type { SelectFieldOption };
 
 export const SelectField = ({
     id,
@@ -49,7 +51,10 @@ export const SelectField = ({
                     <SelectContent>
                         {options.map((opt) => (
                             <SelectItem key={opt.value} value={opt.value}>
-                                {opt.label}
+                                <span className="flex items-center gap-2">
+                                    {selectOptionLeadingIcon(opt)}
+                                    <span>{opt.label}</span>
+                                </span>
                             </SelectItem>
                         ))}
                     </SelectContent>
