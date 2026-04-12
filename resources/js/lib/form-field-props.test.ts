@@ -116,7 +116,7 @@ describe('mapFormFieldPropsToComponentProps', () => {
                     id: 'status',
                     label: 'Status',
                     type: 'select',
-                    options: [{ value: 'a', label: 'Active', color: 'green' }],
+                    options: [{ value: 'a', label: 'Active' }],
                 },
             ],
             data: [{ name: 'Ada', status: 'a' }],

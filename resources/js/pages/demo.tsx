@@ -4,6 +4,7 @@ import {
     type ReactNode,
     Suspense,
     useCallback,
+    useLayoutEffect,
     useMemo,
     useState,
 } from 'react';
@@ -78,7 +79,13 @@ function DemoFieldPreview({
     demoQueryFlat: Record<string, string>;
     lazyByType: DemoLazyFieldMap;
 }) {
-    const [liveValue, setLiveValue] = useState<unknown>(null);
+    const [liveValue, setLiveValue] = useState<unknown>(
+        () => entry.value ?? null,
+    );
+
+    useLayoutEffect(() => {
+        setLiveValue(entry.value ?? null);
+    }, [entry]);
 
     const onValueChange = useCallback((value: unknown) => {
         setLiveValue(value);

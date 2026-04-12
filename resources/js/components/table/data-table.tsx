@@ -34,6 +34,7 @@ import {
     type VisibilityState,
 } from '@tanstack/react-table';
 import {
+    AlertTriangleIcon,
     ArrowDownIcon,
     ArrowUpDownIcon,
     ArrowUpIcon,
@@ -42,9 +43,12 @@ import {
     ChevronRightIcon,
     ChevronsLeftIcon,
     ChevronsRightIcon,
+    CircleCheckIcon,
+    CircleXIcon,
     Columns3Icon,
     EllipsisVerticalIcon,
     GripVerticalIcon,
+    LoaderIcon,
     type LucideIcon,
     PencilIcon,
     Trash2Icon,
@@ -61,7 +65,6 @@ import {
     DrawerFooter,
     DrawerHeader,
     DrawerTitle,
-    DrawerTrigger,
 } from '@/components/ui/drawer';
 import {
     DropdownMenu,
@@ -89,11 +92,14 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { TabsContent } from '@/components/ui/tabs';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import type {
     FlatpackDataTableActionButton,
     FlatpackDataTableColumn,
+    FlatpackDataTableColumnOption,
+    FlatpackDataTableSelectOptionStatus,
 } from '@/types/data-table';
 
 function stableRowId(row: Record<string, unknown>, index: number): string {
@@ -104,7 +110,7 @@ function stableRowId(row: Record<string, unknown>, index: number): string {
     return `row-${index}`;
 }
 
-/** Same look as dashboard `DashboardDataTable` target/limit inputs (data-table-showcase). */
+/** Same look as dashboard `DashboardDataTable` target/limit inputs. */
 const DASHBOARD_TABLE_INPUT_CLASS =
     'h-8 min-w-0 w-full max-w-full border-transparent bg-transparent text-sm shadow-none hover:bg-input/30 focus-visible:border focus-visible:bg-background dark:bg-transparent dark:hover:bg-input/30 dark:focus-visible:bg-input/30';
 
@@ -407,6 +413,9 @@ function columnEditableInDrawer(col: FlatpackDataTableColumn): boolean {
     if (col.type === 'select' && col.options?.length) {
         return true;
     }
+    if (col.type === 'badge' && col.options?.length) {
+        return true;
+    }
     if (col.type === 'date') {
         return true;
     }
@@ -424,7 +433,11 @@ function DrawerRowField({
 }) {
     const fieldId = `drawer-field-${col.id}`;
 
-    if (col.type === 'select' && col.options?.length) {
+    if (
+        (col.type === 'select' ||
+            (col.type === 'badge' && col.options?.length)) &&
+        col.options?.length
+    ) {
         const str = value == null ? '' : String(value);
         const validOption = col.options.some((o) => o.value === str);
         return (
@@ -512,6 +525,7 @@ function RowDetailDrawer({
     const isMobile = useIsMobile();
     const [open, setOpen] = React.useState(false);
     const [draft, setDraft] = React.useState<Record<string, unknown>>(row);
+    const drawerTriggerRef = React.useRef<HTMLButtonElement>(null);
 
     React.useLayoutEffect(() => {
         if (open) {
@@ -523,6 +537,12 @@ function RowDetailDrawer({
         setDraft((d) => ({ ...d, [columnId]: next }));
     }, []);
 
+    const openDrawer = React.useCallback(() => {
+        // Blur before open so Vaul’s aria-hidden on page content does not hide a focused control (browser a11y warning).
+        drawerTriggerRef.current?.blur();
+        setOpen(true);
+    }, []);
+
     const formColumns = schemaColumns.filter((c) => c.type !== 'actions');
 
     return (
@@ -531,17 +551,19 @@ function RowDetailDrawer({
             onOpenChange={setOpen}
             open={open}
         >
-            <DrawerTrigger asChild>
-                <Button
-                    type="button"
-                    variant="link"
-                    className="h-auto min-h-0 w-fit max-w-full justify-start px-0 py-0 text-left font-normal text-foreground"
-                >
-                    <span className="truncate">
-                        {formatCellValue(row[triggerColumn.id]) || '—'}
-                    </span>
-                </Button>
-            </DrawerTrigger>
+            <Button
+                ref={drawerTriggerRef}
+                type="button"
+                variant="link"
+                aria-expanded={open}
+                aria-haspopup="dialog"
+                className="h-auto min-h-0 w-fit max-w-full justify-start px-0 py-0 text-left font-normal text-foreground"
+                onClick={openDrawer}
+            >
+                <span className="truncate">
+                    {formatCellValue(row[triggerColumn.id]) || '—'}
+                </span>
+            </Button>
             <DrawerContent>
                 <DrawerHeader className="gap-1">
                     <DrawerTitle>
@@ -583,17 +605,42 @@ function RowDetailDrawer({
     );
 }
 
-function badgeClassForOptionColor(color?: string): string {
-    switch (color) {
-        case 'green':
-            return 'border-emerald-500/30 bg-emerald-500/10 text-emerald-800 dark:text-emerald-300';
-        case 'red':
-            return 'border-red-500/30 bg-red-500/10 text-red-800 dark:text-red-300';
-        case 'yellow':
-            return 'border-amber-500/30 bg-amber-500/10 text-amber-900 dark:text-amber-200';
-        default:
-            return '';
+const SELECT_OPTION_STATUS_ICONS: Record<
+    FlatpackDataTableSelectOptionStatus,
+    React.ReactElement
+> = {
+    success: (
+        <CircleCheckIcon
+            className="size-3.5 shrink-0 fill-green-500 dark:fill-green-400"
+            aria-hidden
+        />
+    ),
+    pending: (
+        <LoaderIcon className="size-3.5 shrink-0 opacity-80" aria-hidden />
+    ),
+    warning: (
+        <AlertTriangleIcon
+            className="size-3.5 shrink-0 text-amber-600 dark:text-amber-400"
+            aria-hidden
+        />
+    ),
+    error: (
+        <CircleXIcon
+            className="size-3.5 shrink-0 text-red-600 dark:text-red-400"
+            aria-hidden
+        />
+    ),
+};
+
+/** Leading icon from option `status` (set in column schema, e.g. PHP). */
+function selectOptionLeadingIcon(
+    option: FlatpackDataTableColumnOption | undefined,
+): React.ReactNode {
+    const s = option?.status;
+    if (s === undefined) {
+        return null;
     }
+    return SELECT_OPTION_STATUS_ICONS[s] ?? null;
 }
 
 function SchemaTableCell({
@@ -633,6 +680,20 @@ function SchemaTableCell({
     const commit = (next: unknown) => onCellChange?.(rowId, col.id, next);
     const controlId = cellControlDomId(rowId, col.id);
 
+    if (col.type === 'badge') {
+        const text = formatCellValue(value);
+        return (
+            <div className="w-32 min-w-0 shrink-0">
+                <Badge
+                    variant="outline"
+                    className="max-w-full px-1.5 font-normal text-muted-foreground"
+                >
+                    <span className="truncate">{text || '—'}</span>
+                </Badge>
+            </div>
+        );
+    }
+
     if (col.type === 'select' && col.options?.length) {
         const str = value == null ? '' : String(value);
         if (editable) {
@@ -668,12 +729,12 @@ function SchemaTableCell({
         }
         const opt = col.options.find((o) => o.value === str);
         const display = opt?.label ?? str;
-        const colorClass = badgeClassForOptionColor(opt?.color);
         return (
             <Badge
                 variant="outline"
-                className={cn('max-w-full px-1.5 font-normal', colorClass)}
+                className="inline-flex max-w-full items-center gap-1.5 px-1.5 font-normal text-muted-foreground"
             >
+                {selectOptionLeadingIcon(opt)}
                 <span className="truncate">{display}</span>
             </Badge>
         );
@@ -964,6 +1025,19 @@ export type DataTableProps = {
     reorderable?: boolean | string;
     onValueChange?: (value: unknown) => void;
     className?: string;
+    /** Leading toolbar slot (e.g. view tabs). Renders left of the Columns control. */
+    toolbarStart?: React.ReactNode;
+    /** Slot after the Columns menu (e.g. primary action such as “Add section”). */
+    toolbarAfterColumns?: React.ReactNode;
+    /**
+     * When this table is wrapped in a parent `Tabs` root, set to the tab value that should
+     * show the grid + pagination (e.g. `"outline"`). Wraps those sections in `TabsContent`.
+     */
+    primaryTabPanelValue?: string;
+    /**
+     * Extra `TabsContent` nodes for other tab values, rendered as siblings after the primary panel.
+     */
+    tabPanels?: React.ReactNode;
 };
 
 /**
@@ -977,6 +1051,10 @@ export function DataTable({
     reorderable: reorderableProp,
     onValueChange,
     className,
+    toolbarStart,
+    toolbarAfterColumns,
+    primaryTabPanelValue,
+    tabPanels,
 }: DataTableProps) {
     const reorderKey =
         reorderableProp === true
@@ -1161,50 +1239,8 @@ export function DataTable({
 
     const tableLabelId = `${id}-table-label`;
 
-    return (
-        <div
-            className={cn('flex w-full flex-col gap-4', className)}
-            role="region"
-            aria-labelledby={tableLabelId}
-        >
-            <span id={tableLabelId} className="sr-only">
-                Data table
-            </span>
-            <div className="flex items-center justify-end gap-2">
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="sm">
-                            <Columns3Icon data-icon="inline-start" />
-                            Columns
-                            <ChevronDownIcon data-icon="inline-end" />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48">
-                        {table
-                            .getAllColumns()
-                            .filter(
-                                (column) =>
-                                    typeof column.accessorFn !== 'undefined' &&
-                                    column.getCanHide(),
-                            )
-                            .map((column) => (
-                                <DropdownMenuCheckboxItem
-                                    key={column.id}
-                                    className="capitalize"
-                                    checked={column.getIsVisible()}
-                                    onCheckedChange={(value) =>
-                                        column.toggleVisibility(!!value)
-                                    }
-                                >
-                                    {typeof column.columnDef.header === 'string'
-                                        ? column.columnDef.header
-                                        : column.id}
-                                </DropdownMenuCheckboxItem>
-                            ))}
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            </div>
-
+    const tableAndFooter = (
+        <>
             <div className="overflow-hidden rounded-lg border">
                 {isReorderable ? (
                     <DndContext
@@ -1421,6 +1457,83 @@ export function DataTable({
                     </div>
                 </div>
             </div>
+        </>
+    );
+
+    const primaryPanel =
+        primaryTabPanelValue != null ? (
+            <TabsContent
+                value={primaryTabPanelValue}
+                className="relative flex flex-col gap-4 overflow-auto outline-none"
+            >
+                {tableAndFooter}
+            </TabsContent>
+        ) : (
+            tableAndFooter
+        );
+
+    return (
+        <div
+            className={cn('flex w-full flex-col gap-4', className)}
+            role="region"
+            aria-labelledby={tableLabelId}
+        >
+            <span id={tableLabelId} className="sr-only">
+                Data table
+            </span>
+            <div
+                className={cn(
+                    'flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center',
+                    toolbarStart != null
+                        ? 'sm:justify-between'
+                        : 'sm:justify-end',
+                )}
+            >
+                {toolbarStart != null ? (
+                    <div className="flex min-w-0 flex-col gap-2 @4xl/main:flex-row @4xl/main:items-center">
+                        {toolbarStart}
+                    </div>
+                ) : null}
+                <div className="flex items-center justify-end gap-2">
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="sm">
+                                <Columns3Icon data-icon="inline-start" />
+                                Columns
+                                <ChevronDownIcon data-icon="inline-end" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                            {table
+                                .getAllColumns()
+                                .filter(
+                                    (column) =>
+                                        typeof column.accessorFn !==
+                                            'undefined' && column.getCanHide(),
+                                )
+                                .map((column) => (
+                                    <DropdownMenuCheckboxItem
+                                        key={column.id}
+                                        className="capitalize"
+                                        checked={column.getIsVisible()}
+                                        onCheckedChange={(value) =>
+                                            column.toggleVisibility(!!value)
+                                        }
+                                    >
+                                        {typeof column.columnDef.header ===
+                                        'string'
+                                            ? column.columnDef.header
+                                            : column.id}
+                                    </DropdownMenuCheckboxItem>
+                                ))}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                    {toolbarAfterColumns}
+                </div>
+            </div>
+
+            {primaryPanel}
+            {tabPanels}
         </div>
     );
 }

@@ -226,9 +226,10 @@ final class DemoController
                             'type' => 'select',
                             'sortable' => true,
                             'options' => [
-                                ['value' => 'active', 'label' => 'Active', 'color' => 'green'],
-                                ['value' => 'inactive', 'label' => 'Inactive', 'color' => 'red'],
-                                ['value' => 'pending', 'label' => 'Pending', 'color' => 'yellow'],
+                                ['value' => 'active', 'label' => 'Active', 'status' => 'success'],
+                                ['value' => 'banned', 'label' => 'Banned', 'status' => 'error'],
+                                ['value' => 'pending', 'label' => 'Pending', 'status' => 'pending'],
+                                ['value' => 'inactive', 'label' => 'Inactive', 'status' => 'warning'],
                             ],
                         ],
                         [
@@ -273,11 +274,11 @@ final class DemoController
                 ],
                 'showValue' => true,
                 'value' => array_map(
-                    static fn(): array => [
+                    static fn (): array => [
                         'id' => fake()->uuid(),
                         'name' => fake()->name(),
                         'email' => fake()->email(),
-                        'status' => fake()->randomElement(['active', 'inactive', 'pending']),
+                        'status' => fake()->randomElement(['active', 'inactive', 'pending', 'banned']),
                         'created_at' => fake()->dateTime()->format('Y-m-d H:i:s'),
                         'updated_at' => fake()->dateTime()->format('Y-m-d H:i:s'),
                         'sort_order' => fake()->numberBetween(1, 100),

@@ -2,11 +2,17 @@
  * Column schema for {@link DataTable} (Flatpack list views, demo `type=table`, etc.).
  * Mirrors the shape sent from `DemoController` / future list controllers.
  */
+/** Drives the read-only select cell leading icon in {@link DataTable}. */
+export type FlatpackDataTableSelectOptionStatus =
+    | 'success'
+    | 'pending'
+    | 'warning'
+    | 'error';
+
 export type FlatpackDataTableColumnOption = {
     value: string;
     label: string;
-    /** Optional semantic color for badge styling (e.g. `green`, `red`, `yellow`). */
-    color?: string;
+    status?: FlatpackDataTableSelectOptionStatus;
 };
 
 /**
@@ -28,7 +34,7 @@ export type FlatpackDataTableColumn = {
     id: string;
     label: string;
     /** Defaults to plain text when omitted. */
-    type?: 'text' | 'select' | 'date' | 'actions';
+    type?: 'text' | 'select' | 'date' | 'actions' | 'badge';
     options?: FlatpackDataTableColumnOption[];
     /** When `type` is `actions`, keyed button definitions (order preserved in modern runtimes). */
     buttons?: Record<string, FlatpackDataTableActionButton>;

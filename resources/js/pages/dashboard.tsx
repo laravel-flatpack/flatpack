@@ -12,7 +12,7 @@ const ChartAreaInteractive = lazy(() =>
 );
 
 const DashboardDataTable = lazy(() =>
-    import('@/components/table/data-table-showcase').then((module) => ({
+    import('@/components/table/dashboard-data-table').then((module) => ({
         default: module.DashboardDataTable,
     })),
 );
