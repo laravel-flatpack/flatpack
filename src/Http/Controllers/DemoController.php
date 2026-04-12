@@ -49,6 +49,7 @@ final class DemoController
                     'label' => 'Textarea label',
                     'placeholder' => 'Enter your text here',
                     'helperText' => 'A helper text for the textarea input field.',
+                    'rows' => 10,
                 ],
                 'showValue' => false,
                 'value' => null,

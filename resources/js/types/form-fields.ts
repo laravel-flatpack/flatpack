@@ -19,6 +19,10 @@ type WithPlaceholder = {
 };
 
 type TextFieldProps = FormFieldBase & WithPlaceholder;
+type TextareaFieldProps = FormFieldBase &
+    WithPlaceholder & {
+        rows?: number;
+    };
 type SelectFieldProps = FormFieldBase &
     WithPlaceholder & {
         options: SelectFieldOption[];
@@ -55,7 +59,7 @@ type BlockEditorFieldProps = FormFieldBase &
 
 export type FormFieldProps =
     | ({ type: 'text' } & TextFieldProps)
-    | ({ type: 'textarea' } & TextFieldProps)
+    | ({ type: 'textarea' } & TextareaFieldProps)
     | ({ type: 'select' } & SelectFieldProps)
     | ({ type: 'combobox' } & ComboboxFieldProps)
     | ({ type: 'date-picker' } & DatePickerFieldProps)

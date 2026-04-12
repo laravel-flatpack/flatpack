@@ -32,6 +32,17 @@ describe('formFieldPropsToRenderProps', () => {
         expect(out.placeholder).toBe('');
     });
 
+    it('forwards rows for textarea', () => {
+        const props: FormFieldProps = {
+            type: 'textarea',
+            label: 'T',
+            placeholder: 'p',
+            rows: 10,
+        };
+        const out = formFieldPropsToRenderProps(props, ctx);
+        expect(out.rows).toBe(10);
+    });
+
     it('maps checkbox without helperText in render props', () => {
         const props: FormFieldProps = {
             type: 'checkbox',

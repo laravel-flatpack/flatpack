@@ -23,7 +23,7 @@ export function FieldLoading({
                     <Skeleton className="h-8 w-full rounded-xl bg-muted-foreground/15 dark:bg-muted-foreground/25" />
                 )}
                 {textareaField && (
-                    <Skeleton className="h-32 w-full rounded-xl bg-muted-foreground/15 dark:bg-muted-foreground/25" />
+                    <Skeleton className="h-40 w-full rounded-xl bg-muted-foreground/15 dark:bg-muted-foreground/25" />
                 )}
             </div>
             {helperText && (
