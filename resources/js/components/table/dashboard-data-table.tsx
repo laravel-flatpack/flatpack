@@ -24,86 +24,25 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import type {
-    FlatpackDataTableColumn,
-    FlatpackDataTableColumnOption,
-} from '@/types/data-table';
+import type { FlatpackDataTableColumn } from '@/types/data-table';
 
-/** Values that appear in `resources/js/data/data.json` plus common aliases for the drawer. */
-const SECTION_TYPE_OPTIONS: FlatpackDataTableColumnOption[] = [
-    { value: 'Cover page', label: 'Cover page' },
-    { value: 'Table of contents', label: 'Table of contents' },
-    { value: 'Narrative', label: 'Narrative' },
-    { value: 'Technical content', label: 'Technical content' },
-    { value: 'Plain language', label: 'Plain language' },
-    { value: 'Legal', label: 'Legal' },
-    { value: 'Visual', label: 'Visual' },
-    { value: 'Financial', label: 'Financial' },
-    { value: 'Research', label: 'Research' },
-    { value: 'Planning', label: 'Planning' },
-    { value: 'Table of Contents', label: 'Table of Contents' },
-    { value: 'Executive Summary', label: 'Executive Summary' },
-    { value: 'Technical Approach', label: 'Technical Approach' },
-    { value: 'Design', label: 'Design' },
-    { value: 'Capabilities', label: 'Capabilities' },
-    { value: 'Focus Documents', label: 'Focus Documents' },
-    { value: 'Cover Page', label: 'Cover Page' },
-];
-
-const DASHBOARD_COLUMNS: FlatpackDataTableColumn[] = [
-    {
-        id: 'header',
-        label: 'Header',
-        detailDrawer: true,
-        editable: true,
-        sortable: true,
-    },
-    {
-        id: 'type',
-        label: 'Section Type',
-        type: 'badge',
-        options: SECTION_TYPE_OPTIONS,
-        sortable: true,
-    },
-    {
-        id: 'status',
-        label: 'Status',
-        type: 'select',
-        sortable: true,
-        options: [
-            { value: 'Done', label: 'Done', status: 'success' },
-            { value: 'In Process', label: 'In Process', status: 'pending' },
-            { value: 'Not Started', label: 'Not Started', status: 'pending' },
-        ],
-    },
-    {
-        id: 'target',
-        label: 'Target',
-        editable: true,
-        sortable: true,
-    },
-    {
-        id: 'limit',
-        label: 'Limit',
-        editable: true,
-        sortable: true,
-    },
-    {
-        id: 'actions',
-        label: 'Actions',
-        type: 'actions',
-        buttons: {
-            edit: { label: 'Edit', icon: 'edit', action: 'edit' },
-            copy: { label: 'Make a copy', icon: 'copy', action: 'copy' },
-            favorite: { label: 'Favorite', icon: 'star', action: 'favorite' },
-            delete: {
-                label: 'Delete',
-                icon: 'delete',
-                action: 'delete',
-            },
-        },
-    },
-];
+/** Catalog entry shape aligned with DemoController's `data-table` demo item (`props` + `value`). */
+export type DashboardSectionsTableCatalog = {
+    id: string;
+    title: string;
+    description: string;
+    props: {
+        type: string;
+        label: string;
+        helperText: string;
+        checkboxes: boolean;
+        reorderable: boolean;
+        actions: unknown[];
+        columns: FlatpackDataTableColumn[];
+    };
+    showValue: boolean;
+    value: DashboardTableRow[];
+};
 
 export type DashboardTableRow = Record<string, unknown> & {
     id: number;
@@ -115,19 +54,24 @@ export type DashboardTableRow = Record<string, unknown> & {
 };
 
 export function DashboardDataTable({
-    data: rawRows,
+    catalog,
 }: {
-    data: DashboardTableRow[];
+    catalog: DashboardSectionsTableCatalog;
 }) {
     const [view, setView] = React.useState('outline');
 
+    const columns = React.useMemo(
+        () => catalog.props.columns,
+        [catalog.props.columns],
+    );
+
     const rows = React.useMemo(
         () =>
-            rawRows.map((row, i) => ({
+            catalog.value.map((row, i) => ({
                 ...row,
                 sort_order: i + 1,
             })),
-        [rawRows],
+        [catalog.value],
     );
 
     return (
@@ -137,13 +81,13 @@ export function DashboardDataTable({
             className="w-full flex-col justify-start gap-6"
         >
             <DataTable
-                checkboxes
+                checkboxes={catalog.props.checkboxes}
                 className="gap-4"
-                columns={DASHBOARD_COLUMNS}
+                columns={columns}
                 data={rows}
-                id="dashboard-sections-table"
+                id={catalog.id}
                 primaryTabPanelValue="outline"
-                reorderable
+                reorderable={catalog.props.reorderable}
                 tabPanels={
                     <>
                         <TabsContent

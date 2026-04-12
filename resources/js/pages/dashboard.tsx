@@ -1,6 +1,7 @@
 import { Head } from '@inertiajs/react';
 import { lazy, Suspense } from 'react';
 import { SectionCards } from '@/components/section-cards';
+import type { DashboardSectionsTableCatalog } from '@/components/table/dashboard-data-table';
 import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
 import data from '@/data/data.json';
 import FlatpackLayout from '@/layouts/flatpack-layout';
@@ -39,7 +40,9 @@ export default function FlatpackDashboard() {
                     <div className="h-[32rem] animate-pulse rounded-xl border border-border bg-muted/40" />
                 }
             >
-                <DashboardDataTable data={data} />
+                <DashboardDataTable
+                    catalog={data as DashboardSectionsTableCatalog}
+                />
             </Suspense>
         </div>
     );
