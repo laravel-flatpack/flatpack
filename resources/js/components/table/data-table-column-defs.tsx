@@ -44,7 +44,7 @@ export function buildDataTableColumnDefs(
                 </div>
             ),
             cell: ({ row }) => (
-                <div className="flex items-center justify-center">
+                <div className="flex items-center justify-start">
                     <Checkbox
                         checked={row.getIsSelected()}
                         onCheckedChange={(value) => row.toggleSelected(!!value)}

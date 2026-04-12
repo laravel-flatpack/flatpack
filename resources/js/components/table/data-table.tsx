@@ -44,6 +44,7 @@ import {
     leafColumnIdsInSchemaOrder,
     visibilityFromSchema,
 } from '@/components/table/data-table-column-visibility';
+import { DATA_TABLE_DRAG_COLUMN_HEAD_CLASS } from '@/components/table/data-table-constants';
 import { DataTableDraggableRow } from '@/components/table/data-table-draggable-row';
 import { Button } from '@/components/ui/button';
 import {
@@ -311,6 +312,11 @@ export function DataTable({
                                             <TableHead
                                                 key={header.id}
                                                 colSpan={header.colSpan}
+                                                className={cn(
+                                                    header.column.id ===
+                                                        'drag' &&
+                                                        DATA_TABLE_DRAG_COLUMN_HEAD_CLASS,
+                                                )}
                                             >
                                                 {header.isPlaceholder
                                                     ? null
@@ -361,6 +367,10 @@ export function DataTable({
                                         <TableHead
                                             key={header.id}
                                             colSpan={header.colSpan}
+                                            className={cn(
+                                                header.column.id === 'drag' &&
+                                                    DATA_TABLE_DRAG_COLUMN_HEAD_CLASS,
+                                            )}
                                         >
                                             {header.isPlaceholder
                                                 ? null
@@ -572,7 +582,8 @@ export function DataTable({
                                     .filter(
                                         (column) =>
                                             typeof column.accessorFn !==
-                                                'undefined' && column.getCanHide(),
+                                                'undefined' &&
+                                            column.getCanHide(),
                                     )
                                     .map((column) => (
                                         <DropdownMenuCheckboxItem

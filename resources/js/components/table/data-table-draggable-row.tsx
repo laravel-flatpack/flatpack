@@ -2,8 +2,10 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { flexRender, type Row } from '@tanstack/react-table';
 import { GripVerticalIcon } from 'lucide-react';
+import { DATA_TABLE_DRAG_COLUMN_CELL_CLASS } from '@/components/table/data-table-constants';
 import { Button } from '@/components/ui/button';
 import { TableCell, TableRow } from '@/components/ui/table';
+import { cn } from '@/lib/utils';
 
 export function DataTableDraggableRow({
     row,
@@ -31,18 +33,24 @@ export function DataTableDraggableRow({
             }}
         >
             {row.getVisibleCells().map((cell) => (
-                <TableCell key={cell.id}>
+                <TableCell
+                    key={cell.id}
+                    className={cn(
+                        cell.column.id === 'drag' &&
+                            DATA_TABLE_DRAG_COLUMN_CELL_CLASS,
+                    )}
+                >
                     {cell.column.id === 'drag' ? (
                         <Button
                             type="button"
                             variant="ghost"
-                            size="icon"
-                            className="size-7 cursor-grab text-muted-foreground hover:bg-transparent active:cursor-grabbing"
+                            size="icon-xs"
+                            className="cursor-grab text-muted-foreground hover:bg-transparent active:cursor-grabbing"
                             {...attributes}
                             {...listeners}
                         >
                             <GripVerticalIcon
-                                className="size-3.5 shrink-0"
+                                className="size-3 shrink-0"
                                 aria-hidden
                             />
                             <span className="sr-only">Drag to reorder row</span>
