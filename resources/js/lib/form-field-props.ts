@@ -99,6 +99,19 @@ function mapTimePicker(props: FormFieldProps, ctx: FormFieldRenderContext) {
     };
 }
 
+function mapTable(props: FormFieldProps, ctx: FormFieldRenderContext) {
+    const { type: _t, ...rest } = props as Extract<
+        FormFieldProps,
+        { type: 'table' }
+    >;
+    return {
+        ...rest,
+        id: ctx.fieldId,
+        data: rest.data ?? [],
+        onValueChange: ctx.onValueChange,
+    };
+}
+
 const formFieldTypeToMapper: Record<FormFieldType, FormFieldPropsMapper> = {
     text: mapTextTextareaSelect,
     textarea: mapTextTextareaSelect,
@@ -111,6 +124,7 @@ const formFieldTypeToMapper: Record<FormFieldType, FormFieldPropsMapper> = {
     'date-picker': mapDatePicker,
     'date-range-picker': mapDateRangePicker,
     'time-picker': mapTimePicker,
+    table: mapTable,
 };
 
 /**

@@ -1,3 +1,5 @@
+import type { FlatpackDataTableColumn } from '@/types/data-table';
+
 export type SelectFieldOption = {
     value: string;
     label: string;
@@ -56,6 +58,13 @@ type BlockEditorFieldProps = FormFieldBase &
     WithPlaceholder & {
         showFixedToolbar?: boolean;
     };
+type TableFieldProps = FormFieldBase & {
+    columns: FlatpackDataTableColumn[];
+    /** Row objects keyed by column `id`s; may be supplied from catalog `value` in demos. */
+    data?: Record<string, unknown>[];
+    checkboxes?: boolean;
+    actions?: unknown[];
+};
 
 export type FormFieldProps =
     | ({ type: 'text' } & TextFieldProps)
@@ -68,6 +77,7 @@ export type FormFieldProps =
     | ({ type: 'checkbox' } & CheckboxFieldProps)
     | ({ type: 'switch' } & SwitchFieldProps)
     | ({ type: 'rich-text' } & RichTextFieldProps)
-    | ({ type: 'block-editor' } & BlockEditorFieldProps);
+    | ({ type: 'block-editor' } & BlockEditorFieldProps)
+    | ({ type: 'table' } & TableFieldProps);
 
 export type FormFieldType = FormFieldProps['type'];

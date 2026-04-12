@@ -9,7 +9,7 @@ import type {
     DemoComponentCatalogEntry,
     DemoComponentType,
 } from '@/types/demo';
-import type { FormFieldType } from '@/types/form-fields';
+import type { FormFieldProps, FormFieldType } from '@/types/form-fields';
 
 export type { DemoComponentType };
 
@@ -81,7 +81,16 @@ export function buildDemoFieldRenderProps(
         entry.props,
         options.queryOverrides,
     );
-    return mapFormFieldPropsToComponentProps(merged, {
+    const propsForField: FormFieldProps =
+        merged.type === 'table'
+            ? {
+                  ...merged,
+                  data: Array.isArray(entry.value)
+                      ? (entry.value as Record<string, unknown>[])
+                      : [],
+              }
+            : merged;
+    return mapFormFieldPropsToComponentProps(propsForField, {
         fieldId: entry.id,
         onValueChange: options.onValueChange,
     });

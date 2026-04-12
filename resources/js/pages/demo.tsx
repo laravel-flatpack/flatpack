@@ -43,6 +43,7 @@ const FIELD_LOADING_TEXTAREA_TYPES = new Set([
     'textarea',
     'rich-text',
     'block-editor',
+    'table',
 ]);
 
 function fieldLoadingPropsForEntry(

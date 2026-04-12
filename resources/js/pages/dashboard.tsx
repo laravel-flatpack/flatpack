@@ -11,9 +11,9 @@ const ChartAreaInteractive = lazy(() =>
     })),
 );
 
-const DataTable = lazy(() =>
-    import('@/components/data-table').then((module) => ({
-        default: module.DataTable,
+const DashboardDataTable = lazy(() =>
+    import('@/components/table/data-table-showcase').then((module) => ({
+        default: module.DashboardDataTable,
     })),
 );
 
@@ -39,7 +39,7 @@ export default function FlatpackDashboard() {
                     <div className="h-[32rem] animate-pulse rounded-xl border border-border bg-muted/40" />
                 }
             >
-                <DataTable data={data} />
+                <DashboardDataTable data={data} />
             </Suspense>
         </div>
     );

@@ -5,7 +5,8 @@ import type { FlatpackFormPageProps } from '@/types/pages/flatpack';
 /**
  * When `FormController` supplies a field schema (`FormFieldProps[]`), render each field with
  * `loadField` from `@/lib/form` and `mapFormFieldPropsToComponentProps` from `@/lib/form-field-props`
- * (same approach as the components demo).
+ * (same approach as the components demo). For `type: 'table'`, row data and `columns` schema map to
+ * `@/components/table/data-table` via `TableField`.
  */
 export default function FlatpackFormPage({
     entity,

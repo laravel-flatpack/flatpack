@@ -105,4 +105,67 @@ describe('mapFormFieldPropsToComponentProps', () => {
             timeDefaultValue: '09:00:00',
         });
     });
+
+    it('maps table field with columns and row data', () => {
+        const props: FormFieldProps = {
+            type: 'table',
+            label: 'Users',
+            columns: [
+                { id: 'name', label: 'Name', sortable: true },
+                {
+                    id: 'status',
+                    label: 'Status',
+                    type: 'select',
+                    options: [{ value: 'a', label: 'Active', color: 'green' }],
+                },
+            ],
+            data: [{ name: 'Ada', status: 'a' }],
+            checkboxes: true,
+        };
+        const out = mapFormFieldPropsToComponentProps(props, context);
+        expect(out.id).toBe('field-1');
+        expect(out.columns).toHaveLength(2);
+        expect(out.data).toEqual([{ name: 'Ada', status: 'a' }]);
+        expect(out.checkboxes).toBe(true);
+    });
+
+    it('defaults table data to empty array when omitted', () => {
+        const props: FormFieldProps = {
+            type: 'table',
+            label: 'T',
+            columns: [{ id: 'x', label: 'X' }],
+        };
+        const out = mapFormFieldPropsToComponentProps(props, context);
+        expect(out.data).toEqual([]);
+    });
+
+    it('preserves actions column with buttons in table schema', () => {
+        const props: FormFieldProps = {
+            type: 'table',
+            label: 'T',
+            columns: [
+                {
+                    id: 'actions',
+                    label: 'Actions',
+                    type: 'actions',
+                    buttons: {
+                        edit: {
+                            label: 'Edit',
+                            icon: 'edit',
+                            href: '/{id}/edit',
+                        },
+                    },
+                },
+            ],
+            data: [],
+        };
+        const out = mapFormFieldPropsToComponentProps(props, context);
+        const cols = out.columns as {
+            id: string;
+            type?: string;
+            buttons?: object;
+        }[];
+        expect(cols[0].type).toBe('actions');
+        expect(cols[0].buttons).toHaveProperty('edit');
+    });
 });

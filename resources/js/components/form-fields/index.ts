@@ -9,6 +9,7 @@ export { DateRangePickerField } from './date-range-picker';
 export { RichTextField } from './rich-text';
 export { SelectField, type SelectFieldOption } from './select';
 export { SwitchField } from './switch';
+export { TableField } from './table';
 export { TextField } from './text';
 export { TextareaField } from './textarea';
 export { TimePickerField } from './time-picker';
