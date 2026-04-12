@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use Flatpack\Http\Controllers\SessionController;
 use Flatpack\Actions\Handlers\DeleteRecordHandler;
 use Flatpack\Actions\Handlers\EditRecordHandler;
 use Flatpack\Actions\Handlers\SaveRecordHandler;
+use Flatpack\Http\Controllers\SessionController;
 
 return [
     /*

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Flatpack\Http\Responses;
+namespace Flatpack\Http;
 
 use Flatpack\Http\Resources\FlatpackSchema;
 use Illuminate\Http\JsonResponse;
