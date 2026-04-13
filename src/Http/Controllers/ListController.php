@@ -6,6 +6,7 @@ namespace Flatpack\Http\Controllers;
 
 use Flatpack\Composition\EntityComposition;
 use Flatpack\Http\FlatpackResponse;
+use Flatpack\Lists\ListHeaderActions;
 use Flatpack\Lists\ListRecordsLoader;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -32,6 +33,7 @@ final readonly class ListController
         $perPage = max(1, min($maxPerPage, $perPage));
 
         $result = $this->listRecords->load($list->model, $schema, $page, $perPage);
+        $flatpackPrefix = trim((string) config('flatpack.prefix', 'flatpack'), '/');
 
         return FlatpackResponse::inertia('list', [
             'entity' => $entity,
@@ -42,6 +44,8 @@ final readonly class ListController
             'schema' => $schema,
             'records' => $result['records'],
             'pagination' => $result['pagination'],
+            'flatpack_prefix' => $flatpackPrefix,
+            'list_actions' => ListHeaderActions::fromSchema($schema),
         ], $request->boolean('json'));
     }
 }

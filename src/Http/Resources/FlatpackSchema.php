@@ -34,6 +34,14 @@ final class FlatpackSchema extends JsonResource
                 array_key_exists('pagination', $resource),
                 data_get($resource, 'pagination'),
             ),
+            'flatpack_prefix' => $this->when(
+                array_key_exists('flatpack_prefix', $resource),
+                data_get($resource, 'flatpack_prefix'),
+            ),
+            'list_actions' => $this->when(
+                array_key_exists('list_actions', $resource),
+                data_get($resource, 'list_actions'),
+            ),
         ];
     }
 }

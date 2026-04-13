@@ -1,8 +1,11 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { useCallback, useMemo } from 'react';
+import { LucideIconByName } from '@/components/icons';
 import { DataTable } from '@/components/table/data-table';
+import { Button } from '@/components/ui/button';
 import FlatpackLayout from '@/layouts/flatpack-layout';
 import { listYamlColumnsToDataTableColumns } from '@/lib/list-schema';
+import { cn } from '@/lib/utils';
 import type { FlatpackListPageProps } from '@/types/pages/flatpack';
 
 export default function FlatpackListPage({
@@ -11,6 +14,7 @@ export default function FlatpackListPage({
     schema,
     records = [],
     pagination,
+    list_actions: listActions = [],
 }: FlatpackListPageProps) {
     const displayName = name ?? entity ?? '';
     const pageTitle = displayName ? `${displayName} list` : '';
@@ -39,9 +43,36 @@ export default function FlatpackListPage({
             {displayName ? <Head title={pageTitle} /> : null}
             <div className="flex flex-col gap-2">
                 {displayName ? (
-                    <h1 className="text-2xl font-semibold tracking-tight">
-                        {displayName}
-                    </h1>
+                    <div className="mb-4 flex w-full flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
+                        <h1 className="min-w-0 flex-1 text-2xl font-semibold tracking-tight">
+                            {displayName}
+                        </h1>
+                        <div className="flex shrink-0 flex-wrap items-center justify-start gap-2 sm:justify-end">
+                            {listActions.map((action) => (
+                                <Button
+                                    key={action.id}
+                                    asChild
+                                    size="lg"
+                                    variant={action.variant ?? 'outline'}
+                                >
+                                    <Link
+                                        href={action.href}
+                                        className={cn(
+                                            action.icon &&
+                                                'inline-flex items-center gap-1.5',
+                                        )}
+                                    >
+                                        {action.icon ? (
+                                            <LucideIconByName
+                                                name={action.icon}
+                                            />
+                                        ) : null}
+                                        {action.label}
+                                    </Link>
+                                </Button>
+                            ))}
+                        </div>
+                    </div>
                 ) : null}
                 {!displayName ? (
                     <p className="text-muted-foreground">
