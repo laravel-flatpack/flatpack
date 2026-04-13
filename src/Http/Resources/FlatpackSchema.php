@@ -21,9 +21,15 @@ final class FlatpackSchema extends JsonResource
         $schema = data_get($this->resource, 'schema', []);
         $catalog = data_get($this->resource, 'catalog', []);
 
+        $resource = is_array($this->resource) ? $this->resource : [];
+
         return [
             'schema' => $this->when(! empty($schema), $schema),
             'catalog' => $this->when(! empty($catalog), $catalog),
+            'records' => $this->when(
+                array_key_exists('records', $resource),
+                data_get($resource, 'records'),
+            ),
         ];
     }
 }

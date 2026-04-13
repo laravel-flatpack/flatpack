@@ -1,13 +1,23 @@
 import { Head } from '@inertiajs/react';
+import { useMemo } from 'react';
+import { DataTable } from '@/components/table/data-table';
 import FlatpackLayout from '@/layouts/flatpack-layout';
+import { listYamlColumnsToDataTableColumns } from '@/lib/list-schema';
 import type { FlatpackListPageProps } from '@/types/pages/flatpack';
 
 export default function FlatpackListPage({
     entity,
     name,
+    schema,
+    records = [],
 }: FlatpackListPageProps) {
     const displayName = name ?? entity ?? '';
     const pageTitle = displayName ? `${displayName} list` : '';
+
+    const columns = useMemo(
+        () => listYamlColumnsToDataTableColumns(schema?.columns),
+        [schema],
+    );
 
     return (
         <>
@@ -18,16 +28,26 @@ export default function FlatpackListPage({
                         {displayName}
                     </h1>
                 ) : null}
-                <p className="text-muted-foreground">
-                    {entity
-                        ? `List view placeholder for the ${entity} entity.`
-                        : 'List view placeholder.'}
-                </p>
+                {!displayName ? (
+                    <p className="text-muted-foreground">
+                        Nothing to list yet.
+                    </p>
+                ) : columns.length === 0 ? (
+                    <p className="text-muted-foreground">
+                        Define columns in list.yaml to render this table.
+                    </p>
+                ) : (
+                    <DataTable
+                        id={`flatpack-list-${entity || 'entity'}`}
+                        columns={columns}
+                        data={records}
+                    />
+                )}
             </div>
         </>
     );
 }
 
-FlatpackListPage.layout = (page: React.ReactElement<FlatpackListPageProps>) => {
-    return <FlatpackLayout>{page}</FlatpackLayout>;
-};
+FlatpackListPage.layout = (page: React.ReactElement) => (
+    <FlatpackLayout>{page}</FlatpackLayout>
+);

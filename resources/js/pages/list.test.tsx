@@ -24,7 +24,9 @@ describe('FlatpackListPage', () => {
             screen.getByRole('heading', { name: 'posts' }),
         ).toBeInTheDocument();
         expect(
-            screen.getByText('List view placeholder for the posts entity.'),
+            screen.getByText(
+                /Define columns in list\.yaml to render this table/i,
+            ),
         ).toBeInTheDocument();
         expect(document.querySelector('title')?.textContent).toBe('posts list');
     });
@@ -45,6 +47,45 @@ describe('FlatpackListPage', () => {
 
         expect(screen.queryAllByRole('heading')).toHaveLength(0);
         expect(document.querySelector('title')).toBeNull();
-        expect(screen.getByText('List view placeholder.')).toBeInTheDocument();
+        expect(screen.getByText('Nothing to list yet.')).toBeInTheDocument();
+    });
+
+    it('renders a data table when list schema defines columns', () => {
+        render(
+            <FlatpackListPage
+                entity="posts"
+                name="Posts"
+                schema={{
+                    columns: {
+                        id: { label: 'ID', sortable: true },
+                        title: {
+                            label: 'Title',
+                            searchable: true,
+                        },
+                    },
+                }}
+                records={[]}
+            />,
+        );
+
+        expect(screen.getByRole('table')).toBeInTheDocument();
+        expect(screen.getByText('No results.')).toBeInTheDocument();
+    });
+
+    it('passes server data through to the table', () => {
+        render(
+            <FlatpackListPage
+                entity="posts"
+                schema={{
+                    columns: {
+                        id: { label: 'ID' },
+                        title: { label: 'Title' },
+                    },
+                }}
+                records={[{ id: 1, title: 'Hello' }]}
+            />,
+        );
+
+        expect(screen.getByRole('cell', { name: 'Hello' })).toBeInTheDocument();
     });
 });

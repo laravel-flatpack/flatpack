@@ -20,6 +20,7 @@ use Flatpack\Http\FlatpackRequest;
 use Flatpack\Http\Middleware\ConfigureFlatpackViteAssets;
 use Flatpack\Http\Middleware\SetFlatpackInertiaRootView;
 use Flatpack\Http\Middleware\ShareFlatpackInertiaData;
+use Flatpack\Lists\ListRecordsLoader;
 use Flatpack\Menu\MenuBuilder;
 use Flatpack\Registration\RedirectCallbacks;
 use Illuminate\Auth\AuthenticationException;
@@ -71,6 +72,8 @@ final class FlatpackServiceProvider extends ServiceProvider
             $app->make(CompositionQuery::class),
             $app->make(CompositionValues::class),
         ));
+
+        $this->app->singleton(ListRecordsLoader::class, fn (): ListRecordsLoader => new ListRecordsLoader);
 
         $this->app->singleton(FlatpackAuthorizer::class, PolicyAwareFlatpackAuthorizer::class);
         $this->app->singleton(ActionResolver::class, DefaultActionResolver::class);
