@@ -604,7 +604,7 @@ export function DataTable({
                                     setGlobalFilter(e.target.value)
                                 }
                                 placeholder="Filter rows…"
-                                className="h-9 pl-9"
+                                className="h-8 pl-8"
                                 autoComplete="off"
                             />
                         </div>
