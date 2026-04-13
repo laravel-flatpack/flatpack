@@ -9,6 +9,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { readOnlyTruncatedDisplay } from '@/lib/data-table-utils';
 import { CLEAR_SELECT_ITEM_VALUE } from '@/lib/flatpack-select';
 import { selectOptionLeadingIcon } from '@/lib/select-option-leading-icon';
 import type { FlatpackDataTableColumn } from '@/types/data-table';
@@ -76,13 +77,16 @@ export function DataTableSelectCell({
 
     const opt = options.find((o) => o.value === str);
     const display = opt?.label ?? str;
+    const { shown, title } = readOnlyTruncatedDisplay(display, col.truncate);
     return (
         <Badge
             variant="outline"
             className="inline-flex max-w-full items-center gap-1.5 px-1.5 font-normal text-muted-foreground"
         >
             {selectOptionLeadingIcon(opt)}
-            <span className="truncate">{display}</span>
+            <span className="min-w-0" title={title}>
+                {shown}
+            </span>
         </Badge>
     );
 }

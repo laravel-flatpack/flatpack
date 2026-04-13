@@ -6,8 +6,11 @@ import {
     formatCellValue,
     interpolateRowPlaceholders,
     mergeCommittedDate,
+    normalizeColumnTruncate,
+    readOnlyTruncatedDisplay,
     reindexReorderColumn,
     stableRowId,
+    truncateDisplayString,
 } from '@/lib/data-table-utils';
 import type { FlatpackDataTableColumn } from '@/types/data-table';
 
@@ -68,6 +71,65 @@ describe('interpolateRowPlaceholders', () => {
 
     it('stringifies numbers', () => {
         expect(interpolateRowPlaceholders('{n}', { n: 0 })).toBe('0');
+    });
+});
+
+describe('truncateDisplayString', () => {
+    it('returns text unchanged when at or below max length', () => {
+        expect(truncateDisplayString('aaaa', 10)).toBe('aaaa');
+        expect(truncateDisplayString('short', 10)).toBe('short');
+    });
+
+    it('truncates and appends ellipsis when longer than max', () => {
+        expect(truncateDisplayString('aaaaaaaaaaa', 10)).toBe('aaaaaaaaaa…');
+    });
+
+    it('respects max length', () => {
+        expect(truncateDisplayString('hello world', 5)).toBe('hello…');
+    });
+});
+
+describe('normalizeColumnTruncate', () => {
+    it('accepts positive integers and numeric strings', () => {
+        expect(normalizeColumnTruncate(40)).toBe(40);
+        expect(normalizeColumnTruncate('12')).toBe(12);
+    });
+
+    it('returns undefined for missing, non-numeric, or non-positive values', () => {
+        expect(normalizeColumnTruncate(undefined)).toBeUndefined();
+        expect(normalizeColumnTruncate(0)).toBeUndefined();
+        expect(normalizeColumnTruncate(-1)).toBeUndefined();
+        expect(normalizeColumnTruncate('')).toBeUndefined();
+    });
+});
+
+describe('readOnlyTruncatedDisplay', () => {
+    it('returns full text when maxChars is undefined', () => {
+        expect(readOnlyTruncatedDisplay('hello world', undefined)).toEqual({
+            shown: 'hello world',
+            title: undefined,
+        });
+    });
+
+    it('returns full text when maxChars is invalid', () => {
+        expect(readOnlyTruncatedDisplay('hi', 0)).toEqual({
+            shown: 'hi',
+            title: undefined,
+        });
+    });
+
+    it('truncates and sets title when over limit', () => {
+        expect(readOnlyTruncatedDisplay('hello world', 5)).toEqual({
+            shown: 'hello…',
+            title: 'hello world',
+        });
+    });
+
+    it('coerces string limits from YAML', () => {
+        expect(readOnlyTruncatedDisplay('hello world', '5')).toEqual({
+            shown: 'hello…',
+            title: 'hello world',
+        });
     });
 });
 

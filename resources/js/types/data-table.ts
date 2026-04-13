@@ -63,6 +63,12 @@ export type FlatpackDataTableColumn = {
     detailDrawer?: boolean;
     /** Start hidden; user can show via column picker. */
     invisible?: boolean;
+    /**
+     * When set to a positive number (from list YAML), read-only cell text is truncated to that
+     * many characters with an ellipsis; the full value is available on hover (`title`). Omit to
+     * show the full string. Ignored for editable inputs.
+     */
+    truncate?: number;
 };
 
 export type BuildDataTableColumnDefsOptions = {

@@ -3,7 +3,11 @@ import { DataTableDateCell } from '@/components/table/data-table-date-cell';
 import { DataTableRowDetailDrawer } from '@/components/table/data-table-row-drawer';
 import { DataTableSelectCell } from '@/components/table/data-table-select-cell';
 import { DataTableEditableTextCell } from '@/components/table/data-table-text-cell';
-import { cellControlDomId, formatCellValue } from '@/lib/data-table-utils';
+import {
+    cellControlDomId,
+    formatCellValue,
+    readOnlyTruncatedDisplay,
+} from '@/lib/data-table-utils';
 import type { FlatpackDataTableColumn } from '@/types/data-table';
 
 export function DataTableSchemaCell({
@@ -44,7 +48,9 @@ export function DataTableSchemaCell({
     const controlId = cellControlDomId(rowId, col.id);
 
     if (col.type === 'badge') {
-        return <DataTableBadgeCell value={value} />;
+        return (
+            <DataTableBadgeCell value={value} truncate={col.truncate} />
+        );
     }
 
     if (col.type === 'select' && col.options?.length) {
@@ -82,9 +88,11 @@ export function DataTableSchemaCell({
         );
     }
 
+    const full = formatCellValue(value);
+    const { shown, title } = readOnlyTruncatedDisplay(full, col.truncate);
     return (
-        <span className="block min-w-0 truncate" title={formatCellValue(value)}>
-            {formatCellValue(value)}
+        <span className="block min-w-0" title={title}>
+            {shown}
         </span>
     );
 }

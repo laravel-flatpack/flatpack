@@ -1,5 +1,20 @@
 import type { FlatpackDataTableColumn } from '@/types/data-table';
 
+const COLUMN_TRUNCATE_MAX = 1_000_000;
+
+/** Coerces YAML/JSON `truncate` to a positive integer, or `undefined` when absent/invalid. */
+export function normalizeColumnTruncate(raw: unknown): number | undefined {
+    if (raw == null) {
+        return undefined;
+    }
+    const n =
+        typeof raw === 'number' ? raw : Number(String(raw).trim());
+    if (!Number.isFinite(n) || n <= 0) {
+        return undefined;
+    }
+    return Math.min(Math.floor(n), COLUMN_TRUNCATE_MAX);
+}
+
 export function stableRowId(
     row: Record<string, unknown>,
     index: number,
@@ -43,6 +58,36 @@ export function formatCellValue(raw: unknown): string {
         return JSON.stringify(raw);
     }
     return String(raw);
+}
+
+/**
+ * Shortens `text` when longer than `maxChars`. Prefer {@link readOnlyTruncatedDisplay} when the
+ * limit comes from an optional column setting.
+ */
+export function truncateDisplayString(text: string, maxChars: number): string {
+    if (text.length <= maxChars) {
+        return text;
+    }
+    return `${text.slice(0, maxChars)}…`;
+}
+
+/**
+ * Read-only table cells: when `maxChars` (from column `truncate`, optional) is a positive number,
+ * truncates with an ellipsis and returns the full `text` for use as `title`. Accepts the raw
+ * YAML/JSON value (number or numeric string).
+ */
+export function readOnlyTruncatedDisplay(
+    text: string,
+    maxChars: unknown,
+): { shown: string; title: string | undefined } {
+    const n = normalizeColumnTruncate(maxChars);
+    if (n == null) {
+        return { shown: text, title: undefined };
+    }
+    if (text.length <= n) {
+        return { shown: text, title: undefined };
+    }
+    return { shown: truncateDisplayString(text, n), title: text };
 }
 
 export function dateInputSegment(raw: unknown): string {

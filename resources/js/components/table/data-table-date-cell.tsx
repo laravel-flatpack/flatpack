@@ -5,6 +5,7 @@ import {
     dateInputSegment,
     formatCellValue,
     mergeCommittedDate,
+    readOnlyTruncatedDisplay,
 } from '@/lib/data-table-utils';
 import { cn } from '@/lib/utils';
 import type { FlatpackDataTableColumn } from '@/types/data-table';
@@ -47,7 +48,15 @@ export function DataTableDateCell({
         return <span className="text-muted-foreground">—</span>;
     }
     const datePart = s.slice(0, 10);
+    const { shown, title: truncateTitle } = readOnlyTruncatedDisplay(
+        datePart,
+        col.truncate,
+    );
+    const title =
+        truncateTitle != null ? s : s.length > datePart.length ? s : undefined;
     return (
-        <span className="tabular-nums text-muted-foreground">{datePart}</span>
+        <span className="tabular-nums text-muted-foreground" title={title}>
+            {shown}
+        </span>
     );
 }

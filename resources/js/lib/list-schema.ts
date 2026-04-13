@@ -1,3 +1,4 @@
+import { normalizeColumnTruncate } from '@/lib/data-table-utils';
 import type { FlatpackDataTableColumn } from '@/types/data-table';
 
 function normalizeColumnType(
@@ -35,13 +36,15 @@ export function listYamlColumnsToDataTableColumns(
                     c !== null && typeof c === 'object',
             )
             .map((col) => {
-                const { type: rawType, ...rest } = col;
+                const { type: rawType, truncate: rawTruncate, ...rest } = col;
                 const id = String(col.id ?? '');
                 const type = normalizeColumnType(rawType);
+                const truncate = normalizeColumnTruncate(rawTruncate);
                 return {
                     ...rest,
                     id,
                     ...(type !== undefined ? { type } : {}),
+                    ...(truncate !== undefined ? { truncate } : {}),
                 } as FlatpackDataTableColumn;
             })
             .filter((c) => c.id);
@@ -57,13 +60,15 @@ export function listYamlColumnsToDataTableColumns(
                 raw !== null && typeof raw === 'object'
                     ? (raw as Record<string, unknown>)
                     : {};
-            const { type: rawType, ...rest } = col;
+            const { type: rawType, truncate: rawTruncate, ...rest } = col;
             const id = String(col.id ?? key);
             const type = normalizeColumnType(rawType);
+            const truncate = normalizeColumnTruncate(rawTruncate);
             return {
                 ...rest,
                 id,
                 ...(type !== undefined ? { type } : {}),
+                ...(truncate !== undefined ? { truncate } : {}),
             } as FlatpackDataTableColumn;
         })
         .filter((c) => c.id);
