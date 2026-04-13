@@ -41,6 +41,8 @@ YAML);
         $body = $payload['data'] ?? $payload;
         expect($body['records'])->toBeArray();
         expect($body['records'][0]['title'])->toBe('Listed post');
+        expect($body['pagination']['total'])->toBe(1);
+        expect($body['pagination']['current_page'])->toBe(1);
     } finally {
         File::deleteDirectory($tempPath);
     }

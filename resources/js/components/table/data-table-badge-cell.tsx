@@ -1,5 +1,8 @@
 import { Badge } from '@/components/ui/badge';
-import { formatCellValue, readOnlyTruncatedDisplay } from '@/lib/data-table-utils';
+import {
+    formatCellValue,
+    readOnlyTruncatedDisplay,
+} from '@/lib/data-table-utils';
 
 export function DataTableBadgeCell({
     value,

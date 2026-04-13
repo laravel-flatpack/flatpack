@@ -1,5 +1,6 @@
 import { DataTableBadgeCell } from '@/components/table/data-table-badge-cell';
 import { DataTableDateCell } from '@/components/table/data-table-date-cell';
+import { DataTableRelationCell } from '@/components/table/data-table-relation-cell';
 import { DataTableRowDetailDrawer } from '@/components/table/data-table-row-drawer';
 import { DataTableSelectCell } from '@/components/table/data-table-select-cell';
 import { DataTableEditableTextCell } from '@/components/table/data-table-text-cell';
@@ -47,10 +48,17 @@ export function DataTableSchemaCell({
     const commit = (next: unknown) => onCellChange?.(rowId, col.id, next);
     const controlId = cellControlDomId(rowId, col.id);
 
+    if (
+        col.type === 'relation' &&
+        col.relation &&
+        col.relationName &&
+        col.relationValue
+    ) {
+        return <DataTableRelationCell row={row} column={col} />;
+    }
+
     if (col.type === 'badge') {
-        return (
-            <DataTableBadgeCell value={value} truncate={col.truncate} />
-        );
+        return <DataTableBadgeCell value={value} truncate={col.truncate} />;
     }
 
     if (col.type === 'select' && col.options?.length) {

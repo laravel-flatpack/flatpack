@@ -4,6 +4,7 @@ import {
     columnEditableInDrawer,
     dateInputSegment,
     formatCellValue,
+    formatRelationCellDisplay,
     interpolateRowPlaceholders,
     mergeCommittedDate,
     normalizeColumnTruncate,
@@ -133,6 +134,40 @@ describe('readOnlyTruncatedDisplay', () => {
     });
 });
 
+describe('formatRelationCellDisplay', () => {
+    const col = {
+        relation: 'category',
+        relationName: 'name',
+    } as const;
+
+    it('reads BelongsTo payload from row[relation]', () => {
+        expect(
+            formatRelationCellDisplay(
+                { category: { id: 1, name: 'News' } },
+                col,
+            ),
+        ).toBe('News');
+    });
+
+    it('joins many-related payloads with commas', () => {
+        expect(
+            formatRelationCellDisplay(
+                {
+                    tags: [
+                        { id: 1, name: 'a' },
+                        { id: 2, name: 'b' },
+                    ],
+                },
+                { relation: 'tags', relationName: 'name' },
+            ),
+        ).toBe('a, b');
+    });
+
+    it('returns empty when relation payload is missing', () => {
+        expect(formatRelationCellDisplay({}, col)).toBe('');
+    });
+});
+
 describe('formatCellValue', () => {
     it('returns empty string for null and undefined', () => {
         expect(formatCellValue(null)).toBe('');
@@ -249,6 +284,19 @@ describe('columnEditableInDrawer', () => {
 
     it('returns false for plain text column without editable', () => {
         expect(columnEditableInDrawer(base({}))).toBe(false);
+    });
+
+    it('returns false for relation columns', () => {
+        expect(
+            columnEditableInDrawer(
+                base({
+                    type: 'relation',
+                    relation: 'category',
+                    relationName: 'name',
+                    relationValue: 'id',
+                }),
+            ),
+        ).toBe(false);
     });
 
     it('returns false for select without options', () => {

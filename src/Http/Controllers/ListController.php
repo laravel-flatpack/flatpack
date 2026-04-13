@@ -23,7 +23,15 @@ final readonly class ListController
         $list = $this->entityComposition->listFor($entity);
         $schema = $this->entityComposition->listSchema($entity);
 
-        $records = $this->listRecords->load($list->model, $schema);
+        $page = max(1, (int) $request->query('page', 1));
+        $maxPerPage = (int) config('flatpack.list.max_per_page', 100);
+        $perPage = (int) $request->query(
+            'per_page',
+            (int) config('flatpack.list.per_page', 10),
+        );
+        $perPage = max(1, min($maxPerPage, $perPage));
+
+        $result = $this->listRecords->load($list->model, $schema, $page, $perPage);
 
         return FlatpackResponse::inertia('list', [
             'entity' => $entity,
@@ -32,7 +40,8 @@ final readonly class ListController
             'icon' => $list->icon,
             'order' => $list->order,
             'schema' => $schema,
-            'records' => $records,
+            'records' => $result['records'],
+            'pagination' => $result['pagination'],
         ], $request->boolean('json'));
     }
 }

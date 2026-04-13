@@ -34,12 +34,18 @@ final class Post extends Model
      */
     protected $fillable = [
         'id',
+        'category_id',
         'title',
         'slug',
         'body',
         'picture',
         'status',
     ];
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
+    }
 
     public function author(): BelongsTo
     {

@@ -1,3 +1,5 @@
+import type { FlatpackListServerPagination } from '@/types/data-table';
+
 export type FlatpackListPageProps = {
     entity: string;
     name?: string;
@@ -7,6 +9,8 @@ export type FlatpackListPageProps = {
     schema?: Record<string, unknown> | null;
     /** Rows for the list table (Eloquent attributes matching list column keys). */
     records?: Record<string, unknown>[];
+    /** Present on entity list routes with server-side pagination. */
+    pagination?: FlatpackListServerPagination;
 };
 
 export type FlatpackFormPageProps = {

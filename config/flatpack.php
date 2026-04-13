@@ -42,6 +42,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Entity list pagination
+    |--------------------------------------------------------------------------
+    |
+    | Default page size and upper bound for ?per_page= on list routes. Page is 1-based (?page=1).
+    |
+    */
+    'list' => [
+        'per_page' => (int) env('FLATPACK_LIST_PER_PAGE', 10),
+        'max_per_page' => (int) env('FLATPACK_LIST_MAX_PER_PAGE', 100),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Flatpack actions
     |--------------------------------------------------------------------------
     |

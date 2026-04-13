@@ -43,7 +43,16 @@ export type FlatpackDataTableColumn = {
     id: string;
     label: string;
     /** Defaults to plain text when omitted. */
-    type?: 'text' | 'select' | 'date' | 'actions' | 'badge';
+    type?: 'text' | 'select' | 'date' | 'actions' | 'badge' | 'relation';
+    /**
+     * Eloquent relation name on the list model (`type: relation`). The server eager-loads these
+     * relations and merges a payload under this key for each row (see ListRecordsLoader).
+     */
+    relation?: string;
+    /** Attribute on the related model to show in the cell (e.g. `name`). */
+    relationName?: string;
+    /** Identifier attribute on the related model (e.g. `id`), stored in the foreign key column. */
+    relationValue?: string;
     options?: FlatpackDataTableColumnOption[];
     /** When `type` is `actions`, keyed button definitions (order preserved in modern runtimes). */
     buttons?: Record<string, FlatpackDataTableActionButton>;
@@ -78,6 +87,16 @@ export type BuildDataTableColumnDefsOptions = {
     onRowReplace?: (rowId: string, nextRow: Record<string, unknown>) => void;
 };
 
+/** Server-driven list pagination (e.g. Flatpack list route). */
+export type FlatpackListServerPagination = {
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    from: number | null;
+    to: number | null;
+};
+
 export type DataTableProps = {
     /** Field id for accessibility (from form binding context). */
     id: string;
@@ -94,4 +113,11 @@ export type DataTableProps = {
     toolbarStart?: ReactNode;
     /** Slot after the Columns menu (e.g. primary action such as “Add section”). */
     toolbarAfterColumns?: ReactNode;
+    /**
+     * When set, the table shows one page of `data` and uses manual pagination (no client slicing).
+     * Use with `onServerPaginationChange` to sync `?page=` / `?per_page=` on the list route.
+     */
+    serverPagination?: FlatpackListServerPagination;
+    /** 1-based page index for the list URL; `perPage` must match `serverPagination.per_page`. */
+    onServerPaginationChange?: (page: number, perPage: number) => void;
 };

@@ -7,8 +7,7 @@ export function normalizeColumnTruncate(raw: unknown): number | undefined {
     if (raw == null) {
         return undefined;
     }
-    const n =
-        typeof raw === 'number' ? raw : Number(String(raw).trim());
+    const n = typeof raw === 'number' ? raw : Number(String(raw).trim());
     if (!Number.isFinite(n) || n <= 0) {
         return undefined;
     }
@@ -90,6 +89,46 @@ export function readOnlyTruncatedDisplay(
     return { shown: truncateDisplayString(text, n), title: text };
 }
 
+/**
+ * Display string for `type: relation` columns using the eager-loaded payload on `row[relation]`
+ * (single model shape or list for many-to-many).
+ */
+export function formatRelationCellDisplay(
+    row: Record<string, unknown>,
+    col: Pick<FlatpackDataTableColumn, 'relation' | 'relationName'>,
+): string {
+    const rel = col.relation;
+    const nameKey = col.relationName;
+    if (!rel || !nameKey) {
+        return '';
+    }
+    const payload = row[rel];
+    if (payload == null) {
+        return '';
+    }
+    if (Array.isArray(payload)) {
+        const parts: string[] = [];
+        for (const p of payload) {
+            if (p && typeof p === 'object' && nameKey in p) {
+                const v = (p as Record<string, unknown>)[nameKey];
+                if (v != null && String(v) !== '') {
+                    parts.push(String(v));
+                }
+            }
+        }
+        return parts.join(', ');
+    }
+    if (
+        typeof payload === 'object' &&
+        !Array.isArray(payload) &&
+        nameKey in payload
+    ) {
+        const v = (payload as Record<string, unknown>)[nameKey];
+        return v == null ? '' : String(v);
+    }
+    return '';
+}
+
 export function dateInputSegment(raw: unknown): string {
     const s = formatCellValue(raw);
     const m = s.match(/^(\d{4}-\d{2}-\d{2})/);
@@ -112,7 +151,7 @@ export function cellControlDomId(rowId: string, columnId: string): string {
 }
 
 export function columnEditableInDrawer(col: FlatpackDataTableColumn): boolean {
-    if (col.type === 'actions') {
+    if (col.type === 'actions' || col.type === 'relation') {
         return false;
     }
     if (col.editable === true) {

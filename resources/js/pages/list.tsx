@@ -1,5 +1,5 @@
-import { Head } from '@inertiajs/react';
-import { useMemo } from 'react';
+import { Head, router } from '@inertiajs/react';
+import { useCallback, useMemo } from 'react';
 import { DataTable } from '@/components/table/data-table';
 import FlatpackLayout from '@/layouts/flatpack-layout';
 import { listYamlColumnsToDataTableColumns } from '@/lib/list-schema';
@@ -10,6 +10,7 @@ export default function FlatpackListPage({
     name,
     schema,
     records = [],
+    pagination,
 }: FlatpackListPageProps) {
     const displayName = name ?? entity ?? '';
     const pageTitle = displayName ? `${displayName} list` : '';
@@ -17,6 +18,20 @@ export default function FlatpackListPage({
     const columns = useMemo(
         () => listYamlColumnsToDataTableColumns(schema?.columns),
         [schema],
+    );
+
+    const handleServerPaginationChange = useCallback(
+        (page: number, perPage: number) => {
+            router.get(
+                window.location.pathname,
+                { page, per_page: perPage },
+                {
+                    preserveState: true,
+                    preserveScroll: true,
+                },
+            );
+        },
+        [],
     );
 
     return (
@@ -41,6 +56,12 @@ export default function FlatpackListPage({
                         id={`flatpack-list-${entity || 'entity'}`}
                         columns={columns}
                         data={records}
+                        serverPagination={pagination}
+                        onServerPaginationChange={
+                            pagination
+                                ? handleServerPaginationChange
+                                : undefined
+                        }
                     />
                 )}
             </div>

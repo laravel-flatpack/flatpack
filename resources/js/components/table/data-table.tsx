@@ -76,7 +76,10 @@ import { cn } from '@/lib/utils';
 import type { DataTableProps } from '@/types/data-table';
 
 export { buildDataTableColumnDefs } from '@/components/table/data-table-column-defs';
-export type { DataTableProps } from '@/types/data-table';
+export type {
+    DataTableProps,
+    FlatpackListServerPagination,
+} from '@/types/data-table';
 
 /**
  * TanStack table driven by a Flatpack column schema and row `data` (plain objects).
@@ -91,6 +94,8 @@ export function DataTable({
     className,
     toolbarStart,
     toolbarAfterColumns,
+    serverPagination,
+    onServerPaginationChange,
 }: DataTableProps) {
     const reorderKey =
         reorderableProp === true
@@ -140,6 +145,38 @@ export function DataTable({
         pageIndex: 0,
         pageSize: 10,
     });
+
+    const serverPaginationState = React.useMemo(() => {
+        if (serverPagination == null) {
+            return null;
+        }
+        return {
+            pageIndex: serverPagination.current_page - 1,
+            pageSize: serverPagination.per_page,
+        };
+    }, [serverPagination]);
+
+    const paginationState = serverPaginationState ?? pagination;
+
+    const handlePaginationChange = React.useCallback(
+        (
+            updater: React.SetStateAction<{
+                pageIndex: number;
+                pageSize: number;
+            }>,
+        ) => {
+            if (serverPagination != null && onServerPaginationChange != null) {
+                const next =
+                    typeof updater === 'function'
+                        ? updater(paginationState)
+                        : updater;
+                onServerPaginationChange(next.pageIndex + 1, next.pageSize);
+                return;
+            }
+            setPagination(updater);
+        },
+        [onServerPaginationChange, paginationState, serverPagination],
+    );
 
     const handleCellChange = React.useCallback(
         (rowId: string, columnId: string, next: unknown) => {
@@ -223,7 +260,7 @@ export function DataTable({
             rowSelection,
             columnFilters,
             globalFilter,
-            pagination,
+            pagination: paginationState,
         },
         getRowId: (row, index) => stableRowId(row, index),
         enableRowSelection: checkboxes,
@@ -233,13 +270,19 @@ export function DataTable({
         onGlobalFilterChange: setGlobalFilter,
         onColumnVisibilityChange: setColumnVisibility,
         onColumnOrderChange: setColumnOrder,
-        onPaginationChange: setPagination,
+        onPaginationChange: handlePaginationChange,
+        manualPagination: serverPagination != null,
+        pageCount:
+            serverPagination != null ? serverPagination.last_page : undefined,
+        rowCount: serverPagination != null ? serverPagination.total : undefined,
         globalFilterFn: 'includesString',
         getColumnCanGlobalFilter,
         getCoreRowModel: getCoreRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
         getSortedRowModel: getSortedRowModel(),
-        getPaginationRowModel: getPaginationRowModel(),
+        ...(serverPagination == null
+            ? { getPaginationRowModel: getPaginationRowModel() }
+            : {}),
         getFacetedRowModel: getFacetedRowModel(),
         getFacetedUniqueValues: getFacetedUniqueValues(),
     });
@@ -425,6 +468,15 @@ export function DataTable({
                         {table.getFilteredRowModel().rows.length} row(s)
                         selected.
                     </div>
+                ) : serverPagination ? (
+                    <div className="text-sm text-muted-foreground">
+                        {serverPagination.total === 0
+                            ? '0 row(s).'
+                            : serverPagination.from != null &&
+                                serverPagination.to != null
+                              ? `${serverPagination.from}–${serverPagination.to} of ${serverPagination.total} row(s).`
+                              : `${serverPagination.total} row(s).`}
+                    </div>
                 ) : (
                     <div className="text-sm text-muted-foreground">
                         {table.getFilteredRowModel().rows.length} row(s).
@@ -533,35 +585,32 @@ export function DataTable({
                 Data table
             </span>
 
-            <div className="flex items-center justify-between">
-                {hasSearchableColumns ? (
-                    <div className="relative w-full max-w-md">
-                        <Label htmlFor={`${id}-search`} className="sr-only">
-                            Search rows
-                        </Label>
-                        <SearchIcon
-                            className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
-                            aria-hidden
-                        />
-                        <Input
-                            id={`${id}-search`}
-                            type="search"
-                            value={globalFilter}
-                            onChange={(e) => setGlobalFilter(e.target.value)}
-                            placeholder="Filter rows…"
-                            className="h-9 pl-9"
-                            autoComplete="off"
-                        />
-                    </div>
-                ) : null}
-                <div
-                    className={cn(
-                        'flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center',
-                        toolbarStart != null
-                            ? 'sm:justify-between'
-                            : 'sm:justify-end',
-                    )}
-                >
+            <div className="flex w-full items-center gap-3">
+                <div className="min-w-0 flex-1">
+                    {hasSearchableColumns ? (
+                        <div className="relative w-full max-w-md">
+                            <Label htmlFor={`${id}-search`} className="sr-only">
+                                Search rows
+                            </Label>
+                            <SearchIcon
+                                className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+                                aria-hidden
+                            />
+                            <Input
+                                id={`${id}-search`}
+                                type="search"
+                                value={globalFilter}
+                                onChange={(e) =>
+                                    setGlobalFilter(e.target.value)
+                                }
+                                placeholder="Filter rows…"
+                                className="h-9 pl-9"
+                                autoComplete="off"
+                            />
+                        </div>
+                    ) : null}
+                </div>
+                <div className="flex shrink-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
                     {toolbarStart != null ? (
                         <div className="flex min-w-0 flex-col gap-2 @4xl/main:flex-row @4xl/main:items-center">
                             {toolbarStart}
