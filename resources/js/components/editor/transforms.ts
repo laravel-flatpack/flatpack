@@ -8,6 +8,7 @@ import { triggerFloatingLink } from '@platejs/link/react';
 import { insertEquation, insertInlineEquation } from '@platejs/math';
 import {
     insertAudioPlaceholder,
+    insertImagePlaceholder,
     insertMedia,
     insertVideoPlaceholder,
 } from '@platejs/media';
@@ -47,11 +48,7 @@ const insertBlockMap: Record<
     [KEYS.callout]: (editor) => insertCallout(editor, { select: true }),
     [KEYS.codeBlock]: (editor) => insertCodeBlock(editor, { select: true }),
     [KEYS.equation]: (editor) => insertEquation(editor, { select: true }),
-    [KEYS.img]: (editor) =>
-        insertMedia(editor, {
-            select: true,
-            type: KEYS.img,
-        }),
+    [KEYS.img]: (editor) => insertImagePlaceholder(editor, { select: true }),
     [KEYS.mediaEmbed]: (editor) =>
         insertMedia(editor, {
             select: true,

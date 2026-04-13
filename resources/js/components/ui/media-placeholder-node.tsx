@@ -118,7 +118,11 @@ export const PlaceholderElement = withHOC(
 
                 editor.tf.insertNodes(node, { at: path });
 
-                updateUploadHistory(editor, node);
+                try {
+                    updateUploadHistory(editor, node);
+                } catch {
+                    /* no matching undo batch (e.g. slash insert) */
+                }
             });
 
             api.placeholder.removeUploadingFile(element.id as string);
