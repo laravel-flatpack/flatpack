@@ -36,7 +36,7 @@ final readonly class ListRecordsLoader
         int $page = 1,
         ?int $perPage = null,
     ): array {
-        $perPage = $perPage ?? (int) config('flatpack.list.per_page', 10);
+        $perPage ??= (int) config('flatpack.list.per_page', 10);
         $maxPerPage = (int) config('flatpack.list.max_per_page', 100);
         $perPage = max(1, min($maxPerPage, $perPage));
         $page = max(1, $page);
