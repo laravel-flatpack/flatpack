@@ -3,13 +3,32 @@ import { Suspense } from 'react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { loadField } from '@/lib/form';
 
+const testFieldModules = {
+    '../components/form-fields/text.tsx': async () => ({
+        TextField: (props: { placeholder?: string }) => (
+            <input placeholder={props.placeholder} />
+        ),
+    }),
+    '../components/form-fields/checkbox.tsx': async () => ({
+        CheckboxField: (props: { label: string }) => (
+            <label>
+                <input type="checkbox" />
+                {props.label}
+            </label>
+        ),
+    }),
+    '../components/form-fields/select.tsx': async () => ({
+        SelectField: (props: { label: string }) => <span>{props.label}</span>,
+    }),
+};
+
 describe('loadField', () => {
     afterEach(() => {
         cleanup();
     });
 
     it('lazy-loads TextField for type text', async () => {
-        const LazyText = loadField('text');
+        const LazyText = loadField('text', testFieldModules);
         render(
             <Suspense fallback={<span data-testid="suspense-fb">wait</span>}>
                 <LazyText
@@ -21,27 +40,26 @@ describe('loadField', () => {
             </Suspense>,
         );
 
-        expect(
-            await screen.findByRole('textbox', undefined, { timeout: 15000 }),
-        ).toHaveAttribute('placeholder', 'ph');
-    }, 20000);
+        expect(await screen.findByRole('textbox')).toHaveAttribute(
+            'placeholder',
+            'ph',
+        );
+    });
 
     it('lazy-loads CheckboxField for checkbox', async () => {
-        const Lazy = loadField('checkbox');
+        const Lazy = loadField('checkbox', testFieldModules);
         render(
             <Suspense fallback={<span data-testid="suspense-fb">wait</span>}>
                 <Lazy id="c1" label="Accept" onValueChange={() => {}} />
             </Suspense>,
         );
 
-        expect(
-            await screen.findByRole('checkbox', undefined, { timeout: 50000 }),
-        ).toBeInTheDocument();
+        expect(await screen.findByRole('checkbox')).toBeInTheDocument();
         expect(screen.getByText('Accept')).toBeInTheDocument();
-    }, 60000);
+    });
 
     it('lazy-loads SelectField for select (distinct chunk from text)', async () => {
-        const Lazy = loadField('select');
+        const Lazy = loadField('select', testFieldModules);
         render(
             <Suspense fallback={<span data-testid="suspense-fb">wait</span>}>
                 <Lazy
@@ -54,8 +72,6 @@ describe('loadField', () => {
             </Suspense>,
         );
 
-        expect(
-            await screen.findByText('Pick one', undefined, { timeout: 15000 }),
-        ).toBeInTheDocument();
-    }, 20000);
+        expect(await screen.findByText('Pick one')).toBeInTheDocument();
+    });
 });
