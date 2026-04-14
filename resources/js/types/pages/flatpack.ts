@@ -24,6 +24,7 @@ export type FlatpackListPageProps = {
     schema?: Record<string, unknown> | null;
     records?: Record<string, unknown>[];
     pagination?: FlatpackListServerPagination;
+    search_term?: string;
     flatpack_prefix?: string;
     list_actions?: FlatpackListHeaderAction[];
 };

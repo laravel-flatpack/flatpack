@@ -72,5 +72,10 @@ export type DataTableProps = {
     toolbarStart?: ReactNode;
     toolbarAfterColumns?: ReactNode;
     serverPagination?: FlatpackListServerPagination;
-    onServerPaginationChange?: (page: number, perPage: number) => void;
+    serverSearch?: string;
+    onServerPaginationChange?: (
+        page: number,
+        perPage: number,
+        search?: string,
+    ) => void;
 };

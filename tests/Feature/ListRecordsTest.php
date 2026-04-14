@@ -77,3 +77,47 @@ YAML);
         File::deleteDirectory($tempPath);
     }
 });
+
+test('flatpack entity list JSON search filters across all paginated records', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-list-search-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+columns:
+  id:
+    label: ID
+  title:
+    label: Title
+    searchable: true
+YAML);
+        config()->set('flatpack.path', $tempPath);
+
+        Post::factory()->create(['title' => 'Alpha post']);
+        Post::factory()->create(['title' => 'Beta target']);
+        Post::factory()->create(['title' => 'Gamma post']);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        $payload = actingAs($user)
+            ->getJson(route('flatpack.entities.index', [
+                'entity' => 'posts',
+                'json' => true,
+                'per_page' => 1,
+                'search' => 'target',
+            ]))
+            ->assertOk()
+            ->json();
+
+        $body = $payload['data'] ?? $payload;
+        expect($body['records'])->toHaveCount(1);
+        expect($body['records'][0]['title'])->toBe('Beta target');
+        expect($body['pagination']['total'])->toBe(1);
+        expect($body['search_term'])->toBe('target');
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});

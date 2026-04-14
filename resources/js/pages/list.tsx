@@ -15,6 +15,7 @@ export default function FlatpackListPage({
     schema,
     records = [],
     pagination,
+    search_term: searchTerm = '',
     flatpack_prefix: flatpackPrefix,
     list_actions: listActions = [],
 }: FlatpackListPageProps) {
@@ -63,10 +64,10 @@ export default function FlatpackListPage({
           : null;
 
     const handleServerPaginationChange = useCallback(
-        (page: number, perPage: number) => {
+        (page: number, perPage: number, search?: string) => {
             router.get(
                 window.location.pathname,
-                { page, per_page: perPage },
+                { page, per_page: perPage, search },
                 {
                     preserveState: true,
                     preserveScroll: true,
@@ -127,6 +128,7 @@ export default function FlatpackListPage({
                         columns={columns}
                         data={records}
                         serverPagination={pagination}
+                        serverSearch={searchTerm}
                         onServerPaginationChange={
                             pagination
                                 ? handleServerPaginationChange

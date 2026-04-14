@@ -33,8 +33,15 @@ final readonly class ListController
             (int) config('flatpack.list.per_page', 10),
         );
         $perPage = max(1, min($maxPerPage, $perPage));
+        $searchTerm = trim((string) $request->query('search', ''));
 
-        $result = $this->listRecords->load($list->model, $schema, $page, $perPage);
+        $result = $this->listRecords->load(
+            $list->model,
+            $schema,
+            $page,
+            $perPage,
+            $searchTerm,
+        );
         $flatpackPrefix = trim((string) config('flatpack.prefix', 'flatpack'), '/');
 
         return FlatpackResponse::inertia('list', [
@@ -47,6 +54,7 @@ final readonly class ListController
             'schema' => $schema,
             'records' => $result['records'],
             'pagination' => $result['pagination'],
+            'search_term' => $searchTerm,
             'flatpack_prefix' => $flatpackPrefix,
             'list_actions' => ListHeaderActions::fromSchema($schema),
         ], $request->boolean('json'));

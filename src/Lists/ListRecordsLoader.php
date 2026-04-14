@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Flatpack\Lists;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
@@ -35,6 +36,7 @@ final readonly class ListRecordsLoader
         ?array $schema,
         int $page = 1,
         ?int $perPage = null,
+        ?string $search = null,
     ): array {
         $perPage ??= (int) config('flatpack.list.per_page', 10);
         $maxPerPage = (int) config('flatpack.list.max_per_page', 100);
@@ -76,6 +78,11 @@ final readonly class ListRecordsLoader
 
         if ($eagerRelations !== []) {
             $query->with($eagerRelations);
+        }
+
+        $searchTerm = trim((string) $search);
+        if ($searchTerm !== '') {
+            $this->applySearchToQuery($query, $schema, $searchTerm);
         }
 
         /** @var LengthAwarePaginator<int, Model> $paginator */
@@ -302,5 +309,118 @@ final readonly class ListRecordsLoader
         }
 
         return null;
+    }
+
+    private function applySearchToQuery(Builder $query, ?array $schema, string $searchTerm): void
+    {
+        $searchableDefs = $this->searchableColumnDefinitionsFromSchema($schema);
+        if ($searchableDefs === []) {
+            return;
+        }
+
+        $query->where(function (Builder $nested) use ($searchableDefs, $searchTerm): void {
+            $hasCondition = false;
+            foreach ($searchableDefs as $def) {
+                if (($def['kind'] ?? '') === 'relation') {
+                    $relation = (string) ($def['relation'] ?? '');
+                    $relationName = (string) ($def['relationName'] ?? '');
+                    if ($relation === '' || $relationName === '') {
+                        continue;
+                    }
+                    if ($hasCondition) {
+                        $nested->orWhereHas($relation, function (Builder $relationQuery) use ($relationName, $searchTerm): void {
+                            $relationQuery->where($relationName, 'like', '%' . $searchTerm . '%');
+                        });
+                    } else {
+                        $nested->whereHas($relation, function (Builder $relationQuery) use ($relationName, $searchTerm): void {
+                            $relationQuery->where($relationName, 'like', '%' . $searchTerm . '%');
+                        });
+                    }
+                    $hasCondition = true;
+
+                    continue;
+                }
+
+                $column = (string) ($def['id'] ?? '');
+                if ($column === '') {
+                    continue;
+                }
+                if (! $hasCondition) {
+                    $nested->where($column, 'like', '%' . $searchTerm . '%');
+                } else {
+                    $nested->orWhere($column, 'like', '%' . $searchTerm . '%');
+                }
+                $hasCondition = true;
+            }
+        });
+    }
+
+    /**
+     * @return list<array{kind: 'column'|'relation', id?: string, relation?: string, relationName?: string}>
+     */
+    private function searchableColumnDefinitionsFromSchema(?array $schema): array
+    {
+        $columns = $schema['columns'] ?? null;
+        if ($columns === null || ! is_array($columns)) {
+            return [];
+        }
+
+        $normalizedColumns = [];
+        if (array_is_list($columns)) {
+            foreach ($columns as $column) {
+                if (! is_array($column)) {
+                    continue;
+                }
+                $normalizedColumns[] = $column;
+            }
+        } else {
+            foreach ($columns as $key => $column) {
+                if (! is_array($column)) {
+                    continue;
+                }
+                if (! isset($column['id'])) {
+                    $column['id'] = (string) $key;
+                }
+                $normalizedColumns[] = $column;
+            }
+        }
+
+        $searchableDefs = [];
+        foreach ($normalizedColumns as $column) {
+            if (($column['searchable'] ?? false) !== true) {
+                continue;
+            }
+            $id = isset($column['id']) ? trim((string) $column['id']) : '';
+            if ($id === '') {
+                continue;
+            }
+
+            $type = isset($column['type']) ? trim((string) $column['type']) : '';
+            if ($type === 'relation') {
+                $relation = isset($column['relation']) ? trim((string) $column['relation']) : '';
+                $relationName = $this->stringFromColumn(
+                    $column,
+                    'relation_name',
+                    'relationName',
+                );
+                if ($relation === '' || $relationName === '') {
+                    continue;
+                }
+                $searchableDefs[] = [
+                    'kind' => 'relation',
+                    'relation' => $relation,
+                    'relationName' => $relationName,
+                ];
+
+                continue;
+            }
+
+            $searchableDefs[] = [
+                'kind' => 'column',
+                'id' => $id,
+            ];
+        }
+
+        return $searchableDefs;
     }
 }

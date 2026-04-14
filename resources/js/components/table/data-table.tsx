@@ -201,6 +201,7 @@ export function DataTable({
     toolbarStart,
     toolbarAfterColumns,
     serverPagination,
+    serverSearch,
     onServerPaginationChange,
 }: DataTableProps) {
     const rowClickInteractiveSelector =
@@ -269,7 +270,7 @@ export function DataTable({
     }, [schemaLeafOrder]);
     const [columnFilters, setColumnFilters] =
         React.useState<ColumnFiltersState>([]);
-    const [globalFilter, setGlobalFilter] = React.useState('');
+    const [globalFilter, setGlobalFilter] = React.useState(serverSearch ?? '');
     const [sorting, setSorting] = React.useState<SortingState>([]);
     const [pagination, setPagination] = React.useState({
         pageIndex: 0,
@@ -288,6 +289,13 @@ export function DataTable({
 
     const paginationState = serverPaginationState ?? pagination;
 
+    React.useEffect(() => {
+        if (serverPagination == null) {
+            return;
+        }
+        setGlobalFilter(serverSearch ?? '');
+    }, [serverPagination, serverSearch]);
+
     const handlePaginationChange = React.useCallback(
         (
             updater: React.SetStateAction<{
@@ -300,13 +308,38 @@ export function DataTable({
                     typeof updater === 'function'
                         ? updater(paginationState)
                         : updater;
-                onServerPaginationChange(next.pageIndex + 1, next.pageSize);
+                onServerPaginationChange(
+                    next.pageIndex + 1,
+                    next.pageSize,
+                    globalFilter,
+                );
                 return;
             }
             setPagination(updater);
         },
-        [onServerPaginationChange, paginationState, serverPagination],
+        [globalFilter, onServerPaginationChange, paginationState, serverPagination],
     );
+
+    React.useEffect(() => {
+        if (serverPagination == null || onServerPaginationChange == null) {
+            return;
+        }
+        const normalizedServerSearch = serverSearch ?? '';
+        if (globalFilter === normalizedServerSearch) {
+            return;
+        }
+        const debounce = window.setTimeout(() => {
+            onServerPaginationChange(1, paginationState.pageSize, globalFilter);
+        }, 250);
+
+        return () => window.clearTimeout(debounce);
+    }, [
+        globalFilter,
+        onServerPaginationChange,
+        paginationState.pageSize,
+        serverPagination,
+        serverSearch,
+    ]);
 
     const handleCellChange = React.useCallback(
         (rowId: string, columnId: string, next: unknown) => {
@@ -402,6 +435,7 @@ export function DataTable({
         onColumnOrderChange: setColumnOrder,
         onPaginationChange: handlePaginationChange,
         manualPagination: serverPagination != null,
+        manualFiltering: serverPagination != null,
         pageCount:
             serverPagination != null ? serverPagination.last_page : undefined,
         rowCount: serverPagination != null ? serverPagination.total : undefined,
