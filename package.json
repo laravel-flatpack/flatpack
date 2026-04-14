@@ -10,11 +10,13 @@
         "lint": "biome check resources/js resources/css",
         "lint:fix": "biome check --write resources/js resources/css",
         "format": "biome format --write resources/js resources/css",
-        "types:check": "tsc --noEmit",
+        "types:check": "tsc --project tsconfig.app.json --noEmit",
+        "types:check:tools": "tsc --project tsconfig.tools.json --noEmit",
+        "types:check:all": "npm run types:check && npm run types:check:tools",
         "test": "vitest run",
         "test:watch": "vitest",
         "test:backend": "composer run test",
-        "check": "npm run format && npm run lint:fix && npm run types:check && npm run test",
+        "check": "npm run format && npm run lint:fix && npm run types:check:all && npm run test",
         "check:all": "npm run check && composer run check"
     },
     "devDependencies": {
