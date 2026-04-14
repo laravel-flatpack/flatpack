@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace Flatpack\Lists;
 
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Collection;
 
 /**
  * Loads tabular rows for a Flatpack entity list from the configured Eloquent model.
@@ -18,10 +16,6 @@ use Illuminate\Support\Collection;
  */
 final readonly class ListRecordsLoader
 {
-    private const string FILTER_TYPE_SELECT = 'select';
-
-    private const string FILTER_TYPE_DATE = 'date';
-
     /**
      * @return array{
      *     records: list<array<string, mixed>>,
@@ -61,10 +55,15 @@ final readonly class ListRecordsLoader
         $perPage = max(1, min($maxPerPage, $perPage));
         $page = max(1, $page);
 
+        $filterDefinitions = SchemaInspector::filterDefinitions($schema);
+        $serializedFilterDefinitions = array_map(
+            static fn (FilterDefinition $definition): array => $definition->toArray(),
+            $filterDefinitions,
+        );
         $empty = [
             'records' => [],
             'pagination' => $this->emptyPagination($page, $perPage),
-            'filters' => $this->filterDefinitionsFromSchema($schema),
+            'filters' => $serializedFilterDefinitions,
             'filter_values' => [],
             'sorting' => ['sort_by' => null, 'sort_direction' => null],
         ];
@@ -77,13 +76,13 @@ final readonly class ListRecordsLoader
             return $empty;
         }
 
-        $columnKeys = $this->columnKeysFromListSchema($schema);
+        $columnKeys = SchemaInspector::columnKeys($schema);
         if ($columnKeys === []) {
             return $empty;
         }
 
-        $relationDefs = $this->relationColumnDefinitionsFromSchema($schema);
-        $eagerRelations = $this->uniqueRelationNames($relationDefs);
+        $relationDefs = SchemaInspector::relationColumnDefinitions($schema);
+        $eagerRelations = SchemaInspector::uniqueRelationNames($relationDefs);
 
         $model = new $modelClass();
         $keyName = $model->getKeyName();
@@ -102,21 +101,24 @@ final readonly class ListRecordsLoader
 
         $searchTerm = trim((string) $search);
         if ($searchTerm !== '') {
-            $this->applySearchToQuery($query, $schema, $searchTerm);
+            SearchApplier::apply(
+                $query,
+                SchemaInspector::searchableColumnDefinitions($schema),
+                $searchTerm,
+            );
         }
-        $filterDefinitions = $this->filterDefinitionsFromSchema($schema);
-        $normalizedFilterValues = $this->normalizeFilterValues(
+        $normalizedFilterValues = FilterProcessor::normalizeValues(
             $filterDefinitions,
             $filters,
         );
-        $this->applyFiltersToQuery($query, $filterDefinitions, $normalizedFilterValues);
-        $normalizedSorting = $this->normalizeSorting(
+        FilterProcessor::applyToQuery($query, $filterDefinitions, $normalizedFilterValues);
+        $normalizedSorting = SortingProcessor::normalize(
             $sortBy,
             $sortDirection,
-            $schema,
+            SchemaInspector::sortableColumnIds($schema),
             $model->getKeyName(),
         );
-        $this->applySortingToQuery(
+        SortingProcessor::applyToQuery(
             $query,
             $normalizedSorting,
             $model->getKeyName(),
@@ -130,17 +132,17 @@ final readonly class ListRecordsLoader
         foreach ($paginator->items() as $row) {
             $arr = $row->only($columnKeys);
             foreach ($relationDefs as $def) {
-                $relName = $def['relation'];
+                $relName = $def->relation;
                 if (! $row->relationLoaded($relName)) {
                     $arr[$relName] = null;
 
                     continue;
                 }
                 $related = $row->getRelation($relName);
-                $arr[$relName] = $this->serializeRelationPayload(
+                $arr[$relName] = RelationSerializer::serializePayload(
                     $related,
-                    $def['relationName'],
-                    $def['relationValue'],
+                    $def->relationName,
+                    $def->relationValue,
                 );
             }
             $rows[] = $arr;
@@ -156,7 +158,7 @@ final readonly class ListRecordsLoader
                 'from' => $paginator->firstItem(),
                 'to' => $paginator->lastItem(),
             ],
-            'filters' => $filterDefinitions,
+            'filters' => $serializedFilterDefinitions,
             'filter_values' => $normalizedFilterValues,
             'sorting' => $normalizedSorting,
         ];
@@ -182,548 +184,5 @@ final readonly class ListRecordsLoader
             'from' => null,
             'to' => null,
         ];
-    }
-
-    /**
-     * @return list<string>
-     */
-    private function columnKeysFromListSchema(?array $schema): array
-    {
-        return array_keys($this->normalizedColumnsById($schema));
-    }
-
-    /**
-     * @return list<array{relation: string, relationName: string, relationValue: string}>
-     */
-    private function relationColumnDefinitionsFromSchema(?array $schema): array
-    {
-        $out = [];
-        foreach ($this->normalizedColumnsById($schema) as $column) {
-            $def = $this->parseRelationColumnDefinition($column);
-            if ($def !== null) {
-                $out[] = $def;
-            }
-        }
-
-        return $out;
-    }
-
-    /**
-     * @param  array<string, mixed>  $column
-     * @return array{relation: string, relationName: string, relationValue: string}|null
-     */
-    private function parseRelationColumnDefinition(array $column): ?array
-    {
-        $type = isset($column['type']) ? (string) $column['type'] : '';
-        if ($type !== 'relation') {
-            return null;
-        }
-
-        $relation = isset($column['relation']) ? trim((string) $column['relation']) : '';
-        $relationName = $this->stringFromColumn($column, 'relation_name', 'relationName');
-        $relationValue = $this->stringFromColumn($column, 'relation_value', 'relationValue');
-
-        if ($relation === '' || $relationName === '' || $relationValue === '') {
-            return null;
-        }
-
-        return [
-            'relation' => $relation,
-            'relationName' => $relationName,
-            'relationValue' => $relationValue,
-        ];
-    }
-
-    /**
-     * @param  array<string, mixed>  $column
-     */
-    private function stringFromColumn(array $column, string $snakeKey, string $camelKey): string
-    {
-        foreach ([$snakeKey, $camelKey] as $key) {
-            if (isset($column[$key]) && is_string($column[$key])) {
-                $s = trim($column[$key]);
-
-                return $s;
-            }
-        }
-
-        return '';
-    }
-
-    /**
-     * @param  list<array{relation: string, relationName: string, relationValue: string}>  $defs
-     * @return list<string>
-     */
-    private function uniqueRelationNames(array $defs): array
-    {
-        $names = [];
-        foreach ($defs as $def) {
-            $names[$def['relation']] = true;
-        }
-
-        return array_keys($names);
-    }
-
-    private function serializeRelationPayload(mixed $related, string $relationName, string $relationValue): mixed
-    {
-        if ($related === null) {
-            return null;
-        }
-
-        if ($related instanceof Model) {
-            return [
-                $relationValue => $related->getAttribute($relationValue),
-                $relationName => $related->getAttribute($relationName),
-            ];
-        }
-
-        if ($related instanceof Collection) {
-            return $related
-                ->map(function (mixed $item) use ($relationName, $relationValue): ?array {
-                    if (! $item instanceof Model) {
-                        return null;
-                    }
-
-                    return [
-                        $relationValue => $item->getAttribute($relationValue),
-                        $relationName => $item->getAttribute($relationName),
-                    ];
-                })
-                ->filter()
-                ->values()
-                ->all();
-        }
-
-        return null;
-    }
-
-    private function applySearchToQuery(Builder $query, ?array $schema, string $searchTerm): void
-    {
-        $searchableDefs = $this->searchableColumnDefinitionsFromSchema($schema);
-        if ($searchableDefs === []) {
-            return;
-        }
-
-        $query->where(function (Builder $nested) use ($searchableDefs, $searchTerm): void {
-            $hasCondition = false;
-            foreach ($searchableDefs as $def) {
-                if (($def['kind'] ?? '') === 'relation') {
-                    $relation = (string) ($def['relation'] ?? '');
-                    $relationName = (string) ($def['relationName'] ?? '');
-                    if ($relation === '' || $relationName === '') {
-                        continue;
-                    }
-                    if ($hasCondition) {
-                        $nested->orWhereHas($relation, function (Builder $relationQuery) use ($relationName, $searchTerm): void {
-                            $relationQuery->where($relationName, 'like', '%' . $searchTerm . '%');
-                        });
-                    } else {
-                        $nested->whereHas($relation, function (Builder $relationQuery) use ($relationName, $searchTerm): void {
-                            $relationQuery->where($relationName, 'like', '%' . $searchTerm . '%');
-                        });
-                    }
-                    $hasCondition = true;
-
-                    continue;
-                }
-
-                $column = (string) ($def['id'] ?? '');
-                if ($column === '') {
-                    continue;
-                }
-                if (! $hasCondition) {
-                    $nested->where($column, 'like', '%' . $searchTerm . '%');
-                } else {
-                    $nested->orWhere($column, 'like', '%' . $searchTerm . '%');
-                }
-                $hasCondition = true;
-            }
-        });
-    }
-
-    /**
-     * @return list<array{kind: 'column'|'relation', id?: string, relation?: string, relationName?: string}>
-     */
-    private function searchableColumnDefinitionsFromSchema(?array $schema): array
-    {
-        $searchableDefs = [];
-        foreach ($this->normalizedColumnsById($schema) as $id => $column) {
-            if (($column['searchable'] ?? false) !== true) {
-                continue;
-            }
-
-            $type = isset($column['type']) ? trim((string) $column['type']) : '';
-            if ($type === 'relation') {
-                $relation = isset($column['relation']) ? trim((string) $column['relation']) : '';
-                $relationName = $this->stringFromColumn(
-                    $column,
-                    'relation_name',
-                    'relationName',
-                );
-                if ($relation === '' || $relationName === '') {
-                    continue;
-                }
-                $searchableDefs[] = [
-                    'kind' => 'relation',
-                    'relation' => $relation,
-                    'relationName' => $relationName,
-                ];
-
-                continue;
-            }
-
-            $searchableDefs[] = [
-                'kind' => 'column',
-                'id' => $id,
-            ];
-        }
-
-        return $searchableDefs;
-    }
-
-    /**
-     * @return list<array{
-     *     id: string,
-     *     label: string,
-     *     placeholder?: string,
-     *     type: 'select'|'date',
-     *     multiple: bool,
-     *     mode?: 'exact'|'from',
-     *     options?: list<array{value: string, label: string}>,
-     * }>
-     */
-    private function filterDefinitionsFromSchema(?array $schema): array
-    {
-        $filters = $schema['filters'] ?? null;
-        if (! is_array($filters) || $filters === []) {
-            return [];
-        }
-        $columnsById = $this->normalizedColumnsById($schema);
-
-        $out = [];
-        foreach ($filters as $filterId => $filterConfig) {
-            $id = trim((string) $filterId);
-            if ($id === '') {
-                continue;
-            }
-            $column = $columnsById[$id] ?? null;
-            if (! is_array($column)) {
-                continue;
-            }
-
-            $columnType = isset($column['type']) ? trim((string) $column['type']) : 'text';
-            if ($columnType === 'datetime') {
-                $columnType = 'date';
-            }
-
-            $config = is_array($filterConfig) ? $filterConfig : [];
-            $configuredType = isset($config['type']) ? trim((string) $config['type']) : '';
-            $type = in_array($configuredType, [self::FILTER_TYPE_SELECT, self::FILTER_TYPE_DATE], true)
-                ? $configuredType
-                : $columnType;
-
-            if ($type !== self::FILTER_TYPE_SELECT && $type !== self::FILTER_TYPE_DATE) {
-                continue;
-            }
-            if ($type === self::FILTER_TYPE_SELECT && $columnType !== self::FILTER_TYPE_SELECT) {
-                continue;
-            }
-            if ($type === self::FILTER_TYPE_DATE && $columnType !== self::FILTER_TYPE_DATE) {
-                continue;
-            }
-
-            $label = isset($config['label']) && is_string($config['label'])
-                ? trim($config['label'])
-                : (isset($column['label']) ? trim((string) $column['label']) : $id);
-            $placeholder = isset($config['placeholder']) && is_string($config['placeholder'])
-                ? trim($config['placeholder'])
-                : '';
-
-            if ($type === self::FILTER_TYPE_SELECT) {
-                $options = $this->normalizeSelectFilterOptions($column['options'] ?? null);
-                if ($options === []) {
-                    continue;
-                }
-                $out[] = [
-                    'id' => $id,
-                    'label' => $label !== '' ? $label : $id,
-                    'placeholder' => $placeholder,
-                    'type' => self::FILTER_TYPE_SELECT,
-                    'multiple' => ($config['multiple'] ?? false) === true,
-                    'options' => $options,
-                ];
-
-                continue;
-            }
-
-            $mode = (($config['mode'] ?? 'exact') === 'from') ? 'from' : 'exact';
-            $out[] = [
-                'id' => $id,
-                'label' => $label !== '' ? $label : $id,
-                'placeholder' => $placeholder,
-                'type' => self::FILTER_TYPE_DATE,
-                'multiple' => false,
-                'mode' => $mode,
-            ];
-        }
-
-        return $out;
-    }
-
-    /**
-     * @return list<array{value: string, label: string}>
-     */
-    private function normalizeSelectFilterOptions(mixed $raw): array
-    {
-        if (! is_array($raw)) {
-            return [];
-        }
-
-        $out = [];
-        if (array_is_list($raw)) {
-            foreach ($raw as $option) {
-                if (! is_array($option)) {
-                    continue;
-                }
-                $value = isset($option['value']) ? trim((string) $option['value']) : '';
-                $label = isset($option['label']) ? trim((string) $option['label']) : '';
-                if ($value === '' || $label === '') {
-                    continue;
-                }
-                $out[] = ['value' => $value, 'label' => $label];
-            }
-
-            return $out;
-        }
-
-        foreach ($raw as $value => $label) {
-            if (! is_string($label)) {
-                continue;
-            }
-            $val = trim((string) $value);
-            $lab = trim($label);
-            if ($val === '' || $lab === '') {
-                continue;
-            }
-            $out[] = ['value' => $val, 'label' => $lab];
-        }
-
-        return $out;
-    }
-
-    /**
-     * @param  list<array{
-     *     id: string,
-     *     label: string,
-     *     placeholder?: string,
-     *     type: 'select'|'date',
-     *     multiple: bool,
-     *     mode?: 'exact'|'from',
-     *     options?: list<array{value: string, label: string}>,
-     * }>  $definitions
-     * @param  array<string, mixed>  $input
-     * @return array<string, string|list<string>|null>
-     */
-    private function normalizeFilterValues(array $definitions, array $input): array
-    {
-        $out = [];
-        foreach ($definitions as $def) {
-            $id = $def['id'];
-            $raw = $input[$id] ?? null;
-            if ($raw === null) {
-                $out[$id] = null;
-
-                continue;
-            }
-
-            if ($def['type'] === self::FILTER_TYPE_SELECT) {
-                $allowed = array_column($def['options'] ?? [], 'value');
-                if (($def['multiple'] ?? false) === true) {
-                    $values = is_array($raw) ? $raw : [$raw];
-                    $normalized = [];
-                    foreach ($values as $value) {
-                        $v = trim((string) $value);
-                        if ($v === '' || ! in_array($v, $allowed, true)) {
-                            continue;
-                        }
-                        $normalized[] = $v;
-                    }
-                    $out[$id] = $normalized !== [] ? array_values(array_unique($normalized)) : null;
-
-                    continue;
-                }
-
-                $value = trim((string) $raw);
-                $out[$id] = ($value !== '' && in_array($value, $allowed, true))
-                    ? $value
-                    : null;
-
-                continue;
-            }
-
-            $value = trim((string) $raw);
-            if (! preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
-                $out[$id] = null;
-
-                continue;
-            }
-            $out[$id] = $value;
-        }
-
-        return $out;
-    }
-
-    /**
-     * @param  list<array{
-     *     id: string,
-     *     label: string,
-     *     placeholder?: string,
-     *     type: 'select'|'date',
-     *     multiple: bool,
-     *     mode?: 'exact'|'from',
-     *     options?: list<array{value: string, label: string}>,
-     * }>  $definitions
-     * @param  array<string, string|list<string>|null>  $values
-     */
-    private function applyFiltersToQuery(Builder $query, array $definitions, array $values): void
-    {
-        foreach ($definitions as $def) {
-            $id = $def['id'];
-            $value = $values[$id] ?? null;
-            if ($value === null) {
-                continue;
-            }
-
-            if ($def['type'] === self::FILTER_TYPE_SELECT) {
-                if (($def['multiple'] ?? false) === true && is_array($value)) {
-                    if ($value !== []) {
-                        $query->whereIn($id, $value);
-                    }
-
-                    continue;
-                }
-                if (is_string($value) && $value !== '') {
-                    $query->where($id, $value);
-                }
-
-                continue;
-            }
-
-            if (! is_string($value) || $value === '') {
-                continue;
-            }
-            if (($def['mode'] ?? 'exact') === 'from') {
-                $query->whereDate($id, '>=', $value);
-            } else {
-                $query->whereDate($id, $value);
-            }
-        }
-    }
-
-    /**
-     * @return array{sort_by: string|null, sort_direction: 'asc'|'desc'|null}
-     */
-    private function normalizeSorting(
-        ?string $sortBy,
-        string $sortDirection,
-        ?array $schema,
-        string $modelKeyName,
-    ): array {
-        $direction = mb_strtolower(trim($sortDirection)) === 'asc' ? 'asc' : 'desc';
-        $requestedSortBy = trim((string) $sortBy);
-        if ($requestedSortBy === '') {
-            return [
-                'sort_by' => $modelKeyName,
-                'sort_direction' => 'desc',
-            ];
-        }
-
-        $sortableColumns = $this->sortableColumnIdsFromSchema($schema);
-        if (! in_array($requestedSortBy, $sortableColumns, true)) {
-            return [
-                'sort_by' => $modelKeyName,
-                'sort_direction' => 'desc',
-            ];
-        }
-
-        return [
-            'sort_by' => $requestedSortBy,
-            'sort_direction' => $direction,
-        ];
-    }
-
-    /**
-     * @param  array{sort_by: string|null, sort_direction: 'asc'|'desc'|null}  $sorting
-     */
-    private function applySortingToQuery(
-        Builder $query,
-        array $sorting,
-        string $modelKeyName,
-        string $qualifiedModelKeyName,
-    ): void {
-        $sortBy = $sorting['sort_by'];
-        $sortDirection = $sorting['sort_direction'] ?? 'desc';
-        if ($sortBy === null) {
-            return;
-        }
-        $column = $sortBy === $modelKeyName
-            ? $qualifiedModelKeyName
-            : $sortBy;
-        $query->orderBy($column, $sortDirection);
-    }
-
-    /**
-     * @return list<string>
-     */
-    private function sortableColumnIdsFromSchema(?array $schema): array
-    {
-        $out = [];
-        foreach ($this->normalizedColumnsById($schema) as $id => $column) {
-            if (($column['sortable'] ?? false) === true) {
-                $out[] = $id;
-            }
-        }
-
-        return $out;
-    }
-
-    /**
-     * @return array<string, array<string, mixed>>
-     */
-    private function normalizedColumnsById(?array $schema): array
-    {
-        $columns = $schema['columns'] ?? null;
-        if (! is_array($columns) || $columns === []) {
-            return [];
-        }
-
-        $out = [];
-        if (array_is_list($columns)) {
-            foreach ($columns as $column) {
-                if (! is_array($column)) {
-                    continue;
-                }
-                $id = isset($column['id']) ? trim((string) $column['id']) : '';
-                if ($id === '') {
-                    continue;
-                }
-                $out[$id] = $column;
-            }
-
-            return $out;
-        }
-
-        foreach ($columns as $key => $column) {
-            if (! is_array($column)) {
-                continue;
-            }
-            $id = isset($column['id']) ? trim((string) $column['id']) : trim((string) $key);
-            if ($id === '') {
-                continue;
-            }
-            $out[$id] = $column;
-        }
-
-        return $out;
     }
 }
