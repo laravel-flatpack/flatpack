@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Flatpack\Lists;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
@@ -18,9 +18,9 @@ use Illuminate\Support\Collection;
  */
 final readonly class ListRecordsLoader
 {
-    private const FILTER_TYPE_SELECT = 'select';
+    private const string FILTER_TYPE_SELECT = 'select';
 
-    private const FILTER_TYPE_DATE = 'date';
+    private const string FILTER_TYPE_DATE = 'date';
 
     /**
      * @return array{
@@ -471,7 +471,6 @@ final readonly class ListRecordsLoader
     }
 
     /**
-     * @param  mixed  $raw
      * @return list<array{value: string, label: string}>
      */
     private function normalizeSelectFilterOptions(mixed $raw): array
@@ -630,7 +629,7 @@ final readonly class ListRecordsLoader
         ?array $schema,
         string $modelKeyName,
     ): array {
-        $direction = strtolower(trim($sortDirection)) === 'asc' ? 'asc' : 'desc';
+        $direction = mb_strtolower(trim($sortDirection)) === 'asc' ? 'asc' : 'desc';
         $requestedSortBy = trim((string) $sortBy);
         if ($requestedSortBy === '') {
             return [

@@ -142,7 +142,10 @@ function normalizeColumnOptions(raw: unknown): FlatpackDataTableColumnOption[] {
                 }
                 return { value, label };
             })
-            .filter((option): option is FlatpackDataTableColumnOption => option != null);
+            .filter(
+                (option): option is FlatpackDataTableColumnOption =>
+                    option != null,
+            );
     }
     if (raw == null || typeof raw !== 'object') {
         return [];
@@ -157,7 +160,9 @@ function normalizeColumnOptions(raw: unknown): FlatpackDataTableColumnOption[] {
                 label,
             };
         })
-        .filter((option): option is FlatpackDataTableColumnOption => option != null);
+        .filter(
+            (option): option is FlatpackDataTableColumnOption => option != null,
+        );
 }
 
 type FilterOverride = {
@@ -181,9 +186,15 @@ function normalizeFilterOverrides(raw: unknown): FilterOverride {
         typeof rec.placeholder === 'string' && rec.placeholder.trim() !== ''
             ? rec.placeholder.trim()
             : undefined;
-    const type = rec.type === 'select' || rec.type === 'date' ? rec.type : undefined;
+    const type =
+        rec.type === 'select' || rec.type === 'date' ? rec.type : undefined;
     const multiple = rec.multiple === true ? true : undefined;
-    const mode = rec.mode === 'from' ? 'from' : rec.mode === 'exact' ? 'exact' : undefined;
+    const mode =
+        rec.mode === 'from'
+            ? 'from'
+            : rec.mode === 'exact'
+              ? 'exact'
+              : undefined;
     return { label, placeholder, type, multiple, mode };
 }
 

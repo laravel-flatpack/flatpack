@@ -30,13 +30,13 @@ import {
 } from '@tanstack/react-table';
 import { format } from 'date-fns';
 import {
+    CalendarIcon,
     ChevronDownIcon,
     ChevronLeftIcon,
     ChevronRightIcon,
     ChevronsLeftIcon,
     ChevronsRightIcon,
     Columns3Icon,
-    CalendarIcon,
     SearchIcon,
     XIcon,
 } from 'lucide-react';
@@ -63,9 +63,13 @@ import {
     DropdownMenuContent,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover';
 import {
     Select,
     SelectContent,
@@ -226,7 +230,11 @@ function filterValuesEqual(
         const av = a[key];
         const bv = b[key];
         if (Array.isArray(av) || Array.isArray(bv)) {
-            if (!Array.isArray(av) || !Array.isArray(bv) || av.length !== bv.length) {
+            if (
+                !Array.isArray(av) ||
+                !Array.isArray(bv) ||
+                av.length !== bv.length
+            ) {
                 return false;
             }
             for (let i = 0; i < av.length; i++) {
@@ -243,9 +251,10 @@ function filterValuesEqual(
     return true;
 }
 
-function serverSortingFromState(
-    sorting: SortingState,
-): { sort_by: string | null; sort_direction: 'asc' | 'desc' | null } {
+function serverSortingFromState(sorting: SortingState): {
+    sort_by: string | null;
+    sort_direction: 'asc' | 'desc' | null;
+} {
     const first = sorting[0];
     if (!first) {
         return { sort_by: null, sort_direction: null };
@@ -401,7 +410,9 @@ export function DataTable({
                           desc: serverSorting.sort_direction === 'desc',
                       },
                   ];
-        setSorting((prev) => (sortingStatesEqual(prev, nextSorting) ? prev : nextSorting));
+        setSorting((prev) =>
+            sortingStatesEqual(prev, nextSorting) ? prev : nextSorting,
+        );
     }, [serverPagination, serverSorting.sort_by, serverSorting.sort_direction]);
 
     const handlePaginationChange = React.useCallback(
@@ -863,10 +874,13 @@ export function DataTable({
                         <div className="flex flex-wrap items-center gap-2">
                             {serverFilters.map((filter) => {
                                 if (filter.type === 'select') {
-                                    const selectedValue = serverFilterState[filter.id];
+                                    const selectedValue =
+                                        serverFilterState[filter.id];
                                     const options = filter.options ?? [];
                                     if (filter.multiple) {
-                                        const selected = Array.isArray(selectedValue)
+                                        const selected = Array.isArray(
+                                            selectedValue,
+                                        )
                                             ? selectedValue
                                             : selectedValue
                                               ? [selectedValue]
@@ -890,7 +904,9 @@ export function DataTable({
                                                     {options.map((option) => (
                                                         <DropdownMenuCheckboxItem
                                                             key={`${filter.id}-${option.value}`}
-                                                            checked={selected.includes(option.value)}
+                                                            checked={selected.includes(
+                                                                option.value,
+                                                            )}
                                                             onCheckedChange={() =>
                                                                 toggleMultiServerFilterValue(
                                                                     filter.id,
@@ -951,16 +967,20 @@ export function DataTable({
                                                         >
                                                             All {filter.label}
                                                         </SelectItem>
-                                                        {options.map((option) => (
-                                                            <SelectItem
-                                                                key={`${filter.id}-${option.value}`}
-                                                                value={
-                                                                    option.value
-                                                                }
-                                                            >
-                                                                {option.label}
-                                                            </SelectItem>
-                                                        ))}
+                                                        {options.map(
+                                                            (option) => (
+                                                                <SelectItem
+                                                                    key={`${filter.id}-${option.value}`}
+                                                                    value={
+                                                                        option.value
+                                                                    }
+                                                                >
+                                                                    {
+                                                                        option.label
+                                                                    }
+                                                                </SelectItem>
+                                                            ),
+                                                        )}
                                                     </SelectGroup>
                                                 </SelectContent>
                                             </Select>
@@ -1012,8 +1032,8 @@ export function DataTable({
                                                               selectedDate,
                                                               'PPP',
                                                           )
-                                                        : filter.placeholder ??
-                                                          filter.label}
+                                                        : (filter.placeholder ??
+                                                          filter.label)}
                                                 </Button>
                                             </PopoverTrigger>
                                             <PopoverContent

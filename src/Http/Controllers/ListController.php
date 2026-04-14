@@ -37,7 +37,7 @@ final readonly class ListController
         $filters = $request->query('filters', []);
         $filters = is_array($filters) ? $filters : [];
         $sortBy = trim((string) $request->query('sort_by', ''));
-        $sortDirection = strtolower(trim((string) $request->query('sort_direction', '')));
+        $sortDirection = mb_strtolower(trim((string) $request->query('sort_direction', '')));
         if (! in_array($sortDirection, ['asc', 'desc'], true)) {
             $sortDirection = 'desc';
         }
