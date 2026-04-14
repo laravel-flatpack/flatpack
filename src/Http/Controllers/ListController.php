@@ -8,6 +8,7 @@ use Flatpack\Composition\EntityComposition;
 use Flatpack\Http\FlatpackResponse;
 use Flatpack\Lists\ListHeaderActions;
 use Flatpack\Lists\ListRecordsLoader;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Response;
@@ -39,6 +40,7 @@ final readonly class ListController
             'entity' => $entity,
             'name' => $list->name,
             'model' => $list->model,
+            'model_key' => $this->resolveModelKeyName($list->model),
             'icon' => $list->icon,
             'order' => $list->order,
             'schema' => $schema,
@@ -47,5 +49,22 @@ final readonly class ListController
             'flatpack_prefix' => $flatpackPrefix,
             'list_actions' => ListHeaderActions::fromSchema($schema),
         ], $request->boolean('json'));
+    }
+
+    private function resolveModelKeyName(?string $modelClass): string
+    {
+        if (! is_string($modelClass) || $modelClass === '') {
+            return 'id';
+        }
+
+        if (! class_exists($modelClass) || ! is_subclass_of($modelClass, Model::class)) {
+            return 'id';
+        }
+
+        /** @var class-string<Model> $modelClass */
+        $model = new $modelClass();
+        $keyName = trim($model->getKeyName());
+
+        return $keyName !== '' ? $keyName : 'id';
     }
 }

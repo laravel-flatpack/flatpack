@@ -195,6 +195,7 @@ export function DataTable({
     data: initialData,
     checkboxes = false,
     reorderable: reorderableProp,
+    onRowClick,
     onValueChange,
     className,
     toolbarStart,
@@ -202,6 +203,30 @@ export function DataTable({
     serverPagination,
     onServerPaginationChange,
 }: DataTableProps) {
+    const rowClickInteractiveSelector =
+        'a,button,input,select,textarea,[role="button"],[role="checkbox"],[data-no-row-click]';
+
+    const handleRowClick = React.useCallback(
+        (
+            event: React.MouseEvent<HTMLTableRowElement>,
+            row: Record<string, unknown>,
+        ) => {
+            if (onRowClick == null) {
+                return;
+            }
+            const target = event.target;
+            if (!(target instanceof Element)) {
+                onRowClick(row);
+                return;
+            }
+            if (target.closest(rowClickInteractiveSelector)) {
+                return;
+            }
+            onRowClick(row);
+        },
+        [onRowClick],
+    );
+
     const reorderKey =
         reorderableProp === true
             ? 'sort_order'
@@ -487,7 +512,11 @@ export function DataTable({
                             strategy={verticalListSortingStrategy}
                         >
                             {tableRows.map((row) => (
-                                <DataTableDraggableRow key={row.id} row={row} />
+                                <DataTableDraggableRow
+                                    key={row.id}
+                                    row={row}
+                                    onRowClick={handleRowClick}
+                                />
                             ))}
                         </SortableContext>
                     ) : (
@@ -495,6 +524,10 @@ export function DataTable({
                             <TableRow
                                 key={row.id}
                                 data-state={row.getIsSelected() && 'selected'}
+                                className={cn(onRowClick && 'cursor-pointer')}
+                                onClick={(event) =>
+                                    handleRowClick(event, row.original)
+                                }
                             >
                                 {row.getVisibleCells().map((cell) => (
                                     <TableCell key={cell.id}>

@@ -66,6 +66,7 @@ export type DataTableProps = {
     data: Record<string, unknown>[];
     checkboxes?: boolean;
     reorderable?: boolean | string;
+    onRowClick?: (row: Record<string, unknown>) => void;
     onValueChange?: (value: unknown) => void;
     className?: string;
     toolbarStart?: ReactNode;

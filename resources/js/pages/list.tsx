@@ -11,9 +11,11 @@ import type { FlatpackListPageProps } from '@/types/pages/flatpack';
 export default function FlatpackListPage({
     entity,
     name,
+    model_key: modelKey,
     schema,
     records = [],
     pagination,
+    flatpack_prefix: flatpackPrefix,
     list_actions: listActions = [],
 }: FlatpackListPageProps) {
     const displayName = name ?? entity ?? '';
@@ -29,6 +31,31 @@ export default function FlatpackListPage({
         typeof schema?.reorderable === 'string'
             ? schema.reorderable
             : schema?.reorderable === true;
+    const rowClickEditKey =
+        typeof schema?.row_click_edit === 'string'
+            ? schema.row_click_edit
+            : schema?.row_click_edit === false
+              ? null
+              : modelKey || 'id';
+    const normalizedPrefix = (flatpackPrefix ?? 'flatpack').replace(
+        /^\/+|\/+$/g,
+        '',
+    );
+
+    const handleRowClick = useCallback(
+        (row: Record<string, unknown>) => {
+            if (rowClickEditKey === null) {
+                return;
+            }
+            const record = row[rowClickEditKey];
+            if (record == null || record === '') {
+                return;
+            }
+            const recordValue = encodeURIComponent(String(record));
+            router.get(`/${normalizedPrefix}/${entity}/${recordValue}/edit`);
+        },
+        [entity, normalizedPrefix, rowClickEditKey],
+    );
     const noContentMessage = !displayName
         ? 'Nothing to list yet.'
         : columns.length === 0
@@ -92,6 +119,9 @@ export default function FlatpackListPage({
                         id={`flatpack-list-${entity || 'entity'}`}
                         checkboxes={checkboxes}
                         reorderable={reorderable}
+                        onRowClick={
+                            rowClickEditKey !== null ? handleRowClick : undefined
+                        }
                         columns={columns}
                         data={records}
                         serverPagination={pagination}

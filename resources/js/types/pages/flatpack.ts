@@ -18,6 +18,7 @@ export type FlatpackListPageProps = {
     entity: string;
     name?: string;
     model?: string;
+    model_key?: string;
     icon?: string;
     order?: number;
     schema?: Record<string, unknown> | null;

@@ -9,8 +9,13 @@ import { cn } from '@/lib/utils';
 
 export function DataTableDraggableRow({
     row,
+    onRowClick,
 }: {
     row: Row<Record<string, unknown>>;
+    onRowClick?: (
+        event: React.MouseEvent<HTMLTableRowElement>,
+        row: Record<string, unknown>,
+    ) => void;
 }) {
     const {
         attributes,
@@ -26,11 +31,21 @@ export function DataTableDraggableRow({
             ref={setNodeRef}
             data-state={row.getIsSelected() && 'selected'}
             data-dragging={isDragging}
-            className="relative z-0 data-[dragging=true]:z-10 data-[dragging=true]:opacity-80"
+            className={cn(
+                'relative z-0 data-[dragging=true]:z-10 data-[dragging=true]:opacity-80',
+                onRowClick && 'cursor-pointer',
+            )}
             style={{
                 transform: CSS.Transform.toString(transform),
                 transition,
             }}
+            onClick={
+                onRowClick
+                    ? (event) => {
+                          onRowClick(event, row.original);
+                      }
+                    : undefined
+            }
         >
             {row.getVisibleCells().map((cell) => (
                 <TableCell
