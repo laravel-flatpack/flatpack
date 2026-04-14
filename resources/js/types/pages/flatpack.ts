@@ -2,6 +2,7 @@ import type {
     FlatpackDataTableFilter,
     FlatpackDataTableServerFiltersState,
     FlatpackListServerPagination,
+    FlatpackListServerSorting,
 } from '@/types/data-table';
 
 export type FlatpackListHeaderAction = {
@@ -31,6 +32,7 @@ export type FlatpackListPageProps = {
     search_term?: string;
     filters?: FlatpackDataTableFilter[];
     filter_values?: FlatpackDataTableServerFiltersState;
+    sorting?: FlatpackListServerSorting;
     flatpack_prefix?: string;
     list_actions?: FlatpackListHeaderAction[];
 };

@@ -43,6 +43,7 @@ final readonly class ListRecordsLoader
      *         options?: list<array{value: string, label: string}>,
      *     }>,
      *     filter_values: array<string, string|list<string>|null>,
+     *     sorting: array{sort_by: string|null, sort_direction: 'asc'|'desc'|null},
      * }
      */
     public function load(
@@ -52,6 +53,8 @@ final readonly class ListRecordsLoader
         ?int $perPage = null,
         ?string $search = null,
         array $filters = [],
+        ?string $sortBy = null,
+        string $sortDirection = 'desc',
     ): array {
         $perPage ??= (int) config('flatpack.list.per_page', 10);
         $maxPerPage = (int) config('flatpack.list.max_per_page', 100);
@@ -63,6 +66,7 @@ final readonly class ListRecordsLoader
             'pagination' => $this->emptyPagination($page, $perPage),
             'filters' => $this->filterDefinitionsFromSchema($schema),
             'filter_values' => [],
+            'sorting' => ['sort_by' => null, 'sort_direction' => null],
         ];
 
         if ($modelClass === null || $modelClass === '' || ! class_exists($modelClass)) {
@@ -90,8 +94,7 @@ final readonly class ListRecordsLoader
 
         $query = $model
             ->newQuery()
-            ->select($columnKeys)
-            ->orderByDesc($model->getQualifiedKeyName());
+            ->select($columnKeys);
 
         if ($eagerRelations !== []) {
             $query->with($eagerRelations);
@@ -107,6 +110,18 @@ final readonly class ListRecordsLoader
             $filters,
         );
         $this->applyFiltersToQuery($query, $filterDefinitions, $normalizedFilterValues);
+        $normalizedSorting = $this->normalizeSorting(
+            $sortBy,
+            $sortDirection,
+            $schema,
+            $model->getKeyName(),
+        );
+        $this->applySortingToQuery(
+            $query,
+            $normalizedSorting,
+            $model->getKeyName(),
+            $model->getQualifiedKeyName(),
+        );
 
         /** @var LengthAwarePaginator<int, Model> $paginator */
         $paginator = $query->paginate($perPage, ['*'], 'page', $page);
@@ -143,6 +158,7 @@ final readonly class ListRecordsLoader
             ],
             'filters' => $filterDefinitions,
             'filter_values' => $normalizedFilterValues,
+            'sorting' => $normalizedSorting,
         ];
     }
 
@@ -603,6 +619,73 @@ final readonly class ListRecordsLoader
                 $query->whereDate($id, $value);
             }
         }
+    }
+
+    /**
+     * @return array{sort_by: string|null, sort_direction: 'asc'|'desc'|null}
+     */
+    private function normalizeSorting(
+        ?string $sortBy,
+        string $sortDirection,
+        ?array $schema,
+        string $modelKeyName,
+    ): array {
+        $direction = strtolower(trim($sortDirection)) === 'asc' ? 'asc' : 'desc';
+        $requestedSortBy = trim((string) $sortBy);
+        if ($requestedSortBy === '') {
+            return [
+                'sort_by' => $modelKeyName,
+                'sort_direction' => 'desc',
+            ];
+        }
+
+        $sortableColumns = $this->sortableColumnIdsFromSchema($schema);
+        if (! in_array($requestedSortBy, $sortableColumns, true)) {
+            return [
+                'sort_by' => $modelKeyName,
+                'sort_direction' => 'desc',
+            ];
+        }
+
+        return [
+            'sort_by' => $requestedSortBy,
+            'sort_direction' => $direction,
+        ];
+    }
+
+    /**
+     * @param  array{sort_by: string|null, sort_direction: 'asc'|'desc'|null}  $sorting
+     */
+    private function applySortingToQuery(
+        Builder $query,
+        array $sorting,
+        string $modelKeyName,
+        string $qualifiedModelKeyName,
+    ): void {
+        $sortBy = $sorting['sort_by'];
+        $sortDirection = $sorting['sort_direction'] ?? 'desc';
+        if ($sortBy === null) {
+            return;
+        }
+        $column = $sortBy === $modelKeyName
+            ? $qualifiedModelKeyName
+            : $sortBy;
+        $query->orderBy($column, $sortDirection);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function sortableColumnIdsFromSchema(?array $schema): array
+    {
+        $out = [];
+        foreach ($this->normalizedColumnsById($schema) as $id => $column) {
+            if (($column['sortable'] ?? false) === true) {
+                $out[] = $id;
+            }
+        }
+
+        return $out;
     }
 
     /**

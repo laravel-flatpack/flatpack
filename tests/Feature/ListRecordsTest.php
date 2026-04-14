@@ -313,3 +313,57 @@ YAML);
         File::deleteDirectory($tempPath);
     }
 });
+
+test('flatpack entity list JSON applies sortable column ordering', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-list-sorting-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+columns:
+  id:
+    label: ID
+  title:
+    label: Title
+  created_at:
+    label: Created At
+    type: date
+    sortable: true
+YAML);
+        config()->set('flatpack.path', $tempPath);
+
+        $older = Post::factory()->create(['title' => 'Older post']);
+        $older->created_at = '2024-01-10 08:00:00';
+        $older->save();
+
+        $newer = Post::factory()->create(['title' => 'Newer post']);
+        $newer->created_at = '2024-01-20 08:00:00';
+        $newer->save();
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        $payload = actingAs($user)
+            ->getJson(route('flatpack.entities.index', [
+                'entity' => 'posts',
+                'json' => true,
+                'sort_by' => 'created_at',
+                'sort_direction' => 'asc',
+            ]))
+            ->assertOk()
+            ->json();
+
+        $body = $payload['data'] ?? $payload;
+        expect($body['records'])->toHaveCount(2);
+        expect($body['records'][0]['title'])->toBe('Older post');
+        expect($body['records'][1]['title'])->toBe('Newer post');
+        expect($body['sorting'])->toMatchArray([
+            'sort_by' => 'created_at',
+            'sort_direction' => 'asc',
+        ]);
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});

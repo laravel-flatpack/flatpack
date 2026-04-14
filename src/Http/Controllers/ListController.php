@@ -36,6 +36,11 @@ final readonly class ListController
         $searchTerm = trim((string) $request->query('search', ''));
         $filters = $request->query('filters', []);
         $filters = is_array($filters) ? $filters : [];
+        $sortBy = trim((string) $request->query('sort_by', ''));
+        $sortDirection = strtolower(trim((string) $request->query('sort_direction', '')));
+        if (! in_array($sortDirection, ['asc', 'desc'], true)) {
+            $sortDirection = 'desc';
+        }
 
         $result = $this->listRecords->load(
             $list->model,
@@ -44,6 +49,8 @@ final readonly class ListController
             $perPage,
             $searchTerm,
             $filters,
+            $sortBy,
+            $sortDirection,
         );
         $flatpackPrefix = trim((string) config('flatpack.prefix', 'flatpack'), '/');
 
@@ -60,6 +67,7 @@ final readonly class ListController
             'search_term' => $searchTerm,
             'filters' => $result['filters'],
             'filter_values' => $result['filter_values'],
+            'sorting' => $result['sorting'],
             'flatpack_prefix' => $flatpackPrefix,
             'list_actions' => ListHeaderActions::fromSchema($schema),
         ], $request->boolean('json'));

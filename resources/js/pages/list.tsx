@@ -21,6 +21,7 @@ export default function FlatpackListPage({
     search_term: searchTerm = '',
     filters: serverFilters = [],
     filter_values: serverFilterValues = {},
+    sorting: serverSorting = { sort_by: null, sort_direction: null },
     flatpack_prefix: flatpackPrefix,
     list_actions: listActions = [],
 }: FlatpackListPageProps) {
@@ -81,10 +82,21 @@ export default function FlatpackListPage({
             perPage: number,
             search?: string,
             filters?: Record<string, string | string[] | null>,
+            sorting?: {
+                sort_by: string | null;
+                sort_direction: 'asc' | 'desc' | null;
+            },
         ) => {
             router.get(
                 window.location.pathname,
-                { page, per_page: perPage, search, filters },
+                {
+                    page,
+                    per_page: perPage,
+                    search,
+                    filters,
+                    sort_by: sorting?.sort_by ?? null,
+                    sort_direction: sorting?.sort_direction ?? null,
+                },
                 {
                     preserveState: true,
                     preserveScroll: true,
@@ -148,6 +160,7 @@ export default function FlatpackListPage({
                         serverSearch={searchTerm}
                         serverFilters={filterDefinitions}
                         serverFilterValues={serverFilterValues}
+                        serverSorting={serverSorting}
                         onServerPaginationChange={
                             pagination
                                 ? handleServerPaginationChange

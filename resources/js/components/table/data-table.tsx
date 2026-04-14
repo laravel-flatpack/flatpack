@@ -243,6 +243,31 @@ function filterValuesEqual(
     return true;
 }
 
+function serverSortingFromState(
+    sorting: SortingState,
+): { sort_by: string | null; sort_direction: 'asc' | 'desc' | null } {
+    const first = sorting[0];
+    if (!first) {
+        return { sort_by: null, sort_direction: null };
+    }
+    return {
+        sort_by: first.id,
+        sort_direction: first.desc ? 'desc' : 'asc',
+    };
+}
+
+function sortingStatesEqual(a: SortingState, b: SortingState): boolean {
+    if (a.length !== b.length) {
+        return false;
+    }
+    for (let i = 0; i < a.length; i++) {
+        if (a[i]?.id !== b[i]?.id || a[i]?.desc !== b[i]?.desc) {
+            return false;
+        }
+    }
+    return true;
+}
+
 export function DataTable({
     id,
     columns: schemaColumns,
@@ -258,6 +283,7 @@ export function DataTable({
     serverSearch,
     serverFilters = [],
     serverFilterValues = {},
+    serverSorting = { sort_by: null, sort_direction: null },
     onServerPaginationChange,
 }: DataTableProps) {
     const rowClickInteractiveSelector =
@@ -362,6 +388,22 @@ export function DataTable({
         setServerFilterState(normalizeServerFilterValues(serverFilterValues));
     }, [serverFilterValues, serverPagination]);
 
+    React.useEffect(() => {
+        if (serverPagination == null) {
+            return;
+        }
+        const nextSorting: SortingState =
+            serverSorting.sort_by == null
+                ? []
+                : [
+                      {
+                          id: serverSorting.sort_by,
+                          desc: serverSorting.sort_direction === 'desc',
+                      },
+                  ];
+        setSorting((prev) => (sortingStatesEqual(prev, nextSorting) ? prev : nextSorting));
+    }, [serverPagination, serverSorting.sort_by, serverSorting.sort_direction]);
+
     const handlePaginationChange = React.useCallback(
         (
             updater: React.SetStateAction<{
@@ -379,6 +421,7 @@ export function DataTable({
                     next.pageSize,
                     globalFilter,
                     serverFilterState,
+                    serverSortingFromState(sorting),
                 );
                 return;
             }
@@ -390,6 +433,34 @@ export function DataTable({
             paginationState,
             serverFilterState,
             serverPagination,
+            sorting,
+        ],
+    );
+
+    const handleSortingChange = React.useCallback(
+        (updater: React.SetStateAction<SortingState>) => {
+            if (serverPagination != null && onServerPaginationChange != null) {
+                const nextSorting =
+                    typeof updater === 'function' ? updater(sorting) : updater;
+                setSorting(nextSorting);
+                onServerPaginationChange(
+                    1,
+                    paginationState.pageSize,
+                    globalFilter,
+                    serverFilterState,
+                    serverSortingFromState(nextSorting),
+                );
+                return;
+            }
+            setSorting(updater);
+        },
+        [
+            globalFilter,
+            onServerPaginationChange,
+            paginationState.pageSize,
+            serverFilterState,
+            serverPagination,
+            sorting,
         ],
     );
 
@@ -412,6 +483,7 @@ export function DataTable({
                 paginationState.pageSize,
                 globalFilter,
                 serverFilterState,
+                serverSortingFromState(sorting),
             );
         }, 250);
 
@@ -424,6 +496,7 @@ export function DataTable({
         serverFilterValues,
         serverPagination,
         serverSearch,
+        sorting,
     ]);
 
     const handleCellChange = React.useCallback(
@@ -513,7 +586,7 @@ export function DataTable({
         getRowId: (row, index) => stableRowId(row, index),
         enableRowSelection: checkboxes,
         onRowSelectionChange: setRowSelection,
-        onSortingChange: setSorting,
+        onSortingChange: handleSortingChange,
         onColumnFiltersChange: setColumnFilters,
         onGlobalFilterChange: setGlobalFilter,
         onColumnVisibilityChange: setColumnVisibility,
@@ -521,6 +594,7 @@ export function DataTable({
         onPaginationChange: handlePaginationChange,
         manualPagination: serverPagination != null,
         manualFiltering: serverPagination != null,
+        manualSorting: serverPagination != null,
         pageCount:
             serverPagination != null ? serverPagination.last_page : undefined,
         rowCount: serverPagination != null ? serverPagination.total : undefined,

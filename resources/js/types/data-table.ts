@@ -79,6 +79,11 @@ export type FlatpackListServerPagination = {
     to: number | null;
 };
 
+export type FlatpackListServerSorting = {
+    sort_by: string | null;
+    sort_direction: 'asc' | 'desc' | null;
+};
+
 export type DataTableProps = {
     id: string;
     columns: FlatpackDataTableColumn[];
@@ -94,10 +99,12 @@ export type DataTableProps = {
     serverSearch?: string;
     serverFilters?: FlatpackDataTableFilter[];
     serverFilterValues?: FlatpackDataTableServerFiltersState;
+    serverSorting?: FlatpackListServerSorting;
     onServerPaginationChange?: (
         page: number,
         perPage: number,
         search?: string,
         filters?: FlatpackDataTableServerFiltersState,
+        sorting?: FlatpackListServerSorting,
     ) => void;
 };

@@ -58,6 +58,10 @@ final class FlatpackSchema extends JsonResource
                 array_key_exists('filter_values', $resource),
                 data_get($resource, 'filter_values'),
             ),
+            'sorting' => $this->when(
+                array_key_exists('sorting', $resource),
+                data_get($resource, 'sorting'),
+            ),
         ];
     }
 }
