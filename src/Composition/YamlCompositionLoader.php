@@ -20,11 +20,25 @@ final readonly class YamlCompositionLoader implements CompositionLoader
 
     public function load(string $entity, string $type): array
     {
-        $path = rtrim($this->basePath, DIRECTORY_SEPARATOR)
-            . DIRECTORY_SEPARATOR
-            . $entity
-            . DIRECTORY_SEPARATOR
-            . $type . '.yaml';
+        $entity = trim($entity);
+        $type = trim($type);
+
+        if (! CompositionPathGuard::isSafeSegment($entity) || ! CompositionPathGuard::isSafeSegment($type)) {
+            throw CompositionNotFoundException::forEntity($entity, $type);
+        }
+
+        $baseRealPath = CompositionPathGuard::resolveBasePath($this->basePath);
+        if ($baseRealPath === null) {
+            throw CompositionNotFoundException::forEntity($entity, $type, $this->basePath);
+        }
+
+        $entityPath = $baseRealPath . DIRECTORY_SEPARATOR . $entity;
+        $entityRealPath = CompositionPathGuard::resolveContainedEntityPath($baseRealPath, $entity);
+        if ($entityRealPath === null) {
+            throw CompositionNotFoundException::forEntity($entity, $type, $entityPath);
+        }
+
+        $path = $entityRealPath . DIRECTORY_SEPARATOR . $type . '.yaml';
 
         if (! $this->filesystem->exists($path)) {
             throw CompositionNotFoundException::forEntity($entity, $type, $path);
