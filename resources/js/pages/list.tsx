@@ -120,7 +120,9 @@ export default function FlatpackListPage({
                         checkboxes={checkboxes}
                         reorderable={reorderable}
                         onRowClick={
-                            rowClickEditKey !== null ? handleRowClick : undefined
+                            rowClickEditKey !== null
+                                ? handleRowClick
+                                : undefined
                         }
                         columns={columns}
                         data={records}
