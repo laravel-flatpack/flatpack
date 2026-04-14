@@ -25,6 +25,7 @@ export type FlatpackListPageProps = {
     model?: string;
     icon?: string;
     order?: number;
+    /** Parsed list.yaml; may include `columns`, `actions`, `checkboxes`, etc. */
     schema?: Record<string, unknown> | null;
     /** Rows for the list table (Eloquent attributes matching list column keys). */
     records?: Record<string, unknown>[];

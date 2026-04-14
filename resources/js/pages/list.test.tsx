@@ -88,4 +88,27 @@ describe('FlatpackListPage', () => {
 
         expect(screen.getByRole('cell', { name: 'Hello' })).toBeInTheDocument();
     });
+
+    it('shows row and header selection checkboxes when schema has checkboxes true', () => {
+        render(
+            <FlatpackListPage
+                entity="posts"
+                schema={{
+                    checkboxes: true,
+                    columns: {
+                        id: { label: 'ID' },
+                        title: { label: 'Title' },
+                    },
+                }}
+                records={[{ id: 1, title: 'Hello' }]}
+            />,
+        );
+
+        expect(
+            screen.getByRole('checkbox', { name: 'Select all' }),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('checkbox', { name: 'Select row' }),
+        ).toBeInTheDocument();
+    });
 });

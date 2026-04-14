@@ -24,6 +24,8 @@ export default function FlatpackListPage({
         [schema],
     );
 
+    const checkboxes = schema?.checkboxes === true;
+
     const handleServerPaginationChange = useCallback(
         (page: number, perPage: number) => {
             router.get(
@@ -85,6 +87,7 @@ export default function FlatpackListPage({
                 ) : (
                     <DataTable
                         id={`flatpack-list-${entity || 'entity'}`}
+                        checkboxes={checkboxes}
                         columns={columns}
                         data={records}
                         serverPagination={pagination}
