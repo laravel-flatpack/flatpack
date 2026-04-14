@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('slug');
             $table->text('body')->nullable();
             $table->string('picture')->nullable();
-            $table->boolean('status')->default(true);
+            $table->enum('status', ['active', 'inactive', 'draft'])->default('active');
             $table->timestamps();
             $table->softDeletes();
         });

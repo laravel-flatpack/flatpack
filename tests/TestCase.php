@@ -79,7 +79,6 @@ abstract class TestCase extends Orchestra
         }
 
         $protectedProperty = new ReflectionProperty($this->app['auth'], 'guards');
-        $protectedProperty->setAccessible(true);
         $protectedProperty->setValue($this->app['auth'], []);
     }
 }

@@ -9,6 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(TestCase::class, RefreshDatabase::class);
 
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Foundation\Exceptions\Handler;
 use Illuminate\Http\Request;
@@ -17,7 +18,6 @@ test('flatpack registers shouldRenderJsonWhen on the exception handler', functio
     $handler = app(ExceptionHandler::class);
     $reflection = new ReflectionClass(Handler::class);
     $prop = $reflection->getProperty('shouldRenderJsonWhenCallback');
-    $prop->setAccessible(true);
 
     expect($prop->getValue($handler))->not->toBeNull();
 });
@@ -26,7 +26,6 @@ test('flatpack json rule returns false for unauthenticated flatpack json request
     $handler = app(ExceptionHandler::class);
     $reflection = new ReflectionClass(Handler::class);
     $method = $reflection->getMethod('shouldReturnJson');
-    $method->setAccessible(true);
 
     $request = Request::create(route('flatpack.dashboard'), 'GET', [], [], [], [
         'HTTP_ACCEPT' => 'application/json',
@@ -36,16 +35,17 @@ test('flatpack json rule returns false for unauthenticated flatpack json request
 });
 
 test('authenticated users with flatpack access can visit flatpack dashboard', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->createOne();
+    assert($user instanceof Authenticatable);
 
-    $response = $this->actingAs($user)->get(route('flatpack.dashboard'));
+    $response = actingAs($user)->get(route('flatpack.dashboard'));
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page->component('dashboard', false));
 });
 
 test('guests requesting flatpack with Accept application/json are redirected to flatpack login', function () {
-    $response = $this->withHeaders([
+    $response = test()->withHeaders([
         'Accept' => 'application/json',
     ])->get('/flatpack');
 
@@ -53,7 +53,7 @@ test('guests requesting flatpack with Accept application/json are redirected to 
 });
 
 test('guests can view flatpack login page without redirect loop', function () {
-    $response = $this->get(route('flatpack.login'));
+    $response = test()->get(route('flatpack.login'));
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page->component('login', false));

@@ -25,7 +25,7 @@ final class PostFactory extends Factory
             'slug' => Str::slug($title),
             'body' => $this->bodyBlocks(),
             'picture' => null,
-            'status' => fake()->boolean(),
+            'status' => fake()->randomElement(['active', 'inactive', 'draft']),
         ];
     }
 
