@@ -4,7 +4,10 @@ import { LucideIconByName } from '@/components/icons';
 import { DataTable } from '@/components/table/data-table';
 import { Button } from '@/components/ui/button';
 import FlatpackLayout from '@/layouts/flatpack-layout';
-import { listYamlColumnsToDataTableColumns } from '@/lib/list-schema';
+import {
+    listYamlColumnsToDataTableColumns,
+    listYamlFiltersToDataTableFilters,
+} from '@/lib/list-schema';
 import { cn } from '@/lib/utils';
 import type { FlatpackListPageProps } from '@/types/pages/flatpack';
 
@@ -16,6 +19,8 @@ export default function FlatpackListPage({
     records = [],
     pagination,
     search_term: searchTerm = '',
+    filters: serverFilters = [],
+    filter_values: serverFilterValues = {},
     flatpack_prefix: flatpackPrefix,
     list_actions: listActions = [],
 }: FlatpackListPageProps) {
@@ -25,6 +30,13 @@ export default function FlatpackListPage({
     const columns = useMemo(
         () => listYamlColumnsToDataTableColumns(schema?.columns),
         [schema],
+    );
+    const filterDefinitions = useMemo(
+        () =>
+            serverFilters.length > 0
+                ? serverFilters
+                : listYamlFiltersToDataTableFilters(columns, schema?.filters),
+        [columns, schema?.filters, serverFilters],
     );
 
     const checkboxes = schema?.checkboxes === true;
@@ -64,10 +76,15 @@ export default function FlatpackListPage({
           : null;
 
     const handleServerPaginationChange = useCallback(
-        (page: number, perPage: number, search?: string) => {
+        (
+            page: number,
+            perPage: number,
+            search?: string,
+            filters?: Record<string, string | string[] | null>,
+        ) => {
             router.get(
                 window.location.pathname,
-                { page, per_page: perPage, search },
+                { page, per_page: perPage, search, filters },
                 {
                     preserveState: true,
                     preserveScroll: true,
@@ -129,6 +146,8 @@ export default function FlatpackListPage({
                         data={records}
                         serverPagination={pagination}
                         serverSearch={searchTerm}
+                        serverFilters={filterDefinitions}
+                        serverFilterValues={serverFilterValues}
                         onServerPaginationChange={
                             pagination
                                 ? handleServerPaginationChange

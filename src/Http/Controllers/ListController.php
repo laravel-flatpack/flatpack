@@ -34,6 +34,8 @@ final readonly class ListController
         );
         $perPage = max(1, min($maxPerPage, $perPage));
         $searchTerm = trim((string) $request->query('search', ''));
+        $filters = $request->query('filters', []);
+        $filters = is_array($filters) ? $filters : [];
 
         $result = $this->listRecords->load(
             $list->model,
@@ -41,6 +43,7 @@ final readonly class ListController
             $page,
             $perPage,
             $searchTerm,
+            $filters,
         );
         $flatpackPrefix = trim((string) config('flatpack.prefix', 'flatpack'), '/');
 
@@ -55,6 +58,8 @@ final readonly class ListController
             'records' => $result['records'],
             'pagination' => $result['pagination'],
             'search_term' => $searchTerm,
+            'filters' => $result['filters'],
+            'filter_values' => $result['filter_values'],
             'flatpack_prefix' => $flatpackPrefix,
             'list_actions' => ListHeaderActions::fromSchema($schema),
         ], $request->boolean('json'));

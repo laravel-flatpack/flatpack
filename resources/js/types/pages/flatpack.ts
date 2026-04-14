@@ -1,4 +1,8 @@
-import type { FlatpackListServerPagination } from '@/types/data-table';
+import type {
+    FlatpackDataTableFilter,
+    FlatpackDataTableServerFiltersState,
+    FlatpackListServerPagination,
+} from '@/types/data-table';
 
 export type FlatpackListHeaderAction = {
     id: string;
@@ -25,6 +29,8 @@ export type FlatpackListPageProps = {
     records?: Record<string, unknown>[];
     pagination?: FlatpackListServerPagination;
     search_term?: string;
+    filters?: FlatpackDataTableFilter[];
+    filter_values?: FlatpackDataTableServerFiltersState;
     flatpack_prefix?: string;
     list_actions?: FlatpackListHeaderAction[];
 };

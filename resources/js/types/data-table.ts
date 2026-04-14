@@ -44,6 +44,25 @@ export type FlatpackDataTableColumn = {
     truncate?: number;
 };
 
+export type FlatpackDataTableFilterDateMode = 'exact' | 'from';
+
+export type FlatpackDataTableFilter = {
+    id: string;
+    label: string;
+    placeholder?: string;
+    type: 'select' | 'date';
+    multiple?: boolean;
+    mode?: FlatpackDataTableFilterDateMode;
+    options?: FlatpackDataTableColumnOption[];
+};
+
+export type FlatpackDataTableServerFilterValue = string | string[] | null;
+
+export type FlatpackDataTableServerFiltersState = Record<
+    string,
+    FlatpackDataTableServerFilterValue
+>;
+
 export type BuildDataTableColumnDefsOptions = {
     checkboxes?: boolean;
     reorderable?: boolean;
@@ -73,9 +92,12 @@ export type DataTableProps = {
     toolbarAfterColumns?: ReactNode;
     serverPagination?: FlatpackListServerPagination;
     serverSearch?: string;
+    serverFilters?: FlatpackDataTableFilter[];
+    serverFilterValues?: FlatpackDataTableServerFiltersState;
     onServerPaginationChange?: (
         page: number,
         perPage: number,
         search?: string,
+        filters?: FlatpackDataTableServerFiltersState,
     ) => void;
 };

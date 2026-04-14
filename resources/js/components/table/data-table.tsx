@@ -28,6 +28,7 @@ import {
     useReactTable,
     type VisibilityState,
 } from '@tanstack/react-table';
+import { format } from 'date-fns';
 import {
     ChevronDownIcon,
     ChevronLeftIcon,
@@ -35,7 +36,9 @@ import {
     ChevronsLeftIcon,
     ChevronsRightIcon,
     Columns3Icon,
+    CalendarIcon,
     SearchIcon,
+    XIcon,
 } from 'lucide-react';
 import * as React from 'react';
 import { buildDataTableColumnDefs } from '@/components/table/data-table-column-defs';
@@ -53,12 +56,14 @@ import {
 } from '@/components/table/data-table-constants';
 import { DataTableDraggableRow } from '@/components/table/data-table-draggable-row';
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import {
     DropdownMenu,
     DropdownMenuCheckboxItem,
     DropdownMenuContent,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -87,6 +92,8 @@ export type {
     DataTableProps,
     FlatpackListServerPagination,
 } from '@/types/data-table';
+
+const ALL_FILTER_OPTION_VALUE = '__all__';
 
 function DataTableFooter({
     id,
@@ -189,6 +196,53 @@ function DataTableFooter({
     );
 }
 
+function normalizeServerFilterValues(
+    values: Record<string, string | string[] | null> | undefined,
+): Record<string, string | string[] | null> {
+    if (!values) {
+        return {};
+    }
+    const out: Record<string, string | string[] | null> = {};
+    for (const [key, value] of Object.entries(values)) {
+        if (Array.isArray(value)) {
+            out[key] = value.map((v) => String(v)).filter((v) => v !== '');
+            continue;
+        }
+        if (value == null) {
+            out[key] = null;
+            continue;
+        }
+        out[key] = String(value);
+    }
+    return out;
+}
+
+function filterValuesEqual(
+    a: Record<string, string | string[] | null>,
+    b: Record<string, string | string[] | null>,
+): boolean {
+    const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
+    for (const key of keys) {
+        const av = a[key];
+        const bv = b[key];
+        if (Array.isArray(av) || Array.isArray(bv)) {
+            if (!Array.isArray(av) || !Array.isArray(bv) || av.length !== bv.length) {
+                return false;
+            }
+            for (let i = 0; i < av.length; i++) {
+                if (av[i] !== bv[i]) {
+                    return false;
+                }
+            }
+            continue;
+        }
+        if ((av ?? null) !== (bv ?? null)) {
+            return false;
+        }
+    }
+    return true;
+}
+
 export function DataTable({
     id,
     columns: schemaColumns,
@@ -202,6 +256,8 @@ export function DataTable({
     toolbarAfterColumns,
     serverPagination,
     serverSearch,
+    serverFilters = [],
+    serverFilterValues = {},
     onServerPaginationChange,
 }: DataTableProps) {
     const rowClickInteractiveSelector =
@@ -271,6 +327,9 @@ export function DataTable({
     const [columnFilters, setColumnFilters] =
         React.useState<ColumnFiltersState>([]);
     const [globalFilter, setGlobalFilter] = React.useState(serverSearch ?? '');
+    const [serverFilterState, setServerFilterState] = React.useState<
+        Record<string, string | string[] | null>
+    >(() => normalizeServerFilterValues(serverFilterValues));
     const [sorting, setSorting] = React.useState<SortingState>([]);
     const [pagination, setPagination] = React.useState({
         pageIndex: 0,
@@ -296,6 +355,13 @@ export function DataTable({
         setGlobalFilter(serverSearch ?? '');
     }, [serverPagination, serverSearch]);
 
+    React.useEffect(() => {
+        if (serverPagination == null) {
+            return;
+        }
+        setServerFilterState(normalizeServerFilterValues(serverFilterValues));
+    }, [serverFilterValues, serverPagination]);
+
     const handlePaginationChange = React.useCallback(
         (
             updater: React.SetStateAction<{
@@ -312,12 +378,19 @@ export function DataTable({
                     next.pageIndex + 1,
                     next.pageSize,
                     globalFilter,
+                    serverFilterState,
                 );
                 return;
             }
             setPagination(updater);
         },
-        [globalFilter, onServerPaginationChange, paginationState, serverPagination],
+        [
+            globalFilter,
+            onServerPaginationChange,
+            paginationState,
+            serverFilterState,
+            serverPagination,
+        ],
     );
 
     React.useEffect(() => {
@@ -325,11 +398,21 @@ export function DataTable({
             return;
         }
         const normalizedServerSearch = serverSearch ?? '';
-        if (globalFilter === normalizedServerSearch) {
+        const normalizedServerFilters =
+            normalizeServerFilterValues(serverFilterValues);
+        if (
+            globalFilter === normalizedServerSearch &&
+            filterValuesEqual(serverFilterState, normalizedServerFilters)
+        ) {
             return;
         }
         const debounce = window.setTimeout(() => {
-            onServerPaginationChange(1, paginationState.pageSize, globalFilter);
+            onServerPaginationChange(
+                1,
+                paginationState.pageSize,
+                globalFilter,
+                serverFilterState,
+            );
         }, 250);
 
         return () => window.clearTimeout(debounce);
@@ -337,6 +420,8 @@ export function DataTable({
         globalFilter,
         onServerPaginationChange,
         paginationState.pageSize,
+        serverFilterState,
+        serverFilterValues,
         serverPagination,
         serverSearch,
     ]);
@@ -513,6 +598,48 @@ export function DataTable({
                 : `${serverPagination.total} row(s).`
           : `${table.getFilteredRowModel().rows.length} row(s).`;
 
+    const setSingleServerFilter = React.useCallback(
+        (filterId: string, value: string) => {
+            setServerFilterState((prev) => ({
+                ...prev,
+                [filterId]: value === '' ? null : value,
+            }));
+        },
+        [],
+    );
+
+    const toggleMultiServerFilterValue = React.useCallback(
+        (filterId: string, optionValue: string) => {
+            setServerFilterState((prev) => {
+                const current = prev[filterId];
+                const currentValues = Array.isArray(current)
+                    ? current
+                    : current
+                      ? [current]
+                      : [];
+                const exists = currentValues.includes(optionValue);
+                const nextValues = exists
+                    ? currentValues.filter((value) => value !== optionValue)
+                    : [...currentValues, optionValue];
+                return {
+                    ...prev,
+                    [filterId]: nextValues.length > 0 ? nextValues : null,
+                };
+            });
+        },
+        [],
+    );
+
+    const setDateServerFilter = React.useCallback(
+        (filterId: string, date?: Date) => {
+            setServerFilterState((prev) => ({
+                ...prev,
+                [filterId]: date ? format(date, 'yyyy-MM-dd') : null,
+            }));
+        },
+        [],
+    );
+
     const tableContent = (
         <Table>
             <TableHeader className="sticky top-0 z-10 bg-muted">
@@ -634,8 +761,8 @@ export function DataTable({
                 {DATA_TABLE_LABEL}
             </span>
 
-            <div className="flex w-full items-center gap-3">
-                <div className="min-w-0 flex-1">
+            <div className="flex w-full items-start gap-3">
+                <div className="min-w-0 flex-1 space-y-2">
                     {hasSearchableColumns ? (
                         <div className="relative w-full max-w-md">
                             <Label htmlFor={`${id}-search`} className="sr-only">
@@ -656,6 +783,202 @@ export function DataTable({
                                 className="h-8 pl-8"
                                 autoComplete="off"
                             />
+                        </div>
+                    ) : null}
+                    {serverFilters.length > 0 ? (
+                        <div className="flex flex-wrap items-center gap-2">
+                            {serverFilters.map((filter) => {
+                                if (filter.type === 'select') {
+                                    const selectedValue = serverFilterState[filter.id];
+                                    const options = filter.options ?? [];
+                                    if (filter.multiple) {
+                                        const selected = Array.isArray(selectedValue)
+                                            ? selectedValue
+                                            : selectedValue
+                                              ? [selectedValue]
+                                              : [];
+                                        return (
+                                            <DropdownMenu key={filter.id}>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                    >
+                                                        {filter.placeholder ??
+                                                            filter.label}
+                                                        {selected.length > 0
+                                                            ? ` (${selected.length})`
+                                                            : ''}
+                                                        <ChevronDownIcon data-icon="inline-end" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent className="w-56">
+                                                    {options.map((option) => (
+                                                        <DropdownMenuCheckboxItem
+                                                            key={`${filter.id}-${option.value}`}
+                                                            checked={selected.includes(option.value)}
+                                                            onCheckedChange={() =>
+                                                                toggleMultiServerFilterValue(
+                                                                    filter.id,
+                                                                    option.value,
+                                                                )
+                                                            }
+                                                        >
+                                                            {option.label}
+                                                        </DropdownMenuCheckboxItem>
+                                                    ))}
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        );
+                                    }
+                                    const normalized =
+                                        typeof selectedValue === 'string'
+                                            ? selectedValue
+                                            : '';
+                                    return (
+                                        <div
+                                            key={filter.id}
+                                            className="flex items-center gap-1"
+                                        >
+                                            <Select
+                                                value={
+                                                    normalized === ''
+                                                        ? ALL_FILTER_OPTION_VALUE
+                                                        : normalized
+                                                }
+                                                onValueChange={(value) =>
+                                                    setSingleServerFilter(
+                                                        filter.id,
+                                                        value ===
+                                                            ALL_FILTER_OPTION_VALUE
+                                                            ? ''
+                                                            : value,
+                                                    )
+                                                }
+                                            >
+                                                <SelectTrigger
+                                                    size="sm"
+                                                    className="min-w-40"
+                                                    id={`${id}-filter-${filter.id}`}
+                                                >
+                                                    <SelectValue
+                                                        placeholder={
+                                                            filter.placeholder ??
+                                                            filter.label
+                                                        }
+                                                    />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectGroup>
+                                                        <SelectItem
+                                                            value={
+                                                                ALL_FILTER_OPTION_VALUE
+                                                            }
+                                                        >
+                                                            All {filter.label}
+                                                        </SelectItem>
+                                                        {options.map((option) => (
+                                                            <SelectItem
+                                                                key={`${filter.id}-${option.value}`}
+                                                                value={
+                                                                    option.value
+                                                                }
+                                                            >
+                                                                {option.label}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectGroup>
+                                                </SelectContent>
+                                            </Select>
+                                            {normalized !== '' ? (
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="size-8"
+                                                    onClick={() =>
+                                                        setSingleServerFilter(
+                                                            filter.id,
+                                                            '',
+                                                        )
+                                                    }
+                                                >
+                                                    <span className="sr-only">
+                                                        Clear {filter.label}
+                                                    </span>
+                                                    <XIcon className="size-4" />
+                                                </Button>
+                                            ) : null}
+                                        </div>
+                                    );
+                                }
+
+                                const dateValue =
+                                    typeof serverFilterState[filter.id] ===
+                                    'string'
+                                        ? serverFilterState[filter.id]
+                                        : '';
+                                const selectedDate = dateValue
+                                    ? new Date(`${dateValue}T00:00:00`)
+                                    : undefined;
+                                return (
+                                    <div
+                                        key={filter.id}
+                                        className="flex items-center gap-1"
+                                    >
+                                        <Popover>
+                                            <PopoverTrigger asChild>
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                >
+                                                    <CalendarIcon data-icon="inline-start" />
+                                                    {selectedDate
+                                                        ? format(
+                                                              selectedDate,
+                                                              'PPP',
+                                                          )
+                                                        : filter.placeholder ??
+                                                          filter.label}
+                                                </Button>
+                                            </PopoverTrigger>
+                                            <PopoverContent
+                                                className="w-auto p-0"
+                                                align="start"
+                                            >
+                                                <Calendar
+                                                    mode="single"
+                                                    selected={selectedDate}
+                                                    onSelect={(date) =>
+                                                        setDateServerFilter(
+                                                            filter.id,
+                                                            date,
+                                                        )
+                                                    }
+                                                />
+                                            </PopoverContent>
+                                        </Popover>
+                                        {selectedDate ? (
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="icon"
+                                                className="size-8"
+                                                onClick={() =>
+                                                    setDateServerFilter(
+                                                        filter.id,
+                                                    )
+                                                }
+                                            >
+                                                <span className="sr-only">
+                                                    Clear {filter.label}
+                                                </span>
+                                                <XIcon className="size-4" />
+                                            </Button>
+                                        ) : null}
+                                    </div>
+                                );
+                            })}
                         </div>
                     ) : null}
                 </div>

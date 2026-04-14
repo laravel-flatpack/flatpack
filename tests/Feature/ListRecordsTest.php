@@ -121,3 +121,195 @@ YAML);
         File::deleteDirectory($tempPath);
     }
 });
+
+test('flatpack entity list JSON applies select filters', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-list-select-filter-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+columns:
+  id:
+    label: ID
+  title:
+    label: Title
+  status:
+    label: Status
+    type: select
+    options:
+      draft: Draft
+      active: Active
+      inactive: Inactive
+filters:
+  status:
+    label: Filter by status
+    placeholder: Select status
+    type: select
+YAML);
+        config()->set('flatpack.path', $tempPath);
+
+        Post::factory()->create(['title' => 'Draft post', 'status' => 'draft']);
+        Post::factory()->create(['title' => 'Active post', 'status' => 'active']);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        $payload = actingAs($user)
+            ->getJson(route('flatpack.entities.index', [
+                'entity' => 'posts',
+                'json' => true,
+                'filters' => ['status' => 'draft'],
+            ]))
+            ->assertOk()
+            ->json();
+
+        $body = $payload['data'] ?? $payload;
+        expect($body['records'])->toHaveCount(1);
+        expect($body['records'][0]['title'])->toBe('Draft post');
+        expect($body['filter_values']['status'])->toBe('draft');
+        expect($body['filters'][0]['type'])->toBe('select');
+        expect($body['filters'][0]['label'])->toBe('Filter by status');
+        expect($body['filters'][0]['placeholder'])->toBe('Select status');
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
+test('flatpack entity list JSON applies multi select filters', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-list-multi-select-filter-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+columns:
+  id:
+    label: ID
+  title:
+    label: Title
+  status:
+    label: Status
+    type: select
+    options:
+      draft: Draft
+      active: Active
+      inactive: Inactive
+filters:
+  status:
+    multiple: true
+YAML);
+        config()->set('flatpack.path', $tempPath);
+
+        Post::factory()->create(['title' => 'Draft post', 'status' => 'draft']);
+        Post::factory()->create(['title' => 'Active post', 'status' => 'active']);
+        Post::factory()->create(['title' => 'Inactive post', 'status' => 'inactive']);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        $payload = actingAs($user)
+            ->getJson(route('flatpack.entities.index', [
+                'entity' => 'posts',
+                'json' => true,
+                'filters' => ['status' => ['draft', 'inactive']],
+            ]))
+            ->assertOk()
+            ->json();
+
+        $body = $payload['data'] ?? $payload;
+        expect($body['records'])->toHaveCount(2);
+        expect(collect($body['records'])->pluck('status')->all())
+            ->toContain('draft')
+            ->toContain('inactive');
+        expect($body['filter_values']['status'])
+            ->toContain('draft')
+            ->toContain('inactive');
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
+test('flatpack entity list JSON applies date exact and from filters', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-list-date-filter-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+columns:
+  id:
+    label: ID
+  title:
+    label: Title
+  created_at:
+    label: Created At
+    type: date
+filters:
+  created_at:
+    label: Filter by published at
+    placeholder: Select a date
+    type: date
+    mode: from
+YAML);
+        config()->set('flatpack.path', $tempPath);
+
+        $older = Post::factory()->create(['title' => 'Older post']);
+        $older->created_at = '2024-01-10 08:00:00';
+        $older->save();
+
+        $newer = Post::factory()->create(['title' => 'Newer post']);
+        $newer->created_at = '2024-01-20 08:00:00';
+        $newer->save();
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        $fromPayload = actingAs($user)
+            ->getJson(route('flatpack.entities.index', [
+                'entity' => 'posts',
+                'json' => true,
+                'filters' => ['created_at' => '2024-01-15'],
+            ]))
+            ->assertOk()
+            ->json();
+        $fromBody = $fromPayload['data'] ?? $fromPayload;
+        expect($fromBody['records'])->toHaveCount(1);
+        expect($fromBody['records'][0]['title'])->toBe('Newer post');
+        expect($fromBody['filters'][0]['label'])->toBe('Filter by published at');
+        expect($fromBody['filters'][0]['placeholder'])->toBe('Select a date');
+
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+columns:
+  id:
+    label: ID
+  title:
+    label: Title
+  created_at:
+    label: Created At
+    type: date
+filters:
+  created_at:
+    mode: exact
+YAML);
+
+        $exactPayload = actingAs($user)
+            ->getJson(route('flatpack.entities.index', [
+                'entity' => 'posts',
+                'json' => true,
+                'filters' => ['created_at' => '2024-01-10'],
+            ]))
+            ->assertOk()
+            ->json();
+        $exactBody = $exactPayload['data'] ?? $exactPayload;
+        expect($exactBody['records'])->toHaveCount(1);
+        expect($exactBody['records'][0]['title'])->toBe('Older post');
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});

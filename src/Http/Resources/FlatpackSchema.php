@@ -50,6 +50,14 @@ final class FlatpackSchema extends JsonResource
                 array_key_exists('search_term', $resource),
                 data_get($resource, 'search_term'),
             ),
+            'filters' => $this->when(
+                array_key_exists('filters', $resource),
+                data_get($resource, 'filters'),
+            ),
+            'filter_values' => $this->when(
+                array_key_exists('filter_values', $resource),
+                data_get($resource, 'filter_values'),
+            ),
         ];
     }
 }
