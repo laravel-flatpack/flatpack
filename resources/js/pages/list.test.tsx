@@ -111,4 +111,64 @@ describe('FlatpackListPage', () => {
             screen.getByRole('checkbox', { name: 'Select row' }),
         ).toBeInTheDocument();
     });
+
+    it('shows drag-and-drop reorder column when schema has reorderable true', () => {
+        render(
+            <FlatpackListPage
+                entity="posts"
+                schema={{
+                    reorderable: true,
+                    columns: {
+                        id: { label: 'ID' },
+                        title: { label: 'Title' },
+                    },
+                }}
+                records={[{ id: 1, title: 'Hello' }]}
+            />,
+        );
+
+        expect(
+            screen.getByRole('columnheader', { name: 'Reorder' }),
+        ).toBeInTheDocument();
+    });
+
+    it('shows drag-and-drop reorder column when schema has reorderable as a string column id', () => {
+        render(
+            <FlatpackListPage
+                entity="posts"
+                schema={{
+                    reorderable: 'my_column',
+                    columns: {
+                        id: { label: 'ID' },
+                        title: { label: 'Title' },
+                    },
+                }}
+                records={[{ id: 1, title: 'Hello', my_column: 1 }]}
+            />,
+        );
+
+        expect(
+            screen.getByRole('columnheader', { name: 'Reorder' }),
+        ).toBeInTheDocument();
+    });
+
+    it('does not show reorder column when schema has reorderable false', () => {
+        render(
+            <FlatpackListPage
+                entity="posts"
+                schema={{
+                    reorderable: false,
+                    columns: {
+                        id: { label: 'ID' },
+                        title: { label: 'Title' },
+                    },
+                }}
+                records={[{ id: 1, title: 'Hello' }]}
+            />,
+        );
+
+        expect(
+            screen.queryByRole('columnheader', { name: 'Reorder' }),
+        ).not.toBeInTheDocument();
+    });
 });

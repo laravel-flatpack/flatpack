@@ -25,6 +25,10 @@ export default function FlatpackListPage({
     );
 
     const checkboxes = schema?.checkboxes === true;
+    const reorderable =
+        typeof schema?.reorderable === 'string'
+            ? schema.reorderable
+            : schema?.reorderable === true;
 
     const handleServerPaginationChange = useCallback(
         (page: number, perPage: number) => {
@@ -88,6 +92,7 @@ export default function FlatpackListPage({
                     <DataTable
                         id={`flatpack-list-${entity || 'entity'}`}
                         checkboxes={checkboxes}
+                        reorderable={reorderable}
                         columns={columns}
                         data={records}
                         serverPagination={pagination}
