@@ -49,7 +49,7 @@ export default function FlatpackListPage({
             {displayName ? <Head title={pageTitle} /> : null}
             <div className="flex flex-col gap-2">
                 {displayName ? (
-                    <div className="mb-4 flex w-full flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
+                    <div className="mb-4 flex h-10 w-full flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
                         <h1 className="min-w-0 flex-1 text-2xl font-semibold tracking-tight">
                             {displayName}
                         </h1>
