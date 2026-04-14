@@ -32,7 +32,7 @@ final class NavigationUrl
             return $normalized;
         }
 
-        $scheme = strtolower($scheme);
+        $scheme = mb_strtolower($scheme);
         if (! in_array($scheme, ['http', 'https'], true)) {
             return '';
         }
@@ -85,14 +85,14 @@ final class NavigationUrl
             return false;
         }
 
-        return strtolower($urlHost) === strtolower($appHost)
+        return mb_strtolower($urlHost) === mb_strtolower($appHost)
             && ($urlPort ?? self::defaultPort((string) parse_url($url, PHP_URL_SCHEME)))
                 === ($appPort ?? self::defaultPort((string) parse_url($appUrl, PHP_URL_SCHEME)));
     }
 
     private static function defaultPort(string $scheme): ?int
     {
-        return match (strtolower($scheme)) {
+        return match (mb_strtolower($scheme)) {
             'http' => 80,
             'https' => 443,
             default => null,
