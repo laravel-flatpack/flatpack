@@ -872,7 +872,7 @@ export function DataTable({
                     ) : null}
                 </div>
                 <div className="flex shrink-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
-                {serverFilters.length > 0 ? (
+                    {serverFilters.length > 0 ? (
                         <div className="flex flex-wrap items-center gap-2">
                             {serverFilters.map((filter) => {
                                 if (filter.type === 'select') {
