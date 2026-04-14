@@ -138,6 +138,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Navigation URL policy
+    |--------------------------------------------------------------------------
+    |
+    | Controls whether menu/action links may point to external origins.
+    | Unsafe URL schemes like javascript:, data:, and protocol-relative URLs
+    | are always rejected.
+    |
+    */
+    'navigation' => [
+        'allow_external_origins' => env('FLATPACK_ALLOW_EXTERNAL_ORIGINS', false),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Quick action
     |--------------------------------------------------------------------------
     |

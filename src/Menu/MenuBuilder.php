@@ -8,6 +8,7 @@ use Flatpack\Composition\CompositionValues;
 use Flatpack\Contracts\Composition\CompositionQuery;
 use Flatpack\Contracts\Menu\MenuBuilder as MenuBuilderContract;
 use Flatpack\Http\Controllers\ListController;
+use Flatpack\Support\NavigationUrl;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Support\Str;
 
@@ -41,6 +42,7 @@ final readonly class MenuBuilder implements MenuBuilderContract
     private function menuFromConfig(array $items): array
     {
         $result = [];
+        $allowExternalOrigins = (bool) $this->config->get('flatpack.navigation.allow_external_origins', false);
 
         foreach ($items as $slug => $entry) {
             if (! is_array($entry)) {
@@ -48,7 +50,10 @@ final readonly class MenuBuilder implements MenuBuilderContract
             }
 
             $name = (string) ($entry['name'] ?? $slug);
-            $route = (string) ($entry['route'] ?? '#');
+            $route = NavigationUrl::sanitize((string) ($entry['route'] ?? ''), $allowExternalOrigins);
+            if ($route === '') {
+                continue;
+            }
             $icon = (string) ($entry['icon'] ?? 'folder');
             $key = is_string($slug) ? $slug : (string) $name;
 

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Flatpack\Lists;
 
+use Flatpack\Support\NavigationUrl;
+
 /**
  * Normalizes optional {@code actions} from list.yaml into header buttons (label + prefixed href).
  */
@@ -39,6 +41,7 @@ final class ListHeaderActions
         }
 
         $prefix = trim((string) config('flatpack.prefix', 'flatpack'), '/');
+        $allowExternalOrigins = (bool) config('flatpack.navigation.allow_external_origins', false);
         $out = [];
 
         foreach ($raw as $key => $definition) {
@@ -51,12 +54,16 @@ final class ListHeaderActions
             if ($label === '' || $url === '') {
                 continue;
             }
+            $href = self::prefixedUrl($url, $prefix, $allowExternalOrigins);
+            if ($href === '') {
+                continue;
+            }
             $id = is_string($key) && $key !== '' ? $key : (string) count($out);
             $out[] = [
                 'id' => $id,
                 'label' => $label,
                 'icon' => $icon,
-                'href' => self::prefixedUrl($url, $prefix),
+                'href' => $href,
                 'variant' => self::normalizeVariant($definition['variant'] ?? null),
             ];
         }
@@ -67,27 +74,9 @@ final class ListHeaderActions
     /**
      * Prefixes a path with the Flatpack route prefix. Absolute http(s) URLs are returned unchanged.
      */
-    public static function prefixedUrl(string $url, string $prefix): string
+    public static function prefixedUrl(string $url, string $prefix, bool $allowExternalOrigins = false): string
     {
-        if ($url === '') {
-            return '';
-        }
-
-        if (
-            str_starts_with($url, 'http://')
-            || str_starts_with($url, 'https://')
-            || str_starts_with($url, '//')
-        ) {
-            return $url;
-        }
-
-        $path = '/' . ltrim($url, '/');
-        $prefix = trim($prefix, '/');
-        if ($prefix === '') {
-            return $path;
-        }
-
-        return '/' . $prefix . $path;
+        return NavigationUrl::sanitizeAndPrefix($url, $prefix, $allowExternalOrigins);
     }
 
     /**
