@@ -33,11 +33,6 @@ export function CodeSyntaxLeafStatic(props: SlateLeafProps) {
     return <SlateLeaf className={tokenClassName} {...props} />;
 }
 
-/**
- * DOCX-compatible code block components.
- * Uses inline styles for proper rendering in Word documents.
- */
-
 export function CodeBlockElementDocx(
     props: SlateElementProps<TCodeBlockElement>,
 ) {
@@ -72,7 +67,6 @@ export function CodeLineElementDocx(props: SlateElementProps) {
     );
 }
 
-// Syntax highlighting color map for common token types
 const syntaxColors: Record<string, string> = {
     'hljs-addition': '#22863a',
     'hljs-attr': '#005cc5',
@@ -108,16 +102,13 @@ const syntaxColors: Record<string, string> = {
     'hljs-variable': '#005cc5',
 };
 
-// Convert regular spaces to non-breaking spaces to preserve indentation in Word
 const preserveSpaces = (text: string): string => {
-    // Replace regular spaces with non-breaking spaces
     return text.replace(/ /g, '\u00A0');
 };
 
 export function CodeSyntaxLeafDocx(props: SlateLeafProps) {
     const tokenClassName = props.leaf.className as string;
 
-    // Extract color from className
     let color: string | undefined;
     let fontWeight: string | undefined;
     let fontStyle: string | undefined;
@@ -137,7 +128,6 @@ export function CodeSyntaxLeafDocx(props: SlateLeafProps) {
         }
     }
 
-    // Get the text content and preserve spaces
     const text = props.leaf.text as string;
     const preservedText = preserveSpaces(text);
 

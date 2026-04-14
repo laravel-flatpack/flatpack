@@ -8,10 +8,7 @@ import {
     useMemo,
     useState,
 } from 'react';
-import {
-    FieldLoading,
-    type FieldLoadingProps,
-} from '@/components/field-loading';
+import { FieldLoading } from '@/components/field-loading';
 import {
     Collapsible,
     CollapsibleContent,
@@ -30,6 +27,7 @@ import type {
     DemoComponentCatalogEntry,
     DemoComponentsInertiaProps,
 } from '@/types/demo';
+import type { FieldLoadingProps } from '@/types/loading';
 
 const FIELD_LOADING_TEXT_TYPES = new Set([
     'text',

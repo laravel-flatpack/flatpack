@@ -1,26 +1,8 @@
 import * as React from 'react';
 import { toast } from 'sonner';
 import { z } from 'zod';
+import type { UploadedFile, UseUploadFileProps } from '@/types/upload';
 
-/** Shape expected by media placeholders after a successful upload. */
-export type UploadedFile = {
-    key: string;
-    name: string;
-    size: number;
-    type: string;
-    url: string;
-    appUrl?: string;
-};
-
-interface UseUploadFileProps {
-    onUploadComplete?: (file: UploadedFile) => void;
-    onUploadError?: (error: unknown) => void;
-}
-
-/**
- * Local dev upload: returns a blob URL for previews. Replace with your API
- * (e.g. Laravel signed upload) when you deploy.
- */
 export function useUploadFile({
     onUploadComplete,
     onUploadError,

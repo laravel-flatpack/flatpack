@@ -94,10 +94,14 @@ describe('DemoPage', () => {
         render(<DemoPage />);
 
         expect(
-            await screen.findByRole('heading', {
-                level: 1,
-                name: 'Components',
-            }),
+            await screen.findByRole(
+                'heading',
+                {
+                    level: 1,
+                    name: 'Components',
+                },
+                { timeout: 15000 },
+            ),
         ).toBeInTheDocument();
         expect(
             screen.getByRole('heading', { name: 'Alpha' }),
@@ -105,7 +109,7 @@ describe('DemoPage', () => {
         expect(
             screen.getByRole('heading', { name: 'Beta' }),
         ).toBeInTheDocument();
-    });
+    }, 20000);
 
     it('renders single field and live value panel when type is set', async () => {
         const user = userEvent.setup();

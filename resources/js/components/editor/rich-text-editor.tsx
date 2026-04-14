@@ -15,14 +15,11 @@ import { cn } from '@/lib/utils';
 const emptyDoc: Value = [{ type: 'p', children: [{ text: '' }] }];
 
 export type RichTextEditorProps = {
-    /** `id` of the visible field caption; passed as `aria-labelledby` on the editable. */
     labelId?: string;
     className?: string;
     placeholder?: string;
     readOnly?: boolean;
-    /** Show formatting toolbar above the editable area (inside the field border). */
     showFixedToolbar?: boolean;
-    /** Initial document; normalized once on mount. */
     initialValue?: Value;
     onValueChange?: (value: Value) => void;
 };

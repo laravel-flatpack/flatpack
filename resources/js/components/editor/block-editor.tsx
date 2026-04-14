@@ -16,22 +16,14 @@ import { cn } from '@/lib/utils';
 const emptyDoc: Value = [{ type: 'p', children: [{ text: '' }] }];
 
 export type BlockEditorProps = {
-    /** `id` of the visible field caption; passed as `aria-labelledby` on the editable. */
     labelId?: string;
     className?: string;
     placeholder?: string;
     readOnly?: boolean;
-    /** Show formatting toolbar above the editable (inside the field border). */
     showFixedToolbar?: boolean;
     initialValue?: Value;
     onValueChange?: (value: Value) => void;
 };
-
-/**
- * Notion-like block editor: drag handle and “+” in the gutter; optional fixed
- * formatting toolbar (same as {@link RichTextEditor}).
- * Uses the same document model as {@link RichTextEditor}.
- */
 export function BlockEditor({
     labelId,
     className,

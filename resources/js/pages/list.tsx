@@ -29,6 +29,11 @@ export default function FlatpackListPage({
         typeof schema?.reorderable === 'string'
             ? schema.reorderable
             : schema?.reorderable === true;
+    const noContentMessage = !displayName
+        ? 'Nothing to list yet.'
+        : columns.length === 0
+          ? 'Define columns in list.yaml to render this table.'
+          : null;
 
     const handleServerPaginationChange = useCallback(
         (page: number, perPage: number) => {
@@ -80,14 +85,8 @@ export default function FlatpackListPage({
                         </div>
                     </div>
                 ) : null}
-                {!displayName ? (
-                    <p className="text-muted-foreground">
-                        Nothing to list yet.
-                    </p>
-                ) : columns.length === 0 ? (
-                    <p className="text-muted-foreground">
-                        Define columns in list.yaml to render this table.
-                    </p>
+                {noContentMessage ? (
+                    <p className="text-muted-foreground">{noContentMessage}</p>
                 ) : (
                     <DataTable
                         id={`flatpack-list-${entity || 'entity'}`}

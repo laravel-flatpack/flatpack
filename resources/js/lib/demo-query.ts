@@ -1,6 +1,5 @@
 import type { FormFieldProps } from '@/types/form-fields';
 
-/** Query keys used only to pick which demo field to show — never merged into field props. */
 const DEMO_ROUTING_QUERY_KEYS = new Set([
     'type',
     'demo',
@@ -9,7 +8,6 @@ const DEMO_ROUTING_QUERY_KEYS = new Set([
     'column',
 ]);
 
-/** Keys allowed to merge from the URL into {@link FormFieldProps} (`type` is always ignored). */
 const DEMO_QUERY_FIELD_KEYS = new Set([
     'label',
     'placeholder',
@@ -52,10 +50,6 @@ function coerceQueryParamValue(raw: string): unknown {
     return safeDecodeURIComponent(raw);
 }
 
-/**
- * Parse the current visit URL’s query string into flat string values (last value wins per key).
- * Use with Inertia’s `page.url` so demo params match the address bar even if server props differ.
- */
 export function parseSearchParamsFromUrl(url: string): Record<string, string> {
     try {
         const base =
@@ -80,9 +74,6 @@ export function parseSearchParamsFromUrl(url: string): Record<string, string> {
     }
 }
 
-/**
- * Reads the demo “which field” selector from merged query params.
- */
 export function pickDemoComponentSelector(
     flat: Record<string, string>,
 ): string {
@@ -95,7 +86,6 @@ export function pickDemoComponentSelector(
     return '';
 }
 
-/** Parse `window.location.search` (or the same shape) into a flat map. */
 export function parseLocationSearch(search: string): Record<string, string> {
     if (search === '' || search === '?') {
         return {};
@@ -104,9 +94,6 @@ export function parseLocationSearch(search: string): Record<string, string> {
     return parseSearchParamsFromUrl(`http://localhost${q}`);
 }
 
-/**
- * Merges demo query sources: address bar wins, then Inertia URL, then server props.
- */
 export function mergeDemoFlatQuery(input: {
     query: Record<string, unknown>;
     inertiaUrl: string;
@@ -118,7 +105,6 @@ export function mergeDemoFlatQuery(input: {
     return { ...fromServer, ...fromInertiaUrl, ...fromAddressBar };
 }
 
-/** Normalizes Inertia/Laravel query maps into flat string values (last value wins for arrays). */
 export function flattenDemoQuery(
     query: Record<string, unknown> | undefined | null,
 ): Record<string, string> {
@@ -146,10 +132,6 @@ export function flattenDemoQuery(
     return out;
 }
 
-/**
- * Merges optional URL query fields into catalog props. Skips routing keys (`type`, `demo`, …)
- * and unknown keys so arbitrary query params do not become stray React props.
- */
 export function mergeQueryOverridesIntoFormFieldProps(
     props: FormFieldProps,
     flat: Record<string, string>,
@@ -164,10 +146,6 @@ export function mergeQueryOverridesIntoFormFieldProps(
     return { ...props, ...patch, type: props.type } as FormFieldProps;
 }
 
-/**
- * When `showValue` is present in the merged query (e.g. `?showValue=true`), overrides the
- * catalog’s live-value panel. Omit the key to use the catalog default. Not merged into field props.
- */
 export function resolveDemoShowValue(
     entry: { showValue: boolean },
     flat: Record<string, string>,

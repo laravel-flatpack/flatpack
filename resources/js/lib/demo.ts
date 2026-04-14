@@ -18,7 +18,6 @@ export type DemoLazyFieldMap = Record<
     LazyExoticComponent<ComponentType<Record<string, unknown>>>
 >;
 
-/** Build `props.type` → entry map (server catalog order preserved in values). */
 export function demoCatalogToByType(
     catalog: DemoComponentCatalogEntry[],
 ): Record<string, DemoComponentCatalogEntry> {
@@ -60,7 +59,6 @@ export function resolveDemoComponentSelection(
     return { selectorRaw, normalized, requestedUnknown };
 }
 
-/** Lazy field chunks for each distinct `props.type` in the catalog. */
 export function lazyFieldMapFromCatalog(
     catalog: DemoComponentCatalogEntry[],
 ): DemoLazyFieldMap {

@@ -2,7 +2,6 @@ import type { FlatpackDataTableColumn } from '@/types/data-table';
 
 const COLUMN_TRUNCATE_MAX = 1_000_000;
 
-/** Coerces YAML/JSON `truncate` to a positive integer, or `undefined` when absent/invalid. */
 export function normalizeColumnTruncate(raw: unknown): number | undefined {
     if (raw == null) {
         return undefined;
@@ -59,10 +58,6 @@ export function formatCellValue(raw: unknown): string {
     return String(raw);
 }
 
-/**
- * Shortens `text` when longer than `maxChars`. Prefer {@link readOnlyTruncatedDisplay} when the
- * limit comes from an optional column setting.
- */
 export function truncateDisplayString(text: string, maxChars: number): string {
     if (text.length <= maxChars) {
         return text;
@@ -70,11 +65,6 @@ export function truncateDisplayString(text: string, maxChars: number): string {
     return `${text.slice(0, maxChars)}…`;
 }
 
-/**
- * Read-only table cells: when `maxChars` (from column `truncate`, optional) is a positive number,
- * truncates with an ellipsis and returns the full `text` for use as `title`. Accepts the raw
- * YAML/JSON value (number or numeric string).
- */
 export function readOnlyTruncatedDisplay(
     text: string,
     maxChars: unknown,
@@ -89,10 +79,6 @@ export function readOnlyTruncatedDisplay(
     return { shown: truncateDisplayString(text, n), title: text };
 }
 
-/**
- * Display string for `type: relation` columns using the eager-loaded payload on `row[relation]`
- * (single model shape or list for many-to-many).
- */
 export function formatRelationCellDisplay(
     row: Record<string, unknown>,
     col: Pick<FlatpackDataTableColumn, 'relation' | 'relationName'>,

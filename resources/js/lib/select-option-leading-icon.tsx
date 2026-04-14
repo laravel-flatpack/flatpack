@@ -44,7 +44,6 @@ const SELECT_OPTION_STATUS_ICONS: Record<
     ),
 };
 
-/** Leading icon from option `status` (form selects, data table cells, column schema from PHP, etc.). */
 export function selectOptionLeadingIcon(
     option: Pick<FlatpackDataTableColumnOption, 'status'> | undefined,
 ): React.ReactNode {

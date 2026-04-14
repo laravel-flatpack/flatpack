@@ -32,7 +32,6 @@ type TextareaFieldProps = FormFieldBase &
 type SelectFieldProps = FormFieldBase &
     WithPlaceholder & {
         options: SelectFieldOption[];
-        /** Current value (`null` / omitted = no selection, show placeholder). */
         value?: unknown;
     };
 type ComboboxFieldProps = FormFieldBase &
@@ -46,7 +45,6 @@ type TimePickerFieldProps = FormFieldBase &
     WithPlaceholder & {
         dateLabel?: string;
         datePlaceholder?: string;
-        /** Label for the time input (date uses `dateLabel` or top-level `label`). */
         timeLabel?: string;
         timeDefaultValue?: string;
     };
@@ -66,14 +64,9 @@ type BlockEditorFieldProps = FormFieldBase &
     };
 type TableFieldProps = FormFieldBase & {
     columns: FlatpackDataTableColumn[];
-    /** Row objects keyed by column `id`s; may be supplied from catalog `value` in demos. */
     data?: Record<string, unknown>[];
     checkboxes?: boolean;
     actions?: unknown[];
-    /**
-     * When set, shows a drag handle per row and allows reordering (updates row order and reindexes the order column).
-     * `true` uses `sort_order`; a string uses that column id.
-     */
     reorderable?: boolean | string;
 };
 

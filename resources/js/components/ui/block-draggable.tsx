@@ -83,8 +83,6 @@ function BlockInsertButton({ element }: { element: TElement }) {
                         e.preventDefault();
                         e.stopPropagation();
 
-                        // Blur on the slash combobox runs in the same turn and removes the
-                        // inline node; insert after that completes so paths stay valid.
                         queueMicrotask(() => {
                             const blockPath = editor.api.findPath(element);
                             if (!blockPath) return;
@@ -135,7 +133,6 @@ function Draggable(props: PlateElementProps) {
         }
     }, []);
 
-    // clear up virtual multiple preview when drag end
     React.useEffect(() => {
         if (!isDragging) {
             resetPreview();
@@ -307,7 +304,6 @@ const DragHandle = React.memo(function DragHandle({
                                 ? blockSelection
                                 : editor.api.blocks({ mode: 'highest' });
 
-                        // If current block is not in selection, use it as the starting point
                         if (
                             !selectionNodes.some(
                                 ([node]) => node.id === element.id,
@@ -318,7 +314,6 @@ const DragHandle = React.memo(function DragHandle({
                             ];
                         }
 
-                        // Process selection nodes to include list children
                         const blocks = expandListItemsWithChildren(
                             editor,
                             selectionNodes,
@@ -360,7 +355,6 @@ const DragHandle = React.memo(function DragHandle({
                                 ? blockSelection
                                 : editor.api.blocks({ mode: 'highest' });
 
-                        // If current block is not in selection, use it as the starting point
                         if (
                             !selectedBlocks.some(
                                 ([node]) => node.id === element.id,
@@ -371,7 +365,6 @@ const DragHandle = React.memo(function DragHandle({
                             ];
                         }
 
-                        // Process selection to include list children
                         const processedBlocks = expandListItemsWithChildren(
                             editor,
                             selectedBlocks,
@@ -440,10 +433,6 @@ const createDragPreviewElements = (
     const elements: HTMLElement[] = [];
     const ids: string[] = [];
 
-    /**
-     * Remove data attributes from the element to avoid recognized as slate
-     * elements incorrectly.
-     */
     const removeDataAttributes = (element: HTMLElement) => {
         Array.from(element.attributes).forEach((attr) => {
             if (
@@ -463,7 +452,6 @@ const createDragPreviewElements = (
         const domNode = editor.api.toDOMNode(node)!;
         const newDomNode = domNode.cloneNode(true) as HTMLElement;
 
-        // Apply visual compensation for horizontal scroll
         const applyScrollCompensation = (
             original: Element,
             cloned: HTMLElement,
@@ -471,22 +459,18 @@ const createDragPreviewElements = (
             const scrollLeft = original.scrollLeft;
 
             if (scrollLeft > 0) {
-                // Create a wrapper to handle the scroll offset
                 const scrollWrapper = document.createElement('div');
                 scrollWrapper.style.overflow = 'hidden';
                 scrollWrapper.style.width = `${original.clientWidth}px`;
 
-                // Create inner container with the full content
                 const innerContainer = document.createElement('div');
                 innerContainer.style.transform = `translateX(-${scrollLeft}px)`;
                 innerContainer.style.width = `${original.scrollWidth}px`;
 
-                // Move all children to the inner container
                 while (cloned.firstChild) {
                     innerContainer.append(cloned.firstChild);
                 }
 
-                // Apply the original element's styles to maintain appearance
                 const originalStyles = window.getComputedStyle(original);
                 cloned.style.padding = '0';
                 innerContainer.style.padding = originalStyles.padding;
@@ -515,7 +499,6 @@ const createDragPreviewElements = (
             if (domNodeRect && lastDomNodeRect) {
                 const distance = domNodeRect.top - lastDomNodeRect.bottom;
 
-                // Check if the two elements are adjacent (touching each other)
                 if (distance > 15) {
                     wrapper.style.marginTop = `${distance}px`;
                 }
@@ -550,23 +533,19 @@ const calculatePreviewTop = (
     const firstSelectedChild = blocks[0];
 
     const firstDomNode = editor.api.toDOMNode(firstSelectedChild)!;
-    // Get editor's top padding
     const editorPaddingTop = Number(
         window.getComputedStyle(editable).paddingTop.replace('px', ''),
     );
 
-    // Calculate distance from first selected node to editor top
     const firstNodeToEditorDistance =
         firstDomNode.getBoundingClientRect().top -
         editable.getBoundingClientRect().top -
         editorPaddingTop;
 
-    // Get margin top of first selected node
     const firstMarginTopString =
         window.getComputedStyle(firstDomNode).marginTop;
     const marginTop = Number(firstMarginTopString.replace('px', ''));
 
-    // Calculate distance from current node to editor top
     const currentToEditorDistance =
         child.getBoundingClientRect().top -
         editable.getBoundingClientRect().top -

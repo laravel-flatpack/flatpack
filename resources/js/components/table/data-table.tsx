@@ -44,7 +44,13 @@ import {
     leafColumnIdsInSchemaOrder,
     visibilityFromSchema,
 } from '@/components/table/data-table-column-visibility';
-import { DATA_TABLE_DRAG_COLUMN_HEAD_CLASS } from '@/components/table/data-table-constants';
+import {
+    DATA_TABLE_DRAG_COLUMN_HEAD_CLASS,
+    DATA_TABLE_EMPTY_RESULTS_LABEL,
+    DATA_TABLE_LABEL,
+    DATA_TABLE_PAGE_SIZE_OPTIONS,
+    DATA_TABLE_SEARCH_PLACEHOLDER,
+} from '@/components/table/data-table-constants';
 import { DataTableDraggableRow } from '@/components/table/data-table-draggable-row';
 import { Button } from '@/components/ui/button';
 import {
@@ -74,6 +80,7 @@ import {
 import { reindexReorderColumn, stableRowId } from '@/lib/data-table-utils';
 import { cn } from '@/lib/utils';
 import type { DataTableProps } from '@/types/data-table';
+import type { DataTableFooterProps } from '@/types/table';
 
 export { buildDataTableColumnDefs } from '@/components/table/data-table-column-defs';
 export type {
@@ -81,9 +88,107 @@ export type {
     FlatpackListServerPagination,
 } from '@/types/data-table';
 
-/**
- * TanStack table driven by a Flatpack column schema and row `data` (plain objects).
- */
+function DataTableFooter({
+    id,
+    rowCountLabel,
+    pageSize,
+    pageIndex,
+    pageCount,
+    canPreviousPage,
+    canNextPage,
+    onPageSizeChange,
+    onFirstPage,
+    onPreviousPage,
+    onNextPage,
+    onLastPage,
+}: DataTableFooterProps) {
+    return (
+        <div className="flex flex-col gap-4 px-1 sm:flex-row sm:items-center sm:justify-between">
+            <div className="text-sm text-muted-foreground">{rowCountLabel}</div>
+            <div className="flex w-full flex-col gap-4 sm:w-auto sm:flex-row sm:items-center sm:gap-6">
+                <div className="flex items-center gap-2">
+                    <Label
+                        htmlFor={`${id}-rows-per-page`}
+                        className="text-sm font-medium whitespace-nowrap"
+                    >
+                        Rows per page
+                    </Label>
+                    <Select
+                        value={`${pageSize}`}
+                        onValueChange={onPageSizeChange}
+                    >
+                        <SelectTrigger
+                            size="sm"
+                            className="w-20"
+                            id={`${id}-rows-per-page`}
+                        >
+                            <SelectValue placeholder={pageSize} />
+                        </SelectTrigger>
+                        <SelectContent side="top">
+                            <SelectGroup>
+                                {DATA_TABLE_PAGE_SIZE_OPTIONS.map((option) => (
+                                    <SelectItem
+                                        key={option}
+                                        value={`${option}`}
+                                    >
+                                        {option}
+                                    </SelectItem>
+                                ))}
+                            </SelectGroup>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div className="flex items-center justify-center gap-2 text-sm font-medium">
+                    <span className="whitespace-nowrap">
+                        Page {pageIndex + 1} of {pageCount || 1}
+                    </span>
+                    <div className="flex items-center gap-1">
+                        <Button
+                            variant="outline"
+                            className="hidden size-8 p-0 sm:flex"
+                            onClick={onFirstPage}
+                            disabled={!canPreviousPage}
+                        >
+                            <span className="sr-only">First page</span>
+                            <ChevronsLeftIcon className="size-4" />
+                        </Button>
+                        <Button
+                            variant="outline"
+                            className="size-8"
+                            size="icon"
+                            onClick={onPreviousPage}
+                            disabled={!canPreviousPage}
+                        >
+                            <span className="sr-only">Previous page</span>
+                            <ChevronLeftIcon className="size-4" />
+                        </Button>
+                        <Button
+                            variant="outline"
+                            className="size-8"
+                            size="icon"
+                            onClick={onNextPage}
+                            disabled={!canNextPage}
+                        >
+                            <span className="sr-only">Next page</span>
+                            <ChevronRightIcon className="size-4" />
+                        </Button>
+                        <Button
+                            variant="outline"
+                            className="hidden size-8 sm:flex"
+                            size="icon"
+                            onClick={onLastPage}
+                            disabled={!canNextPage}
+                        >
+                            <span className="sr-only">Last page</span>
+                            <ChevronsRightIcon className="size-4" />
+                        </Button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export function DataTable({
     id,
     columns: schemaColumns,
@@ -335,6 +440,86 @@ export function DataTable({
     );
 
     const tableLabelId = `${id}-table-label`;
+    const tableRows = table.getRowModel().rows;
+    const hasRows = tableRows.length > 0;
+    const paginationStateCurrent = table.getState().pagination;
+
+    const rowCountLabel = checkboxes
+        ? `${table.getFilteredSelectedRowModel().rows.length} of ${table.getFilteredRowModel().rows.length} row(s) selected.`
+        : serverPagination
+          ? serverPagination.total === 0
+              ? '0 row(s).'
+              : serverPagination.from != null && serverPagination.to != null
+                ? `${serverPagination.from}–${serverPagination.to} of ${serverPagination.total} row(s).`
+                : `${serverPagination.total} row(s).`
+          : `${table.getFilteredRowModel().rows.length} row(s).`;
+
+    const tableContent = (
+        <Table>
+            <TableHeader className="sticky top-0 z-10 bg-muted">
+                {table.getHeaderGroups().map((headerGroup) => (
+                    <TableRow key={headerGroup.id}>
+                        {headerGroup.headers.map((header) => (
+                            <TableHead
+                                key={header.id}
+                                colSpan={header.colSpan}
+                                className={cn(
+                                    header.column.id === 'drag' &&
+                                        DATA_TABLE_DRAG_COLUMN_HEAD_CLASS,
+                                )}
+                            >
+                                {header.isPlaceholder
+                                    ? null
+                                    : flexRender(
+                                          header.column.columnDef.header,
+                                          header.getContext(),
+                                      )}
+                            </TableHead>
+                        ))}
+                    </TableRow>
+                ))}
+            </TableHeader>
+            <TableBody>
+                {hasRows ? (
+                    isReorderable ? (
+                        <SortableContext
+                            items={tableRows.map((row) => row.id)}
+                            strategy={verticalListSortingStrategy}
+                        >
+                            {tableRows.map((row) => (
+                                <DataTableDraggableRow key={row.id} row={row} />
+                            ))}
+                        </SortableContext>
+                    ) : (
+                        tableRows.map((row) => (
+                            <TableRow
+                                key={row.id}
+                                data-state={row.getIsSelected() && 'selected'}
+                            >
+                                {row.getVisibleCells().map((cell) => (
+                                    <TableCell key={cell.id}>
+                                        {flexRender(
+                                            cell.column.columnDef.cell,
+                                            cell.getContext(),
+                                        )}
+                                    </TableCell>
+                                ))}
+                            </TableRow>
+                        ))
+                    )
+                ) : (
+                    <TableRow>
+                        <TableCell
+                            colSpan={columnDefs.length}
+                            className="h-24 text-center"
+                        >
+                            {DATA_TABLE_EMPTY_RESULTS_LABEL}
+                        </TableCell>
+                    </TableRow>
+                )}
+            </TableBody>
+        </Table>
+    );
 
     const tableAndFooter = (
         <>
@@ -347,231 +532,28 @@ export function DataTable({
                         onDragEnd={handleDragEnd}
                         sensors={dndSensors}
                     >
-                        <Table>
-                            <TableHeader className="sticky top-0 z-10 bg-muted">
-                                {table.getHeaderGroups().map((headerGroup) => (
-                                    <TableRow key={headerGroup.id}>
-                                        {headerGroup.headers.map((header) => (
-                                            <TableHead
-                                                key={header.id}
-                                                colSpan={header.colSpan}
-                                                className={cn(
-                                                    header.column.id ===
-                                                        'drag' &&
-                                                        DATA_TABLE_DRAG_COLUMN_HEAD_CLASS,
-                                                )}
-                                            >
-                                                {header.isPlaceholder
-                                                    ? null
-                                                    : flexRender(
-                                                          header.column
-                                                              .columnDef.header,
-                                                          header.getContext(),
-                                                      )}
-                                            </TableHead>
-                                        ))}
-                                    </TableRow>
-                                ))}
-                            </TableHeader>
-                            <TableBody>
-                                {table.getRowModel().rows?.length ? (
-                                    <SortableContext
-                                        items={table
-                                            .getRowModel()
-                                            .rows.map((r) => r.id)}
-                                        strategy={verticalListSortingStrategy}
-                                    >
-                                        {table.getRowModel().rows.map((row) => (
-                                            <DataTableDraggableRow
-                                                key={row.id}
-                                                row={row}
-                                            />
-                                        ))}
-                                    </SortableContext>
-                                ) : (
-                                    <TableRow>
-                                        <TableCell
-                                            colSpan={columnDefs.length}
-                                            className="h-24 text-center"
-                                        >
-                                            No results.
-                                        </TableCell>
-                                    </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
+                        {tableContent}
                     </DndContext>
                 ) : (
-                    <Table>
-                        <TableHeader className="sticky top-0 z-10 bg-muted">
-                            {table.getHeaderGroups().map((headerGroup) => (
-                                <TableRow key={headerGroup.id}>
-                                    {headerGroup.headers.map((header) => (
-                                        <TableHead
-                                            key={header.id}
-                                            colSpan={header.colSpan}
-                                            className={cn(
-                                                header.column.id === 'drag' &&
-                                                    DATA_TABLE_DRAG_COLUMN_HEAD_CLASS,
-                                            )}
-                                        >
-                                            {header.isPlaceholder
-                                                ? null
-                                                : flexRender(
-                                                      header.column.columnDef
-                                                          .header,
-                                                      header.getContext(),
-                                                  )}
-                                        </TableHead>
-                                    ))}
-                                </TableRow>
-                            ))}
-                        </TableHeader>
-                        <TableBody>
-                            {table.getRowModel().rows?.length ? (
-                                table.getRowModel().rows.map((row) => (
-                                    <TableRow
-                                        key={row.id}
-                                        data-state={
-                                            row.getIsSelected() && 'selected'
-                                        }
-                                    >
-                                        {row.getVisibleCells().map((cell) => (
-                                            <TableCell key={cell.id}>
-                                                {flexRender(
-                                                    cell.column.columnDef.cell,
-                                                    cell.getContext(),
-                                                )}
-                                            </TableCell>
-                                        ))}
-                                    </TableRow>
-                                ))
-                            ) : (
-                                <TableRow>
-                                    <TableCell
-                                        colSpan={columnDefs.length}
-                                        className="h-24 text-center"
-                                    >
-                                        No results.
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
+                    tableContent
                 )}
             </div>
-
-            <div className="flex flex-col gap-4 px-1 sm:flex-row sm:items-center sm:justify-between">
-                {checkboxes ? (
-                    <div className="text-sm text-muted-foreground">
-                        {table.getFilteredSelectedRowModel().rows.length} of{' '}
-                        {table.getFilteredRowModel().rows.length} row(s)
-                        selected.
-                    </div>
-                ) : serverPagination ? (
-                    <div className="text-sm text-muted-foreground">
-                        {serverPagination.total === 0
-                            ? '0 row(s).'
-                            : serverPagination.from != null &&
-                                serverPagination.to != null
-                              ? `${serverPagination.from}–${serverPagination.to} of ${serverPagination.total} row(s).`
-                              : `${serverPagination.total} row(s).`}
-                    </div>
-                ) : (
-                    <div className="text-sm text-muted-foreground">
-                        {table.getFilteredRowModel().rows.length} row(s).
-                    </div>
-                )}
-                <div className="flex w-full flex-col gap-4 sm:w-auto sm:flex-row sm:items-center sm:gap-6">
-                    <div className="flex items-center gap-2">
-                        <Label
-                            htmlFor={`${id}-rows-per-page`}
-                            className="text-sm font-medium whitespace-nowrap"
-                        >
-                            Rows per page
-                        </Label>
-                        <Select
-                            value={`${table.getState().pagination.pageSize}`}
-                            onValueChange={(value) => {
-                                table.setPageSize(Number(value));
-                            }}
-                        >
-                            <SelectTrigger
-                                size="sm"
-                                className="w-20"
-                                id={`${id}-rows-per-page`}
-                            >
-                                <SelectValue
-                                    placeholder={
-                                        table.getState().pagination.pageSize
-                                    }
-                                />
-                            </SelectTrigger>
-                            <SelectContent side="top">
-                                <SelectGroup>
-                                    {[10, 20, 30, 40, 50].map((pageSize) => (
-                                        <SelectItem
-                                            key={pageSize}
-                                            value={`${pageSize}`}
-                                        >
-                                            {pageSize}
-                                        </SelectItem>
-                                    ))}
-                                </SelectGroup>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="flex items-center justify-center gap-2 text-sm font-medium">
-                        <span className="whitespace-nowrap">
-                            Page {table.getState().pagination.pageIndex + 1} of{' '}
-                            {table.getPageCount() || 1}
-                        </span>
-                        <div className="flex items-center gap-1">
-                            <Button
-                                variant="outline"
-                                className="hidden size-8 p-0 sm:flex"
-                                onClick={() => table.setPageIndex(0)}
-                                disabled={!table.getCanPreviousPage()}
-                            >
-                                <span className="sr-only">First page</span>
-                                <ChevronsLeftIcon className="size-4" />
-                            </Button>
-                            <Button
-                                variant="outline"
-                                className="size-8"
-                                size="icon"
-                                onClick={() => table.previousPage()}
-                                disabled={!table.getCanPreviousPage()}
-                            >
-                                <span className="sr-only">Previous page</span>
-                                <ChevronLeftIcon className="size-4" />
-                            </Button>
-                            <Button
-                                variant="outline"
-                                className="size-8"
-                                size="icon"
-                                onClick={() => table.nextPage()}
-                                disabled={!table.getCanNextPage()}
-                            >
-                                <span className="sr-only">Next page</span>
-                                <ChevronRightIcon className="size-4" />
-                            </Button>
-                            <Button
-                                variant="outline"
-                                className="hidden size-8 sm:flex"
-                                size="icon"
-                                onClick={() =>
-                                    table.setPageIndex(table.getPageCount() - 1)
-                                }
-                                disabled={!table.getCanNextPage()}
-                            >
-                                <span className="sr-only">Last page</span>
-                                <ChevronsRightIcon className="size-4" />
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <DataTableFooter
+                id={id}
+                rowCountLabel={rowCountLabel}
+                pageSize={paginationStateCurrent.pageSize}
+                pageIndex={paginationStateCurrent.pageIndex}
+                pageCount={table.getPageCount()}
+                canPreviousPage={table.getCanPreviousPage()}
+                canNextPage={table.getCanNextPage()}
+                onPageSizeChange={(value) => {
+                    table.setPageSize(Number(value));
+                }}
+                onFirstPage={() => table.setPageIndex(0)}
+                onPreviousPage={() => table.previousPage()}
+                onNextPage={() => table.nextPage()}
+                onLastPage={() => table.setPageIndex(table.getPageCount() - 1)}
+            />
         </>
     );
 
@@ -582,7 +564,7 @@ export function DataTable({
             aria-labelledby={tableLabelId}
         >
             <span id={tableLabelId} className="sr-only">
-                Data table
+                {DATA_TABLE_LABEL}
             </span>
 
             <div className="flex w-full items-center gap-3">
@@ -603,7 +585,7 @@ export function DataTable({
                                 onChange={(e) =>
                                     setGlobalFilter(e.target.value)
                                 }
-                                placeholder="Filter rows…"
+                                placeholder={DATA_TABLE_SEARCH_PLACEHOLDER}
                                 className="h-8 pl-8"
                                 autoComplete="off"
                             />

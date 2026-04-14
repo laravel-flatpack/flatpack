@@ -1,14 +1,3 @@
-/**
- * Dashboard sections table built on {@link DataTable}.
- *
- * Parity vs the former `data-table-showcase` (intentional / not ported):
- * - **Reviewer** column omitted (per product decision).
- * - Row drawer has **no** Recharts block, trending blurb, or mobile-only layout split; it only edits schema fields (same as other `DataTable` drawers).
- * - **No `toast()`** on save; cells commit on blur / change like the shared table field.
- * - **Target / limit** headers are not right-aligned; inputs use the shared full-width dashboard input style (not `w-16` numeric chips).
- * - **Reorder**: `sort_order` is reindexed 1…n after each drag; row `id` stays stable (the old showcase only reordered the array).
- * - **Non-outline tabs** remain dashed placeholder panels only (no real content).
- */
 import { PlusIcon } from 'lucide-react';
 import * as React from 'react';
 import { DataTable } from '@/components/table/data-table';
@@ -24,34 +13,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import type { FlatpackDataTableColumn } from '@/types/data-table';
-
-/** Catalog entry shape aligned with DemoController's `data-table` demo item (`props` + `value`). */
-export type DashboardSectionsTableCatalog = {
-    id: string;
-    title: string;
-    description: string;
-    props: {
-        type: string;
-        label: string;
-        helperText: string;
-        checkboxes: boolean;
-        reorderable: boolean;
-        actions: unknown[];
-        columns: FlatpackDataTableColumn[];
-    };
-    showValue: boolean;
-    value: DashboardTableRow[];
-};
-
-export type DashboardTableRow = Record<string, unknown> & {
-    id: number;
-    header: string;
-    type: string;
-    status: string;
-    target: string;
-    limit: string;
-};
+import type { DashboardSectionsTableCatalog } from '@/types/dashboard';
 
 export function DashboardDataTable({
     catalog,

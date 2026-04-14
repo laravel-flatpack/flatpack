@@ -29,7 +29,6 @@ export function visibilityFromSchema(
     return state;
 }
 
-/** Full leaf column id list in schema order (incl. hidden). Keeps TanStack from appending shown columns at the end. */
 export function leafColumnIdsInSchemaOrder(
     schemaColumns: FlatpackDataTableColumn[],
     checkboxes: boolean,

@@ -45,10 +45,6 @@ function pickRelationColumnFields(
     return { relation, relationName, relationValue };
 }
 
-/**
- * Converts list composition `columns` from list.yaml into {@link FlatpackDataTableColumn} rows.
- * YAML may use either a map (`id: { label: … }`) or an array of column objects (demo style).
- */
 export function listYamlColumnsToDataTableColumns(
     columns: unknown,
 ): FlatpackDataTableColumn[] {

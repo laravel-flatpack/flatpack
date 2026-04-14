@@ -1,10 +1,10 @@
 import { Head } from '@inertiajs/react';
 import { lazy, Suspense } from 'react';
 import { SectionCards } from '@/components/section-cards';
-import type { DashboardSectionsTableCatalog } from '@/components/table/dashboard-data-table';
 import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
 import data from '@/data/data.json';
 import FlatpackLayout from '@/layouts/flatpack-layout';
+import type { DashboardSectionsTableCatalog } from '@/types/dashboard';
 
 const ChartAreaInteractive = lazy(() =>
     import('@/components/chart-area-interactive').then((module) => ({

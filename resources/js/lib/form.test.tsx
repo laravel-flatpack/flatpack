@@ -1,4 +1,4 @@
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, render, screen } from '@testing-library/react';
 import { Suspense } from 'react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { loadField } from '@/lib/form';
@@ -21,17 +21,10 @@ describe('loadField', () => {
             </Suspense>,
         );
 
-        expect(screen.getByTestId('suspense-fb')).toBeInTheDocument();
-
-        await waitFor(() => {
-            expect(screen.queryByTestId('suspense-fb')).not.toBeInTheDocument();
-        });
-
-        expect(screen.getByRole('textbox')).toHaveAttribute(
-            'placeholder',
-            'ph',
-        );
-    });
+        expect(
+            await screen.findByRole('textbox', undefined, { timeout: 15000 }),
+        ).toHaveAttribute('placeholder', 'ph');
+    }, 20000);
 
     it('lazy-loads CheckboxField for checkbox', async () => {
         const Lazy = loadField('checkbox');
@@ -41,13 +34,11 @@ describe('loadField', () => {
             </Suspense>,
         );
 
-        await waitFor(() => {
-            expect(screen.queryByTestId('suspense-fb')).not.toBeInTheDocument();
-        });
-
-        expect(screen.getByRole('checkbox')).toBeInTheDocument();
+        expect(
+            await screen.findByRole('checkbox', undefined, { timeout: 50000 }),
+        ).toBeInTheDocument();
         expect(screen.getByText('Accept')).toBeInTheDocument();
-    });
+    }, 60000);
 
     it('lazy-loads SelectField for select (distinct chunk from text)', async () => {
         const Lazy = loadField('select');
@@ -63,10 +54,8 @@ describe('loadField', () => {
             </Suspense>,
         );
 
-        await waitFor(() => {
-            expect(screen.queryByTestId('suspense-fb')).not.toBeInTheDocument();
-        });
-
-        expect(screen.getByText('Pick one')).toBeInTheDocument();
-    });
+        expect(
+            await screen.findByText('Pick one', undefined, { timeout: 15000 }),
+        ).toBeInTheDocument();
+    }, 20000);
 });

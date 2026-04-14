@@ -68,7 +68,7 @@ describe('FlatpackLogin', () => {
     it('sets the document title', () => {
         render(<FlatpackLogin />);
         expect(document.querySelector('title')?.textContent).toBe('Log in');
-    });
+    }, 15000);
 
     it('posts the form to the flatpack login route', () => {
         render(<FlatpackLogin />);

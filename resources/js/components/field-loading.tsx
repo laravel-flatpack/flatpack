@@ -1,11 +1,5 @@
 import { Skeleton } from '@/components/ui/skeleton';
-
-export type FieldLoadingProps = {
-    label?: boolean;
-    textField?: boolean;
-    textareaField?: boolean;
-    helperText?: boolean;
-};
+import type { FieldLoadingProps } from '@/types/loading';
 
 export function FieldLoading({
     label = true,

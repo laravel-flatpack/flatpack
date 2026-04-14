@@ -13,7 +13,6 @@ import {
 
 export type { SelectFieldOption };
 
-/** Radix root `value`: use `''` for empty (placeholder); `undefined` breaks clear-item clicks. */
 function selectValueFromUnknown(
     raw: unknown,
     options: SelectFieldOption[],
@@ -25,7 +24,6 @@ function selectValueFromUnknown(
     return options.some((o) => o.value === s) ? s : '';
 }
 
-/** Clear via first menu row (placeholder label) or set `value={null}` from parent. */
 export const SelectField = ({
     id,
     label,
