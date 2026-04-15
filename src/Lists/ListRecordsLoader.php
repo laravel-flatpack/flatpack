@@ -126,27 +126,12 @@ final readonly class ListRecordsLoader
         );
 
         /** @var LengthAwarePaginator<int, Model> $paginator */
-        $paginator = $query->paginate($perPage, ['*'], 'page', $page);
+        $paginator = $query->paginate($perPage, $columnKeys, 'page', $page);
 
-        $rows = [];
-        foreach ($paginator->items() as $row) {
-            $arr = $row->only($columnKeys);
-            foreach ($relationDefs as $def) {
-                $relName = $def->relation;
-                if (! $row->relationLoaded($relName)) {
-                    $arr[$relName] = null;
-
-                    continue;
-                }
-                $related = $row->getRelation($relName);
-                $arr[$relName] = RelationSerializer::serializePayload(
-                    $related,
-                    $def->relationName,
-                    $def->relationValue,
-                );
-            }
-            $rows[] = $arr;
-        }
+        $rows = array_map(
+            fn (Model $row): array => $this->serializeRow($row, $columnKeys, $relationDefs),
+            $paginator->items(),
+        );
 
         return [
             'records' => $rows,
@@ -184,5 +169,37 @@ final readonly class ListRecordsLoader
             'from' => null,
             'to' => null,
         ];
+    }
+
+    /**
+     * @param  list<string>  $columnKeys
+     * @param  list<RelationDefinition>  $relationDefs
+     * @return array<string, mixed>
+     */
+    private function serializeRow(Model $row, array $columnKeys, array $relationDefs): array
+    {
+        $baseColumns = $row->only($columnKeys);
+
+        return array_reduce(
+            $relationDefs,
+            function (array $acc, RelationDefinition $def) use ($row): array {
+                $relName = $def->relation;
+                if (! $row->relationLoaded($relName)) {
+                    $acc[$relName] = null;
+
+                    return $acc;
+                }
+
+                $related = $row->getRelation($relName);
+                $acc[$relName] = RelationSerializer::serializePayload(
+                    $related,
+                    $def->relationName,
+                    $def->relationValue,
+                );
+
+                return $acc;
+            },
+            $baseColumns,
+        );
     }
 }
