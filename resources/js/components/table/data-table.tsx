@@ -48,10 +48,12 @@ export function DataTable({
     id,
     columns: schemaColumns,
     data: initialData,
+    dataRowKey = 'id',
     checkboxes = false,
     reorderable: reorderableProp,
     onRowClick,
     onValueChange,
+    onBulkDelete,
     className,
     serverPagination,
     serverSearch,
@@ -93,6 +95,16 @@ export function DataTable({
     const [rowSelection, setRowSelection] = React.useState<RowSelectionState>(
         {},
     );
+    const getStableRowId = React.useCallback(
+        (row: Record<string, unknown>, index: number): string => {
+            const keyValue = row[dataRowKey];
+            if (keyValue !== undefined && keyValue !== null) {
+                return String(keyValue);
+            }
+            return stableRowId(row, index);
+        },
+        [dataRowKey],
+    );
     const [isAllRowsSelected, setIsAllRowsSelected] = React.useState(false);
     React.useEffect(() => {
         if (!isAllRowsSelected) {
@@ -101,11 +113,11 @@ export function DataTable({
         setRowSelection((prev) => {
             const next = { ...prev };
             for (const [index, row] of data.entries()) {
-                next[stableRowId(row, index)] = true;
+                next[getStableRowId(row, index)] = true;
             }
             return next;
         });
-    }, [data, isAllRowsSelected]);
+    }, [data, getStableRowId, isAllRowsSelected]);
     const hasBulkActions = React.useMemo(
         () => checkboxes === true,
         [checkboxes],
@@ -170,7 +182,7 @@ export function DataTable({
         (rowId: string, columnId: string, next: unknown) => {
             setData((prev) => {
                 const idx = prev.findIndex(
-                    (row, index) => stableRowId(row, index) === rowId,
+                    (row, index) => getStableRowId(row, index) === rowId,
                 );
                 if (idx === -1) {
                     return prev;
@@ -186,14 +198,14 @@ export function DataTable({
                 return nextRows;
             });
         },
-        [onValueChange],
+        [getStableRowId, onValueChange],
     );
 
     const handleRowReplace = React.useCallback(
         (rowId: string, nextRow: Record<string, unknown>) => {
             setData((prev) => {
                 const idx = prev.findIndex(
-                    (row, index) => stableRowId(row, index) === rowId,
+                    (row, index) => getStableRowId(row, index) === rowId,
                 );
                 if (idx === -1) {
                     return prev;
@@ -203,7 +215,7 @@ export function DataTable({
                 return nextRows;
             });
         },
-        [onValueChange],
+        [getStableRowId, onValueChange],
     );
 
     const columnDefs = React.useMemo(
@@ -265,7 +277,7 @@ export function DataTable({
             globalFilter,
             pagination: paginationState,
         },
-        getRowId: (row, index) => stableRowId(row, index),
+        getRowId: (row, index) => getStableRowId(row, index),
         enableRowSelection: checkboxes,
         onRowSelectionChange: handleRowSelectionChange,
         onSortingChange: handleSortingChange,
@@ -311,17 +323,28 @@ export function DataTable({
         setRowSelection((prev) => {
             const next = { ...prev };
             for (const [index, row] of data.entries()) {
-                next[stableRowId(row, index)] = true;
+                next[getStableRowId(row, index)] = true;
             }
             return next;
         });
-    }, [data, serverPagination, table]);
+    }, [data, getStableRowId, serverPagination, table]);
     const handleDeselectAllRows = React.useCallback(() => {
         setIsAllRowsSelected(false);
         setRowSelection({});
         table.toggleAllRowsSelected(false);
     }, [table]);
-    const handleDeleteSelectedRows = React.useCallback(() => {
+    const serverSortingForBulkDelete = React.useMemo(() => {
+        const first = sorting[0];
+        if (!first) {
+            return { sort_by: null, sort_direction: null } as const;
+        }
+        return {
+            sort_by: first.id,
+            sort_direction: first.desc ? 'desc' : 'asc',
+        } as const;
+    }, [sorting]);
+
+    const handleDeleteSelectedRows = React.useCallback(async () => {
         const selectedIds = new Set(
             Object.entries(rowSelection)
                 .filter(([, selected]) => selected)
@@ -332,9 +355,42 @@ export function DataTable({
             return;
         }
 
+        if (onBulkDelete != null) {
+            const previousData = data;
+            const previousSelection = rowSelection;
+            const previousIsAllRowsSelected = isAllRowsSelected;
+            const optimisticRows = isAllRowsSelected
+                ? []
+                : data.filter(
+                      (row, index) =>
+                          !selectedIds.has(getStableRowId(row, index)),
+                  );
+
+            setData(optimisticRows);
+            onValueChange?.(optimisticRows);
+            handleDeselectAllRows();
+
+            try {
+                await onBulkDelete({
+                    selection: isAllRowsSelected
+                        ? 'all'
+                        : Array.from(selectedIds),
+                    search: globalFilter,
+                    filters: serverFilterState,
+                    sorting: serverSortingForBulkDelete,
+                });
+                return;
+            } catch (error) {
+                setData(previousData);
+                setRowSelection(previousSelection);
+                setIsAllRowsSelected(previousIsAllRowsSelected);
+                throw error;
+            }
+        }
+
         setData((prev) => {
             const nextRows = prev.filter(
-                (row, index) => !selectedIds.has(stableRowId(row, index)),
+                (row, index) => !selectedIds.has(getStableRowId(row, index)),
             );
             onValueChange?.(nextRows);
             return nextRows;
@@ -342,7 +398,18 @@ export function DataTable({
 
         // TODO: Replace with backend bulk delete and refresh.
         handleDeselectAllRows();
-    }, [handleDeselectAllRows, onValueChange, rowSelection]);
+    }, [
+        data,
+        globalFilter,
+        getStableRowId,
+        handleDeselectAllRows,
+        isAllRowsSelected,
+        onBulkDelete,
+        onValueChange,
+        rowSelection,
+        serverFilterState,
+        serverSortingForBulkDelete,
+    ]);
     const paginationStateCurrent = table.getState().pagination;
     const selectedRowCount = isAllRowsSelected
         ? (serverPagination?.total ?? table.getFilteredRowModel().rows.length)

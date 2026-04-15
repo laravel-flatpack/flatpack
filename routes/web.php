@@ -27,6 +27,9 @@ Route::middleware(['auth:' . config('flatpack.guard', 'web'), EnsureFlatpackAcce
     /** Dashboard route */
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
+    /** Entity bulk actions route */
+    Route::delete('{entity}/bulk', [ListController::class, 'bulkDelete'])->name('entities.bulk-delete');
+
     /** Entity list route */
     Route::get('{entity}', [ListController::class, 'index'])->name('entities.index');
 

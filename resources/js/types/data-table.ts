@@ -85,14 +85,25 @@ export type FlatpackListServerSorting = {
     sort_direction: 'asc' | 'desc' | null;
 };
 
+export type DataTableBulkDeletePayload = {
+    selection: 'all' | string[];
+    search: string;
+    filters: FlatpackDataTableServerFiltersState;
+    sorting: FlatpackListServerSorting;
+};
+
 export type DataTableProps = {
     id: string;
     columns: FlatpackDataTableColumn[];
     data: Record<string, unknown>[];
+    dataRowKey?: string;
     checkboxes?: boolean;
     reorderable?: boolean | string;
     onRowClick?: (row: Record<string, unknown>) => void;
     onValueChange?: (value: unknown) => void;
+    onBulkDelete?: (
+        payload: DataTableBulkDeletePayload,
+    ) => void | Promise<void>;
     className?: string;
     toolbarStart?: ReactNode;
     toolbarAfterColumns?: ReactNode;

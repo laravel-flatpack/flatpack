@@ -1,0 +1,54 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Flatpack\Actions;
+
+use Illuminate\Http\Request;
+
+final readonly class FlatpackBulkActionContext
+{
+    /**
+     * @param  'all'|list<string|int>  $records
+     * @param  array<string, mixed>|null  $schema
+     * @param  array<string, mixed>  $filters
+     */
+    public function __construct(
+        public Request $request,
+        public string $entity,
+        public string $modelClass,
+        public array|string $records,
+        public ?array $schema = null,
+        public string $search = '',
+        public array $filters = [],
+    ) {}
+
+    /**
+     * @param  array<string, mixed>|null  $schema
+     */
+    public static function fromRequest(
+        Request $request,
+        string $entity,
+        string $modelClass,
+        ?array $schema = null,
+    ): self {
+        $selection = $request->input('selection');
+        if ($selection !== 'all') {
+            $selection = $request->input('ids', $selection);
+            $selection = is_array($selection) ? $selection : [];
+        }
+
+        $filters = $request->input('filters', []);
+        $filters = is_array($filters) ? $filters : [];
+
+        return new self(
+            request: $request,
+            entity: $entity,
+            modelClass: trim($modelClass),
+            records: $selection === 'all' ? 'all' : $selection,
+            schema: $schema,
+            search: trim((string) $request->input('search', '')),
+            filters: $filters,
+        );
+    }
+}

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Flatpack\Actions\Handlers\BulkDeleteHandler;
 use Flatpack\Actions\Handlers\DeleteRecordHandler;
 use Flatpack\Actions\Handlers\EditRecordHandler;
 use Flatpack\Actions\Handlers\SaveRecordHandler;
@@ -67,6 +68,21 @@ return [
         'edit' => EditRecordHandler::class,
         'save' => SaveRecordHandler::class,
         'delete' => DeleteRecordHandler::class,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Flatpack bulk actions
+    |--------------------------------------------------------------------------
+    |
+    | Handlers for list-level bulk actions. Override these classes to customize
+    | behavior (for example, soft-delete policy, auditing, queues, etc).
+    | You can add your own bulk actions by adding a class that implements
+    | the Flatpack\Contracts\Actions\FlatpackBulkAction interface.
+    |
+    */
+    'bulk_actions' => [
+        'delete' => BulkDeleteHandler::class,
     ],
 
     /*

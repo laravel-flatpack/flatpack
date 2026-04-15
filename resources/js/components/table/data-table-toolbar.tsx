@@ -35,7 +35,7 @@ type DataTableToolbarProps = {
     totalRowCount: number;
     onSelectAllRows: () => void;
     onDeselectAllRows: () => void;
-    onDeleteSelectedRows: () => void;
+    onDeleteSelectedRows: () => void | Promise<void>;
     hasSearchableColumns: boolean;
     hasFilters: boolean;
     globalFilter: string;
@@ -159,8 +159,8 @@ export function DataTableToolbar({
                         </AlertDialogTitle>
                         <AlertDialogDescription>
                             This will delete {selectedRowCount}{' '}
-                            {selectedRowCount === 1 ? 'record' : 'records'}.
-                            Backend deletion will be connected next.
+                            {selectedRowCount === 1 ? 'record' : 'records'}. Are
+                            you sure you want to delete these records?
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>

@@ -9,6 +9,7 @@ import {
     listYamlFiltersToDataTableFilters,
 } from '@/lib/list-schema';
 import { cn } from '@/lib/utils';
+import type { DataTableBulkDeletePayload } from '@/types/data-table';
 import type { FlatpackListPageProps } from '@/types/pages/flatpack';
 
 export default function FlatpackListPage({
@@ -105,6 +106,26 @@ export default function FlatpackListPage({
         },
         [],
     );
+    const handleBulkDelete = useCallback(
+        async (payload: DataTableBulkDeletePayload) => {
+            await new Promise<void>((resolve, reject) => {
+                router.delete(`/${normalizedPrefix}/${entity}/bulk`, {
+                    data: {
+                        selection: payload.selection,
+                        search: payload.search,
+                        filters: payload.filters,
+                        sort_by: payload.sorting.sort_by,
+                        sort_direction: payload.sorting.sort_direction,
+                    },
+                    preserveState: true,
+                    preserveScroll: true,
+                    onSuccess: () => resolve(),
+                    onError: () => reject(new Error('Bulk delete failed')),
+                });
+            });
+        },
+        [entity, normalizedPrefix],
+    );
 
     return (
         <>
@@ -147,6 +168,7 @@ export default function FlatpackListPage({
                 ) : (
                     <DataTable
                         id={`flatpack-list-${entity || 'entity'}`}
+                        dataRowKey={modelKey || 'id'}
                         checkboxes={checkboxes}
                         reorderable={reorderable}
                         onRowClick={
@@ -161,6 +183,7 @@ export default function FlatpackListPage({
                         serverFilters={filterDefinitions}
                         serverFilterValues={serverFilterValues}
                         serverSorting={serverSorting}
+                        onBulkDelete={handleBulkDelete}
                         onServerPaginationChange={
                             pagination
                                 ? handleServerPaginationChange

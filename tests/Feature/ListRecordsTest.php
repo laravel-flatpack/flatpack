@@ -551,3 +551,95 @@ YAML);
         File::deleteDirectory($tempPath);
     }
 });
+
+test('flatpack entity list JSON bulk delete removes selected ids', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-list-bulk-delete-ids-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+columns:
+  id:
+    label: ID
+  title:
+    label: Title
+YAML);
+        config()->set('flatpack.path', $tempPath);
+
+        $keep = Post::factory()->create(['title' => 'Keep me']);
+        $deleteA = Post::factory()->create(['title' => 'Delete me A']);
+        $deleteB = Post::factory()->create(['title' => 'Delete me B']);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        actingAs($user)
+            ->from(route('flatpack.entities.index', ['entity' => 'posts']))
+            ->delete(route('flatpack.entities.bulk-delete', [
+                'entity' => 'posts',
+            ]), [
+                'selection' => [(string) $deleteA->getKey(), (string) $deleteB->getKey()],
+            ])
+            ->assertStatus(303);
+
+        expect(Post::query()->whereKey($keep->getKey())->exists())->toBeTrue();
+        expect(Post::query()->whereKey($deleteA->getKey())->exists())->toBeFalse();
+        expect(Post::query()->whereKey($deleteB->getKey())->exists())->toBeFalse();
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
+test('flatpack entity list JSON bulk delete supports select_all with filters', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-list-bulk-delete-all-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+columns:
+  id:
+    label: ID
+  title:
+    label: Title
+    searchable: true
+  status:
+    label: Status
+    type: select
+    options:
+      active: Active
+      inactive: Inactive
+filters:
+  status:
+    type: select
+YAML);
+        config()->set('flatpack.path', $tempPath);
+
+        Post::factory()->create(['title' => 'Delete active alpha', 'status' => 'active']);
+        Post::factory()->create(['title' => 'Delete active beta', 'status' => 'active']);
+        Post::factory()->create(['title' => 'Keep inactive alpha', 'status' => 'inactive']);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        actingAs($user)
+            ->from(route('flatpack.entities.index', ['entity' => 'posts']))
+            ->delete(route('flatpack.entities.bulk-delete', [
+                'entity' => 'posts',
+            ]), [
+                'selection' => 'all',
+                'search' => 'alpha',
+                'filters' => ['status' => 'active'],
+            ])
+            ->assertStatus(303);
+
+        expect(Post::query()->where('title', 'Delete active alpha')->exists())->toBeFalse();
+        expect(Post::query()->where('title', 'Delete active beta')->exists())->toBeTrue();
+        expect(Post::query()->where('title', 'Keep inactive alpha')->exists())->toBeTrue();
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});

@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Flatpack\Http\Controllers;
 
+use Flatpack\Actions\FlatpackBulkActionContext;
 use Flatpack\Composition\EntityComposition;
+use Flatpack\Contracts\Actions\FlatpackBulkAction;
 use Flatpack\Http\FlatpackResponse;
 use Flatpack\Lists\ListHeaderActions;
 use Flatpack\Lists\ListRecordsLoader;
 use Flatpack\Support\ModelKeyResolver;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Response;
 
@@ -71,5 +74,32 @@ final readonly class ListController
             'flatpack_prefix' => $flatpackPrefix,
             'list_actions' => ListHeaderActions::fromSchema($schema),
         ], $request->boolean('json'));
+    }
+
+    public function bulkDelete(Request $request, string $entity): RedirectResponse
+    {
+        $list = $this->entityComposition->listFor($entity);
+        $schema = $this->entityComposition->listSchema($entity);
+        $handlerClass = config('flatpack.bulk_actions.delete');
+
+        if (! is_string($handlerClass) || $handlerClass === '') {
+            abort(500, 'Flatpack bulk delete handler is not configured.');
+        }
+
+        $handler = app()->make($handlerClass);
+        if (! $handler instanceof FlatpackBulkAction) {
+            abort(500, 'Flatpack bulk delete handler must implement FlatpackBulkAction.');
+        }
+
+        $deleted = $handler->handle(FlatpackBulkActionContext::fromRequest(
+            request: $request,
+            entity: $entity,
+            modelClass: (string) ($list->model ?? ''),
+            schema: $schema,
+        ));
+
+        return back(303)->with('flatpack', [
+            'deleted' => (int) $deleted,
+        ]);
     }
 }
