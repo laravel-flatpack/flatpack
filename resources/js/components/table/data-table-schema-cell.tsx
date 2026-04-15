@@ -57,8 +57,14 @@ export function DataTableSchemaCell({
         return <DataTableRelationCell row={row} column={col} />;
     }
 
-    if (col.type === 'badge') {
-        return <DataTableBadgeCell value={value} truncate={col.truncate} />;
+    if (col.type === 'badge' || col.type === 'status') {
+        return (
+            <DataTableBadgeCell
+                column={col}
+                value={value}
+                truncate={col.truncate}
+            />
+        );
     }
 
     if (col.type === 'select' && col.options?.length) {

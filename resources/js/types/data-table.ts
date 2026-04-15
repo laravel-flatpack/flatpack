@@ -29,7 +29,14 @@ export type FlatpackDataTableActionButton = {
 export type FlatpackDataTableColumn = {
     id: string;
     label: string;
-    type?: 'text' | 'select' | 'date' | 'actions' | 'badge' | 'relation';
+    type?:
+        | 'text'
+        | 'select'
+        | 'date'
+        | 'actions'
+        | 'badge'
+        | 'status'
+        | 'relation';
     relation?: string;
     relationName?: string;
     relationValue?: string;
