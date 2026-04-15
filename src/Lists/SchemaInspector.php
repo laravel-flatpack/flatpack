@@ -11,6 +11,17 @@ final class SchemaInspector
     private const string FILTER_TYPE_DATE = 'date';
 
     /**
+     * @var list<string>
+     */
+    private const array SELECT_OPTION_STATUSES = [
+        'success',
+        'pending',
+        'warning',
+        'error',
+        'info',
+    ];
+
+    /**
      * @return list<string>
      */
     public static function columnKeys(?array $schema): array
@@ -99,40 +110,34 @@ final class SchemaInspector
                 continue;
             }
             $column = $columnsById[$id] ?? null;
-            if (! is_array($column)) {
-                continue;
-            }
-
-            $columnType = isset($column['type']) ? trim((string) $column['type']) : 'text';
-            if ($columnType === 'datetime') {
-                $columnType = 'date';
-            }
+            $columnType = self::normalizedColumnType($column);
 
             $config = is_array($filterConfig) ? $filterConfig : [];
             $configuredType = isset($config['type']) ? trim((string) $config['type']) : '';
-            $type = in_array($configuredType, [self::FILTER_TYPE_SELECT, self::FILTER_TYPE_DATE], true)
+            $type = in_array(
+                $configuredType,
+                [self::FILTER_TYPE_SELECT, self::FILTER_TYPE_DATE],
+                true,
+            )
                 ? $configuredType
                 : $columnType;
 
             if ($type !== self::FILTER_TYPE_SELECT && $type !== self::FILTER_TYPE_DATE) {
                 continue;
             }
-            if ($type === self::FILTER_TYPE_SELECT && $columnType !== self::FILTER_TYPE_SELECT) {
-                continue;
-            }
-            if ($type === self::FILTER_TYPE_DATE && $columnType !== self::FILTER_TYPE_DATE) {
-                continue;
-            }
 
             $label = isset($config['label']) && is_string($config['label'])
                 ? trim($config['label'])
-                : (isset($column['label']) ? trim((string) $column['label']) : $id);
+                : (is_array($column) && isset($column['label']) ? trim((string) $column['label']) : $id);
             $placeholder = isset($config['placeholder']) && is_string($config['placeholder'])
                 ? trim($config['placeholder'])
                 : '';
 
             if ($type === self::FILTER_TYPE_SELECT) {
-                $options = self::normalizeSelectFilterOptions($column['options'] ?? null);
+                $options = self::normalizeSelectFilterOptions($config['options'] ?? null);
+                if ($options === [] && is_array($column)) {
+                    $options = self::normalizeSelectFilterOptions($column['options'] ?? null);
+                }
                 if ($options === []) {
                     continue;
                 }
@@ -213,7 +218,12 @@ final class SchemaInspector
     }
 
     /**
-     * @return list<array{value: string, label: string}>
+     * @return list<array{
+     *     value: string,
+     *     label: string,
+     *     status?: 'success'|'pending'|'warning'|'error'|'info',
+     *     icon?: string,
+     * }>
      */
     private static function normalizeSelectFilterOptions(mixed $raw): array
     {
@@ -232,7 +242,16 @@ final class SchemaInspector
                 if ($value === '' || $label === '') {
                     continue;
                 }
-                $out[] = ['value' => $value, 'label' => $label];
+                $normalizedOption = ['value' => $value, 'label' => $label];
+                $status = self::normalizeOptionStatus($option['status'] ?? null);
+                if ($status !== null) {
+                    $normalizedOption['status'] = $status;
+                }
+                $icon = self::normalizeOptionIcon($option['icon'] ?? null);
+                if ($icon !== null) {
+                    $normalizedOption['icon'] = $icon;
+                }
+                $out[] = $normalizedOption;
             }
 
             return $out;
@@ -251,6 +270,51 @@ final class SchemaInspector
         }
 
         return $out;
+    }
+
+    private static function normalizedColumnType(mixed $column): string
+    {
+        if (! is_array($column)) {
+            return '';
+        }
+
+        $columnType = isset($column['type']) ? trim((string) $column['type']) : 'text';
+        if ($columnType === 'datetime') {
+            return self::FILTER_TYPE_DATE;
+        }
+
+        return $columnType;
+    }
+
+    /**
+     * @return 'success'|'pending'|'warning'|'error'|'info'|null
+     */
+    private static function normalizeOptionStatus(mixed $rawStatus): ?string
+    {
+        if (! is_string($rawStatus)) {
+            return null;
+        }
+
+        $status = trim($rawStatus);
+        if (! in_array($status, self::SELECT_OPTION_STATUSES, true)) {
+            return null;
+        }
+
+        return $status;
+    }
+
+    private static function normalizeOptionIcon(mixed $rawIcon): ?string
+    {
+        if (! is_string($rawIcon)) {
+            return null;
+        }
+
+        $icon = trim($rawIcon);
+        if ($icon === '') {
+            return null;
+        }
+
+        return $icon;
     }
 
     /**

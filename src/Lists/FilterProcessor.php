@@ -42,10 +42,17 @@ final class FilterProcessor
                     continue;
                 }
 
-                $value = trim((string) $raw);
-                $out[$id] = ($value !== '' && in_array($value, $allowed, true))
-                    ? $value
-                    : null;
+                // Single select: accept a string, or an array (e.g. repeated query keys) and use the first allowed value.
+                $candidates = is_array($raw) ? $raw : [$raw];
+                $value = null;
+                foreach ($candidates as $candidate) {
+                    $v = trim((string) $candidate);
+                    if ($v !== '' && in_array($v, $allowed, true)) {
+                        $value = $v;
+                        break;
+                    }
+                }
+                $out[$id] = $value;
 
                 continue;
             }

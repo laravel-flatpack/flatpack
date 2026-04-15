@@ -11,6 +11,7 @@ export type FlatpackDataTableColumnOption = {
     value: string;
     label: string;
     status?: FlatpackDataTableSelectOptionStatus;
+    icon?: string;
 };
 
 export type FlatpackDataTableColumnMeta = {

@@ -34,7 +34,12 @@ final readonly class ListRecordsLoader
      *         type: 'select'|'date',
      *         multiple: bool,
      *         mode?: 'exact'|'from',
-     *         options?: list<array{value: string, label: string}>,
+     *         options?: list<array{
+     *             value: string,
+     *             label: string,
+     *             status?: 'success'|'pending'|'warning'|'error'|'info',
+     *             icon?: string,
+     *         }>,
      *     }>,
      *     filter_values: array<string, string|list<string>|null>,
      *     sorting: array{sort_by: string|null, sort_direction: 'asc'|'desc'|null},

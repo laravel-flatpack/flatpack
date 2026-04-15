@@ -314,6 +314,190 @@ YAML);
     }
 });
 
+test('flatpack entity list JSON supports date filter without a matching column', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-list-date-filter-without-column-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+columns:
+  id:
+    label: ID
+  title:
+    label: Title
+filters:
+  created_at:
+    label: Filter by created at
+    placeholder: Select a date
+    type: date
+    mode: from
+YAML);
+        config()->set('flatpack.path', $tempPath);
+
+        $older = Post::factory()->create(['title' => 'Older post']);
+        $older->created_at = '2024-01-10 08:00:00';
+        $older->save();
+
+        $newer = Post::factory()->create(['title' => 'Newer post']);
+        $newer->created_at = '2024-01-20 08:00:00';
+        $newer->save();
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        $payload = actingAs($user)
+            ->getJson(route('flatpack.entities.index', [
+                'entity' => 'posts',
+                'json' => true,
+                'filters' => ['created_at' => '2024-01-15'],
+            ]))
+            ->assertOk()
+            ->json();
+
+        $body = $payload['data'] ?? $payload;
+        expect($body['records'])->toHaveCount(1);
+        expect($body['records'][0]['title'])->toBe('Newer post');
+        expect($body['filters'])->toHaveCount(1);
+        expect($body['filters'][0])->toMatchArray([
+            'id' => 'created_at',
+            'type' => 'date',
+            'mode' => 'from',
+        ]);
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
+test('flatpack entity list JSON supports filter-level select options in map and list formats', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-list-filter-level-select-options-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+columns:
+  id:
+    label: ID
+  title:
+    label: Title
+filters:
+  status:
+    label: Filter by status
+    placeholder: Select status
+    type: select
+    multiple: true
+    options:
+      active: Active
+      inactive: Inactive
+YAML);
+        config()->set('flatpack.path', $tempPath);
+
+        Post::factory()->create([
+            'title' => 'Active post',
+            'status' => 'active',
+        ]);
+        Post::factory()->create([
+            'title' => 'Inactive post',
+            'status' => 'inactive',
+        ]);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        $payload = actingAs($user)
+            ->getJson(route('flatpack.entities.index', [
+                'entity' => 'posts',
+                'json' => true,
+                'filters' => [
+                    'status' => ['active', 'inactive'],
+                ],
+            ]))
+            ->assertOk()
+            ->json();
+
+        $mapBody = $payload['data'] ?? $payload;
+        expect($mapBody['records'])->toHaveCount(2);
+        expect(collect($mapBody['records'])->pluck('title')->all())
+            ->toContain('Active post')
+            ->toContain('Inactive post');
+
+        expect($mapBody['filters'])->toHaveCount(1);
+        expect($mapBody['filters'][0]['id'])->toBe('status');
+        expect($mapBody['filters'][0]['options'])->toBe([
+            ['value' => 'active', 'label' => 'Active'],
+            ['value' => 'inactive', 'label' => 'Inactive'],
+        ]);
+
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+columns:
+  id:
+    label: ID
+  title:
+    label: Title
+filters:
+  status:
+    label: Filter by status
+    placeholder: Select status
+    type: select
+    options:
+      - value: active
+        label: Active
+        status: success
+        icon: circle-check
+      - value: inactive
+        label: Inactive
+        status: warning
+        icon: triangle-alert
+      - value: draft
+        label: Draft
+        status: pending
+        icon: loader-circle
+YAML);
+
+        $listPayload = actingAs($user)
+            ->getJson(route('flatpack.entities.index', [
+                'entity' => 'posts',
+                'json' => true,
+                'filters' => ['status' => 'active'],
+            ]))
+            ->assertOk()
+            ->json();
+
+        $listBody = $listPayload['data'] ?? $listPayload;
+        expect($listBody['records'])->toHaveCount(1);
+        expect($listBody['records'][0]['title'])->toBe('Active post');
+        expect($listBody['filters'])->toHaveCount(1);
+        expect($listBody['filters'][0]['id'])->toBe('status');
+        expect($listBody['filters'][0]['options'])->toBe([
+            [
+                'value' => 'active',
+                'label' => 'Active',
+                'status' => 'success',
+                'icon' => 'circle-check',
+            ],
+            [
+                'value' => 'inactive',
+                'label' => 'Inactive',
+                'status' => 'warning',
+                'icon' => 'triangle-alert',
+            ],
+            [
+                'value' => 'draft',
+                'label' => 'Draft',
+                'status' => 'pending',
+                'icon' => 'loader-circle',
+            ],
+        ]);
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
 test('flatpack entity list JSON applies sortable column ordering', function () {
     $tempPath = sys_get_temp_dir() . '/flatpack-list-sorting-' . uniqid('', true);
 

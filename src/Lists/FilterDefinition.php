@@ -7,7 +7,12 @@ namespace Flatpack\Lists;
 final readonly class FilterDefinition
 {
     /**
-     * @param  list<array{value: string, label: string}>  $options
+     * @param  list<array{
+     *     value: string,
+     *     label: string,
+     *     status?: 'success'|'pending'|'warning'|'error'|'info',
+     *     icon?: string,
+     * }>  $options
      */
     public function __construct(
         public string $id,
@@ -37,7 +42,12 @@ final readonly class FilterDefinition
      *     type: 'select'|'date',
      *     multiple: bool,
      *     mode?: 'exact'|'from',
-     *     options?: list<array{value: string, label: string}>,
+     *     options?: list<array{
+     *         value: string,
+     *         label: string,
+     *         status?: 'success'|'pending'|'warning'|'error'|'info',
+     *         icon?: string,
+     *     }>,
      * }
      */
     public function toArray(): array

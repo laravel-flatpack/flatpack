@@ -1,6 +1,6 @@
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
-import { useState } from 'react';
+import { useLayoutEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Calendar } from '../ui/calendar';
 import { Field, FieldContent, FieldTitle } from '../ui/field';
@@ -10,16 +10,22 @@ export const DatePickerField = ({
     id,
     label,
     emptyLabel,
+    value,
     onValueChange,
 }: {
     id: string;
     label: string;
     emptyLabel: string;
+    value?: Date;
     onValueChange?: (value: Date | undefined) => void;
 }) => {
     const [open, setOpen] = useState(false);
-    const [date, setDate] = useState<Date | undefined>();
+    const [date, setDate] = useState<Date | undefined>(value);
     const labelId = `${id}-label`;
+
+    useLayoutEffect(() => {
+        setDate(value);
+    }, [value]);
 
     return (
         <Field>
