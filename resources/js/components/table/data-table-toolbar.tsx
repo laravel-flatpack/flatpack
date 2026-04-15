@@ -4,11 +4,6 @@ import { DataTableColumnsVisibilityDropdown } from '@/components/table/data-tabl
 import { DataTableFiltersDropdown } from '@/components/table/data-table-filters-dropdown';
 import { DataTableSearchInput } from '@/components/table/data-table-search-input';
 import { Button } from '@/components/ui/button';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import type {
     FlatpackDataTableFilter,
     FlatpackDataTableServerFiltersState,
@@ -50,28 +45,14 @@ export function DataTableToolbar({
             <div className="flex items-center gap-2">
                 {hasBulkActions && (
                     <>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    disabled={selectedRowCount === 0}
-                                >
-                                    Bulk Actions
-                                    <ChevronDownIcon data-icon="inline-end" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="start" className="w-40">
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="w-full justify-start"
-                                    disabled
-                                >
-                                    No actions
-                                </Button>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={selectedRowCount === 0}
+                        >
+                            Bulk Actions
+                            <ChevronDownIcon data-icon="inline-end" />
+                        </Button>
                         {selectedRowCount > 0 && (
                             <div className="flex items-center gap-2">
                                 <div className="text-sm text-muted-foreground">

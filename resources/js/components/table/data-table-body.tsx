@@ -22,8 +22,7 @@ import { cn } from '@/lib/utils';
 type DataTableBodyProps = {
     table: TanStackTable<Record<string, unknown>>;
     isReorderable: boolean;
-    hasRowClick: boolean;
-    onRowClick: (
+    onRowClick?: (
         event: React.MouseEvent<HTMLTableRowElement>,
         row: Record<string, unknown>,
     ) => void;
@@ -33,12 +32,12 @@ type DataTableBodyProps = {
 export function DataTableBody({
     table,
     isReorderable,
-    hasRowClick,
     onRowClick,
     emptyColSpan,
 }: DataTableBodyProps) {
     const tableRows = table.getRowModel().rows;
     const hasRows = tableRows.length > 0;
+    const hasRowClick = onRowClick != null;
 
     return (
         <Table>
@@ -76,9 +75,7 @@ export function DataTableBody({
                                 <DataTableDraggableRow
                                     key={row.id}
                                     row={row}
-                                    onRowClick={
-                                        hasRowClick ? onRowClick : undefined
-                                    }
+                                    onRowClick={onRowClick}
                                 />
                             ))}
                         </SortableContext>
@@ -88,8 +85,11 @@ export function DataTableBody({
                                 key={row.id}
                                 data-state={row.getIsSelected() && 'selected'}
                                 className={cn(hasRowClick && 'cursor-pointer')}
-                                onClick={(event) =>
-                                    onRowClick(event, row.original)
+                                onClick={
+                                    onRowClick
+                                        ? (event) =>
+                                              onRowClick(event, row.original)
+                                        : undefined
                                 }
                             >
                                 {row.getVisibleCells().map((cell) => (

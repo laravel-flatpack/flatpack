@@ -275,6 +275,7 @@ export function DataTable({
 
     const tableLabelId = `${id}-table-label`;
     const paginationStateCurrent = table.getState().pagination;
+    const selectedRowCount = Object.keys(rowSelection).length;
 
     const rowCountLabel = serverPagination
         ? serverPagination.total === 0
@@ -283,6 +284,15 @@ export function DataTable({
               ? `${serverPagination.from}–${serverPagination.to} of ${serverPagination.total} row(s).`
               : `${serverPagination.total} row(s).`
         : `${table.getFilteredRowModel().rows.length} row(s).`;
+
+    const tableBody = (
+        <DataTableBody
+            table={table}
+            isReorderable={isReorderable}
+            onRowClick={onRowClick ? handleRowClick : undefined}
+            emptyColSpan={columnDefs.length}
+        />
+    );
 
     const tableAndFooter = (
         <>
@@ -295,22 +305,10 @@ export function DataTable({
                         onDragEnd={handleDragEnd}
                         sensors={dndSensors}
                     >
-                        <DataTableBody
-                            table={table}
-                            isReorderable={isReorderable}
-                            hasRowClick={onRowClick != null}
-                            onRowClick={handleRowClick}
-                            emptyColSpan={columnDefs.length}
-                        />
+                        {tableBody}
                     </DndContext>
                 ) : (
-                    <DataTableBody
-                        table={table}
-                        isReorderable={isReorderable}
-                        hasRowClick={onRowClick != null}
-                        onRowClick={handleRowClick}
-                        emptyColSpan={columnDefs.length}
-                    />
+                    tableBody
                 )}
             </div>
             <DataTableFooter
@@ -345,7 +343,7 @@ export function DataTable({
                 id={id}
                 table={table}
                 hasBulkActions={hasBulkActions}
-                selectedRowCount={Object.keys(rowSelection).length}
+                selectedRowCount={selectedRowCount}
                 hasSearchableColumns={hasSearchableColumns}
                 hasFilters={hasFilters}
                 globalFilter={globalFilter}
