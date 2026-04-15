@@ -37,10 +37,7 @@ export function selectOptionLeadingIcon(
     if (iconNode != null) {
         const IconNode = iconNode;
         return (
-            <IconNode
-                className={`size-3 shrink-0 ${colorClass}`}
-                aria-hidden
-            />
+            <IconNode className={`size-3 shrink-0 ${colorClass}`} aria-hidden />
         );
     }
 
