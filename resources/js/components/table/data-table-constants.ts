@@ -12,7 +12,7 @@ export const ACTION_MENU_LABEL_MAX_CHARS = 28;
 export const DATA_TABLE_PAGE_SIZE_OPTIONS = [10, 20, 30, 40, 50] as const;
 export const DATA_TABLE_EMPTY_RESULTS_LABEL = 'No results.';
 export const DATA_TABLE_LABEL = 'Data table';
-export const DATA_TABLE_SEARCH_PLACEHOLDER = 'Filter rows…';
+export const DATA_TABLE_SEARCH_PLACEHOLDER = 'Search…';
 
 export function truncateActionMenuLabel(
     label: string,
