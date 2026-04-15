@@ -16,15 +16,16 @@
 
 📕 [Official Documentation](https://laravel-flatpack.com)
 
-[Flatpack](https://laravel-flatpack.com) makes building fully functional user interfaces for admin panels easier than ever: as easy as editing few lines of a YAML file. 
+[Flatpack](https://laravel-flatpack.com) makes building fully functional user interfaces for admin panels easier than ever: as easy as editing few lines of a YAML file.
 
-Besides providing a rich set of already built components and a solid stack to build a secure and intuitive experience for the users, it offers a fast and flexible solution for developers who want to have fun, try out new things and save precious time building up the an administration panels. 
+Besides providing a rich set of already built components and a solid stack to build a secure and intuitive experience for the users, it offers a fast and flexible solution for developers who want to have fun, try out new things and save precious time building up the an administration panels.
 
 Flatpack is a reactive full-stack app, built with [TALL stack](https://tallstack.dev/).
 
 ![Demo](.github/demo.gif)
 
 ---
+
 ## Quick Install
 
 Install the package via composer:
@@ -46,7 +47,6 @@ Note: To make sure that the public assets are always up-to-date, remember to add
       "@php artisan vendor:publish --tag=flatpack"
   ],
 ```
-
 
 ## Usage
 
@@ -75,30 +75,30 @@ model: App\Models\Post
 icon: book-open
 
 toolbar:
-  save:
-    type: button
-    label: Save
-    action: save
-    style: primary
-    shortcut: s
+    save:
+        type: button
+        label: Save
+        action: save
+        style: primary
+        shortcut: s
 
 main:
-  title:
-    label: Post Title
-    placeholder: Your Post Title
-    type: text
+    title:
+        label: Post Title
+        placeholder: Your Post Title
+        type: text
 
-  body:
-    type: block-editor
+    body:
+        type: block-editor
 
 sidebar:
-  created_at:
-    label: Created
-    type: datetime-picker
+    created_at:
+        label: Created
+        type: datetime-picker
 
-  updated_at:
-    label: Updated
-    type: datetime-picker
+    updated_at:
+        label: Updated
+        type: datetime-picker
 ```
 
 Defining a list:
@@ -110,40 +110,84 @@ icon: book-open
 order: 1
 
 toolbar:
-  create:
-    label: New Post
-    icon: plus
-    link: create
-    style: primary
-    shortcut: enter
+    create:
+        label: New Post
+        icon: plus
+        link: create
+        style: primary
+        shortcut: enter
 
 columns:
-  id:
-    label: ID
-    sortable: true
-    invisible: true
+    id:
+        label: ID
+        sortable: true
+        invisible: true
 
-  title:
-    label: Title
-    sortable: true
-    searchable: true
+    title:
+        label: Title
+        sortable: true
+        searchable: true
 
-  created_at:
-    label: Created
-    type: datetime
-    format: "Y-m-d H:i:s"
-    sortable: true
+    created_at:
+        label: Created
+        type: datetime
+        format: "Y-m-d H:i:s"
+        sortable: true
 
-  updated_at:
-    label: Updated
-    type: datetime
-    format: "Y-m-d H:i:s"
-    sortable: true
+    updated_at:
+        label: Updated
+        type: datetime
+        format: "Y-m-d H:i:s"
+        sortable: true
 ```
 
 ⚙️ You can customise the yaml composition files by mapping your model's attributes, using components of differnt types and features: Data tables, text inputs, rich text editors, date pickers, tag pickers, searchable select menus, image upload, toggles and more.
 
 📖 [Check out the documentation](https://laravel-flatpack.com/reference)
+
+## Current Schema Support (Snapshot)
+
+This section is a quick reference for what is currently supported in Flatpack schema configuration.
+It is intended for contributors and package developers and should be updated when new schema types are introduced.
+
+### Supported Form Field Types
+
+Current `type` values for form fields:
+
+- `text`
+- `textarea`
+- `select`
+- `combobox`
+- `date-picker`
+- `date-range-picker`
+- `time-picker`
+- `checkbox`
+- `switch`
+- `rich-text`
+- `block-editor`
+- `table`
+
+### Supported Table Column Types
+
+Current `type` values for list/table columns:
+
+- `text`
+- `select`
+- `date`/`datetime`
+- `actions`
+- `badge`
+- `relation`
+
+Relation columns require:
+
+- `relation`
+- `relation_name` or `relationName`
+- `relation_value` or `relationValue`
+
+### Dashboard Widgets
+
+Dashboard widget schema support is evolving and not yet documented as a stable public contract in this file.
+When widget types are finalized, add them here with required and optional keys.
 
 ## Requirements
 
@@ -165,8 +209,8 @@ Please review [our security policy](../../security/policy) on how to report secu
 
 ## Credits
 
--   [Fausto Quaggia](https://github.com/faustoq)
--   [All Contributors](../../contributors)
+- [Fausto Quaggia](https://github.com/faustoq)
+- [All Contributors](../../contributors)
 
 ## License
 
