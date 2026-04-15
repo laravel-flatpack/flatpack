@@ -11,6 +11,7 @@ import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import {
     type Column,
     type ColumnFiltersState,
+    functionalUpdate,
     getCoreRowModel,
     getFacetedRowModel,
     getFacetedUniqueValues,
@@ -89,10 +90,22 @@ export function DataTable({
     React.useLayoutEffect(() => {
         setData(initialData);
     }, [initialData]);
-
     const [rowSelection, setRowSelection] = React.useState<RowSelectionState>(
         {},
     );
+    const [isAllRowsSelected, setIsAllRowsSelected] = React.useState(false);
+    React.useEffect(() => {
+        if (!isAllRowsSelected) {
+            return;
+        }
+        setRowSelection((prev) => {
+            const next = { ...prev };
+            for (const [index, row] of data.entries()) {
+                next[stableRowId(row, index)] = true;
+            }
+            return next;
+        });
+    }, [data, isAllRowsSelected]);
     const hasBulkActions = React.useMemo(
         () => checkboxes === true,
         [checkboxes],
@@ -224,6 +237,21 @@ export function DataTable({
         useSensor(KeyboardSensor, {}),
     );
     const dndId = React.useId();
+    const handleRowSelectionChange = React.useCallback(
+        (updater: React.SetStateAction<RowSelectionState>) => {
+            setRowSelection((prev) => {
+                const next = functionalUpdate(updater, prev);
+                if (
+                    isAllRowsSelected &&
+                    Object.keys(next).length < data.length
+                ) {
+                    setIsAllRowsSelected(false);
+                }
+                return next;
+            });
+        },
+        [data.length, isAllRowsSelected],
+    );
 
     const table = useReactTable({
         data,
@@ -239,7 +267,7 @@ export function DataTable({
         },
         getRowId: (row, index) => stableRowId(row, index),
         enableRowSelection: checkboxes,
-        onRowSelectionChange: setRowSelection,
+        onRowSelectionChange: handleRowSelectionChange,
         onSortingChange: handleSortingChange,
         onColumnFiltersChange: setColumnFilters,
         onGlobalFilterChange: setGlobalFilter,
@@ -274,8 +302,53 @@ export function DataTable({
     });
 
     const tableLabelId = `${id}-table-label`;
+    const handleSelectAllRows = React.useCallback(() => {
+        if (serverPagination == null) {
+            table.toggleAllRowsSelected(true);
+            return;
+        }
+        setIsAllRowsSelected(true);
+        setRowSelection((prev) => {
+            const next = { ...prev };
+            for (const [index, row] of data.entries()) {
+                next[stableRowId(row, index)] = true;
+            }
+            return next;
+        });
+    }, [data, serverPagination, table]);
+    const handleDeselectAllRows = React.useCallback(() => {
+        setIsAllRowsSelected(false);
+        setRowSelection({});
+        table.toggleAllRowsSelected(false);
+    }, [table]);
+    const handleDeleteSelectedRows = React.useCallback(() => {
+        const selectedIds = new Set(
+            Object.entries(rowSelection)
+                .filter(([, selected]) => selected)
+                .map(([rowId]) => rowId),
+        );
+
+        if (selectedIds.size === 0) {
+            return;
+        }
+
+        setData((prev) => {
+            const nextRows = prev.filter(
+                (row, index) => !selectedIds.has(stableRowId(row, index)),
+            );
+            onValueChange?.(nextRows);
+            return nextRows;
+        });
+
+        // TODO: Replace with backend bulk delete and refresh.
+        handleDeselectAllRows();
+    }, [handleDeselectAllRows, onValueChange, rowSelection]);
     const paginationStateCurrent = table.getState().pagination;
-    const selectedRowCount = Object.keys(rowSelection).length;
+    const selectedRowCount = isAllRowsSelected
+        ? (serverPagination?.total ?? table.getFilteredRowModel().rows.length)
+        : Object.keys(rowSelection).length;
+    const totalRowCount =
+        serverPagination?.total ?? table.getFilteredRowModel().rows.length;
 
     const rowCountLabel = serverPagination
         ? serverPagination.total === 0
@@ -344,6 +417,11 @@ export function DataTable({
                 table={table}
                 hasBulkActions={hasBulkActions}
                 selectedRowCount={selectedRowCount}
+                isAllRowsSelected={isAllRowsSelected}
+                totalRowCount={totalRowCount}
+                onSelectAllRows={handleSelectAllRows}
+                onDeselectAllRows={handleDeselectAllRows}
+                onDeleteSelectedRows={handleDeleteSelectedRows}
                 hasSearchableColumns={hasSearchableColumns}
                 hasFilters={hasFilters}
                 globalFilter={globalFilter}
