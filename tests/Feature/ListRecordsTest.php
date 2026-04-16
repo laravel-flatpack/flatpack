@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 use Flatpack\Tests\Models\Post;
 use Flatpack\Tests\Models\User;
+use Flatpack\Tests\Policies\DenyUpdatePostPolicy;
 use Flatpack\Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Gate;
 
 use function Pest\Laravel\actingAs;
 
@@ -291,6 +293,48 @@ YAML);
 
         expect($post->fresh()?->title)->toBe('Original title');
         expect($post->fresh()?->body)->toBe('Original body');
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
+test('flatpack entity list inline update rejects when policy denies update', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-list-update-policy-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+columns:
+  title:
+    label: Title
+    type: text
+    editable: true
+YAML);
+        config()->set('flatpack.path', $tempPath);
+
+        Gate::policy(Post::class, DenyUpdatePostPolicy::class);
+
+        /** @var Post $post */
+        $post = Post::factory()->create([
+            'title' => 'Original title',
+        ]);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        actingAs($user)
+            ->patch(route('flatpack.entities.update', [
+                'entity' => 'posts',
+                'record' => (string) $post->getKey(),
+            ]), [
+                'field' => 'title',
+                'value' => 'Updated title',
+            ])
+            ->assertForbidden();
+
+        expect($post->fresh()?->title)->toBe('Original title');
     } finally {
         File::deleteDirectory($tempPath);
     }

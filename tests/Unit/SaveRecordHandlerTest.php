@@ -8,7 +8,6 @@ use Flatpack\Tests\Models\Post;
 use Flatpack\Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
 
 uses(TestCase::class, RefreshDatabase::class);
 
@@ -118,55 +117,4 @@ test('save record handler creates a new model from form schema', function () {
     expect($result?->status)->toBe('draft');
     expect(Post::query()->where('title', 'Created from form schema')->exists())
         ->toBeTrue();
-});
-
-test('save record handler validates required fields from form schema', function () {
-    $request = Request::create('/flatpack/posts', 'POST', [
-        'values' => [
-            'title' => 'Created from form schema',
-            'slug' => '',
-        ],
-    ]);
-
-    $this->expectException(ValidationException::class);
-    $this->expectExceptionMessage('Slug is required.');
-
-    (new SaveRecordHandler())->handle(new FlatpackActionContext(
-        request: $request,
-        entity: 'posts',
-        actionName: 'save',
-        modelClass: Post::class,
-        record: null,
-        compositionType: 'form',
-        composition: [
-            'model' => Post::class,
-            'schema' => [
-                'fields' => [
-                    'title' => [
-                        'type' => 'text',
-                        'label' => 'Title',
-                    ],
-                    'slug' => [
-                        'type' => 'text',
-                        'label' => 'Slug',
-                        'required' => true,
-                    ],
-                ],
-            ],
-        ],
-        schema: [
-            'fields' => [
-                'title' => [
-                    'type' => 'text',
-                    'label' => 'Title',
-                ],
-                'slug' => [
-                    'type' => 'text',
-                    'label' => 'Slug',
-                    'required' => true,
-                ],
-            ],
-        ],
-        model: null,
-    ));
 });

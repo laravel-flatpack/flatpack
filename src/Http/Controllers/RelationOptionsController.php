@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace Flatpack\Http\Controllers;
 
 use Flatpack\Composition\EntityComposition;
-use Illuminate\Database\Eloquent\Builder;
+use Flatpack\Relations\RelationFieldQuery;
+use Flatpack\Schema\FormFieldType;
+use Flatpack\Schema\FormSchemaFields;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -44,36 +45,12 @@ final readonly class RelationOptionsController
      */
     private function relationFieldDefinition(?array $schema, string $fieldId): ?array
     {
-        if ($schema === null) {
+        $fieldDefinition = FormSchemaFields::fieldDefinitionById($schema, $fieldId);
+        if ($fieldDefinition === null || ! FormFieldType::isRelationField($fieldDefinition)) {
             return null;
         }
 
-        $fields = $schema['fields'] ?? null;
-        if (! is_array($fields)) {
-            return null;
-        }
-
-        foreach ($fields as $key => $fieldDefinition) {
-            if (! is_array($fieldDefinition)) {
-                continue;
-            }
-
-            $id = trim((string) ($fieldDefinition['id'] ?? $key));
-            if ($id !== $fieldId) {
-                continue;
-            }
-
-            $type = isset($fieldDefinition['type'])
-                ? trim((string) $fieldDefinition['type'])
-                : '';
-            if ($type !== 'relation' && ! ($type === 'combobox' && isset($fieldDefinition['relation']))) {
-                return null;
-            }
-
-            return $fieldDefinition;
-        }
-
-        return null;
+        return $fieldDefinition;
     }
 
     /**
@@ -93,7 +70,7 @@ final readonly class RelationOptionsController
         $search = trim((string) $request->query('q', ''));
         $selected = trim((string) $request->query('selected', ''));
 
-        $components = $this->relationQueryComponents($modelClass, $fieldDefinition);
+        $components = RelationFieldQuery::components($modelClass, $fieldDefinition);
         if ($components === null) {
             return [
                 'data' => [],
@@ -149,61 +126,5 @@ final readonly class RelationOptionsController
                 'next_page' => $hasMore ? $page + 1 : null,
             ],
         ];
-    }
-
-    /**
-     * @param  array<string, mixed>  $fieldDefinition
-     * @return array{Builder<Model>, string, string}|null
-     */
-    private function relationQueryComponents(
-        string $modelClass,
-        array $fieldDefinition,
-    ): ?array {
-        if ($modelClass === '' || ! class_exists($modelClass)) {
-            return null;
-        }
-        if (! is_subclass_of($modelClass, Model::class)) {
-            return null;
-        }
-
-        $relationName = isset($fieldDefinition['relation'])
-            ? trim((string) $fieldDefinition['relation'])
-            : '';
-        $labelField = $this->stringFromField($fieldDefinition, 'relation_name', 'relationName');
-        $valueField = $this->stringFromField($fieldDefinition, 'relation_value', 'relationValue');
-
-        if ($relationName === '' || $labelField === '' || $valueField === '') {
-            return null;
-        }
-
-        /** @var class-string<Model> $modelClass */
-        $model = new $modelClass();
-        if (! method_exists($model, $relationName)) {
-            return null;
-        }
-
-        $relation = $model->{$relationName}();
-        if (! $relation instanceof Relation) {
-            return null;
-        }
-
-        return [$relation->getRelated()->newQuery(), $labelField, $valueField];
-    }
-
-    /**
-     * @param  array<string, mixed>  $fieldDefinition
-     */
-    private function stringFromField(
-        array $fieldDefinition,
-        string $snakeKey,
-        string $camelKey,
-    ): string {
-        foreach ([$snakeKey, $camelKey] as $key) {
-            if (isset($fieldDefinition[$key]) && is_string($fieldDefinition[$key])) {
-                return trim($fieldDefinition[$key]);
-            }
-        }
-
-        return '';
     }
 }

@@ -1,6 +1,5 @@
 import type { FormDataConvertible } from '@inertiajs/core';
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { Loader2Icon } from 'lucide-react';
 import { Suspense, useCallback, useEffect, useMemo } from 'react';
 import type { DateRange } from 'react-day-picker';
 import { toast } from 'sonner';

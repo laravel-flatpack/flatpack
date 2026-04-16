@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace Flatpack\Tests;
 
 use Flatpack\FlatpackServiceProvider;
+use Flatpack\Tests\Models\Post;
 use Flatpack\Tests\Models\User;
+use Flatpack\Tests\Policies\PostPolicy;
 use Illuminate\Auth\SessionGuard;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Foundation\Application;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\ServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
@@ -19,6 +22,8 @@ abstract class TestCase extends Orchestra
     protected function setUp(): void
     {
         parent::setUp();
+
+        Gate::policy(Post::class, PostPolicy::class);
 
         Factory::guessFactoryNamesUsing(
             fn (string $modelName): string => 'Flatpack\\Tests\\Database\\Factories\\' . class_basename($modelName) . 'Factory'

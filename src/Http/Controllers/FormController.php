@@ -7,7 +7,9 @@ namespace Flatpack\Http\Controllers;
 use Flatpack\Actions\FlatpackActionContext;
 use Flatpack\Composition\EntityComposition;
 use Flatpack\Http\FlatpackResponse;
+use Flatpack\Http\Requests\FormSubmitRequest;
 use Flatpack\Lists\HeaderActions;
+use Flatpack\Schema\FormFieldType;
 use Flatpack\Services\Actions\ActionRuntime;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
@@ -69,7 +71,7 @@ final readonly class FormController
     }
 
     public function save(
-        Request $request,
+        FormSubmitRequest $request,
         string $entity,
         ?string $record = null,
     ): RedirectResponse {
@@ -196,19 +198,17 @@ final readonly class FormController
         array $fieldDefinition,
         string $modelClass,
     ): array {
-        $type = isset($fieldDefinition['type'])
+        $rawType = isset($fieldDefinition['type'])
             ? trim((string) $fieldDefinition['type'])
             : '';
 
-        if ($type === 'date') {
-            $fieldDefinition['type'] = 'date-picker';
-        }
+        $fieldDefinition['type'] = FormFieldType::normalizeYamlType($rawType);
 
-        if ($type === 'relation') {
+        if ($rawType === 'relation') {
             $fieldDefinition['type'] = 'combobox';
             $fieldDefinition['options'] = [];
             $fieldDefinition['remote'] = true;
-        } elseif ($type === 'select' || $type === 'combobox') {
+        } elseif ($rawType === 'select' || $rawType === 'combobox') {
             $fieldDefinition['options'] = $this->normalizeFieldOptions(
                 $fieldDefinition['options'] ?? null,
             );

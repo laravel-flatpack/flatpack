@@ -1,0 +1,21 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Flatpack\Tests\Policies;
+
+use Flatpack\Tests\Models\Post;
+use Flatpack\Tests\Models\User;
+
+final class DenyCreatePostPolicy
+{
+    public function create(User $user): bool
+    {
+        return false;
+    }
+
+    public function update(User $user, Post $post): bool
+    {
+        return true;
+    }
+}

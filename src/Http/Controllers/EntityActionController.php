@@ -7,6 +7,7 @@ namespace Flatpack\Http\Controllers;
 use Flatpack\Actions\FlatpackActionContext;
 use Flatpack\Actions\FlatpackBulkActionContext;
 use Flatpack\Composition\EntityComposition;
+use Flatpack\Http\Requests\ListRecordUpdateRequest;
 use Flatpack\Services\Actions\ActionRuntime;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -114,7 +115,7 @@ final readonly class EntityActionController
     }
 
     public function updateRecord(
-        Request $request,
+        ListRecordUpdateRequest $request,
         string $entity,
         string $record,
     ): RedirectResponse {

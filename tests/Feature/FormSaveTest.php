@@ -2,10 +2,15 @@
 
 declare(strict_types=1);
 
+use Flatpack\Contracts\Authorization\FlatpackAuthorizer;
 use Flatpack\Tests\Models\Post;
 use Flatpack\Tests\Models\User;
+use Flatpack\Tests\Policies\DenyCreatePostPolicy;
+use Flatpack\Tests\Policies\DenyUpdatePostPolicy;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Gate;
 
 use function Pest\Laravel\actingAs;
 
@@ -238,7 +243,7 @@ YAML, function (): void {
                 'values' => [
                     'title' => 'Should fail',
                     'slug' => 'should-fail',
-                    'user_id' => 123,
+                    'user_id' => '123',
                 ],
             ])
             ->assertRedirect(route('flatpack.entities.create', ['entity' => 'posts']))
@@ -247,5 +252,265 @@ YAML, function (): void {
         expect(
             Post::query()->where('slug', 'should-fail')->exists(),
         )->toBeFalse();
+    });
+});
+
+test('flatpack form store rejects users without panel access', function () {
+    withTempFormSchema(<<<'YAML'
+name: Post
+model: Flatpack\Tests\Models\Post
+fields:
+  title:
+    type: text
+    label: Title
+  slug:
+    type: text
+    label: Slug
+YAML, function (): void {
+        $this->app->bind(FlatpackAuthorizer::class, fn (): FlatpackAuthorizer => new class implements FlatpackAuthorizer
+        {
+            public function canAccessPanel(?Authenticatable $user): bool
+            {
+                return false;
+            }
+
+            public function authorizeModelAbility(
+                ?Authenticatable $user,
+                string $ability,
+                string $modelClass,
+                ?object $model = null,
+            ): bool {
+                return true;
+            }
+        });
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        actingAs($user)
+            ->post(route('flatpack.entities.store', ['entity' => 'posts']), [
+                'values' => [
+                    'title' => 'Nope',
+                    'slug' => 'nope',
+                ],
+            ])
+            ->assertForbidden();
+    });
+});
+
+test('flatpack form store rejects create when policy denies', function () {
+    withTempFormSchema(<<<'YAML'
+name: Post
+model: Flatpack\Tests\Models\Post
+fields:
+  title:
+    type: text
+    label: Title
+  slug:
+    type: text
+    label: Slug
+YAML, function (): void {
+        Gate::policy(Post::class, DenyCreatePostPolicy::class);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        actingAs($user)
+            ->post(route('flatpack.entities.store', ['entity' => 'posts']), [
+                'values' => [
+                    'title' => 'Nope',
+                    'slug' => 'nope',
+                ],
+            ])
+            ->assertForbidden();
+    });
+});
+
+test('flatpack form store rejects create when policy denies for inertia xhr', function () {
+    withTempFormSchema(<<<'YAML'
+name: Post
+model: Flatpack\Tests\Models\Post
+fields:
+  title:
+    type: text
+    label: Title
+  slug:
+    type: text
+    label: Slug
+YAML, function (): void {
+        Gate::policy(Post::class, DenyCreatePostPolicy::class);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        actingAs($user)
+            ->post(
+                route('flatpack.entities.store', ['entity' => 'posts']),
+                [
+                    'values' => [
+                        'title' => 'Nope',
+                        'slug' => 'nope',
+                    ],
+                ],
+                [
+                    'HTTP_X_INERTIA' => 'true',
+                    'HTTP_ACCEPT' => 'text/html, application/xhtml+xml',
+                ],
+            )
+            ->assertForbidden();
+    });
+});
+
+test('flatpack form save rejects update when policy denies', function () {
+    withTempFormSchema(<<<'YAML'
+name: Post
+model: Flatpack\Tests\Models\Post
+fields:
+  title:
+    type: text
+    label: Title
+YAML, function (): void {
+        Gate::policy(Post::class, DenyUpdatePostPolicy::class);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+        $post = Post::factory()->createOne([
+            'title' => 'Original title',
+            'slug' => 'original-title',
+        ]);
+
+        actingAs($user)
+            ->patch(route('flatpack.entities.save', [
+                'entity' => 'posts',
+                'record' => (string) $post->getKey(),
+            ]), [
+                'values' => [
+                    'title' => 'Updated title',
+                ],
+            ])
+            ->assertForbidden();
+    });
+});
+
+test('flatpack form store validates required fields from yaml schema', function () {
+    withTempFormSchema(<<<'YAML'
+name: Post
+model: Flatpack\Tests\Models\Post
+fields:
+  title:
+    type: text
+    label: Title
+    required: true
+  slug:
+    type: text
+    label: Slug
+YAML, function (): void {
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        actingAs($user)
+            ->from(route('flatpack.entities.create', ['entity' => 'posts']))
+            ->post(route('flatpack.entities.store', ['entity' => 'posts']), [
+                'values' => [
+                    'title' => '',
+                    'slug' => 'some-slug',
+                ],
+            ])
+            ->assertRedirect(route('flatpack.entities.create', ['entity' => 'posts']))
+            ->assertSessionHasErrors('values.title');
+    });
+});
+
+test('flatpack form store validates relation exists rule', function () {
+    withTempFormSchema(<<<'YAML'
+name: Post
+model: Flatpack\Tests\Models\Post
+fields:
+  title:
+    type: text
+    label: Title
+  slug:
+    type: text
+    label: Slug
+  category_id:
+    type: relation
+    label: Category
+    relation: category
+    relation_name: name
+    relation_value: id
+YAML, function (): void {
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        actingAs($user)
+            ->from(route('flatpack.entities.create', ['entity' => 'posts']))
+            ->post(route('flatpack.entities.store', ['entity' => 'posts']), [
+                'values' => [
+                    'title' => 'With bad category',
+                    'slug' => 'with-bad-category',
+                    'category_id' => '999999',
+                ],
+            ])
+            ->assertRedirect(route('flatpack.entities.create', ['entity' => 'posts']))
+            ->assertSessionHasErrors('values.category_id');
+    });
+});
+
+test('flatpack form store merges yaml rules passthrough', function () {
+    withTempFormSchema(<<<'YAML'
+name: Post
+model: Flatpack\Tests\Models\Post
+fields:
+  title:
+    type: text
+    label: Title
+    rules:
+      - min:20
+  slug:
+    type: text
+    label: Slug
+YAML, function (): void {
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        actingAs($user)
+            ->from(route('flatpack.entities.create', ['entity' => 'posts']))
+            ->post(route('flatpack.entities.store', ['entity' => 'posts']), [
+                'values' => [
+                    'title' => 'short',
+                    'slug' => 'short-slug',
+                ],
+            ])
+            ->assertRedirect(route('flatpack.entities.create', ['entity' => 'posts']))
+            ->assertSessionHasErrors('values.title');
+    });
+});
+
+test('flatpack form store merges yaml rules as pipe string', function () {
+    withTempFormSchema(<<<'YAML'
+name: Post
+model: Flatpack\Tests\Models\Post
+fields:
+  title:
+    type: text
+    label: Title
+  slug:
+    type: text
+    label: Slug
+    rules: string|max:4
+YAML, function (): void {
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        actingAs($user)
+            ->from(route('flatpack.entities.create', ['entity' => 'posts']))
+            ->post(route('flatpack.entities.store', ['entity' => 'posts']), [
+                'values' => [
+                    'title' => 'ok',
+                    'slug' => 'toolong',
+                ],
+            ])
+            ->assertRedirect(route('flatpack.entities.create', ['entity' => 'posts']))
+            ->assertSessionHasErrors('values.slug');
     });
 });
