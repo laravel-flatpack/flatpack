@@ -7,14 +7,12 @@ use Flatpack\Tests\TestCase;
 
 uses(TestCase::class);
 
-test('fromSchema builds list actions with prefixed href', function () {
-    config()->set('flatpack.prefix', 'flatpack');
-
+test('fromSchema keeps literal href values for header actions', function () {
     $actions = ListHeaderActions::fromSchema([
         'actions' => [
             'create' => [
                 'label' => 'Create',
-                'url' => '/posts/create',
+                'href' => '/posts/create',
             ],
         ],
     ]);
@@ -23,19 +21,17 @@ test('fromSchema builds list actions with prefixed href', function () {
     expect($actions[0])->toMatchArray([
         'id' => 'create',
         'label' => 'Create',
-        'href' => '/flatpack/posts/create',
+        'href' => '/posts/create',
         'variant' => 'outline',
     ]);
 });
 
 test('fromSchema passes through allowed variant', function () {
-    config()->set('flatpack.prefix', 'flatpack');
-
     $actions = ListHeaderActions::fromSchema([
         'actions' => [
             'create' => [
                 'label' => 'Create',
-                'url' => '/posts/create',
+                'href' => '/posts/create',
                 'variant' => 'outline',
             ],
         ],
@@ -45,13 +41,11 @@ test('fromSchema passes through allowed variant', function () {
 });
 
 test('fromSchema defaults invalid variant to outline', function () {
-    config()->set('flatpack.prefix', 'flatpack');
-
     $actions = ListHeaderActions::fromSchema([
         'actions' => [
             'create' => [
                 'label' => 'Create',
-                'url' => '/posts/create',
+                'href' => '/posts/create',
                 'variant' => 'not-a-real-variant',
             ],
         ],
@@ -61,13 +55,11 @@ test('fromSchema defaults invalid variant to outline', function () {
 });
 
 test('fromSchema maps primary alias to default', function () {
-    config()->set('flatpack.prefix', 'flatpack');
-
     $actions = ListHeaderActions::fromSchema([
         'actions' => [
             'create' => [
                 'label' => 'Create',
-                'url' => '/posts/create',
+                'href' => '/posts/create',
                 'variant' => 'primary',
             ],
         ],
@@ -77,17 +69,15 @@ test('fromSchema maps primary alias to default', function () {
 });
 
 test('fromSchema uses outline for omitted variant and default for primary CTA', function () {
-    config()->set('flatpack.prefix', 'flatpack');
-
     $actions = ListHeaderActions::fromSchema([
         'actions' => [
             'category' => [
                 'label' => 'New Category',
-                'url' => '/categories/create',
+                'href' => '/categories/create',
             ],
             'create' => [
                 'label' => 'Create',
-                'url' => '/posts/create',
+                'action' => 'create',
                 'variant' => 'primary',
             ],
         ],
@@ -95,4 +85,46 @@ test('fromSchema uses outline for omitted variant and default for primary CTA', 
 
     expect($actions[0]['variant'])->toBe('outline');
     expect($actions[1]['variant'])->toBe('default');
+});
+
+test('fromSchema keeps action-based header actions', function () {
+    $actions = ListHeaderActions::fromSchema([
+        'actions' => [
+            'create' => [
+                'label' => 'Create',
+                'action' => 'create',
+                'icon' => 'plus',
+            ],
+        ],
+    ]);
+
+    expect($actions)->toHaveCount(1);
+    expect($actions[0])->toMatchArray([
+        'id' => 'create',
+        'label' => 'Create',
+        'action' => 'create',
+        'icon' => 'plus',
+        'variant' => 'outline',
+    ]);
+});
+
+test('fromSchema ignores invalid header actions without exactly one target', function () {
+    $actions = ListHeaderActions::fromSchema([
+        'actions' => [
+            'missing-target' => [
+                'label' => 'Missing',
+            ],
+            'both-targets' => [
+                'label' => 'Both',
+                'action' => 'create',
+                'href' => '/posts/create',
+            ],
+            'legacy-url' => [
+                'label' => 'Legacy',
+                'url' => '/posts/create',
+            ],
+        ],
+    ]);
+
+    expect($actions)->toBe([]);
 });

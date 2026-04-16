@@ -7,7 +7,7 @@ namespace Flatpack\Lists;
 use Flatpack\Support\NavigationUrl;
 
 /**
- * Normalizes optional {@code actions} from list.yaml into header buttons (label + prefixed href).
+ * Normalizes optional {@code actions} from list.yaml into header buttons.
  */
 final class ListHeaderActions
 {
@@ -27,7 +27,7 @@ final class ListHeaderActions
 
     /**
      * @param  array<string, mixed>|null  $schema
-     * @return list<array{id: string, label: string, href: string, variant: string}>
+     * @return list<array{id: string, label: string, icon: string, variant: string, href?: string, action?: string}>
      */
     public static function fromSchema(?array $schema): array
     {
@@ -40,7 +40,6 @@ final class ListHeaderActions
             return [];
         }
 
-        $prefix = trim((string) config('flatpack.prefix', 'flatpack'), '/');
         $allowExternalOrigins = (bool) config('flatpack.navigation.allow_external_origins', false);
         $out = [];
 
@@ -49,23 +48,35 @@ final class ListHeaderActions
                 continue;
             }
             $label = isset($definition['label']) ? trim((string) $definition['label']) : '';
-            $url = isset($definition['url']) ? trim((string) $definition['url']) : '';
+            $action = isset($definition['action']) ? trim((string) $definition['action']) : '';
+            $href = isset($definition['href']) ? trim((string) $definition['href']) : '';
             $icon = isset($definition['icon']) ? trim((string) $definition['icon']) : '';
-            if ($label === '' || $url === '') {
+            if ($label === '') {
                 continue;
             }
-            $href = self::prefixedUrl($url, $prefix, $allowExternalOrigins);
-            if ($href === '') {
+            if (($action === '' && $href === '') || ($action !== '' && $href !== '')) {
                 continue;
+            }
+            if ($href !== '') {
+                $href = self::sanitizeHref($href, $allowExternalOrigins);
+                if ($href === '') {
+                    continue;
+                }
             }
             $id = is_string($key) && $key !== '' ? $key : (string) count($out);
-            $out[] = [
+            $normalized = [
                 'id' => $id,
                 'label' => $label,
                 'icon' => $icon,
-                'href' => $href,
                 'variant' => self::normalizeVariant($definition['variant'] ?? null),
             ];
+            if ($action !== '') {
+                $normalized['action'] = $action;
+            }
+            if ($href !== '') {
+                $normalized['href'] = $href;
+            }
+            $out[] = $normalized;
         }
 
         return $out;
@@ -77,6 +88,11 @@ final class ListHeaderActions
     public static function prefixedUrl(string $url, string $prefix, bool $allowExternalOrigins = false): string
     {
         return NavigationUrl::sanitizeAndPrefix($url, $prefix, $allowExternalOrigins);
+    }
+
+    public static function sanitizeHref(string $href, bool $allowExternalOrigins = false): string
+    {
+        return NavigationUrl::sanitizeAndPrefix($href, '', $allowExternalOrigins);
     }
 
     /**

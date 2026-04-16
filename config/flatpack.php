@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Flatpack\Actions\Handlers\BulkDeleteHandler;
+use Flatpack\Actions\Handlers\CreateRecordHandler;
 use Flatpack\Actions\Handlers\DeleteRecordHandler;
 use Flatpack\Actions\Handlers\EditRecordHandler;
 use Flatpack\Actions\Handlers\SaveRecordHandler;
@@ -65,6 +66,7 @@ return [
     |
     */
     'actions' => [
+        'create' => CreateRecordHandler::class,
         'edit' => EditRecordHandler::class,
         'save' => SaveRecordHandler::class,
         'delete' => DeleteRecordHandler::class,
