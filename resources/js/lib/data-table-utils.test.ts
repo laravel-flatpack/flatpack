@@ -6,6 +6,7 @@ import {
     formatCellValue,
     formatRelationCellDisplay,
     interpolateRowPlaceholders,
+    localDateSegment,
     mergeCommittedDate,
     normalizeColumnTruncate,
     readOnlyTruncatedDisplay,
@@ -198,6 +199,12 @@ describe('dateInputSegment', () => {
     it('returns empty when no date prefix', () => {
         expect(dateInputSegment('not-a-date')).toBe('');
         expect(dateInputSegment('')).toBe('');
+    });
+});
+
+describe('localDateSegment', () => {
+    it('formats a local calendar day without UTC shifting', () => {
+        expect(localDateSegment(new Date(2024, 3, 2))).toBe('2024-04-02');
     });
 });
 

@@ -3,6 +3,7 @@ import { DASHBOARD_TABLE_INPUT_CLASS } from '@/components/table/data-table-const
 import {
     dateInputSegment,
     formatCellValue,
+    localDateSegment,
     mergeCommittedDate,
     readOnlyTruncatedDisplay,
 } from '@/lib/data-table-utils';
@@ -36,9 +37,7 @@ export function DataTableDateCell({
                 triggerClassName={DASHBOARD_TABLE_INPUT_CLASS}
                 onValueChange={(nextDate) => {
                     const nextDay =
-                        nextDate == null
-                            ? ''
-                            : nextDate.toISOString().slice(0, 10);
+                        nextDate == null ? '' : localDateSegment(nextDate);
                     commit(mergeCommittedDate(nextDay, value));
                 }}
             />
