@@ -345,89 +345,95 @@ export function DataTable({
         } as const;
     }, [sorting]);
 
-    const handleBulkActionClick = React.useCallback(async (actionId: string) => {
-        const selectedIds = new Set(
-            Object.entries(rowSelection)
-                .filter(([, selected]) => selected)
-                .map(([rowId]) => rowId),
-        );
+    const handleBulkActionClick = React.useCallback(
+        async (actionId: string) => {
+            const selectedIds = new Set(
+                Object.entries(rowSelection)
+                    .filter(([, selected]) => selected)
+                    .map(([rowId]) => rowId),
+            );
 
-        if (selectedIds.size === 0) {
-            return;
-        }
+            if (selectedIds.size === 0) {
+                return;
+            }
 
-        const actionKey = bulkActions.find(
-            (bulkAction) => bulkAction.id === actionId,
-        )?.action;
-        if (!actionKey) {
-            return;
-        }
+            const actionKey = bulkActions.find(
+                (bulkAction) => bulkAction.id === actionId,
+            )?.action;
+            if (!actionKey) {
+                return;
+            }
 
-        if (onBulkAction != null) {
-            const previousData = data;
-            const previousSelection = rowSelection;
-            const previousIsAllRowsSelected = isAllRowsSelected;
-            const optimisticRows =
-                actionKey === 'delete' && isAllRowsSelected
-                    ? []
-                    : actionKey === 'delete'
-                      ? data.filter(
-                            (row, index) =>
-                                !selectedIds.has(getStableRowId(row, index)),
-                        )
-                      : data;
+            if (onBulkAction != null) {
+                const previousData = data;
+                const previousSelection = rowSelection;
+                const previousIsAllRowsSelected = isAllRowsSelected;
+                const optimisticRows =
+                    actionKey === 'delete' && isAllRowsSelected
+                        ? []
+                        : actionKey === 'delete'
+                          ? data.filter(
+                                (row, index) =>
+                                    !selectedIds.has(
+                                        getStableRowId(row, index),
+                                    ),
+                            )
+                          : data;
+
+                if (actionKey === 'delete') {
+                    setData(optimisticRows);
+                    onValueChange?.(optimisticRows);
+                }
+                handleDeselectAllRows();
+
+                try {
+                    await onBulkAction({
+                        action: actionKey,
+                        selection: isAllRowsSelected
+                            ? 'all'
+                            : Array.from(selectedIds),
+                        search: globalFilter,
+                        filters: serverFilterState,
+                        sorting: serverSortingForBulkAction,
+                    });
+                    return;
+                } catch (error) {
+                    if (actionKey === 'delete') {
+                        setData(previousData);
+                    }
+                    setRowSelection(previousSelection);
+                    setIsAllRowsSelected(previousIsAllRowsSelected);
+                    throw error;
+                }
+            }
 
             if (actionKey === 'delete') {
-                setData(optimisticRows);
-                onValueChange?.(optimisticRows);
-            }
-            handleDeselectAllRows();
-
-            try {
-                await onBulkAction({
-                    action: actionKey,
-                    selection: isAllRowsSelected
-                        ? 'all'
-                        : Array.from(selectedIds),
-                    search: globalFilter,
-                    filters: serverFilterState,
-                    sorting: serverSortingForBulkAction,
+                setData((prev) => {
+                    const nextRows = prev.filter(
+                        (row, index) =>
+                            !selectedIds.has(getStableRowId(row, index)),
+                    );
+                    onValueChange?.(nextRows);
+                    return nextRows;
                 });
-                return;
-            } catch (error) {
-                if (actionKey === 'delete') {
-                    setData(previousData);
-                }
-                setRowSelection(previousSelection);
-                setIsAllRowsSelected(previousIsAllRowsSelected);
-                throw error;
             }
-        }
 
-        if (actionKey === 'delete') {
-            setData((prev) => {
-                const nextRows = prev.filter(
-                    (row, index) => !selectedIds.has(getStableRowId(row, index)),
-                );
-                onValueChange?.(nextRows);
-                return nextRows;
-            });
-        }
-
-        handleDeselectAllRows();
-    }, [
-        bulkActions,
-        data,
-        globalFilter,
-        getStableRowId,
-        handleDeselectAllRows,
-        isAllRowsSelected,
-        onBulkAction,
-        onValueChange,
-        rowSelection,
-        serverFilterState,
-        serverSortingForBulkAction,
-    ]);
+            handleDeselectAllRows();
+        },
+        [
+            bulkActions,
+            data,
+            globalFilter,
+            getStableRowId,
+            handleDeselectAllRows,
+            isAllRowsSelected,
+            onBulkAction,
+            onValueChange,
+            rowSelection,
+            serverFilterState,
+            serverSortingForBulkAction,
+        ],
+    );
     const paginationStateCurrent = table.getState().pagination;
     const selectedRowCount = isAllRowsSelected
         ? (serverPagination?.total ?? table.getFilteredRowModel().rows.length)

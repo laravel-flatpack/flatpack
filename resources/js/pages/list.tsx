@@ -120,10 +120,10 @@ export default function FlatpackListPage({
                         sort_direction: payload.sorting.sort_direction,
                     },
                     {
-                    preserveState: true,
-                    preserveScroll: true,
-                    onSuccess: () => resolve(),
-                    onError: () => reject(new Error('Bulk action failed')),
+                        preserveState: true,
+                        preserveScroll: true,
+                        onSuccess: () => resolve(),
+                        onError: () => reject(new Error('Bulk action failed')),
                     },
                 );
             });

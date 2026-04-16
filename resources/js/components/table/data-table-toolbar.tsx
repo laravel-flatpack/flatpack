@@ -76,7 +76,8 @@ export function DataTableToolbar({
     const pendingAction =
         pendingActionId === null
             ? null
-            : bulkActions.find((action) => action.id === pendingActionId) ?? null;
+            : (bulkActions.find((action) => action.id === pendingActionId) ??
+              null);
 
     return (
         <div className="h-8 flex items-center justify-between gap-3">
@@ -117,7 +118,9 @@ export function DataTableToolbar({
                                         }}
                                     >
                                         {action.icon ? (
-                                            <LucideIconByName name={action.icon} />
+                                            <LucideIconByName
+                                                name={action.icon}
+                                            />
                                         ) : null}
                                         {action.label}
                                     </DropdownMenuItem>
@@ -186,8 +189,8 @@ export function DataTableToolbar({
                             {pendingAction?.label ?? 'Delete'} selected records?
                         </AlertDialogTitle>
                         <AlertDialogDescription>
-                            This will apply {pendingAction?.label ?? 'Delete'} to{' '}
-                            {selectedRowCount}{' '}
+                            This will apply {pendingAction?.label ?? 'Delete'}{' '}
+                            to {selectedRowCount}{' '}
                             {selectedRowCount === 1 ? 'record' : 'records'}. Are
                             you sure you want to continue?
                         </AlertDialogDescription>
