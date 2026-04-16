@@ -1,11 +1,13 @@
 import type { FormDataConvertible } from '@inertiajs/core';
 import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Loader2Icon } from 'lucide-react';
 import { Suspense, useCallback, useEffect, useMemo } from 'react';
 import type { DateRange } from 'react-day-picker';
 import { toast } from 'sonner';
 import { LucideIconByName } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { FieldError } from '@/components/ui/field';
+import { Spinner } from '@/components/ui/spinner';
 import FlatpackLayout from '@/layouts/flatpack-layout';
 import { localDateSegment } from '@/lib/data-table-utils';
 import { loadField } from '@/lib/form';
@@ -20,8 +22,6 @@ import { route } from '@/lib/route';
 import { cn } from '@/lib/utils';
 import type { FormFieldProps } from '@/types/form-fields';
 import type { FlatpackFormPageProps } from '@/types/pages/flatpack';
-import { Loader2Icon } from 'lucide-react';
-import { Spinner } from '@/components/ui/spinner';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -415,7 +415,9 @@ export default function FlatpackFormPage({
                                                     name={action.icon}
                                                 />
                                             )}
-                                            {form.processing && (<Spinner className="size-4" />)}
+                                            {form.processing && (
+                                                <Spinner className="size-4" />
+                                            )}
                                             {action.label}
                                         </Button>
                                     ) : (
