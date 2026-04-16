@@ -155,7 +155,7 @@ fields:
 YAML, function (): void {
         /** @var User $user */
         $user = User::factory()->createOne();
-        $category = Flatpack\Tests\Models\Category::factory()->createOne([
+        Flatpack\Tests\Models\Category::factory()->createOne([
             'name' => 'Guides',
         ]);
 
@@ -170,8 +170,47 @@ YAML, function (): void {
             ->assertJsonPath('form_actions.0.variant', 'default')
             ->assertJsonPath('schema.fields.published_at.type', 'date-picker')
             ->assertJsonPath('schema.fields.category_id.type', 'combobox')
-            ->assertJsonPath('schema.fields.category_id.options.0.value', (string) $category->getKey())
-            ->assertJsonPath('schema.fields.category_id.options.0.label', 'Guides');
+            ->assertJsonPath('schema.fields.category_id.remote', true)
+            ->assertJsonPath('schema.fields.category_id.options', []);
+    });
+});
+
+test('flatpack relation options endpoint returns paginated searchable options', function () {
+    withTempFormSchema(<<<'YAML'
+name: Post
+model: Flatpack\Tests\Models\Post
+fields:
+  category_id:
+    type: relation
+    label: Category
+    relation: category
+    relation_name: name
+    relation_value: id
+YAML, function (): void {
+        /** @var User $user */
+        $user = User::factory()->createOne();
+        Flatpack\Tests\Models\Category::factory()->createMany([
+            ['name' => 'Alpha'],
+            ['name' => 'Beta'],
+            ['name' => 'Gamma'],
+        ]);
+        $selected = Flatpack\Tests\Models\Category::factory()->createOne([
+            'name' => 'Zeta',
+        ]);
+
+        actingAs($user)
+            ->getJson(route('flatpack.entities.relation-options', [
+                'entity' => 'posts',
+                'field' => 'category_id',
+                'q' => 'a',
+                'per_page' => 2,
+                'selected' => (string) $selected->getKey(),
+            ]))
+            ->assertOk()
+            ->assertJsonPath('meta.per_page', 2)
+            ->assertJsonPath('meta.page', 1)
+            ->assertJsonPath('data.0.value', (string) $selected->getKey())
+            ->assertJsonPath('data.0.label', 'Zeta');
     });
 });
 

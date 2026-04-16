@@ -274,6 +274,33 @@ function componentValueProps(
     }
 }
 
+function relationRemoteProps(
+    field: FormFieldProps,
+    fieldId: string,
+    entity: string,
+): Record<string, unknown> {
+    if (field.type !== 'combobox') {
+        return {};
+    }
+
+    const relationField = field as FormFieldProps & {
+        relation?: unknown;
+        remote?: unknown;
+    };
+    if (
+        typeof relationField.relation !== 'string' ||
+        relationField.relation.trim() === ''
+    ) {
+        return {};
+    }
+
+    return {
+        remote: relationField.remote === true,
+        remoteEndpoint: route('flatpack.entities.relation-options', { entity }),
+        remoteFieldId: fieldId,
+    };
+}
+
 function fieldErrorMessages(
     errors: Record<string, unknown>,
     fieldId: string,
@@ -561,6 +588,7 @@ export default function FlatpackFormPage({
                                         setFieldValue(field, id, nextValue),
                                 }),
                                 ...componentValueProps(field, fieldValues[id]),
+                                ...relationRemoteProps(field, id, entity),
                             };
 
                             return (

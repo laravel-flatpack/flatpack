@@ -12,7 +12,6 @@ use Flatpack\Http\FlatpackResponse;
 use Flatpack\Lists\ListHeaderActions;
 use Illuminate\Database\Eloquent\MassAssignmentException;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -280,10 +279,8 @@ final readonly class FormController
 
         if ($type === 'relation') {
             $fieldDefinition['type'] = 'combobox';
-            $fieldDefinition['options'] = $this->relationFieldOptions(
-                $modelClass,
-                $fieldDefinition,
-            );
+            $fieldDefinition['options'] = [];
+            $fieldDefinition['remote'] = true;
         } elseif ($type === 'select' || $type === 'combobox') {
             $fieldDefinition['options'] = $this->normalizeFieldOptions(
                 $fieldDefinition['options'] ?? null,
@@ -291,55 +288,6 @@ final readonly class FormController
         }
 
         return $fieldDefinition;
-    }
-
-    /**
-     * @param  array<string, mixed>  $fieldDefinition
-     * @return list<array{value: string, label: string}>
-     */
-    private function relationFieldOptions(
-        string $modelClass,
-        array $fieldDefinition,
-    ): array {
-        if ($modelClass === '' || ! class_exists($modelClass)) {
-            return [];
-        }
-        if (! is_subclass_of($modelClass, Model::class)) {
-            return [];
-        }
-
-        $relationName = isset($fieldDefinition['relation'])
-            ? trim((string) $fieldDefinition['relation'])
-            : '';
-        $labelField = $this->stringFromField($fieldDefinition, 'relation_name', 'relationName');
-        $valueField = $this->stringFromField($fieldDefinition, 'relation_value', 'relationValue');
-
-        if ($relationName === '' || $labelField === '' || $valueField === '') {
-            return [];
-        }
-
-        /** @var class-string<Model> $modelClass */
-        $model = new $modelClass();
-        if (! method_exists($model, $relationName)) {
-            return [];
-        }
-
-        $relation = $model->{$relationName}();
-        if (! $relation instanceof Relation) {
-            return [];
-        }
-
-        return $relation->getRelated()
-            ->newQuery()
-            ->orderBy($labelField)
-            ->get([$valueField, $labelField])
-            ->map(fn (Model $related): array => [
-                'value' => (string) $related->getAttribute($valueField),
-                'label' => (string) $related->getAttribute($labelField),
-            ])
-            ->filter(fn (array $option): bool => $option['value'] !== '' && $option['label'] !== '')
-            ->values()
-            ->all();
     }
 
     /**

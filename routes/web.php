@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Flatpack\Http\Controllers\DashboardController;
 use Flatpack\Http\Controllers\FormController;
 use Flatpack\Http\Controllers\ListController;
+use Flatpack\Http\Controllers\RelationOptionsController;
 use Flatpack\Http\Controllers\SessionController;
 use Flatpack\Http\Middleware\EnsureFlatpackAccess;
 use Illuminate\Support\Facades\Route;
@@ -44,6 +45,9 @@ Route::middleware(['auth:' . config('flatpack.guard', 'web'), EnsureFlatpackAcce
 
     /** Entity edit form save route */
     Route::patch('{entity}/{record}/save', [FormController::class, 'save'])->name('entities.save');
+
+    /** Entity relation options route */
+    Route::get('{entity}/relation-options', RelationOptionsController::class)->name('entities.relation-options');
 
     /** Entity list route */
     Route::get('{entity}', [ListController::class, 'index'])->name('entities.index');
