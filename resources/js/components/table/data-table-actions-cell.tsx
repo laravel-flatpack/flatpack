@@ -52,19 +52,23 @@ function actionIsDestructive(
 }
 
 export function DataTableActionsCell({
-    buttons,
+    actions,
     row,
+    onAction,
 }: {
-    buttons: Record<string, FlatpackDataTableActionButton>;
+    actions: FlatpackDataTableActionButton[];
     row: Record<string, unknown>;
+    onAction?: (
+        action: string,
+        row: Record<string, unknown>,
+    ) => void | Promise<void>;
 }) {
-    const entries = Object.entries(buttons);
-    const primary = entries.filter(
-        ([key, cfg]) => !actionIsDestructive(key, cfg),
-    );
-    const destructive = entries.filter(([key, cfg]) =>
-        actionIsDestructive(key, cfg),
-    );
+    const primary = actions
+        .filter((cfg) => !actionIsDestructive(cfg.action ?? cfg.label, cfg))
+        .map((cfg, index) => [String(index), cfg] as const);
+    const destructive = actions
+        .filter((cfg) => actionIsDestructive(cfg.action ?? cfg.label, cfg))
+        .map((cfg, index) => [String(index), cfg] as const);
 
     const actionRowLabel = (
         cfg: FlatpackDataTableActionButton,
@@ -110,7 +114,7 @@ export function DataTableActionsCell({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="min-w-44 max-w-xs">
                     {primary.map(([actionKey, cfg]) => {
-                        const template = cfg.href ?? cfg.url ?? '';
+                        const template = cfg.href ?? '';
                         const resolved = template
                             ? interpolateRowPlaceholders(template, row)
                             : '';
@@ -147,11 +151,11 @@ export function DataTableActionsCell({
                         return (
                             <DropdownMenuItem
                                 key={actionKey}
-                                {...(cfg.action
-                                    ? {
-                                          'data-flatpack-action': cfg.action,
-                                      }
-                                    : {})}
+                                onClick={() =>
+                                    cfg.action
+                                        ? onAction?.(cfg.action, row)
+                                        : undefined
+                                }
                             >
                                 {label}
                             </DropdownMenuItem>
@@ -161,7 +165,7 @@ export function DataTableActionsCell({
                         <DropdownMenuSeparator />
                     ) : null}
                     {destructive.map(([actionKey, cfg]) => {
-                        const template = cfg.href ?? cfg.url ?? '';
+                        const template = cfg.href ?? '';
                         const resolved = template
                             ? interpolateRowPlaceholders(template, row)
                             : '';
@@ -200,11 +204,11 @@ export function DataTableActionsCell({
                             <DropdownMenuItem
                                 key={actionKey}
                                 variant="destructive"
-                                {...(cfg.action
-                                    ? {
-                                          'data-flatpack-action': cfg.action,
-                                      }
-                                    : {})}
+                                onClick={() =>
+                                    cfg.action
+                                        ? onAction?.(cfg.action, row)
+                                        : undefined
+                                }
                             >
                                 {label}
                             </DropdownMenuItem>

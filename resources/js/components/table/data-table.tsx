@@ -54,6 +54,9 @@ export function DataTable({
     onRowClick,
     onValueChange,
     onBulkAction,
+    onRowAction,
+    onCellUpdate,
+    onRowUpdate,
     className,
     serverPagination,
     serverSearch,
@@ -181,6 +184,8 @@ export function DataTable({
 
     const handleCellChange = React.useCallback(
         (rowId: string, columnId: string, next: unknown) => {
+            let previousRow: Record<string, unknown> | null = null;
+            let nextRow: Record<string, unknown> | null = null;
             setData((prev) => {
                 const idx = prev.findIndex(
                     (row, index) => getStableRowId(row, index) === rowId,
@@ -192,18 +197,55 @@ export function DataTable({
                 if (Object.is(cur, next)) {
                     return prev;
                 }
+                previousRow = prev[idx];
+                nextRow = { ...prev[idx], [columnId]: next };
+                const resolvedNextRow = nextRow;
                 const nextRows = prev.map((r, i) =>
-                    i === idx ? { ...r, [columnId]: next } : r,
+                    i === idx ? resolvedNextRow : r,
                 );
                 onValueChange?.(nextRows);
                 return nextRows;
             });
+            if (
+                nextRow == null ||
+                previousRow == null ||
+                onCellUpdate == null
+            ) {
+                return;
+            }
+            void Promise.resolve(
+                onCellUpdate({
+                    rowId,
+                    row: nextRow,
+                    columnId,
+                    value: next,
+                }),
+            ).catch(() => {
+                setData((prev) => {
+                    const idx = prev.findIndex(
+                        (row, index) => getStableRowId(row, index) === rowId,
+                    );
+                    if (idx === -1) {
+                        return prev;
+                    }
+                    const resolvedPreviousRow = previousRow;
+                    if (resolvedPreviousRow == null) {
+                        return prev;
+                    }
+                    const reverted = prev.map((r, i) =>
+                        i === idx ? resolvedPreviousRow : r,
+                    );
+                    onValueChange?.(reverted);
+                    return reverted;
+                });
+            });
         },
-        [getStableRowId, onValueChange],
+        [getStableRowId, onCellUpdate, onValueChange],
     );
 
     const handleRowReplace = React.useCallback(
         (rowId: string, nextRow: Record<string, unknown>) => {
+            let previousRow: Record<string, unknown> | null = null;
             setData((prev) => {
                 const idx = prev.findIndex(
                     (row, index) => getStableRowId(row, index) === rowId,
@@ -211,12 +253,43 @@ export function DataTable({
                 if (idx === -1) {
                     return prev;
                 }
+                previousRow = prev[idx];
                 const nextRows = prev.map((r, i) => (i === idx ? nextRow : r));
                 onValueChange?.(nextRows);
                 return nextRows;
             });
+            if (onRowUpdate == null) {
+                return;
+            }
+            void Promise.resolve(
+                onRowUpdate({
+                    rowId,
+                    row: nextRow,
+                }),
+            ).catch(() => {
+                if (previousRow == null) {
+                    return;
+                }
+                setData((prev) => {
+                    const idx = prev.findIndex(
+                        (row, index) => getStableRowId(row, index) === rowId,
+                    );
+                    if (idx === -1) {
+                        return prev;
+                    }
+                    const resolvedPreviousRow = previousRow;
+                    if (resolvedPreviousRow == null) {
+                        return prev;
+                    }
+                    const reverted = prev.map((r, i) =>
+                        i === idx ? resolvedPreviousRow : r,
+                    );
+                    onValueChange?.(reverted);
+                    return reverted;
+                });
+            });
         },
-        [getStableRowId, onValueChange],
+        [getStableRowId, onRowUpdate, onValueChange],
     );
 
     const columnDefs = React.useMemo(
@@ -226,6 +299,7 @@ export function DataTable({
                 reorderable: isReorderable,
                 onCellChange: handleCellChange,
                 onRowReplace: handleRowReplace,
+                onRowAction: (action, row) => onRowAction?.({ action, row }),
             }),
         [
             schemaColumns,
@@ -233,6 +307,7 @@ export function DataTable({
             isReorderable,
             handleCellChange,
             handleRowReplace,
+            onRowAction,
         ],
     );
 

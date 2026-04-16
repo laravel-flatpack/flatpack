@@ -141,7 +141,7 @@ describe('mapFormFieldPropsToComponentProps', () => {
         expect(out.data).toEqual([]);
     });
 
-    it('preserves actions column with buttons in table schema', () => {
+    it('preserves actions column with actions in table schema', () => {
         const props: FormFieldProps = {
             type: 'table',
             label: 'T',
@@ -150,13 +150,13 @@ describe('mapFormFieldPropsToComponentProps', () => {
                     id: 'actions',
                     label: 'Actions',
                     type: 'actions',
-                    buttons: {
-                        edit: {
+                    actions: [
+                        {
                             label: 'Edit',
                             icon: 'edit',
-                            href: '/{id}/edit',
+                            action: 'edit',
                         },
-                    },
+                    ],
                 },
             ],
             data: [],
@@ -165,9 +165,9 @@ describe('mapFormFieldPropsToComponentProps', () => {
         const cols = out.columns as {
             id: string;
             type?: string;
-            buttons?: object;
+            actions?: { action?: string }[];
         }[];
         expect(cols[0].type).toBe('actions');
-        expect(cols[0].buttons).toHaveProperty('edit');
+        expect(cols[0].actions?.[0]?.action).toBe('edit');
     });
 });

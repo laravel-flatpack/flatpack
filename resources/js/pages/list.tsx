@@ -130,6 +130,105 @@ export default function FlatpackListPage({
         },
         [entity, normalizedPrefix],
     );
+    const handleRowAction = useCallback(
+        async ({
+            action,
+            row,
+        }: {
+            action: string;
+            row: Record<string, unknown>;
+        }) => {
+            const record = row[modelKey || 'id'];
+            if (record == null || record === '') {
+                throw new Error('Record key is missing');
+            }
+            await new Promise<void>((resolve, reject) => {
+                router.post(
+                    `/${normalizedPrefix}/${entity}/${encodeURIComponent(String(record))}/action`,
+                    { action },
+                    {
+                        preserveState: true,
+                        preserveScroll: true,
+                        onSuccess: () => resolve(),
+                        onError: () => reject(new Error('Row action failed')),
+                    },
+                );
+            });
+        },
+        [entity, modelKey, normalizedPrefix],
+    );
+    const handleListAction = useCallback(
+        async (action: string) => {
+            await new Promise<void>((resolve, reject) => {
+                router.post(
+                    `/${normalizedPrefix}/${entity}/action`,
+                    { action },
+                    {
+                        preserveState: true,
+                        preserveScroll: true,
+                        onSuccess: () => resolve(),
+                        onError: () => reject(new Error('List action failed')),
+                    },
+                );
+            });
+        },
+        [entity, normalizedPrefix],
+    );
+    const handleCellUpdate = useCallback(
+        async ({
+            row,
+            columnId,
+            value,
+        }: {
+            row: Record<string, unknown>;
+            columnId: string;
+            value: unknown;
+        }) => {
+            const record = row[modelKey || 'id'];
+            if (record == null || record === '') {
+                throw new Error('Record key is missing');
+            }
+            await new Promise<void>((resolve, reject) => {
+                router.patch(
+                    `/${normalizedPrefix}/${entity}/${encodeURIComponent(String(record))}`,
+                    {
+                        field: columnId,
+                        value: value as never,
+                    },
+                    {
+                        preserveState: true,
+                        preserveScroll: true,
+                        onSuccess: () => resolve(),
+                        onError: () =>
+                            reject(new Error('Record update failed')),
+                    },
+                );
+            });
+        },
+        [entity, modelKey, normalizedPrefix],
+    );
+    const handleRowUpdate = useCallback(
+        async ({ row }: { row: Record<string, unknown> }) => {
+            const record = row[modelKey || 'id'];
+            if (record == null || record === '') {
+                throw new Error('Record key is missing');
+            }
+            await new Promise<void>((resolve, reject) => {
+                router.patch(
+                    `/${normalizedPrefix}/${entity}/${encodeURIComponent(String(record))}`,
+                    { values: row as never },
+                    {
+                        preserveState: true,
+                        preserveScroll: true,
+                        onSuccess: () => resolve(),
+                        onError: () =>
+                            reject(new Error('Record update failed')),
+                    },
+                );
+            });
+        },
+        [entity, modelKey, normalizedPrefix],
+    );
 
     return (
         <>
@@ -142,18 +241,41 @@ export default function FlatpackListPage({
                         </h1>
                         <div className="flex shrink-0 flex-wrap items-center justify-start gap-2 sm:justify-end">
                             {listActions.map((action) => (
-                                <Button
-                                    key={action.id}
-                                    asChild
-                                    size="lg"
-                                    variant={action.variant ?? 'outline'}
-                                >
-                                    <Link
-                                        href={action.href}
+                                'href' in action ? (
+                                    <Button
+                                        key={action.id}
+                                        asChild
+                                        size="lg"
+                                        variant={action.variant ?? 'outline'}
+                                    >
+                                        <Link
+                                            href={action.href}
+                                            className={cn(
+                                                action.icon &&
+                                                    'inline-flex items-center gap-1.5',
+                                            )}
+                                        >
+                                            {action.icon ? (
+                                                <LucideIconByName
+                                                    name={action.icon}
+                                                />
+                                            ) : null}
+                                            {action.label}
+                                        </Link>
+                                    </Button>
+                                ) : (
+                                    <Button
+                                        key={action.id}
+                                        type="button"
+                                        size="lg"
+                                        variant={action.variant ?? 'outline'}
                                         className={cn(
                                             action.icon &&
                                                 'inline-flex items-center gap-1.5',
                                         )}
+                                        onClick={() =>
+                                            handleListAction(action.action)
+                                        }
                                     >
                                         {action.icon ? (
                                             <LucideIconByName
@@ -161,8 +283,8 @@ export default function FlatpackListPage({
                                             />
                                         ) : null}
                                         {action.label}
-                                    </Link>
-                                </Button>
+                                    </Button>
+                                )
                             ))}
                         </div>
                     </div>
@@ -188,6 +310,9 @@ export default function FlatpackListPage({
                         serverFilterValues={serverFilterValues}
                         serverSorting={serverSorting}
                         onBulkAction={handleBulkAction}
+                        onRowAction={handleRowAction}
+                        onCellUpdate={handleCellUpdate}
+                        onRowUpdate={handleRowUpdate}
                         onServerPaginationChange={
                             pagination
                                 ? handleServerPaginationChange

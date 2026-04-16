@@ -23,7 +23,7 @@ export type FlatpackDataTableActionButton = {
     icon?: string;
     action?: string;
     href?: string;
-    url?: string;
+    variant?: FlatpackActionVariant;
 };
 
 export type FlatpackActionVariant =
@@ -57,7 +57,7 @@ export type FlatpackDataTableColumn = {
     relationName?: string;
     relationValue?: string;
     options?: FlatpackDataTableColumnOption[];
-    buttons?: Record<string, FlatpackDataTableActionButton>;
+    actions?: FlatpackDataTableActionButton[];
     format?: string;
     timezone?: string;
     sortable?: boolean;
@@ -92,6 +92,27 @@ export type BuildDataTableColumnDefsOptions = {
     reorderable?: boolean;
     onCellChange?: (rowId: string, columnId: string, value: unknown) => void;
     onRowReplace?: (rowId: string, nextRow: Record<string, unknown>) => void;
+    onRowAction?: (
+        action: string,
+        row: Record<string, unknown>,
+    ) => void | Promise<void>;
+};
+
+export type DataTableRowActionPayload = {
+    action: string;
+    row: Record<string, unknown>;
+};
+
+export type DataTableCellUpdatePayload = {
+    rowId: string;
+    row: Record<string, unknown>;
+    columnId: string;
+    value: unknown;
+};
+
+export type DataTableRowUpdatePayload = {
+    rowId: string;
+    row: Record<string, unknown>;
 };
 
 export type FlatpackListServerPagination = {
@@ -128,6 +149,11 @@ export type DataTableProps = {
     onBulkAction?: (
         payload: DataTableBulkDeletePayload,
     ) => void | Promise<void>;
+    onRowAction?: (payload: DataTableRowActionPayload) => void | Promise<void>;
+    onCellUpdate?: (
+        payload: DataTableCellUpdatePayload,
+    ) => void | Promise<void>;
+    onRowUpdate?: (payload: DataTableRowUpdatePayload) => void | Promise<void>;
     className?: string;
     toolbarStart?: ReactNode;
     toolbarAfterColumns?: ReactNode;

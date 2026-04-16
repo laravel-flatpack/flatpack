@@ -31,3 +31,22 @@ test('prefixedUrl allows external URLs when explicitly enabled', function () {
     expect(ListHeaderActions::prefixedUrl('https://evil.example/p', 'flatpack', true))
         ->toBe('https://evil.example/p');
 });
+
+test('sanitizeHref keeps relative paths without prefixing', function () {
+    expect(ListHeaderActions::sanitizeHref('/posts/create'))
+        ->toBe('/posts/create');
+    expect(ListHeaderActions::sanitizeHref('posts/create'))
+        ->toBe('/posts/create');
+});
+
+test('sanitizeHref rejects unsafe or external URLs by default', function () {
+    expect(ListHeaderActions::sanitizeHref('javascript:alert(1)'))->toBe('');
+    expect(ListHeaderActions::sanitizeHref('data:text/html;base64,abc'))->toBe('');
+    expect(ListHeaderActions::sanitizeHref('//cdn.example/x'))->toBe('');
+    expect(ListHeaderActions::sanitizeHref('https://evil.example/p'))->toBe('');
+});
+
+test('sanitizeHref allows external URLs when explicitly enabled', function () {
+    expect(ListHeaderActions::sanitizeHref('https://evil.example/p', true))
+        ->toBe('https://evil.example/p');
+});

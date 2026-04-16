@@ -10,10 +10,9 @@ import type {
 export type FlatpackListHeaderAction = {
     id: string;
     label: string;
-    href: string;
     icon?: string;
     variant?: FlatpackActionVariant;
-};
+} & ({ href: string; action?: never } | { action: string; href?: never });
 
 export type FlatpackListPageProps = {
     entity: string;

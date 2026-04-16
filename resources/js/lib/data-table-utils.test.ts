@@ -247,7 +247,7 @@ describe('columnEditableInDrawer', () => {
     it('returns false for actions', () => {
         expect(
             columnEditableInDrawer(
-                base({ type: 'actions', buttons: {}, editable: true }),
+                base({ type: 'actions', actions: [], editable: true }),
             ),
         ).toBe(false);
     });

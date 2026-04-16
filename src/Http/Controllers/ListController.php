@@ -4,7 +4,13 @@ declare(strict_types=1);
 
 namespace Flatpack\Http\Controllers;
 
+use Flatpack\Actions\Handlers\CreateRecordHandler;
+use Flatpack\Actions\Handlers\DeleteRecordHandler;
+use Flatpack\Actions\Handlers\EditRecordHandler;
+use Flatpack\Actions\Handlers\SaveRecordHandler;
+use Flatpack\Actions\FlatpackActionContext;
 use Flatpack\Actions\FlatpackBulkActionContext;
+use Flatpack\Contracts\Actions\FlatpackAction;
 use Flatpack\Composition\EntityComposition;
 use Flatpack\Contracts\Actions\FlatpackBulkAction;
 use Flatpack\Http\FlatpackResponse;
@@ -12,6 +18,7 @@ use Flatpack\Lists\ListBulkActions;
 use Flatpack\Lists\ListHeaderActions;
 use Flatpack\Lists\ListRecordsLoader;
 use Flatpack\Support\ModelKeyResolver;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -104,5 +111,147 @@ final readonly class ListController
         return back(303)->with('flatpack', [
             $action => (int) $result,
         ]);
+    }
+
+    public function listAction(Request $request, string $entity): RedirectResponse
+    {
+        $action = trim((string) $request->input('action', ''));
+        if ($action === '') {
+            abort(404, 'Flatpack list action is missing.');
+        }
+
+        [$listModelClass, $schema] = $this->listModelAndSchema($entity);
+        $handler = $this->resolveRecordActionHandler($action);
+        $result = $handler->handle(new FlatpackActionContext(
+            request: $request,
+            entity: $entity,
+            actionName: $action,
+            modelClass: $listModelClass,
+            record: null,
+            compositionType: 'list',
+            composition: $schema ?? [],
+            schema: $schema,
+            model: null,
+        ));
+
+        if ($result instanceof RedirectResponse) {
+            return $result->setStatusCode(303);
+        }
+
+        return back(303)->with('flatpack', [
+            $action => true,
+        ]);
+    }
+
+    public function rowAction(
+        Request $request,
+        string $entity,
+        string $record,
+    ): RedirectResponse {
+        $action = trim((string) $request->input('action', ''));
+        if ($action === '') {
+            abort(404, 'Flatpack row action is missing.');
+        }
+
+        [$listModelClass, $schema] = $this->listModelAndSchema($entity);
+        $model = $this->resolveRecordModel($listModelClass, $record);
+        $handler = $this->resolveRecordActionHandler($action);
+        $result = $handler->handle(new FlatpackActionContext(
+            request: $request,
+            entity: $entity,
+            actionName: $action,
+            modelClass: $listModelClass,
+            record: $record,
+            compositionType: 'list',
+            composition: $schema ?? [],
+            schema: $schema,
+            model: $model,
+        ));
+
+        if ($result instanceof RedirectResponse) {
+            return $result->setStatusCode(303);
+        }
+
+        return back(303)->with('flatpack', [
+            $action => true,
+        ]);
+    }
+
+    public function updateRecord(
+        Request $request,
+        string $entity,
+        string $record,
+    ): RedirectResponse {
+        [$listModelClass, $schema] = $this->listModelAndSchema($entity);
+        $model = $this->resolveRecordModel($listModelClass, $record);
+        $handler = $this->resolveRecordActionHandler('save');
+        $handler->handle(new FlatpackActionContext(
+            request: $request,
+            entity: $entity,
+            actionName: 'save',
+            modelClass: $listModelClass,
+            record: $record,
+            compositionType: 'list',
+            composition: $schema ?? [],
+            schema: $schema,
+            model: $model,
+        ));
+
+        return back(303)->with('flatpack', [
+            'save' => true,
+        ]);
+    }
+
+    /**
+     * @return array{string, array<string, mixed>|null}
+     */
+    private function listModelAndSchema(string $entity): array
+    {
+        $list = $this->entityComposition->listFor($entity);
+        $schema = $this->entityComposition->listSchema($entity);
+
+        return [(string) ($list->model ?? ''), $schema];
+    }
+
+    private function resolveRecordActionHandler(string $action): FlatpackAction
+    {
+        $handlerClass = config("flatpack.actions.{$action}");
+        if (! is_string($handlerClass) || $handlerClass === '') {
+            $handlerClass = match ($action) {
+                'create' => CreateRecordHandler::class,
+                'edit' => EditRecordHandler::class,
+                'save' => SaveRecordHandler::class,
+                'delete' => DeleteRecordHandler::class,
+                default => null,
+            };
+        }
+        if (! is_string($handlerClass) || $handlerClass === '') {
+            abort(404, 'Flatpack action handler is not configured.');
+        }
+
+        $handler = app()->make($handlerClass);
+        if (! $handler instanceof FlatpackAction) {
+            abort(500, 'Flatpack action handler must implement FlatpackAction.');
+        }
+
+        return $handler;
+    }
+
+    private function resolveRecordModel(string $modelClass, string $record): Model
+    {
+        if ($modelClass === '' || ! class_exists($modelClass)) {
+            abort(404, 'Flatpack list model is not configured.');
+        }
+        if (! is_subclass_of($modelClass, Model::class)) {
+            abort(404, 'Flatpack list model class is invalid.');
+        }
+
+        /** @var class-string<Model> $modelClass */
+        $model = new $modelClass();
+        $keyName = $model->getKeyName();
+
+        return $modelClass::query()
+            ->where($keyName, $record)
+            ->firstOrFail();
     }
 }

@@ -30,6 +30,15 @@ Route::middleware(['auth:' . config('flatpack.guard', 'web'), EnsureFlatpackAcce
     /** Entity bulk actions route */
     Route::post('{entity}/bulk', [ListController::class, 'bulkAction'])->name('entities.bulk-action');
 
+    /** Entity collection action route */
+    Route::post('{entity}/action', [ListController::class, 'listAction'])->name('entities.action');
+
+    /** Entity row action route */
+    Route::post('{entity}/{record}/action', [ListController::class, 'rowAction'])->name('entities.row-action');
+
+    /** Entity row update route */
+    Route::patch('{entity}/{record}', [ListController::class, 'updateRecord'])->name('entities.update');
+
     /** Entity list route */
     Route::get('{entity}', [ListController::class, 'index'])->name('entities.index');
 

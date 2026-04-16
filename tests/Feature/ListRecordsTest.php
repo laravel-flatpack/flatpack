@@ -78,6 +78,67 @@ YAML);
     }
 });
 
+test('flatpack entity list JSON only exposes valid configured header actions', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-list-header-actions-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+actions:
+  create:
+    label: Create
+    action: create
+    variant: primary
+  docs:
+    label: Docs
+    href: /docs/posts
+  invalid:
+    label: Invalid
+    action: create
+    href: /posts/create
+  legacy:
+    label: Legacy
+    url: /posts/create
+columns:
+  id:
+    label: ID
+  title:
+    label: Title
+YAML);
+        config()->set('flatpack.path', $tempPath);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        $payload = actingAs($user)
+            ->getJson(route('flatpack.entities.index', ['entity' => 'posts', 'json' => true]))
+            ->assertOk()
+            ->json();
+
+        $body = $payload['data'] ?? $payload;
+        expect($body['list_actions'])->toEqual([
+            [
+                'id' => 'create',
+                'label' => 'Create',
+                'icon' => '',
+                'action' => 'create',
+                'variant' => 'default',
+            ],
+            [
+                'id' => 'docs',
+                'label' => 'Docs',
+                'icon' => '',
+                'href' => '/docs/posts',
+                'variant' => 'outline',
+            ],
+        ]);
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
 test('flatpack entity list JSON search filters across all paginated records', function () {
     $tempPath = sys_get_temp_dir() . '/flatpack-list-search-' . uniqid('', true);
 
@@ -117,6 +178,75 @@ YAML);
         expect($body['records'][0]['title'])->toBe('Beta target');
         expect($body['pagination']['total'])->toBe(1);
         expect($body['search_term'])->toBe('target');
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
+test('flatpack list action route resolves configured create handler', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-list-action-route-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+columns:
+  id:
+    label: ID
+YAML);
+        config()->set('flatpack.path', $tempPath);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        actingAs($user)
+            ->post(route('flatpack.entities.action', [
+                'entity' => 'posts',
+            ]), [
+                'action' => 'create',
+            ])
+            ->assertStatus(303)
+            ->assertRedirect(route('flatpack.entities.create', [
+                'entity' => 'posts',
+            ]));
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
+test('flatpack entity action route falls back to built-in create action when config is stale', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-list-action-fallback-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+columns:
+  id:
+    label: ID
+YAML);
+        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.actions', [
+            'edit' => \Flatpack\Actions\Handlers\EditRecordHandler::class,
+            'save' => \Flatpack\Actions\Handlers\SaveRecordHandler::class,
+            'delete' => \Flatpack\Actions\Handlers\DeleteRecordHandler::class,
+        ]);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        actingAs($user)
+            ->post(route('flatpack.entities.action', [
+                'entity' => 'posts',
+            ]), [
+                'action' => 'create',
+            ])
+            ->assertStatus(303)
+            ->assertRedirect(route('flatpack.entities.create', [
+                'entity' => 'posts',
+            ]));
     } finally {
         File::deleteDirectory($tempPath);
     }

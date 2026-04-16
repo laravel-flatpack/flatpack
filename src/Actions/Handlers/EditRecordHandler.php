@@ -16,7 +16,7 @@ final class EditRecordHandler implements FlatpackAction
             throw new Exception('Model not found');
         }
 
-        return redirect()->route('flatpack.form.edit', [
+        return redirect()->route('flatpack.entities.edit', [
             'entity' => $context->entity,
             'record' => $context->model->getKey(),
         ]);

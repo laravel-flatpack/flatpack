@@ -77,13 +77,14 @@ export function buildDataTableColumnDefs(
             enableHiding: true,
             cell: ({ row }) => {
                 if (col.type === 'actions') {
-                    if (!col.buttons || Object.keys(col.buttons).length === 0) {
+                    if (!col.actions || col.actions.length === 0) {
                         return <span className="text-muted-foreground">—</span>;
                     }
                     return (
                         <DataTableActionsCell
-                            buttons={col.buttons}
+                            actions={col.actions}
                             row={row.original}
+                            onAction={options.onRowAction}
                         />
                     );
                 }

@@ -1,5 +1,7 @@
 import { normalizeColumnTruncate } from '@/lib/data-table-utils';
 import type {
+    FlatpackActionVariant,
+    FlatpackDataTableActionButton,
     FlatpackDataTableColumn,
     FlatpackDataTableColumnOption,
     FlatpackDataTableFilter,
@@ -15,6 +17,7 @@ function normalizeColumnType(
         raw === 'text' ||
         raw === 'select' ||
         raw === 'badge' ||
+        raw === 'status' ||
         raw === 'actions' ||
         raw === 'relation'
     ) {
@@ -66,6 +69,7 @@ export function listYamlColumnsToDataTableColumns(
                 const {
                     type: rawType,
                     truncate: rawTruncate,
+                    actions: rawActions,
                     relation_name: _rn,
                     relation_value: _rv,
                     relationName: _rnc,
@@ -79,12 +83,14 @@ export function listYamlColumnsToDataTableColumns(
                 const rel = pickRelationColumnFields(
                     col as Record<string, unknown>,
                 );
+                const actions = normalizeColumnActions(rawActions);
                 return {
                     ...rest,
                     id,
                     ...(type !== undefined ? { type } : {}),
                     ...(truncate !== undefined ? { truncate } : {}),
                     ...(rel !== null ? rel : {}),
+                    ...(actions.length > 0 ? { actions } : {}),
                 } as FlatpackDataTableColumn;
             })
             .filter((c) => c.id);
@@ -103,6 +109,7 @@ export function listYamlColumnsToDataTableColumns(
             const {
                 type: rawType,
                 truncate: rawTruncate,
+                actions: rawActions,
                 relation_name: _rn,
                 relation_value: _rv,
                 relationName: _rnc,
@@ -116,12 +123,14 @@ export function listYamlColumnsToDataTableColumns(
             const rel = pickRelationColumnFields(
                 col as Record<string, unknown>,
             );
+            const actions = normalizeColumnActions(rawActions);
             return {
                 ...rest,
                 id,
                 ...(type !== undefined ? { type } : {}),
                 ...(truncate !== undefined ? { truncate } : {}),
                 ...(rel !== null ? rel : {}),
+                ...(actions.length > 0 ? { actions } : {}),
             } as FlatpackDataTableColumn;
         })
         .filter((c) => c.id);
@@ -163,6 +172,62 @@ function normalizeColumnOptions(raw: unknown): FlatpackDataTableColumnOption[] {
         .filter(
             (option): option is FlatpackDataTableColumnOption => option != null,
         );
+}
+
+function normalizeActionVariant(raw: unknown): FlatpackActionVariant {
+    if (typeof raw !== 'string') {
+        return 'outline';
+    }
+    const value = raw.trim();
+    if (value === 'primary') {
+        return 'default';
+    }
+    if (
+        value === 'default' ||
+        value === 'outline' ||
+        value === 'secondary' ||
+        value === 'ghost' ||
+        value === 'destructive' ||
+        value === 'link'
+    ) {
+        return value;
+    }
+    return 'outline';
+}
+
+function normalizeColumnActions(raw: unknown): FlatpackDataTableActionButton[] {
+    if (!Array.isArray(raw)) {
+        return [];
+    }
+    const normalized = raw.map((action) => {
+        if (action == null || typeof action !== 'object') {
+            return null;
+        }
+        const rec = action as Record<string, unknown>;
+        const label = typeof rec.label === 'string' ? rec.label.trim() : '';
+        if (label === '') {
+            return null;
+        }
+        const actionName =
+            typeof rec.action === 'string' ? rec.action.trim() : '';
+        const href = typeof rec.href === 'string' ? rec.href.trim() : '';
+        if ((actionName === '' && href === '') || (actionName && href)) {
+            return null;
+        }
+        const icon = typeof rec.icon === 'string' ? rec.icon.trim() : '';
+        return {
+            label,
+            ...(icon !== '' ? { icon } : {}),
+            ...(actionName !== '' ? { action: actionName } : {}),
+            ...(href !== '' ? { href } : {}),
+            variant: normalizeActionVariant(rec.variant),
+        } satisfies FlatpackDataTableActionButton;
+    });
+
+    return normalized.filter(
+        (action): action is NonNullable<(typeof normalized)[number]> =>
+            action !== null,
+    );
 }
 
 type FilterOverride = {

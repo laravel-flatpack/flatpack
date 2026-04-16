@@ -2,8 +2,9 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-const { routerGet } = vi.hoisted(() => ({
+const { routerGet, routerPost } = vi.hoisted(() => ({
     routerGet: vi.fn(),
+    routerPost: vi.fn(),
 }));
 
 vi.mock('@/layouts/flatpack-layout', () => ({
@@ -27,6 +28,7 @@ vi.mock('@inertiajs/react', () => ({
     ),
     router: {
         get: routerGet,
+        post: routerPost,
     },
 }));
 
@@ -36,6 +38,7 @@ describe('FlatpackListPage', () => {
     afterEach(() => {
         cleanup();
         routerGet.mockReset();
+        routerPost.mockReset();
     });
 
     it('uses entity for heading and list title when name is omitted', () => {
@@ -296,5 +299,54 @@ describe('FlatpackListPage', () => {
         fireEvent.click(screen.getByRole('cell', { name: 'Hello' }));
 
         expect(routerGet).not.toHaveBeenCalled();
+    });
+
+    it('renders header href actions as links', () => {
+        render(
+            <FlatpackListPage
+                entity="posts"
+                name="Posts"
+                list_actions={[
+                    {
+                        id: 'create',
+                        label: 'Create',
+                        href: '/posts/create',
+                    },
+                ]}
+            />,
+        );
+
+        expect(screen.getByRole('link', { name: 'Create' })).toHaveAttribute(
+            'href',
+            '/posts/create',
+        );
+    });
+
+    it('posts header actions to the list action endpoint', () => {
+        render(
+            <FlatpackListPage
+                entity="posts"
+                flatpack_prefix="flatpack"
+                name="Posts"
+                list_actions={[
+                    {
+                        id: 'create',
+                        label: 'Create',
+                        action: 'create',
+                    },
+                ]}
+            />,
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: 'Create' }));
+
+        expect(routerPost).toHaveBeenCalledWith(
+            '/flatpack/posts/action',
+            { action: 'create' },
+            expect.objectContaining({
+                preserveState: true,
+                preserveScroll: true,
+            }),
+        );
     });
 });
