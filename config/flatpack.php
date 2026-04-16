@@ -47,12 +47,24 @@ return [
     | Entity list pagination
     |--------------------------------------------------------------------------
     |
-    | Default page size and upper bound for ?per_page= on list routes. Page is 1-based (?page=1).
+    | Default page size and upper bound for ?per_page= on list routes.
     |
     */
     'list' => [
-        'per_page' => (int) env('FLATPACK_LIST_PER_PAGE', 10),
-        'max_per_page' => (int) env('FLATPACK_LIST_MAX_PER_PAGE', 100),
+        'per_page' => 10,
+        'max_per_page' => 100,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Form configuration
+    |--------------------------------------------------------------------------
+    |
+    | Disable header actions until the form is dirty.
+    |
+    */
+    'forms' => [
+        'disable_actions_until_dirty' => false,
     ],
 
     /*
