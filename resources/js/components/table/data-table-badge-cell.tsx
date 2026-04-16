@@ -1,9 +1,9 @@
+import { selectOptionLeadingIcon } from '@/components/select-option-leading-icon';
 import { Badge } from '@/components/ui/badge';
 import {
     formatCellValue,
     readOnlyTruncatedDisplay,
 } from '@/lib/data-table-utils';
-import { selectOptionLeadingIcon } from '@/lib/select-option-leading-icon';
 import { cn } from '@/lib/utils';
 import type {
     FlatpackDataTableColumn,

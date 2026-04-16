@@ -1,3 +1,4 @@
+import { selectOptionLeadingIcon } from '@/components/select-option-leading-icon';
 import { DASHBOARD_TABLE_SELECT_TRIGGER_CLASS } from '@/components/table/data-table-constants';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
@@ -11,7 +12,6 @@ import {
 } from '@/components/ui/select';
 import { readOnlyTruncatedDisplay } from '@/lib/data-table-utils';
 import { CLEAR_SELECT_ITEM_VALUE } from '@/lib/flatpack-select';
-import { selectOptionLeadingIcon } from '@/lib/select-option-leading-icon';
 import type { FlatpackDataTableColumn } from '@/types/data-table';
 
 export function DataTableSelectCell({

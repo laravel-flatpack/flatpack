@@ -1,7 +1,7 @@
 import { ChevronDownIcon } from 'lucide-react';
 import { useLayoutEffect, useMemo, useState } from 'react';
+import { selectOptionLeadingIcon } from '@/components/select-option-leading-icon';
 import { CLEAR_SELECT_ITEM_VALUE } from '@/lib/flatpack-select';
-import { selectOptionLeadingIcon } from '@/lib/select-option-leading-icon';
 import type { SelectFieldOption } from '@/types/form-fields';
 import { Badge } from '../ui/badge';
 import {
