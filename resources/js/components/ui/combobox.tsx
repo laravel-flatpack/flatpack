@@ -1,7 +1,12 @@
 'use client';
 
 import { Combobox as ComboboxPrimitive } from '@base-ui/react';
-import { CheckIcon, ChevronDownIcon, XIcon } from 'lucide-react';
+import {
+    CheckIcon,
+    ChevronDownIcon,
+    LoaderCircleIcon,
+    XIcon,
+} from 'lucide-react';
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -54,10 +59,12 @@ function ComboboxInput({
     disabled = false,
     showTrigger = true,
     showClear = false,
+    loading = false,
     ...props
 }: ComboboxPrimitive.Input.Props & {
     showTrigger?: boolean;
     showClear?: boolean;
+    loading?: boolean;
 }) {
     return (
         <InputGroup className={cn('w-auto', className)}>
@@ -75,7 +82,11 @@ function ComboboxInput({
                         className="group-has-data-[slot=combobox-clear]/input-group:hidden data-pressed:bg-transparent"
                         disabled={disabled}
                     >
-                        <ComboboxTrigger />
+                        {loading ? (
+                            <LoaderCircleIcon className="size-4 animate-spin text-muted-foreground" />
+                        ) : (
+                            <ComboboxTrigger />
+                        )}
                     </InputGroupButton>
                 )}
                 {showClear && <ComboboxClear disabled={disabled} />}

@@ -2,8 +2,8 @@ import {
     type ReactNode,
     useCallback,
     useEffect,
-    useLayoutEffect,
     useMemo,
+    useRef,
     useState,
 } from 'react';
 import {
@@ -21,6 +21,20 @@ import {
 import { Field, FieldContent, FieldDescription, FieldTitle } from '../ui/field';
 
 export type ComboboxObjectItem = { value: string; label: string };
+
+function dedupeItems(items: ComboboxObjectItem[]): ComboboxObjectItem[] {
+    const map = new Map<string, ComboboxObjectItem>();
+    for (const item of items) {
+        if (item.value.trim() === '' || item.label.trim() === '') {
+            continue;
+        }
+        if (!map.has(item.value)) {
+            map.set(item.value, item);
+        }
+    }
+
+    return [...map.values()];
+}
 
 export const ComboboxField = ({
     id,
@@ -55,15 +69,14 @@ export const ComboboxField = ({
     remotePerPage?: number;
     onValueChange?: (value: unknown) => void;
 }) => {
-    const [singleValue, setSingleValue] = useState<ComboboxObjectItem | null>(
-        null,
-    );
     const [multiValue, setMultiValue] = useState<string[]>([]);
     const [query, setQuery] = useState('');
     const [remoteItems, setRemoteItems] = useState<ComboboxObjectItem[]>([]);
     const [remoteLoading, setRemoteLoading] = useState(false);
     const [remotePage, setRemotePage] = useState(1);
     const [remoteHasMore, setRemoteHasMore] = useState(false);
+    const requestIdRef = useRef(0);
+    const isFetchingNextPageRef = useRef(false);
     const labelId = `${id}-label`;
     const normalizedItems = useMemo(
         () => (remote ? remoteItems : items),
@@ -79,6 +92,12 @@ export const ComboboxField = ({
             if (!remote || !remoteEndpoint) {
                 return;
             }
+            if (append && isFetchingNextPageRef.current) {
+                return;
+            }
+            if (append) {
+                isFetchingNextPageRef.current = true;
+            }
 
             const params = new URLSearchParams({
                 field: remoteFieldId ?? id,
@@ -90,6 +109,8 @@ export const ComboboxField = ({
                 params.set('selected', selectedValue);
             }
 
+            const requestId = requestIdRef.current + 1;
+            requestIdRef.current = requestId;
             setRemoteLoading(true);
             try {
                 const response = await fetch(
@@ -103,15 +124,23 @@ export const ComboboxField = ({
                     data?: Array<{ value: string; label: string }>;
                     meta?: { has_more?: boolean; page?: number };
                 };
+                if (requestId !== requestIdRef.current) {
+                    return;
+                }
                 const nextItems = Array.isArray(payload.data)
                     ? payload.data
                     : [];
                 setRemoteItems((current) =>
-                    append ? [...current, ...nextItems] : nextItems,
+                    dedupeItems(
+                        append ? [...current, ...nextItems] : nextItems,
+                    ),
                 );
                 setRemoteHasMore(payload.meta?.has_more === true);
                 setRemotePage(payload.meta?.page ?? page);
             } finally {
+                if (append) {
+                    isFetchingNextPageRef.current = false;
+                }
                 setRemoteLoading(false);
             }
         },
@@ -125,7 +154,7 @@ export const ComboboxField = ({
         ],
     );
 
-    useLayoutEffect(() => {
+    useEffect(() => {
         if (multiple) {
             const next = Array.isArray(value)
                 ? value
@@ -137,24 +166,10 @@ export const ComboboxField = ({
                       .map((item) => String(item))
                 : [];
             setMultiValue(next);
-            return;
+        } else {
+            setMultiValue([]);
         }
-
-        if (
-            (typeof value !== 'string' && typeof value !== 'number') ||
-            String(value).trim() === ''
-        ) {
-            setSingleValue(null);
-            return;
-        }
-
-        const valueAsString = String(value);
-        setSingleValue(
-            normalizedItems.find(
-                (item) => String(item.value) === valueAsString,
-            ) ?? null,
-        );
-    }, [multiple, normalizedItems, value]);
+    }, [multiple, value]);
 
     useEffect(() => {
         if (!remote || !remoteEndpoint) {
@@ -167,6 +182,47 @@ export const ComboboxField = ({
 
         return () => window.clearTimeout(timer);
     }, [loadRemotePage, query, remote, remoteEndpoint]);
+
+    const singleValue = useMemo(() => {
+        if (
+            (typeof value !== 'string' && typeof value !== 'number') ||
+            String(value).trim() === ''
+        ) {
+            return null;
+        }
+
+        const valueAsString = String(value);
+        return (
+            normalizedItems.find(
+                (item) => String(item.value) === valueAsString,
+            ) ?? null
+        );
+    }, [normalizedItems, value]);
+
+    const handleListScroll = useCallback(
+        (event: React.UIEvent<HTMLElement>) => {
+            if (!remote || !remoteHasMore || remoteLoading) {
+                return;
+            }
+
+            const element = event.currentTarget;
+            const distanceToBottom =
+                element.scrollHeight - element.scrollTop - element.clientHeight;
+            if (distanceToBottom > 48) {
+                return;
+            }
+
+            void loadRemotePage(remotePage + 1, true, query);
+        },
+        [
+            loadRemotePage,
+            query,
+            remote,
+            remoteHasMore,
+            remoteLoading,
+            remotePage,
+        ],
+    );
 
     if (multiple) {
         return (
@@ -223,7 +279,6 @@ export const ComboboxField = ({
                     items={normalizedItems}
                     value={singleValue}
                     onValueChange={(v) => {
-                        setSingleValue(v);
                         onValueChange?.(v?.value ?? null);
                     }}
                 >
@@ -232,13 +287,16 @@ export const ComboboxField = ({
                         placeholder={singlePlaceholder}
                         showClear={singleValue != null}
                         className="w-full rounded-3xl"
+                        loading={remoteLoading}
                         aria-labelledby={label ? labelId : undefined}
                         onChange={(event) => {
                             setQuery(event.currentTarget.value);
                         }}
                     />
                     <ComboboxContent>
-                        <ComboboxList>
+                        <ComboboxList
+                            onScroll={remote ? handleListScroll : undefined}
+                        >
                             {(item: ComboboxObjectItem) => (
                                 <ComboboxItem key={item.value} value={item}>
                                     {item.label}
@@ -248,24 +306,6 @@ export const ComboboxField = ({
                         {remoteLoading ? (
                             <div className="px-3 py-2 text-sm text-muted-foreground">
                                 Loading...
-                            </div>
-                        ) : null}
-                        {remote && remoteHasMore ? (
-                            <div className="p-1.5 pt-0">
-                                <button
-                                    type="button"
-                                    className="h-8 w-full rounded-2xl border border-input/40 bg-background px-3 text-sm"
-                                    disabled={remoteLoading}
-                                    onClick={() => {
-                                        void loadRemotePage(
-                                            remotePage + 1,
-                                            true,
-                                            query,
-                                        );
-                                    }}
-                                >
-                                    Load more
-                                </button>
                             </div>
                         ) : null}
                         <ComboboxEmpty>
