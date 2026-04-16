@@ -11,7 +11,7 @@ use Illuminate\Http\RedirectResponse;
  */
 final class SuccessRedirect
 {
-    public const ALLOWED = [
+    public const array ALLOWED = [
         'list',
         'edit',
         'create',
