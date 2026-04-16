@@ -1,7 +1,7 @@
 import { Head } from '@inertiajs/react';
 import type { ReactElement } from 'react';
+import { FlatpackConfirmDialog } from '@/components/flatpack/flatpack-confirm-dialog';
 import { FlatpackFormActions } from '@/components/flatpack-form/flatpack-form-actions';
-import { FlatpackFormConfirmDialog } from '@/components/flatpack-form/flatpack-form-confirm-dialog';
 import { FlatpackFormFields } from '@/components/flatpack-form/flatpack-form-fields';
 import { FlatpackFormTopErrors } from '@/components/flatpack-form/flatpack-form-top-errors';
 import { useFlatpackForm } from '@/hooks/use-flatpack-form';
@@ -35,7 +35,7 @@ export default function FlatpackFormPage(props: FlatpackFormPageProps) {
     return (
         <>
             <Head title={pageTitle} />
-            <FlatpackFormConfirmDialog
+            <FlatpackConfirmDialog
                 open={pendingConfirm !== null}
                 onOpenChange={(open) => {
                     if (!open) {

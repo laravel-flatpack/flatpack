@@ -9,7 +9,7 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
-export function FlatpackFormConfirmDialog({
+export function FlatpackConfirmDialog({
     open,
     onOpenChange,
     title,
