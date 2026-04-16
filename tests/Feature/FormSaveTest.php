@@ -132,6 +132,49 @@ YAML, function (): void {
     });
 });
 
+test('flatpack entity create form returns normalized actions and field aliases', function () {
+    withTempFormSchema(<<<'YAML'
+name: Post
+model: Flatpack\Tests\Models\Post
+actions:
+  save:
+    label: Save
+    action: save
+    variant: primary
+    icon: save
+fields:
+  published_at:
+    type: date
+    label: Published At
+  category_id:
+    type: relation
+    label: Category
+    relation: category
+    relation_name: name
+    relation_value: id
+YAML, function (): void {
+        /** @var User $user */
+        $user = User::factory()->createOne();
+        $category = \Flatpack\Tests\Models\Category::factory()->createOne([
+            'name' => 'Guides',
+        ]);
+
+        actingAs($user)
+            ->getJson(route('flatpack.entities.create', [
+                'entity' => 'posts',
+                'json' => true,
+            ]))
+            ->assertOk()
+            ->assertJsonPath('form_actions.0.label', 'Save')
+            ->assertJsonPath('form_actions.0.action', 'save')
+            ->assertJsonPath('form_actions.0.variant', 'default')
+            ->assertJsonPath('schema.fields.published_at.type', 'date-picker')
+            ->assertJsonPath('schema.fields.category_id.type', 'select')
+            ->assertJsonPath('schema.fields.category_id.options.0.value', (string) $category->getKey())
+            ->assertJsonPath('schema.fields.category_id.options.0.label', 'Guides');
+    });
+});
+
 test('flatpack entity form save reports mass assignment failures as validation errors', function () {
     withTempFormSchema(<<<'YAML'
 name: Post

@@ -41,4 +41,5 @@ export type FlatpackFormPageProps = {
     mode: 'create' | 'edit';
     schema?: Record<string, unknown> | null;
     values?: Record<string, unknown>;
+    form_actions?: FlatpackListHeaderAction[];
 };

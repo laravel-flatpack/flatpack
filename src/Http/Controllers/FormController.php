@@ -9,8 +9,10 @@ use Flatpack\Actions\Handlers\SaveRecordHandler;
 use Flatpack\Composition\EntityComposition;
 use Flatpack\Contracts\Actions\FlatpackAction;
 use Flatpack\Http\FlatpackResponse;
+use Flatpack\Lists\ListHeaderActions;
 use Illuminate\Database\Eloquent\MassAssignmentException;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -28,6 +30,10 @@ final readonly class FormController
     {
         $form = $this->entityComposition->formFor($entity);
         $schema = $this->entityComposition->formSchema($entity);
+        $normalizedSchema = $this->normalizedFormSchema(
+            $schema,
+            (string) ($form->model ?? ''),
+        );
 
         return FlatpackResponse::inertia('form', [
             'entity' => $entity,
@@ -36,8 +42,9 @@ final readonly class FormController
             'icon' => $form->icon,
             'record' => null,
             'mode' => 'create',
-            'schema' => $schema,
+            'schema' => $normalizedSchema,
             'values' => [],
+            'form_actions' => ListHeaderActions::fromSchema($schema),
         ], $request->boolean('json'));
     }
 
@@ -45,6 +52,10 @@ final readonly class FormController
     {
         $form = $this->entityComposition->formFor($entity);
         $schema = $this->entityComposition->formSchema($entity);
+        $normalizedSchema = $this->normalizedFormSchema(
+            $schema,
+            (string) ($form->model ?? ''),
+        );
         $model = $this->resolveOptionalRecordModel((string) ($form->model ?? ''), $record);
 
         return FlatpackResponse::inertia('form', [
@@ -54,8 +65,9 @@ final readonly class FormController
             'icon' => $form->icon,
             'record' => $record,
             'mode' => 'edit',
-            'schema' => $schema,
+            'schema' => $normalizedSchema,
             'values' => $this->formValuesFromModel($model, $schema),
+            'form_actions' => ListHeaderActions::fromSchema($schema),
         ], $request->boolean('json'));
     }
 
@@ -213,5 +225,193 @@ final readonly class FormController
         return ValidationException::withMessages([
             'flatpack' => $message,
         ]);
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $schema
+     * @return array<string, mixed>|null
+     */
+    private function normalizedFormSchema(?array $schema, string $modelClass): ?array
+    {
+        if ($schema === null) {
+            return null;
+        }
+
+        $fields = $schema['fields'] ?? null;
+        if (! is_array($fields)) {
+            return $schema;
+        }
+
+        $normalizedFields = [];
+        foreach ($fields as $fieldId => $fieldDefinition) {
+            if (! is_array($fieldDefinition)) {
+                $normalizedFields[$fieldId] = $fieldDefinition;
+                continue;
+            }
+
+            $normalizedFields[$fieldId] = $this->normalizedFieldDefinition(
+                $fieldDefinition,
+                $modelClass,
+            );
+        }
+
+        $normalized = $schema;
+        $normalized['fields'] = $normalizedFields;
+
+        return $normalized;
+    }
+
+    /**
+     * @param  array<string, mixed>  $fieldDefinition
+     * @return array<string, mixed>
+     */
+    private function normalizedFieldDefinition(
+        array $fieldDefinition,
+        string $modelClass,
+    ): array {
+        $type = isset($fieldDefinition['type'])
+            ? trim((string) $fieldDefinition['type'])
+            : '';
+
+        if ($type === 'date') {
+            $fieldDefinition['type'] = 'date-picker';
+        }
+
+        if ($type === 'relation') {
+            $fieldDefinition['type'] = 'combobox';
+            $fieldDefinition['options'] = $this->relationFieldOptions(
+                $modelClass,
+                $fieldDefinition,
+            );
+        } elseif ($type === 'select' || $type === 'combobox') {
+            $fieldDefinition['options'] = $this->normalizeFieldOptions(
+                $fieldDefinition['options'] ?? null,
+            );
+        }
+
+        return $fieldDefinition;
+    }
+
+    /**
+     * @param  array<string, mixed>  $fieldDefinition
+     * @return list<array{value: string, label: string}>
+     */
+    private function relationFieldOptions(
+        string $modelClass,
+        array $fieldDefinition,
+    ): array {
+        if ($modelClass === '' || ! class_exists($modelClass)) {
+            return [];
+        }
+        if (! is_subclass_of($modelClass, Model::class)) {
+            return [];
+        }
+
+        $relationName = isset($fieldDefinition['relation'])
+            ? trim((string) $fieldDefinition['relation'])
+            : '';
+        $labelField = $this->stringFromField($fieldDefinition, 'relation_name', 'relationName');
+        $valueField = $this->stringFromField($fieldDefinition, 'relation_value', 'relationValue');
+
+        if ($relationName === '' || $labelField === '' || $valueField === '') {
+            return [];
+        }
+
+        /** @var class-string<Model> $modelClass */
+        $model = new $modelClass();
+        if (! method_exists($model, $relationName)) {
+            return [];
+        }
+
+        $relation = $model->{$relationName}();
+        if (! $relation instanceof Relation) {
+            return [];
+        }
+
+        return $relation->getRelated()
+            ->newQuery()
+            ->orderBy($labelField)
+            ->get([$valueField, $labelField])
+            ->map(function (Model $related) use ($labelField, $valueField): array {
+                return [
+                    'value' => (string) $related->getAttribute($valueField),
+                    'label' => (string) $related->getAttribute($labelField),
+                ];
+            })
+            ->filter(fn (array $option): bool => $option['value'] !== '' && $option['label'] !== '')
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @return list<array{value: string, label: string, status?: string, icon?: string}>
+     */
+    private function normalizeFieldOptions(mixed $raw): array
+    {
+        if (! is_array($raw)) {
+            return [];
+        }
+
+        $out = [];
+        if (array_is_list($raw)) {
+            foreach ($raw as $option) {
+                if (! is_array($option)) {
+                    continue;
+                }
+
+                $value = isset($option['value']) ? trim((string) $option['value']) : '';
+                $label = isset($option['label']) ? trim((string) $option['label']) : '';
+                if ($value === '' || $label === '') {
+                    continue;
+                }
+
+                $normalized = ['value' => $value, 'label' => $label];
+                if (isset($option['status']) && is_string($option['status']) && trim($option['status']) !== '') {
+                    $normalized['status'] = trim($option['status']);
+                }
+                if (isset($option['icon']) && is_string($option['icon']) && trim($option['icon']) !== '') {
+                    $normalized['icon'] = trim($option['icon']);
+                }
+                $out[] = $normalized;
+            }
+
+            return $out;
+        }
+
+        foreach ($raw as $value => $label) {
+            if (! is_string($label)) {
+                continue;
+            }
+
+            $normalizedValue = trim((string) $value);
+            $normalizedLabel = trim($label);
+            if ($normalizedValue === '' || $normalizedLabel === '') {
+                continue;
+            }
+
+            $out[] = [
+                'value' => $normalizedValue,
+                'label' => $normalizedLabel,
+            ];
+        }
+
+        return $out;
+    }
+
+    /**
+     * @param  array<string, mixed>  $fieldDefinition
+     */
+    private function stringFromField(
+        array $fieldDefinition,
+        string $snakeKey,
+        string $camelKey,
+    ): string {
+        foreach ([$snakeKey, $camelKey] as $key) {
+            if (isset($fieldDefinition[$key]) && is_string($fieldDefinition[$key])) {
+                return trim($fieldDefinition[$key]);
+            }
+        }
+
+        return '';
     }
 }

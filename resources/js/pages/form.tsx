@@ -1,7 +1,8 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import type { DateRange } from 'react-day-picker';
 import { toast } from 'sonner';
+import { LucideIconByName } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { FieldError } from '@/components/ui/field';
 import FlatpackLayout from '@/layouts/flatpack-layout';
@@ -9,6 +10,7 @@ import { localDateSegment } from '@/lib/data-table-utils';
 import { loadField } from '@/lib/form';
 import { mapFormFieldPropsToComponentProps } from '@/lib/form-field-props';
 import { route } from '@/lib/route';
+import { cn } from '@/lib/utils';
 import type { FormFieldProps, FormFieldType } from '@/types/form-fields';
 import type { FlatpackFormPageProps } from '@/types/pages/flatpack';
 
@@ -36,11 +38,17 @@ function isRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-function isFormFieldType(value: unknown): value is FormFieldType {
-    return (
-        typeof value === 'string' &&
+function normalizeFieldType(value: unknown): FormFieldType | undefined {
+    if (value === 'date') {
+        return 'date-picker';
+    }
+    if (value === 'relation') {
+        return 'select';
+    }
+    return typeof value === 'string' &&
         supportedFormFieldTypes.includes(value as FormFieldType)
-    );
+        ? (value as FormFieldType)
+        : undefined;
 }
 
 function normalizeFields(
@@ -52,10 +60,11 @@ function normalizeFields(
     }
 
     return Object.entries(rawFields).flatMap(([fieldId, fieldDefinition]) => {
-        if (
-            !isRecord(fieldDefinition) ||
-            !isFormFieldType(fieldDefinition.type)
-        ) {
+        if (!isRecord(fieldDefinition)) {
+            return [];
+        }
+        const type = normalizeFieldType(fieldDefinition.type);
+        if (type === undefined) {
             return [];
         }
 
@@ -69,7 +78,7 @@ function normalizeFields(
                 id,
                 field: {
                     ...fieldDefinition,
-                    type: fieldDefinition.type,
+                    type,
                 } as FormFieldProps,
             },
         ];
@@ -293,6 +302,7 @@ export default function FlatpackFormPage({
     mode,
     schema,
     values = {},
+    form_actions: formActions = [],
 }: FlatpackFormPageProps) {
     const fields = useMemo(() => normalizeFields(schema), [schema]);
     const initialValues = useMemo(
@@ -313,7 +323,7 @@ export default function FlatpackFormPage({
     const displayName = name ?? entity;
     const pageTitle =
         mode === 'create' ? `Create ${displayName}` : `Edit ${displayName}`;
-    const submitLabel = mode === 'create' ? 'Create' : 'Save';
+    const formId = `flatpack-form-${entity}-${record ?? 'new'}`;
 
     useEffect(() => {
         setFieldValues(initialValues);
@@ -384,6 +394,40 @@ export default function FlatpackFormPage({
         [entity, fieldValues, mode, record],
     );
 
+    const handleNamedAction = useCallback(
+        async (action: string) => {
+            if (action === 'save') {
+                return;
+            }
+            if (record == null || record === '') {
+                return;
+            }
+
+            await new Promise<void>((resolve, reject) => {
+                router.post(
+                    route('flatpack.entities.row-action', {
+                        entity,
+                        record,
+                    }),
+                    { action },
+                    {
+                        preserveState: true,
+                        preserveScroll: true,
+                        onSuccess: () => resolve(),
+                        onError: (errors) => {
+                            const message =
+                                firstErrorMessage(errors) ??
+                                'Form action failed';
+                            toast.error(message);
+                            reject(new Error(message));
+                        },
+                    },
+                );
+            });
+        },
+        [entity, record],
+    );
+
     const noFieldsMessage =
         fields.length === 0
             ? 'Define fields in form.yaml to render this form.'
@@ -394,17 +438,111 @@ export default function FlatpackFormPage({
             <Head title={pageTitle} />
             <div className="flex flex-col gap-6">
                 <div className="flex flex-col gap-2">
-                    <h1 className="text-2xl font-semibold tracking-tight">
-                        {displayName}
-                    </h1>
-                    <p className="text-muted-foreground">
-                        {mode === 'create'
-                            ? `Create a new ${displayName}.`
-                            : `Edit ${displayName} (${record ?? 'unknown'}).`}
-                    </p>
+                    <div className="mb-2 flex w-full flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
+                        <div className="min-w-0 flex-1">
+                            <h1 className="text-2xl font-semibold tracking-tight">
+                                {displayName}
+                            </h1>
+                            <p className="text-muted-foreground">
+                                {mode === 'create'
+                                    ? `Create a new ${displayName}.`
+                                    : `Edit ${displayName} (${record ?? 'unknown'}).`}
+                            </p>
+                        </div>
+                        {formActions.length > 0 ? (
+                            <div className="flex shrink-0 flex-wrap items-center justify-start gap-2 sm:justify-end">
+                                {formActions.map((action) =>
+                                    'href' in action ? (
+                                        <Button
+                                            key={action.id}
+                                            asChild
+                                            size="lg"
+                                            variant={
+                                                action.variant ?? 'outline'
+                                            }
+                                        >
+                                            <Link
+                                                href={action.href}
+                                                className={cn(
+                                                    action.icon &&
+                                                        'inline-flex items-center gap-1.5',
+                                                )}
+                                            >
+                                                {action.icon ? (
+                                                    <LucideIconByName
+                                                        name={action.icon}
+                                                    />
+                                                ) : null}
+                                                {action.label}
+                                            </Link>
+                                        </Button>
+                                    ) : action.action === 'save' ? (
+                                        <Button
+                                            key={action.id}
+                                            type="submit"
+                                            form={formId}
+                                            size="lg"
+                                            variant={
+                                                action.variant ?? 'outline'
+                                            }
+                                            disabled={
+                                                submitting ||
+                                                fields.length === 0
+                                            }
+                                            className={cn(
+                                                action.icon &&
+                                                    'inline-flex items-center gap-1.5',
+                                            )}
+                                        >
+                                            {action.icon ? (
+                                                <LucideIconByName
+                                                    name={action.icon}
+                                                />
+                                            ) : null}
+                                            {submitting
+                                                ? `${action.label}...`
+                                                : action.label}
+                                        </Button>
+                                    ) : (
+                                        <Button
+                                            key={action.id}
+                                            type="button"
+                                            size="lg"
+                                            variant={
+                                                action.variant ?? 'outline'
+                                            }
+                                            disabled={
+                                                submitting ||
+                                                record == null ||
+                                                record === ''
+                                            }
+                                            className={cn(
+                                                action.icon &&
+                                                    'inline-flex items-center gap-1.5',
+                                            )}
+                                            onClick={() =>
+                                                handleNamedAction(action.action)
+                                            }
+                                        >
+                                            {action.icon ? (
+                                                <LucideIconByName
+                                                    name={action.icon}
+                                                />
+                                            ) : null}
+                                            {action.label}
+                                        </Button>
+                                    ),
+                                )}
+                            </div>
+                        ) : null}
+                    </div>
                 </div>
 
-                <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
+                <form
+                    id={formId}
+                    className="flex flex-col gap-6"
+                    onSubmit={handleSubmit}
+                >
                     <FieldError
                         errors={fieldErrorMessages(fieldErrors, 'flatpack')}
                     />
@@ -447,16 +585,6 @@ export default function FlatpackFormPage({
                             );
                         })
                     )}
-
-                    <div className="flex items-center justify-end gap-2">
-                        <Button
-                            type="submit"
-                            size="lg"
-                            disabled={submitting || fields.length === 0}
-                        >
-                            {submitting ? `${submitLabel}...` : submitLabel}
-                        </Button>
-                    </div>
                 </form>
             </div>
         </>

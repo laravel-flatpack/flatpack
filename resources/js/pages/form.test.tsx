@@ -20,6 +20,9 @@ const hoisted = vi.hoisted(() => ({
             if (name === 'flatpack.entities.save') {
                 return `/flatpack/${params?.entity ?? 'unknown'}/${params?.record ?? 'missing'}/save`;
             }
+            if (name === 'flatpack.entities.row-action') {
+                return `/flatpack/${params?.entity ?? 'unknown'}/${params?.record ?? 'missing'}/action`;
+            }
 
             return '/flatpack';
         },
@@ -129,6 +132,14 @@ describe('FlatpackFormPage', () => {
                     title: 'Hydrated title',
                     status: 'active',
                 }}
+                form_actions={[
+                    {
+                        id: 'save',
+                        label: 'Save',
+                        action: 'save',
+                        variant: 'default',
+                    },
+                ]}
             />,
         );
 
@@ -162,13 +173,21 @@ describe('FlatpackFormPage', () => {
                     },
                 }}
                 values={{}}
+                form_actions={[
+                    {
+                        id: 'save',
+                        label: 'Save',
+                        action: 'save',
+                        variant: 'default',
+                    },
+                ]}
             />,
         );
 
         await user.click(
             await screen.findByRole('button', { name: 'update-title' }),
         );
-        await user.click(screen.getByRole('button', { name: 'Create' }));
+        await user.click(screen.getByRole('button', { name: 'Save' }));
 
         await waitFor(() => {
             expect(hoisted.post).toHaveBeenCalledTimes(1);
@@ -206,6 +225,14 @@ describe('FlatpackFormPage', () => {
                 values={{
                     title: 'Existing title',
                 }}
+                form_actions={[
+                    {
+                        id: 'save',
+                        label: 'Save',
+                        action: 'save',
+                        variant: 'default',
+                    },
+                ]}
             />,
         );
 
@@ -262,10 +289,18 @@ describe('FlatpackFormPage', () => {
                     },
                 }}
                 values={{}}
+                form_actions={[
+                    {
+                        id: 'save',
+                        label: 'Save',
+                        action: 'save',
+                        variant: 'default',
+                    },
+                ]}
             />,
         );
 
-        await user.click(await screen.findByRole('button', { name: 'Create' }));
+        await user.click(await screen.findByRole('button', { name: 'Save' }));
 
         await waitFor(() => {
             expect(hoisted.toastError).toHaveBeenCalledWith(
@@ -273,5 +308,79 @@ describe('FlatpackFormPage', () => {
             );
         });
         expect(screen.getByText('Title is required.')).toBeInTheDocument();
+    });
+
+    it('does not render a default submit action when yaml actions are absent', () => {
+        render(
+            <FlatpackFormPage
+                entity="posts"
+                name="Posts"
+                record={null}
+                mode="create"
+                schema={{
+                    fields: {
+                        title: {
+                            type: 'text',
+                            label: 'Title',
+                            placeholder: 'Title',
+                        },
+                    },
+                }}
+                values={{}}
+                form_actions={[]}
+            />,
+        );
+
+        expect(
+            screen.queryByRole('button', { name: 'Save' }),
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Create' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('renders non-save yaml actions and posts row actions for edit mode', async () => {
+        const user = userEvent.setup();
+
+        render(
+            <FlatpackFormPage
+                entity="posts"
+                name="Posts"
+                record="7"
+                mode="edit"
+                schema={{
+                    fields: {
+                        title: {
+                            type: 'text',
+                            label: 'Title',
+                            placeholder: 'Title',
+                        },
+                    },
+                }}
+                values={{ title: 'Existing title' }}
+                form_actions={[
+                    {
+                        id: 'delete',
+                        label: 'Delete',
+                        action: 'delete',
+                        variant: 'destructive',
+                    },
+                ]}
+            />,
+        );
+
+        await user.click(screen.getByRole('button', { name: 'Delete' }));
+
+        await waitFor(() => {
+            expect(hoisted.post).toHaveBeenCalledWith(
+                '/flatpack/posts/7/action',
+                { action: 'delete' },
+                expect.objectContaining({
+                    preserveScroll: true,
+                    onSuccess: expect.any(Function),
+                    onError: expect.any(Function),
+                }),
+            );
+        });
     });
 });
