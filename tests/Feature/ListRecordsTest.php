@@ -252,6 +252,53 @@ YAML);
     }
 });
 
+test('flatpack entity update route rejects editable fields missing from fillable', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-list-update-fillable-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+columns:
+  title:
+    label: Title
+    type: text
+    editable: true
+  content:
+    label: Content
+    type: textarea
+    editable: true
+YAML);
+        config()->set('flatpack.path', $tempPath);
+
+        /** @var Post $post */
+        $post = Post::factory()->create([
+            'title' => 'Original title',
+            'body' => 'Original body',
+        ]);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        actingAs($user)
+            ->from(route('flatpack.entities.index', ['entity' => 'posts']))
+            ->patch(route('flatpack.entities.update', [
+                'entity' => 'posts',
+                'record' => (string) $post->getKey(),
+            ]), [
+                'field' => 'content',
+                'value' => 'Updated content',
+            ])
+            ->assertSessionHasErrors('flatpack');
+
+        expect($post->fresh()?->title)->toBe('Original title');
+        expect($post->fresh()?->body)->toBe('Original body');
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
 test('flatpack entity list JSON applies select filters', function () {
     $tempPath = sys_get_temp_dir() . '/flatpack-list-select-filter-' . uniqid('', true);
 

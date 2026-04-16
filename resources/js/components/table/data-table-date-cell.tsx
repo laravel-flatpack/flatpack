@@ -1,13 +1,11 @@
+import { DatePickerField } from '@/components/form-fields';
 import { DASHBOARD_TABLE_INPUT_CLASS } from '@/components/table/data-table-constants';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
     dateInputSegment,
     formatCellValue,
     mergeCommittedDate,
     readOnlyTruncatedDisplay,
 } from '@/lib/data-table-utils';
-import { cn } from '@/lib/utils';
 import type { FlatpackDataTableColumn } from '@/types/data-table';
 
 export function DataTableDateCell({
@@ -25,21 +23,25 @@ export function DataTableDateCell({
 }) {
     if (editable) {
         const day = dateInputSegment(value);
+        const selectedDate =
+            day === '' ? undefined : new Date(`${day}T00:00:00`);
+
         return (
-            <>
-                <Label htmlFor={controlId} className="sr-only">
-                    {col.label}
-                </Label>
-                <Input
-                    id={controlId}
-                    type="date"
-                    className={cn(DASHBOARD_TABLE_INPUT_CLASS, 'tabular-nums')}
-                    value={day}
-                    onChange={(e) =>
-                        commit(mergeCommittedDate(e.target.value, value))
-                    }
-                />
-            </>
+            <DatePickerField
+                id={controlId}
+                label={col.label}
+                emptyLabel="Pick a date"
+                value={selectedDate}
+                inline
+                triggerClassName={DASHBOARD_TABLE_INPUT_CLASS}
+                onValueChange={(nextDate) => {
+                    const nextDay =
+                        nextDate == null
+                            ? ''
+                            : nextDate.toISOString().slice(0, 10);
+                    commit(mergeCommittedDate(nextDay, value));
+                }}
+            />
         );
     }
 

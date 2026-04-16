@@ -6,6 +6,7 @@ namespace Flatpack\Actions\Handlers;
 
 use Flatpack\Actions\FlatpackActionContext;
 use Flatpack\Contracts\Actions\FlatpackAction;
+use Illuminate\Database\Eloquent\MassAssignmentException;
 use Illuminate\Database\Eloquent\Model;
 
 final class SaveRecordHandler implements FlatpackAction
@@ -26,15 +27,25 @@ final class SaveRecordHandler implements FlatpackAction
             $values = [$field => $context->request->input('value')];
         }
 
-        $editableColumns = $this->editableColumnsFromSchema($context->schema);
+        $writableFields = $this->writableFieldsFromSchema(
+            compositionType: $context->compositionType,
+            schema: $context->schema,
+        );
         $filtered = [];
 
         foreach ($values as $field => $value) {
             if (! is_string($field) || trim($field) === '') {
                 continue;
             }
-            if (! isset($editableColumns[$field])) {
+            if (! isset($writableFields[$field])) {
                 continue;
+            }
+            if (! $model->isFillable($field)) {
+                throw new MassAssignmentException(sprintf(
+                    'Add [%s] to fillable property to allow mass assignment on [%s].',
+                    $field,
+                    $model::class,
+                ));
             }
             $filtered[$field] = $value;
         }
@@ -51,9 +62,29 @@ final class SaveRecordHandler implements FlatpackAction
 
     /**
      * @param  array<string, mixed>|null  $schema
+     * @param  array<string, mixed>|null  $schema
      * @return array<string, true>
      */
-    private function editableColumnsFromSchema(?array $schema): array
+    private function writableFieldsFromSchema(
+        string $compositionType,
+        ?array $schema,
+    ): array {
+        if ($schema === null) {
+            return [];
+        }
+
+        return match ($compositionType) {
+            'form' => $this->formFieldsFromSchema($schema),
+            'list' => $this->editableListColumnsFromSchema($schema),
+            default => $this->editableListColumnsFromSchema($schema),
+        };
+    }
+
+    /**
+     * @param  array<string, mixed>  $schema
+     * @return array<string, true>
+     */
+    private function editableListColumnsFromSchema(array $schema): array
     {
         $columns = $schema['columns'] ?? null;
         if (! is_array($columns)) {
@@ -76,5 +107,38 @@ final class SaveRecordHandler implements FlatpackAction
         }
 
         return $editable;
+    }
+
+    /**
+     * Form schemas are expected to describe writable fields directly under
+     * `fields`, so the presence of a field definition opts it into the save
+     * action. This keeps the handler ready for future form submissions while
+     * the model `fillable` contract remains the final write guard.
+     *
+     * @param  array<string, mixed>  $schema
+     * @return array<string, true>
+     */
+    private function formFieldsFromSchema(array $schema): array
+    {
+        $fields = $schema['fields'] ?? null;
+        if (! is_array($fields)) {
+            return [];
+        }
+
+        $writable = [];
+        foreach ($fields as $fieldId => $fieldDefinition) {
+            if (! is_array($fieldDefinition)) {
+                continue;
+            }
+
+            $id = trim((string) ($fieldDefinition['id'] ?? $fieldId));
+            if ($id === '') {
+                continue;
+            }
+
+            $writable[$id] = true;
+        }
+
+        return $writable;
     }
 }

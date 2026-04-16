@@ -2,6 +2,7 @@ import { usePage } from '@inertiajs/react';
 import { AppSidebar } from '@/components/app-sidebar';
 import { SiteHeader } from '@/components/site-header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
+import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { getCurrentPath } from '@/lib/utils';
 import type { FlatpackPageProps } from '@/types/flatpack';
@@ -55,6 +56,7 @@ export default function FlatpackLayout({
                         </div>
                     </div>
                 </SidebarInset>
+                <Toaster richColors />
             </TooltipProvider>
         </SidebarProvider>
     );

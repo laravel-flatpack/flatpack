@@ -1,5 +1,6 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { useCallback, useMemo } from 'react';
+import { toast } from 'sonner';
 import { LucideIconByName } from '@/components/icons';
 import { DataTable } from '@/components/table/data-table';
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,27 @@ import {
 import { cn } from '@/lib/utils';
 import type { DataTableBulkDeletePayload } from '@/types/data-table';
 import type { FlatpackListPageProps } from '@/types/pages/flatpack';
+
+function firstErrorMessage(
+    errors: Record<string, unknown>,
+): string | undefined {
+    for (const value of Object.values(errors)) {
+        if (typeof value === 'string' && value.trim() !== '') {
+            return value;
+        }
+        if (Array.isArray(value)) {
+            const first = value.find(
+                (item): item is string =>
+                    typeof item === 'string' && item.trim() !== '',
+            );
+            if (first) {
+                return first;
+            }
+        }
+    }
+
+    return undefined;
+}
 
 export default function FlatpackListPage({
     entity,
@@ -123,7 +145,13 @@ export default function FlatpackListPage({
                         preserveState: true,
                         preserveScroll: true,
                         onSuccess: () => resolve(),
-                        onError: () => reject(new Error('Bulk action failed')),
+                        onError: (errors) =>
+                            reject(
+                                new Error(
+                                    firstErrorMessage(errors) ??
+                                        'Bulk action failed',
+                                ),
+                            ),
                     },
                 );
             });
@@ -150,7 +178,13 @@ export default function FlatpackListPage({
                         preserveState: true,
                         preserveScroll: true,
                         onSuccess: () => resolve(),
-                        onError: () => reject(new Error('Row action failed')),
+                        onError: (errors) => {
+                            const message =
+                                firstErrorMessage(errors) ??
+                                'Row action failed';
+                            toast.error(message);
+                            reject(new Error(message));
+                        },
                     },
                 );
             });
@@ -167,7 +201,13 @@ export default function FlatpackListPage({
                         preserveState: true,
                         preserveScroll: true,
                         onSuccess: () => resolve(),
-                        onError: () => reject(new Error('List action failed')),
+                        onError: (errors) => {
+                            const message =
+                                firstErrorMessage(errors) ??
+                                'List action failed';
+                            toast.error(message);
+                            reject(new Error(message));
+                        },
                     },
                 );
             });
@@ -199,8 +239,13 @@ export default function FlatpackListPage({
                         preserveState: true,
                         preserveScroll: true,
                         onSuccess: () => resolve(),
-                        onError: () =>
-                            reject(new Error('Record update failed')),
+                        onError: (errors) => {
+                            const message =
+                                firstErrorMessage(errors) ??
+                                'Record update failed';
+                            toast.error(message);
+                            reject(new Error(message));
+                        },
                     },
                 );
             });
@@ -221,8 +266,13 @@ export default function FlatpackListPage({
                         preserveState: true,
                         preserveScroll: true,
                         onSuccess: () => resolve(),
-                        onError: () =>
-                            reject(new Error('Record update failed')),
+                        onError: (errors) => {
+                            const message =
+                                firstErrorMessage(errors) ??
+                                'Record update failed';
+                            toast.error(message);
+                            reject(new Error(message));
+                        },
                     },
                 );
             });
@@ -240,7 +290,7 @@ export default function FlatpackListPage({
                             {displayName}
                         </h1>
                         <div className="flex shrink-0 flex-wrap items-center justify-start gap-2 sm:justify-end">
-                            {listActions.map((action) => (
+                            {listActions.map((action) =>
                                 'href' in action ? (
                                     <Button
                                         key={action.id}
@@ -284,8 +334,8 @@ export default function FlatpackListPage({
                                         ) : null}
                                         {action.label}
                                     </Button>
-                                )
-                            ))}
+                                ),
+                            )}
                         </div>
                     </div>
                 ) : null}

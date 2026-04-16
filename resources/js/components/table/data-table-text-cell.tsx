@@ -1,7 +1,6 @@
 import * as React from 'react';
+import { TextField } from '@/components/form-fields';
 import { DASHBOARD_TABLE_INPUT_CLASS } from '@/components/table/data-table-constants';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { formatCellValue } from '@/lib/data-table-utils';
 
 export function DataTableEditableTextCell({
@@ -21,30 +20,28 @@ export function DataTableEditableTextCell({
     }, [value]);
 
     return (
-        <>
-            <Label htmlFor={controlId} className="sr-only">
-                {ariaLabel}
-            </Label>
-            <Input
-                id={controlId}
-                className={DASHBOARD_TABLE_INPUT_CLASS}
-                value={draft}
-                onChange={(e) => setDraft(e.target.value)}
-                onBlur={() => {
-                    if (draft !== formatCellValue(value)) {
-                        commit(draft);
-                    }
-                }}
-                onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                        (e.target as HTMLInputElement).blur();
-                    }
-                    if (e.key === 'Escape') {
-                        setDraft(formatCellValue(value));
-                        (e.target as HTMLInputElement).blur();
-                    }
-                }}
-            />
-        </>
+        <TextField
+            id={controlId}
+            label={ariaLabel}
+            placeholder=""
+            value={draft}
+            inline
+            inputClassName={DASHBOARD_TABLE_INPUT_CLASS}
+            onValueChange={setDraft}
+            onBlur={() => {
+                if (draft !== formatCellValue(value)) {
+                    commit(draft);
+                }
+            }}
+            onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                    (e.target as HTMLInputElement).blur();
+                }
+                if (e.key === 'Escape') {
+                    setDraft(formatCellValue(value));
+                    (e.target as HTMLInputElement).blur();
+                }
+            }}
+        />
     );
 }

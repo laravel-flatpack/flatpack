@@ -19,10 +19,13 @@ use Flatpack\Lists\ListHeaderActions;
 use Flatpack\Lists\ListRecordsLoader;
 use Flatpack\Support\ModelKeyResolver;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\MassAssignmentException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Inertia\Response;
+use Throwable;
 
 final readonly class ListController
 {
@@ -122,17 +125,21 @@ final readonly class ListController
 
         [$listModelClass, $schema] = $this->listModelAndSchema($entity);
         $handler = $this->resolveRecordActionHandler($action);
-        $result = $handler->handle(new FlatpackActionContext(
-            request: $request,
-            entity: $entity,
-            actionName: $action,
-            modelClass: $listModelClass,
-            record: null,
-            compositionType: 'list',
-            composition: $schema ?? [],
-            schema: $schema,
-            model: null,
-        ));
+        try {
+            $result = $handler->handle(new FlatpackActionContext(
+                request: $request,
+                entity: $entity,
+                actionName: $action,
+                modelClass: $listModelClass,
+                record: null,
+                compositionType: 'list',
+                composition: $schema ?? [],
+                schema: $schema,
+                model: null,
+            ));
+        } catch (Throwable $exception) {
+            throw $this->toUserFacingValidationException($exception);
+        }
 
         if ($result instanceof RedirectResponse) {
             return $result->setStatusCode(303);
@@ -156,17 +163,21 @@ final readonly class ListController
         [$listModelClass, $schema] = $this->listModelAndSchema($entity);
         $model = $this->resolveRecordModel($listModelClass, $record);
         $handler = $this->resolveRecordActionHandler($action);
-        $result = $handler->handle(new FlatpackActionContext(
-            request: $request,
-            entity: $entity,
-            actionName: $action,
-            modelClass: $listModelClass,
-            record: $record,
-            compositionType: 'list',
-            composition: $schema ?? [],
-            schema: $schema,
-            model: $model,
-        ));
+        try {
+            $result = $handler->handle(new FlatpackActionContext(
+                request: $request,
+                entity: $entity,
+                actionName: $action,
+                modelClass: $listModelClass,
+                record: $record,
+                compositionType: 'list',
+                composition: $schema ?? [],
+                schema: $schema,
+                model: $model,
+            ));
+        } catch (Throwable $exception) {
+            throw $this->toUserFacingValidationException($exception);
+        }
 
         if ($result instanceof RedirectResponse) {
             return $result->setStatusCode(303);
@@ -185,17 +196,21 @@ final readonly class ListController
         [$listModelClass, $schema] = $this->listModelAndSchema($entity);
         $model = $this->resolveRecordModel($listModelClass, $record);
         $handler = $this->resolveRecordActionHandler('save');
-        $handler->handle(new FlatpackActionContext(
-            request: $request,
-            entity: $entity,
-            actionName: 'save',
-            modelClass: $listModelClass,
-            record: $record,
-            compositionType: 'list',
-            composition: $schema ?? [],
-            schema: $schema,
-            model: $model,
-        ));
+        try {
+            $handler->handle(new FlatpackActionContext(
+                request: $request,
+                entity: $entity,
+                actionName: 'save',
+                modelClass: $listModelClass,
+                record: $record,
+                compositionType: 'list',
+                composition: $schema ?? [],
+                schema: $schema,
+                model: $model,
+            ));
+        } catch (Throwable $exception) {
+            throw $this->toUserFacingValidationException($exception);
+        }
 
         return back(303)->with('flatpack', [
             'save' => true,
@@ -253,5 +268,26 @@ final readonly class ListController
         return $modelClass::query()
             ->where($keyName, $record)
             ->firstOrFail();
+    }
+
+    private function toUserFacingValidationException(
+        Throwable $exception,
+    ): ValidationException {
+        report($exception);
+
+        $message = 'This change could not be completed.';
+        if ($exception instanceof MassAssignmentException) {
+            $message = config('app.debug')
+                ? $exception->getMessage()
+                : 'This field is not writable for this model.';
+        } elseif (config('app.debug')) {
+            $message = $exception->getMessage() !== ''
+                ? $exception->getMessage()
+                : $message;
+        }
+
+        return ValidationException::withMessages([
+            'flatpack' => $message,
+        ]);
     }
 }
