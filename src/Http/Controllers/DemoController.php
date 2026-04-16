@@ -197,7 +197,15 @@ final class DemoController
                     'type' => 'table',
                     'label' => 'Data table label',
                     'helperText' => 'A helper text for the data table input field.',
-                    'checkboxes' => true,
+                    'bulkActions' => [
+                        [
+                            'id' => 'delete',
+                            'label' => 'Delete',
+                            'action' => 'delete',
+                            'variant' => 'destructive',
+                            'icon' => 'trash',
+                        ],
+                    ],
                     'reorderable' => true,
                     'actions' => [],
                     'columns' => [
