@@ -21,11 +21,6 @@ export type FlatpackPageProps = {
         menu: FlatpackMenuItem[] | null;
         secondaryMenu?: FlatpackSecondaryMenu;
         bottomMenu?: FlatpackSecondaryMenu;
-        pages: {
-            dashboard: string;
-            login: string;
-            logout: string;
-        };
         user?: FlatpackUser;
     };
 };

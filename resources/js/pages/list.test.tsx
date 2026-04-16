@@ -2,13 +2,46 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-const { routerGet, routerPost } = vi.hoisted(() => ({
+const { routerGet, routerPost, routeMock } = vi.hoisted(() => ({
     routerGet: vi.fn(),
     routerPost: vi.fn(),
+    routeMock: vi.fn(
+        (
+            name: string,
+            params?: {
+                entity?: string;
+                record?: string;
+            },
+        ) => {
+            const entity = params?.entity ?? 'posts';
+            const record = params?.record;
+
+            switch (name) {
+                case 'flatpack.entities.edit':
+                    return `/flatpack/${entity}/${record}/edit`;
+                case 'flatpack.entities.index':
+                    return `/flatpack/${entity}`;
+                case 'flatpack.entities.bulk-action':
+                    return `/flatpack/${entity}/bulk`;
+                case 'flatpack.entities.row-action':
+                    return `/flatpack/${entity}/${record}/action`;
+                case 'flatpack.entities.action':
+                    return `/flatpack/${entity}/action`;
+                case 'flatpack.entities.update':
+                    return `/flatpack/${entity}/${record}`;
+                default:
+                    return '/flatpack';
+            }
+        },
+    ),
 }));
 
 vi.mock('@/layouts/flatpack-layout', () => ({
     default: ({ children }: { children: ReactNode }) => <>{children}</>,
+}));
+
+vi.mock('@/lib/route', () => ({
+    route: routeMock,
 }));
 
 vi.mock('@inertiajs/react', () => ({
@@ -39,6 +72,7 @@ describe('FlatpackListPage', () => {
         cleanup();
         routerGet.mockReset();
         routerPost.mockReset();
+        routeMock.mockClear();
     });
 
     it('uses entity for heading and list title when name is omitted', () => {
@@ -202,7 +236,6 @@ describe('FlatpackListPage', () => {
         render(
             <FlatpackListPage
                 entity="posts"
-                flatpack_prefix="flatpack"
                 schema={{
                     row_click_edit: true,
                     columns: {
@@ -223,7 +256,6 @@ describe('FlatpackListPage', () => {
         render(
             <FlatpackListPage
                 entity="posts"
-                flatpack_prefix="flatpack"
                 schema={{
                     row_click_edit: 'uuid',
                     columns: {
@@ -244,7 +276,6 @@ describe('FlatpackListPage', () => {
         render(
             <FlatpackListPage
                 entity="posts"
-                flatpack_prefix="flatpack"
                 schema={{
                     columns: {
                         id: { label: 'ID' },
@@ -264,7 +295,6 @@ describe('FlatpackListPage', () => {
         render(
             <FlatpackListPage
                 entity="posts"
-                flatpack_prefix="flatpack"
                 model_key="uuid"
                 schema={{
                     columns: {
@@ -284,7 +314,6 @@ describe('FlatpackListPage', () => {
         render(
             <FlatpackListPage
                 entity="posts"
-                flatpack_prefix="flatpack"
                 schema={{
                     row_click_edit: false,
                     columns: {
@@ -326,7 +355,6 @@ describe('FlatpackListPage', () => {
         render(
             <FlatpackListPage
                 entity="posts"
-                flatpack_prefix="flatpack"
                 name="Posts"
                 list_actions={[
                     {

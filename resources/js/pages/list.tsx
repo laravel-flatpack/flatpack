@@ -9,6 +9,7 @@ import {
     listYamlColumnsToDataTableColumns,
     listYamlFiltersToDataTableFilters,
 } from '@/lib/list-schema';
+import { route } from '@/lib/route';
 import { cn } from '@/lib/utils';
 import type { DataTableBulkDeletePayload } from '@/types/data-table';
 import type { FlatpackListPageProps } from '@/types/pages/flatpack';
@@ -45,7 +46,6 @@ export default function FlatpackListPage({
     filters: serverFilters = [],
     filter_values: serverFilterValues = {},
     sorting: serverSorting = { sort_by: null, sort_direction: null },
-    flatpack_prefix: flatpackPrefix,
     list_actions: listActions = [],
     bulk_actions: bulkActions = [],
 }: FlatpackListPageProps) {
@@ -74,10 +74,6 @@ export default function FlatpackListPage({
             : schema?.row_click_edit === false
               ? null
               : modelKey || 'id';
-    const normalizedPrefix = (flatpackPrefix ?? 'flatpack').replace(
-        /^\/+|\/+$/g,
-        '',
-    );
 
     const handleRowClick = useCallback(
         (row: Record<string, unknown>) => {
@@ -88,10 +84,14 @@ export default function FlatpackListPage({
             if (record == null || record === '') {
                 return;
             }
-            const recordValue = encodeURIComponent(String(record));
-            router.get(`/${normalizedPrefix}/${entity}/${recordValue}/edit`);
+            router.get(
+                route('flatpack.entities.edit', {
+                    entity,
+                    record: String(record),
+                }),
+            );
         },
-        [entity, normalizedPrefix, rowClickEditKey],
+        [entity, rowClickEditKey],
     );
     const noContentMessage = !displayName
         ? 'Nothing to list yet.'
@@ -111,7 +111,7 @@ export default function FlatpackListPage({
             },
         ) => {
             router.get(
-                window.location.pathname,
+                route('flatpack.entities.index', { entity }),
                 {
                     page,
                     per_page: perPage,
@@ -126,13 +126,13 @@ export default function FlatpackListPage({
                 },
             );
         },
-        [],
+        [entity],
     );
     const handleBulkAction = useCallback(
         async (payload: DataTableBulkDeletePayload) => {
             await new Promise<void>((resolve, reject) => {
                 router.post(
-                    `/${normalizedPrefix}/${entity}/bulk`,
+                    route('flatpack.entities.bulk-action', { entity }),
                     {
                         action: payload.action,
                         selection: payload.selection,
@@ -156,7 +156,7 @@ export default function FlatpackListPage({
                 );
             });
         },
-        [entity, normalizedPrefix],
+        [entity],
     );
     const handleRowAction = useCallback(
         async ({
@@ -172,7 +172,10 @@ export default function FlatpackListPage({
             }
             await new Promise<void>((resolve, reject) => {
                 router.post(
-                    `/${normalizedPrefix}/${entity}/${encodeURIComponent(String(record))}/action`,
+                    route('flatpack.entities.row-action', {
+                        entity,
+                        record: String(record),
+                    }),
                     { action },
                     {
                         preserveState: true,
@@ -189,13 +192,13 @@ export default function FlatpackListPage({
                 );
             });
         },
-        [entity, modelKey, normalizedPrefix],
+        [entity, modelKey],
     );
     const handleListAction = useCallback(
         async (action: string) => {
             await new Promise<void>((resolve, reject) => {
                 router.post(
-                    `/${normalizedPrefix}/${entity}/action`,
+                    route('flatpack.entities.action', { entity }),
                     { action },
                     {
                         preserveState: true,
@@ -212,7 +215,7 @@ export default function FlatpackListPage({
                 );
             });
         },
-        [entity, normalizedPrefix],
+        [entity],
     );
     const handleCellUpdate = useCallback(
         async ({
@@ -230,7 +233,10 @@ export default function FlatpackListPage({
             }
             await new Promise<void>((resolve, reject) => {
                 router.patch(
-                    `/${normalizedPrefix}/${entity}/${encodeURIComponent(String(record))}`,
+                    route('flatpack.entities.update', {
+                        entity,
+                        record: String(record),
+                    }),
                     {
                         field: columnId,
                         value: value as never,
@@ -250,7 +256,7 @@ export default function FlatpackListPage({
                 );
             });
         },
-        [entity, modelKey, normalizedPrefix],
+        [entity, modelKey],
     );
     const handleRowUpdate = useCallback(
         async ({ row }: { row: Record<string, unknown> }) => {
@@ -260,7 +266,10 @@ export default function FlatpackListPage({
             }
             await new Promise<void>((resolve, reject) => {
                 router.patch(
-                    `/${normalizedPrefix}/${entity}/${encodeURIComponent(String(record))}`,
+                    route('flatpack.entities.update', {
+                        entity,
+                        record: String(record),
+                    }),
                     { values: row as never },
                     {
                         preserveState: true,
@@ -277,7 +286,7 @@ export default function FlatpackListPage({
                 );
             });
         },
-        [entity, modelKey, normalizedPrefix],
+        [entity, modelKey],
     );
 
     return (

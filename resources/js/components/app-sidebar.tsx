@@ -11,6 +11,7 @@ import {
     SidebarMenu,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { route } from '@/lib/route';
 import type {
     FlatpackMenuItem,
     FlatpackSecondaryMenu,
@@ -28,11 +29,6 @@ export function AppSidebar({
         menu: FlatpackMenuItem[] | null;
         secondaryMenu?: FlatpackSecondaryMenu;
         bottomMenu?: FlatpackSecondaryMenu;
-        pages: {
-            dashboard: string;
-            login: string;
-            logout: string;
-        };
         user?: FlatpackUser;
     };
     currentPath: string;
@@ -45,7 +41,7 @@ export function AppSidebar({
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <a
-                            href={navigation.pages.dashboard}
+                            href={route('flatpack.dashboard')}
                             className="flex items-center gap-2 py-1 data-[slot=sidebar-menu-button]:p-1.5!"
                         >
                             <CommandIcon className="size-5!" />
@@ -62,7 +58,7 @@ export function AppSidebar({
                     items={[
                         {
                             name: 'Dashboard',
-                            route: navigation.pages.dashboard,
+                            route: route('flatpack.dashboard'),
                             icon: 'layout-dashboard',
                         },
                         ...mainMenuItems,
@@ -82,12 +78,7 @@ export function AppSidebar({
                 />
             </SidebarContent>
             <SidebarFooter>
-                {navigation.user && (
-                    <NavUser
-                        user={navigation.user}
-                        logoutRoute={navigation.pages.logout}
-                    />
-                )}
+                {navigation.user && <NavUser user={navigation.user} />}
             </SidebarFooter>
         </Sidebar>
     );

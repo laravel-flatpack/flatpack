@@ -18,14 +18,12 @@ export default function FlatpackLayout({
         props: { flatpack },
         url,
     } = usePage<FlatpackPageProps>();
-    const { quickAction, menu, secondaryMenu, bottomMenu, pages, user } =
-        flatpack;
+    const { quickAction, menu, secondaryMenu, bottomMenu, user } = flatpack;
     const navigation = {
         quickAction,
         menu: Array.isArray(menu) ? menu : [],
         secondaryMenu,
         bottomMenu,
-        pages,
         user,
     };
     const currentPath = getCurrentPath(url);

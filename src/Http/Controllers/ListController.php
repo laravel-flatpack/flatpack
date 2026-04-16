@@ -66,7 +66,6 @@ final readonly class ListController
             $sortBy,
             $sortDirection,
         );
-        $flatpackPrefix = trim((string) config('flatpack.prefix', 'flatpack'), '/');
 
         return FlatpackResponse::inertia('list', [
             'entity' => $entity,
@@ -82,7 +81,6 @@ final readonly class ListController
             'filters' => $result['filters'],
             'filter_values' => $result['filter_values'],
             'sorting' => $result['sorting'],
-            'flatpack_prefix' => $flatpackPrefix,
             'list_actions' => ListHeaderActions::fromSchema($schema),
             'bulk_actions' => ListBulkActions::fromSchema($schema),
         ], $request->boolean('json'));

@@ -7,6 +7,9 @@ const hoisted = vi.hoisted(() => ({
         errors: {} as Record<string, string>,
     },
     usePage: vi.fn(),
+    route: vi.fn((name: string) =>
+        name === 'flatpack.login.store' ? '/auth/login' : '/flatpack',
+    ),
 }));
 
 vi.mock('@inertiajs/react', () => ({
@@ -37,6 +40,10 @@ vi.mock('@inertiajs/react', () => ({
     ),
 }));
 
+vi.mock('@/lib/route', () => ({
+    route: hoisted.route,
+}));
+
 import FlatpackLogin from '@/pages/login';
 
 function mockFlatpackPage() {
@@ -44,11 +51,6 @@ function mockFlatpackPage() {
         props: {
             flatpack: {
                 menu: null,
-                pages: {
-                    dashboard: '/dashboard',
-                    login: '/auth/login',
-                    logout: '/auth/logout',
-                },
             },
         },
     });
@@ -63,6 +65,7 @@ describe('FlatpackLogin', () => {
 
     afterEach(() => {
         cleanup();
+        hoisted.route.mockClear();
     });
 
     it('sets the document title', () => {

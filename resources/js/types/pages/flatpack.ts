@@ -28,7 +28,6 @@ export type FlatpackListPageProps = {
     filters?: FlatpackDataTableFilter[];
     filter_values?: FlatpackDataTableServerFiltersState;
     sorting?: FlatpackListServerSorting;
-    flatpack_prefix?: string;
     list_actions?: FlatpackListHeaderAction[];
     bulk_actions?: FlatpackDataTableBulkAction[];
 };

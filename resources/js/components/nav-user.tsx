@@ -22,15 +22,10 @@ import {
     SidebarMenuItem,
     useSidebar,
 } from '@/components/ui/sidebar';
+import { route } from '@/lib/route';
 import type { FlatpackUser } from '@/types/flatpack';
 
-export function NavUser({
-    user,
-    logoutRoute,
-}: {
-    user: FlatpackUser;
-    logoutRoute: string;
-}) {
+export function NavUser({ user }: { user: FlatpackUser }) {
     const { isMobile } = useSidebar();
 
     return (
@@ -106,7 +101,9 @@ export function NavUser({
                         </DropdownMenuGroup>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
-                            onClick={() => router.post(logoutRoute)}
+                            onClick={() =>
+                                router.post(route('flatpack.logout'))
+                            }
                         >
                             <LogOutIcon />
                             Logout

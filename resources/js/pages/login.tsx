@@ -7,6 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Field, FieldGroup, FieldTitle } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
+import { route } from '@/lib/route';
 import type { FlatpackPageProps } from '@/types/flatpack';
 
 const LoginForm = ({ loginAction }: { loginAction: string }) => (
@@ -86,10 +87,8 @@ const LoginForm = ({ loginAction }: { loginAction: string }) => (
 );
 
 export default function FlatpackLogin() {
-    const {
-        props: { flatpack },
-    } = usePage<FlatpackPageProps>();
-    const loginStoreRoute = flatpack.pages.login;
+    usePage<FlatpackPageProps>();
+    const loginStoreRoute = route('flatpack.login.store');
 
     return (
         <>

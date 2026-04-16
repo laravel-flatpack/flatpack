@@ -32,11 +32,6 @@ final readonly class ShareFlatpackInertiaData
                 ),
                 'secondaryMenu' => config('flatpack.secondary_menu'),
                 'bottomMenu' => config('flatpack.bottom_menu'),
-                'pages' => [
-                    'dashboard' => route('flatpack.dashboard'),
-                    'login' => route('flatpack.login'),
-                    'logout' => route('flatpack.logout'),
-                ],
                 'user' => $request->user() ? FlatpackUser::make($request->user()) : null,
             ]);
         }
