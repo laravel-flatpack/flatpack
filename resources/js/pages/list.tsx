@@ -47,6 +47,11 @@ export default function FlatpackListPage(props: FlatpackListPageProps) {
                     }
                 }}
                 title={pendingListConfirm?.label ?? 'Confirm'}
+                continueVariant={
+                    pendingListConfirm?.variant === 'destructive'
+                        ? 'destructive'
+                        : 'default'
+                }
                 onContinue={() => {
                     const pending = pendingListConfirm;
                     setPendingListConfirm(null);

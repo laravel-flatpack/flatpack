@@ -1,20 +1,11 @@
 import type { Table as TanStackTable } from '@tanstack/react-table';
 import { ChevronDownIcon } from 'lucide-react';
 import { useState } from 'react';
+import { FlatpackConfirmDialog } from '@/components/flatpack/flatpack-confirm-dialog';
 import { LucideIconByName } from '@/components/icons';
 import { DataTableColumnsVisibilityDropdown } from '@/components/table/data-table-columns-visibility-dropdown';
 import { DataTableFiltersDropdown } from '@/components/table/data-table-filters-dropdown';
 import { DataTableSearchInput } from '@/components/table/data-table-search-input';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -174,7 +165,7 @@ export function DataTableToolbar({
                 )}
                 <DataTableColumnsVisibilityDropdown table={table} />
             </div>
-            <AlertDialog
+            <FlatpackConfirmDialog
                 open={isConfirmBulkOpen}
                 onOpenChange={(open) => {
                     setIsConfirmBulkOpen(open);
@@ -182,41 +173,20 @@ export function DataTableToolbar({
                         setPendingActionId(null);
                     }
                 }}
-            >
-                <AlertDialogContent size="sm">
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>
-                            {pendingAction?.label ?? 'Bulk action'} selected
-                            records?
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                            This will apply {pendingAction?.label ?? 'this'}{' '}
-                            action to {selectedRowCount}{' '}
-                            {selectedRowCount === 1 ? 'record' : 'records'}. Are
-                            you sure you want to continue?
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                            variant={
-                                pendingAction?.variant === 'destructive'
-                                    ? 'destructive'
-                                    : 'default'
-                            }
-                            onClick={() => {
-                                if (pendingActionId !== null) {
-                                    onBulkAction(pendingActionId);
-                                }
-                                setIsConfirmBulkOpen(false);
-                                setPendingActionId(null);
-                            }}
-                        >
-                            {pendingAction?.label ?? 'Continue'}
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+                title={pendingAction?.label ?? 'Confirm'}
+                continueVariant={
+                    pendingAction?.variant === 'destructive'
+                        ? 'destructive'
+                        : 'default'
+                }
+                onContinue={() => {
+                    if (pendingActionId !== null) {
+                        onBulkAction(pendingActionId);
+                    }
+                    setIsConfirmBulkOpen(false);
+                    setPendingActionId(null);
+                }}
+            />
         </div>
     );
 }

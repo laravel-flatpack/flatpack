@@ -47,6 +47,14 @@ export default function FlatpackFormPage(props: FlatpackFormPageProps) {
                         ? pendingConfirm.config.label
                         : (saveActionConfig?.label ?? 'Confirm')
                 }
+                continueVariant={
+                    (pendingConfirm?.kind === 'save' &&
+                        saveActionConfig?.variant === 'destructive') ||
+                    (pendingConfirm?.kind === 'named' &&
+                        pendingConfirm.config.variant === 'destructive')
+                        ? 'destructive'
+                        : 'default'
+                }
                 onContinue={() => {
                     const pending = pendingConfirm;
                     setPendingConfirm(null);
