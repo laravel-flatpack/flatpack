@@ -21,8 +21,6 @@ export function NavSecondary({
     items?: FlatpackMenuItem[];
     currentPath: string;
 }) {
-    // const { isMobile } = useSidebar();
-
     if (items && items.length === 0) {
         return null;
     }

@@ -20,7 +20,6 @@ export default function FlatpackLayout({
     } = usePage<FlatpackPageProps>();
     const { quickAction, menu, secondaryMenu, bottomMenu, pages, user } =
         flatpack;
-    flatpack;
     const navigation = {
         quickAction,
         menu: Array.isArray(menu) ? menu : [],
