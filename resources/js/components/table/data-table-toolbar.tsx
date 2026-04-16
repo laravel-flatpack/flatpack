@@ -1,6 +1,7 @@
 import type { Table as TanStackTable } from '@tanstack/react-table';
-import { ChevronDownIcon, Trash2Icon } from 'lucide-react';
+import { ChevronDownIcon } from 'lucide-react';
 import { useState } from 'react';
+import { LucideIconByName } from '@/components/icons';
 import { DataTableColumnsVisibilityDropdown } from '@/components/table/data-table-columns-visibility-dropdown';
 import { DataTableFiltersDropdown } from '@/components/table/data-table-filters-dropdown';
 import { DataTableSearchInput } from '@/components/table/data-table-search-input';
@@ -22,6 +23,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import type {
+    FlatpackDataTableBulkAction,
     FlatpackDataTableFilter,
     FlatpackDataTableServerFiltersState,
 } from '@/types/data-table';
@@ -35,7 +37,8 @@ type DataTableToolbarProps = {
     totalRowCount: number;
     onSelectAllRows: () => void;
     onDeselectAllRows: () => void;
-    onDeleteSelectedRows: () => void | Promise<void>;
+    bulkActions: FlatpackDataTableBulkAction[];
+    onBulkAction: (actionId: string) => void | Promise<void>;
     hasSearchableColumns: boolean;
     hasFilters: boolean;
     globalFilter: string;
@@ -56,7 +59,8 @@ export function DataTableToolbar({
     totalRowCount,
     onSelectAllRows,
     onDeselectAllRows,
-    onDeleteSelectedRows,
+    bulkActions,
+    onBulkAction,
     hasSearchableColumns,
     hasFilters,
     globalFilter,
@@ -68,6 +72,11 @@ export function DataTableToolbar({
     onSetDateFilter,
 }: DataTableToolbarProps) {
     const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
+    const [pendingActionId, setPendingActionId] = useState<string | null>(null);
+    const pendingAction =
+        pendingActionId === null
+            ? null
+            : bulkActions.find((action) => action.id === pendingActionId) ?? null;
 
     return (
         <div className="h-8 flex items-center justify-between gap-3">
@@ -90,15 +99,29 @@ export function DataTableToolbar({
                                 align="start"
                                 className="duration-0 data-open:animate-none data-closed:animate-none data-open:fade-in-0 data-open:zoom-in-100 data-closed:fade-out-0 data-closed:zoom-out-100"
                             >
-                                <DropdownMenuItem
-                                    variant="destructive"
-                                    onSelect={() => {
-                                        setIsConfirmDeleteOpen(true);
-                                    }}
-                                >
-                                    <Trash2Icon />
-                                    Delete
-                                </DropdownMenuItem>
+                                {bulkActions.map((action) => (
+                                    <DropdownMenuItem
+                                        key={action.id}
+                                        variant={
+                                            action.variant === 'destructive'
+                                                ? 'destructive'
+                                                : 'default'
+                                        }
+                                        onSelect={() => {
+                                            if (action.action === 'delete') {
+                                                setPendingActionId(action.id);
+                                                setIsConfirmDeleteOpen(true);
+                                                return;
+                                            }
+                                            onBulkAction(action.id);
+                                        }}
+                                    >
+                                        {action.icon ? (
+                                            <LucideIconByName name={action.icon} />
+                                        ) : null}
+                                        {action.label}
+                                    </DropdownMenuItem>
+                                ))}
                             </DropdownMenuContent>
                         </DropdownMenu>
                         {selectedRowCount > 0 && (
@@ -150,17 +173,23 @@ export function DataTableToolbar({
             </div>
             <AlertDialog
                 open={isConfirmDeleteOpen}
-                onOpenChange={setIsConfirmDeleteOpen}
+                onOpenChange={(open) => {
+                    setIsConfirmDeleteOpen(open);
+                    if (!open) {
+                        setPendingActionId(null);
+                    }
+                }}
             >
                 <AlertDialogContent size="sm">
                     <AlertDialogHeader>
                         <AlertDialogTitle>
-                            Delete selected records?
+                            {pendingAction?.label ?? 'Delete'} selected records?
                         </AlertDialogTitle>
                         <AlertDialogDescription>
-                            This will delete {selectedRowCount}{' '}
+                            This will apply {pendingAction?.label ?? 'Delete'} to{' '}
+                            {selectedRowCount}{' '}
                             {selectedRowCount === 1 ? 'record' : 'records'}. Are
-                            you sure you want to delete these records?
+                            you sure you want to continue?
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -168,11 +197,14 @@ export function DataTableToolbar({
                         <AlertDialogAction
                             variant="destructive"
                             onClick={() => {
-                                onDeleteSelectedRows();
+                                if (pendingActionId !== null) {
+                                    onBulkAction(pendingActionId);
+                                }
                                 setIsConfirmDeleteOpen(false);
+                                setPendingActionId(null);
                             }}
                         >
-                            Delete
+                            {pendingAction?.label ?? 'Delete'}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

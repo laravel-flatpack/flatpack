@@ -577,9 +577,10 @@ YAML);
 
         actingAs($user)
             ->from(route('flatpack.entities.index', ['entity' => 'posts']))
-            ->delete(route('flatpack.entities.bulk-delete', [
+            ->post(route('flatpack.entities.bulk-action', [
                 'entity' => 'posts',
             ]), [
+                'action' => 'delete',
                 'selection' => [(string) $deleteA->getKey(), (string) $deleteB->getKey()],
             ])
             ->assertStatus(303);
@@ -587,6 +588,54 @@ YAML);
         expect(Post::query()->whereKey($keep->getKey())->exists())->toBeTrue();
         expect(Post::query()->whereKey($deleteA->getKey())->exists())->toBeFalse();
         expect(Post::query()->whereKey($deleteB->getKey())->exists())->toBeFalse();
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
+test('flatpack entity list JSON only exposes configured bulk actions', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-list-bulk-actions-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+bulk_actions:
+  delete:
+    label: Delete
+    action: delete
+    variant: destructive
+  publish:
+    label: Publish
+    action: publish
+    variant: primary
+columns:
+  id:
+    label: ID
+  title:
+    label: Title
+YAML);
+        config()->set('flatpack.path', $tempPath);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        $payload = actingAs($user)
+            ->getJson(route('flatpack.entities.index', ['entity' => 'posts', 'json' => true]))
+            ->assertOk()
+            ->json();
+
+        $body = $payload['data'] ?? $payload;
+        expect($body['bulk_actions'])->toEqual([
+            [
+                'id' => 'delete',
+                'label' => 'Delete',
+                'action' => 'delete',
+                'icon' => '',
+                'variant' => 'destructive',
+            ],
+        ]);
     } finally {
         File::deleteDirectory($tempPath);
     }
@@ -627,9 +676,10 @@ YAML);
 
         actingAs($user)
             ->from(route('flatpack.entities.index', ['entity' => 'posts']))
-            ->delete(route('flatpack.entities.bulk-delete', [
+            ->post(route('flatpack.entities.bulk-action', [
                 'entity' => 'posts',
             ]), [
+                'action' => 'delete',
                 'selection' => 'all',
                 'search' => 'alpha',
                 'filters' => ['status' => 'active'],

@@ -49,11 +49,11 @@ export function DataTable({
     columns: schemaColumns,
     data: initialData,
     dataRowKey = 'id',
-    checkboxes = false,
+    bulkActions = [],
     reorderable: reorderableProp,
     onRowClick,
     onValueChange,
-    onBulkDelete,
+    onBulkAction,
     className,
     serverPagination,
     serverSearch,
@@ -118,10 +118,7 @@ export function DataTable({
             return next;
         });
     }, [data, getStableRowId, isAllRowsSelected]);
-    const hasBulkActions = React.useMemo(
-        () => checkboxes === true,
-        [checkboxes],
-    );
+    const hasBulkActions = bulkActions.length > 0;
     const reorderKey =
         reorderableProp === true
             ? 'sort_order'
@@ -145,13 +142,17 @@ export function DataTable({
         () =>
             leafColumnIdsInSchemaOrder(
                 schemaColumns,
-                checkboxes,
+                hasBulkActions,
                 isReorderable,
             ),
-        [schemaColumns, checkboxes, isReorderable],
+        [schemaColumns, hasBulkActions, isReorderable],
     );
     const [columnOrder, setColumnOrder] = React.useState<string[]>(() =>
-        leafColumnIdsInSchemaOrder(schemaColumns, checkboxes, isReorderable),
+        leafColumnIdsInSchemaOrder(
+            schemaColumns,
+            hasBulkActions,
+            isReorderable,
+        ),
     );
     React.useLayoutEffect(() => {
         setColumnOrder(schemaLeafOrder);
@@ -221,14 +222,14 @@ export function DataTable({
     const columnDefs = React.useMemo(
         () =>
             buildDataTableColumnDefs(schemaColumns, {
-                checkboxes,
+                hasBulkActions,
                 reorderable: isReorderable,
                 onCellChange: handleCellChange,
                 onRowReplace: handleRowReplace,
             }),
         [
             schemaColumns,
-            checkboxes,
+            hasBulkActions,
             isReorderable,
             handleCellChange,
             handleRowReplace,
@@ -278,7 +279,7 @@ export function DataTable({
             pagination: paginationState,
         },
         getRowId: (row, index) => getStableRowId(row, index),
-        enableRowSelection: checkboxes,
+        enableRowSelection: hasBulkActions,
         onRowSelectionChange: handleRowSelectionChange,
         onSortingChange: handleSortingChange,
         onColumnFiltersChange: setColumnFilters,
@@ -333,7 +334,7 @@ export function DataTable({
         setRowSelection({});
         table.toggleAllRowsSelected(false);
     }, [table]);
-    const serverSortingForBulkDelete = React.useMemo(() => {
+    const serverSortingForBulkAction = React.useMemo(() => {
         const first = sorting[0];
         if (!first) {
             return { sort_by: null, sort_direction: null } as const;
@@ -344,7 +345,7 @@ export function DataTable({
         } as const;
     }, [sorting]);
 
-    const handleDeleteSelectedRows = React.useCallback(async () => {
+    const handleBulkActionClick = React.useCallback(async (actionId: string) => {
         const selectedIds = new Set(
             Object.entries(rowSelection)
                 .filter(([, selected]) => selected)
@@ -355,60 +356,77 @@ export function DataTable({
             return;
         }
 
-        if (onBulkDelete != null) {
+        const actionKey = bulkActions.find(
+            (bulkAction) => bulkAction.id === actionId,
+        )?.action;
+        if (!actionKey) {
+            return;
+        }
+
+        if (onBulkAction != null) {
             const previousData = data;
             const previousSelection = rowSelection;
             const previousIsAllRowsSelected = isAllRowsSelected;
-            const optimisticRows = isAllRowsSelected
-                ? []
-                : data.filter(
-                      (row, index) =>
-                          !selectedIds.has(getStableRowId(row, index)),
-                  );
+            const optimisticRows =
+                actionKey === 'delete' && isAllRowsSelected
+                    ? []
+                    : actionKey === 'delete'
+                      ? data.filter(
+                            (row, index) =>
+                                !selectedIds.has(getStableRowId(row, index)),
+                        )
+                      : data;
 
-            setData(optimisticRows);
-            onValueChange?.(optimisticRows);
+            if (actionKey === 'delete') {
+                setData(optimisticRows);
+                onValueChange?.(optimisticRows);
+            }
             handleDeselectAllRows();
 
             try {
-                await onBulkDelete({
+                await onBulkAction({
+                    action: actionKey,
                     selection: isAllRowsSelected
                         ? 'all'
                         : Array.from(selectedIds),
                     search: globalFilter,
                     filters: serverFilterState,
-                    sorting: serverSortingForBulkDelete,
+                    sorting: serverSortingForBulkAction,
                 });
                 return;
             } catch (error) {
-                setData(previousData);
+                if (actionKey === 'delete') {
+                    setData(previousData);
+                }
                 setRowSelection(previousSelection);
                 setIsAllRowsSelected(previousIsAllRowsSelected);
                 throw error;
             }
         }
 
-        setData((prev) => {
-            const nextRows = prev.filter(
-                (row, index) => !selectedIds.has(getStableRowId(row, index)),
-            );
-            onValueChange?.(nextRows);
-            return nextRows;
-        });
+        if (actionKey === 'delete') {
+            setData((prev) => {
+                const nextRows = prev.filter(
+                    (row, index) => !selectedIds.has(getStableRowId(row, index)),
+                );
+                onValueChange?.(nextRows);
+                return nextRows;
+            });
+        }
 
-        // TODO: Replace with backend bulk delete and refresh.
         handleDeselectAllRows();
     }, [
+        bulkActions,
         data,
         globalFilter,
         getStableRowId,
         handleDeselectAllRows,
         isAllRowsSelected,
-        onBulkDelete,
+        onBulkAction,
         onValueChange,
         rowSelection,
         serverFilterState,
-        serverSortingForBulkDelete,
+        serverSortingForBulkAction,
     ]);
     const paginationStateCurrent = table.getState().pagination;
     const selectedRowCount = isAllRowsSelected
@@ -488,7 +506,8 @@ export function DataTable({
                 totalRowCount={totalRowCount}
                 onSelectAllRows={handleSelectAllRows}
                 onDeselectAllRows={handleDeselectAllRows}
-                onDeleteSelectedRows={handleDeleteSelectedRows}
+                bulkActions={bulkActions}
+                onBulkAction={handleBulkActionClick}
                 hasSearchableColumns={hasSearchableColumns}
                 hasFilters={hasFilters}
                 globalFilter={globalFilter}

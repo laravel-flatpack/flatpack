@@ -120,13 +120,15 @@ describe('mapFormFieldPropsToComponentProps', () => {
                 },
             ],
             data: [{ name: 'Ada', status: 'a' }],
-            checkboxes: true,
+            bulkActions: [{ id: 'delete', label: 'Delete', action: 'delete' }],
         };
         const out = mapFormFieldPropsToComponentProps(props, context);
         expect(out.id).toBe('field-1');
         expect(out.columns).toHaveLength(2);
         expect(out.data).toEqual([{ name: 'Ada', status: 'a' }]);
-        expect(out.checkboxes).toBe(true);
+        expect(out.bulkActions).toEqual([
+            { id: 'delete', label: 'Delete', action: 'delete' },
+        ]);
     });
 
     it('defaults table data to empty array when omitted', () => {

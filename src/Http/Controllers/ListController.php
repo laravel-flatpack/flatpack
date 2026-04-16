@@ -8,6 +8,7 @@ use Flatpack\Actions\FlatpackBulkActionContext;
 use Flatpack\Composition\EntityComposition;
 use Flatpack\Contracts\Actions\FlatpackBulkAction;
 use Flatpack\Http\FlatpackResponse;
+use Flatpack\Lists\ListBulkActions;
 use Flatpack\Lists\ListHeaderActions;
 use Flatpack\Lists\ListRecordsLoader;
 use Flatpack\Support\ModelKeyResolver;
@@ -73,25 +74,27 @@ final readonly class ListController
             'sorting' => $result['sorting'],
             'flatpack_prefix' => $flatpackPrefix,
             'list_actions' => ListHeaderActions::fromSchema($schema),
+            'bulk_actions' => ListBulkActions::fromSchema($schema),
         ], $request->boolean('json'));
     }
 
-    public function bulkDelete(Request $request, string $entity): RedirectResponse
+    public function bulkAction(Request $request, string $entity): RedirectResponse
     {
         $list = $this->entityComposition->listFor($entity);
         $schema = $this->entityComposition->listSchema($entity);
-        $handlerClass = config('flatpack.bulk_actions.delete');
+        $action = trim((string) $request->input('action', ''));
+        $handlerClass = config("flatpack.bulk_actions.{$action}");
 
         if (! is_string($handlerClass) || $handlerClass === '') {
-            abort(500, 'Flatpack bulk delete handler is not configured.');
+            abort(404, 'Flatpack bulk action handler is not configured.');
         }
 
         $handler = app()->make($handlerClass);
         if (! $handler instanceof FlatpackBulkAction) {
-            abort(500, 'Flatpack bulk delete handler must implement FlatpackBulkAction.');
+            abort(500, 'Flatpack bulk action handler must implement FlatpackBulkAction.');
         }
 
-        $deleted = $handler->handle(FlatpackBulkActionContext::fromRequest(
+        $result = $handler->handle(FlatpackBulkActionContext::fromRequest(
             request: $request,
             entity: $entity,
             modelClass: (string) ($list->model ?? ''),
@@ -99,7 +102,7 @@ final readonly class ListController
         ));
 
         return back(303)->with('flatpack', [
-            'deleted' => (int) $deleted,
+            $action => (int) $result,
         ]);
     }
 }

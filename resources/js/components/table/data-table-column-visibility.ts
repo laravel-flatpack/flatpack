@@ -31,12 +31,12 @@ export function visibilityFromSchema(
 
 export function leafColumnIdsInSchemaOrder(
     schemaColumns: FlatpackDataTableColumn[],
-    checkboxes: boolean,
+    hasBulkActions: boolean,
     reorderable: boolean,
 ): string[] {
     return [
         ...(reorderable ? ['drag'] : []),
-        ...(checkboxes ? ['select'] : []),
+        ...(hasBulkActions ? ['select'] : []),
         ...schemaColumns.map((c) => c.id),
     ];
 }

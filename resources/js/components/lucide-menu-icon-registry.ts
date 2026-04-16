@@ -99,6 +99,7 @@ import {
     Users,
     Wallet,
     Wrench,
+    X,
     Zap,
 } from 'lucide-react';
 
@@ -197,7 +198,7 @@ export const flatpackMenuIcons = {
     tag: Tag,
     tags: Tags,
     terminal: Terminal,
-    'trash-2': Trash2,
+    trash: Trash2,
     'trending-down': TrendingDown,
     'trending-up': TrendingUp,
     truck: Truck,
@@ -208,6 +209,7 @@ export const flatpackMenuIcons = {
     users: Users,
     wallet: Wallet,
     wrench: Wrench,
+    x: X,
     zap: Zap,
 } as const satisfies Record<string, LucideIcon>;
 

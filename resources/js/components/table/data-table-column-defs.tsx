@@ -25,7 +25,7 @@ export function buildDataTableColumnDefs(
         });
     }
 
-    if (options.checkboxes) {
+    if (options.hasBulkActions) {
         defs.push({
             id: 'select',
             header: ({ table }) => (

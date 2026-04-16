@@ -1,5 +1,8 @@
 import { DataTable } from '@/components/table/data-table';
-import type { FlatpackDataTableColumn } from '@/types/data-table';
+import type {
+    FlatpackDataTableBulkAction,
+    FlatpackDataTableColumn,
+} from '@/types/data-table';
 import { Field, FieldContent, FieldDescription, FieldTitle } from '../ui/field';
 
 export const TableField = ({
@@ -8,7 +11,7 @@ export const TableField = ({
     helperText,
     columns,
     data,
-    checkboxes,
+    bulkActions,
     reorderable,
     onValueChange,
 }: {
@@ -17,7 +20,7 @@ export const TableField = ({
     helperText?: string;
     columns: FlatpackDataTableColumn[];
     data: Record<string, unknown>[];
-    checkboxes?: boolean;
+    bulkActions?: FlatpackDataTableBulkAction[];
     reorderable?: boolean | string;
     onValueChange?: (value: unknown) => void;
 }) => {
@@ -30,7 +33,7 @@ export const TableField = ({
                     id={id}
                     columns={columns}
                     data={data}
-                    checkboxes={checkboxes}
+                    bulkActions={bulkActions}
                     reorderable={reorderable}
                     onValueChange={onValueChange}
                 />

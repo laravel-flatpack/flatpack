@@ -1,4 +1,6 @@
 import type {
+    FlatpackActionVariant,
+    FlatpackDataTableBulkAction,
     FlatpackDataTableFilter,
     FlatpackDataTableServerFiltersState,
     FlatpackListServerPagination,
@@ -10,13 +12,7 @@ export type FlatpackListHeaderAction = {
     label: string;
     href: string;
     icon?: string;
-    variant?:
-        | 'default'
-        | 'outline'
-        | 'secondary'
-        | 'ghost'
-        | 'destructive'
-        | 'link';
+    variant?: FlatpackActionVariant;
 };
 
 export type FlatpackListPageProps = {
@@ -35,6 +31,7 @@ export type FlatpackListPageProps = {
     sorting?: FlatpackListServerSorting;
     flatpack_prefix?: string;
     list_actions?: FlatpackListHeaderAction[];
+    bulk_actions?: FlatpackDataTableBulkAction[];
 };
 
 export type FlatpackFormPageProps = {

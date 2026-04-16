@@ -1,4 +1,7 @@
-import type { FlatpackDataTableColumn } from '@/types/data-table';
+import type {
+    FlatpackDataTableBulkAction,
+    FlatpackDataTableColumn,
+} from '@/types/data-table';
 
 export type DashboardSectionsTableCatalog = {
     id: string;
@@ -8,7 +11,7 @@ export type DashboardSectionsTableCatalog = {
         type: string;
         label: string;
         helperText: string;
-        checkboxes: boolean;
+        bulkActions: FlatpackDataTableBulkAction[];
         reorderable: boolean;
         actions: unknown[];
         columns: FlatpackDataTableColumn[];

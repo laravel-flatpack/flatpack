@@ -6,7 +6,6 @@
         "type": "table",
         "label": "Sections",
         "helperText": "Reorder rows, edit cells, and open the row drawer from the header column.",
-        "checkboxes": true,
         "reorderable": true,
         "actions": [],
         "columns": [

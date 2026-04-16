@@ -1,4 +1,5 @@
 import type {
+    FlatpackDataTableBulkAction,
     FlatpackDataTableColumn,
     FlatpackDataTableSelectOptionStatus,
 } from '@/types/data-table';
@@ -65,7 +66,7 @@ type BlockEditorFieldProps = FormFieldBase &
 type TableFieldProps = FormFieldBase & {
     columns: FlatpackDataTableColumn[];
     data?: Record<string, unknown>[];
-    checkboxes?: boolean;
+    bulkActions?: FlatpackDataTableBulkAction[];
     actions?: unknown[];
     reorderable?: boolean | string;
 };

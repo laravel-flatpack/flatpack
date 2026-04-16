@@ -88,7 +88,7 @@ export function DashboardDataTable({
                 className="relative flex flex-col gap-4 overflow-auto outline-none data-[state=inactive]:hidden"
             >
                 <DataTable
-                    checkboxes={catalog.props.checkboxes}
+                    bulkActions={catalog.props.bulkActions}
                     className="gap-4"
                     columns={columns}
                     data={rows}

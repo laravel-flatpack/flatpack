@@ -110,12 +110,14 @@ describe('FlatpackListPage', () => {
         expect(screen.getByRole('cell', { name: 'Hello' })).toBeInTheDocument();
     });
 
-    it('shows row and header selection checkboxes when schema has checkboxes true', () => {
+    it('shows row and header selection checkboxes when bulk actions are present', () => {
         render(
             <FlatpackListPage
                 entity="posts"
+                bulk_actions={[
+                    { id: 'delete', label: 'Delete', action: 'delete' },
+                ]}
                 schema={{
-                    checkboxes: true,
                     columns: {
                         id: { label: 'ID' },
                         title: { label: 'Title' },

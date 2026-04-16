@@ -46,6 +46,10 @@ final class FlatpackSchema extends JsonResource
                 array_key_exists('list_actions', $resource),
                 data_get($resource, 'list_actions'),
             ),
+            'bulk_actions' => $this->when(
+                array_key_exists('bulk_actions', $resource),
+                data_get($resource, 'bulk_actions'),
+            ),
             'search_term' => $this->when(
                 array_key_exists('search_term', $resource),
                 data_get($resource, 'search_term'),

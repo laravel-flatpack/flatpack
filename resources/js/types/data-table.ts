@@ -26,6 +26,22 @@ export type FlatpackDataTableActionButton = {
     url?: string;
 };
 
+export type FlatpackActionVariant =
+    | 'default'
+    | 'outline'
+    | 'secondary'
+    | 'ghost'
+    | 'destructive'
+    | 'link';
+
+export type FlatpackDataTableBulkAction = {
+    id: string;
+    label: string;
+    action?: string;
+    icon?: string;
+    variant?: FlatpackActionVariant;
+};
+
 export type FlatpackDataTableColumn = {
     id: string;
     label: string;
@@ -72,7 +88,7 @@ export type FlatpackDataTableServerFiltersState = Record<
 >;
 
 export type BuildDataTableColumnDefsOptions = {
-    checkboxes?: boolean;
+    hasBulkActions?: boolean;
     reorderable?: boolean;
     onCellChange?: (rowId: string, columnId: string, value: unknown) => void;
     onRowReplace?: (rowId: string, nextRow: Record<string, unknown>) => void;
@@ -93,6 +109,7 @@ export type FlatpackListServerSorting = {
 };
 
 export type DataTableBulkDeletePayload = {
+    action: string;
     selection: 'all' | string[];
     search: string;
     filters: FlatpackDataTableServerFiltersState;
@@ -104,11 +121,11 @@ export type DataTableProps = {
     columns: FlatpackDataTableColumn[];
     data: Record<string, unknown>[];
     dataRowKey?: string;
-    checkboxes?: boolean;
+    bulkActions?: FlatpackDataTableBulkAction[];
     reorderable?: boolean | string;
     onRowClick?: (row: Record<string, unknown>) => void;
     onValueChange?: (value: unknown) => void;
-    onBulkDelete?: (
+    onBulkAction?: (
         payload: DataTableBulkDeletePayload,
     ) => void | Promise<void>;
     className?: string;

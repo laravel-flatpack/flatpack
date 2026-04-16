@@ -25,6 +25,7 @@ export default function FlatpackListPage({
     sorting: serverSorting = { sort_by: null, sort_direction: null },
     flatpack_prefix: flatpackPrefix,
     list_actions: listActions = [],
+    bulk_actions: bulkActions = [],
 }: FlatpackListPageProps) {
     const displayName = name ?? entity ?? '';
     const pageTitle = displayName ? `${displayName} list` : '';
@@ -41,7 +42,6 @@ export default function FlatpackListPage({
         [columns, schema?.filters, serverFilters],
     );
 
-    const checkboxes = schema?.checkboxes === true;
     const reorderable =
         typeof schema?.reorderable === 'string'
             ? schema.reorderable
@@ -106,22 +106,26 @@ export default function FlatpackListPage({
         },
         [],
     );
-    const handleBulkDelete = useCallback(
+    const handleBulkAction = useCallback(
         async (payload: DataTableBulkDeletePayload) => {
             await new Promise<void>((resolve, reject) => {
-                router.delete(`/${normalizedPrefix}/${entity}/bulk`, {
-                    data: {
+                router.post(
+                    `/${normalizedPrefix}/${entity}/bulk`,
+                    {
+                        action: payload.action,
                         selection: payload.selection,
                         search: payload.search,
                         filters: payload.filters,
                         sort_by: payload.sorting.sort_by,
                         sort_direction: payload.sorting.sort_direction,
                     },
+                    {
                     preserveState: true,
                     preserveScroll: true,
                     onSuccess: () => resolve(),
-                    onError: () => reject(new Error('Bulk delete failed')),
-                });
+                    onError: () => reject(new Error('Bulk action failed')),
+                    },
+                );
             });
         },
         [entity, normalizedPrefix],
@@ -169,7 +173,7 @@ export default function FlatpackListPage({
                     <DataTable
                         id={`flatpack-list-${entity || 'entity'}`}
                         dataRowKey={modelKey || 'id'}
-                        checkboxes={checkboxes}
+                        bulkActions={bulkActions}
                         reorderable={reorderable}
                         onRowClick={
                             rowClickEditKey !== null
@@ -183,7 +187,7 @@ export default function FlatpackListPage({
                         serverFilters={filterDefinitions}
                         serverFilterValues={serverFilterValues}
                         serverSorting={serverSorting}
-                        onBulkDelete={handleBulkDelete}
+                        onBulkAction={handleBulkAction}
                         onServerPaginationChange={
                             pagination
                                 ? handleServerPaginationChange
