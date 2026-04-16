@@ -28,7 +28,7 @@ final class HeaderActions
 
     /**
      * @param  array<string, mixed>|null  $schema
-     * @return list<array{id: string, label: string, icon: string, variant: string, href?: string, action?: string, success_message?: string, confirm?: bool, success_redirect?: string}>
+     * @return list<array{id: string, label: string, icon: string, variant: string, href?: string, action?: string, success_message?: string, confirm?: bool, success_redirect?: string, disable_until_dirty?: true}>
      */
     public static function fromSchema(?array $schema): array
     {
@@ -41,6 +41,7 @@ final class HeaderActions
             return [];
         }
 
+        $globalDisableUntilDirty = (bool) config('flatpack.forms.disable_actions_until_dirty', false);
         $allowExternalOrigins = (bool) config('flatpack.navigation.allow_external_origins', false);
         $out = [];
 
@@ -91,6 +92,9 @@ final class HeaderActions
                 if ($sr !== null) {
                     $normalized['success_redirect'] = $sr;
                 }
+            }
+            if ($globalDisableUntilDirty || (($definition['disable_until_dirty'] ?? false) === true)) {
+                $normalized['disable_until_dirty'] = true;
             }
             $out[] = $normalized;
         }

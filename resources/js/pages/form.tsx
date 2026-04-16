@@ -12,6 +12,7 @@ export default function FlatpackFormPage(props: FlatpackFormPageProps) {
     const { entity, name, record, mode } = props;
     const {
         form,
+        isDirty,
         fields,
         fieldComponents,
         fieldErrors,
@@ -90,6 +91,7 @@ export default function FlatpackFormPage(props: FlatpackFormPageProps) {
                             formActions={formActions}
                             formId={formId}
                             formProcessing={form.processing}
+                            formIsDirty={isDirty}
                             fieldsLength={fields.length}
                             record={record}
                             onSaveConfirmClick={() =>

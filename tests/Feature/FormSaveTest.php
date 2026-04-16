@@ -66,6 +66,27 @@ YAML, function (): void {
     });
 });
 
+test('flatpack entity form save rejects empty values with nothing to save message', function () {
+    withTempFormSchema(<<<'YAML'
+name: Post
+model: Flatpack\Tests\Models\Post
+fields:
+  title:
+    type: text
+    label: Title
+YAML, function (): void {
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        actingAs($user)
+            ->from(route('flatpack.entities.create', ['entity' => 'posts']))
+            ->post(route('flatpack.entities.store', ['entity' => 'posts']), [
+                'values' => [],
+            ])
+            ->assertSessionHasErrors(['values' => 'Nothing to save']);
+    });
+});
+
 test('flatpack entity create form save creates a record and redirects to edit', function () {
     withTempFormSchema(<<<'YAML'
 name: Post

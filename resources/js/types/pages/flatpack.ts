@@ -16,6 +16,8 @@ export type FlatpackListHeaderAction = {
     success_message?: string;
     confirm?: boolean;
     success_redirect?: FlatpackSuccessRedirect;
+    /** When true, action stays disabled until the form has unsaved changes (form pages). */
+    disable_until_dirty?: boolean;
 } & ({ href: string; action?: never } | { action: string; href?: never });
 
 export type FlatpackListPageProps = {

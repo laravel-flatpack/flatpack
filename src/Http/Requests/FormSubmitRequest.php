@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Flatpack\Http\Requests;
 
+use Closure;
 use Flatpack\Composition\EntityComposition;
 use Flatpack\Contracts\Authorization\FlatpackAuthorizer;
 use Flatpack\Http\Requests\Concerns\InteractsWithFlatpackAuthorization;
@@ -11,6 +12,7 @@ use Flatpack\Services\Actions\ActionRuntime;
 use Flatpack\Validation\FormSchemaRuleBuilder;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Override;
 
 final class FormSubmitRequest extends FormRequest
 {
@@ -96,9 +98,29 @@ final class FormSubmitRequest extends FormRequest
 
         return array_merge(
             [
-                'values' => 'required|array',
+                'values' => [
+                    'present',
+                    'array',
+                    function (string $attribute, mixed $value, Closure $fail): void {
+                        if (is_array($value) && $value === []) {
+                            $fail('Nothing to save');
+                        }
+                    },
+                ],
             ],
             $valueRules,
         );
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    #[Override]
+    public function messages(): array
+    {
+        return [
+            'values.present' => 'Nothing to save',
+            'values.array' => 'Nothing to save',
+        ];
     }
 }

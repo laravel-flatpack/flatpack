@@ -38,11 +38,48 @@ vi.mock('@inertiajs/react', () => ({
         patch: hoisted.patch,
     },
     useForm: <TData extends Record<string, unknown>>(initialData: TData) => {
-        const [data, setDataState] = React.useState<TData>(initialData);
+        const defaultsRef = React.useRef<TData>(
+            JSON.parse(JSON.stringify(initialData)) as TData,
+        );
+        const [data, setDataState] = React.useState<TData>(
+            JSON.parse(JSON.stringify(initialData)) as TData,
+        );
         const [errors, setErrors] = React.useState<Record<string, string>>({});
+        const [, setDirtyTick] = React.useState(0);
         const transformerRef = React.useRef<
             ((data: TData) => Record<string, unknown>) | null
         >(null);
+
+        const setDefaults = React.useCallback(
+            (
+                fieldOrData: keyof TData | Record<string, unknown>,
+                maybeValue?: unknown,
+            ) => {
+                if (typeof fieldOrData === 'string') {
+                    defaultsRef.current = {
+                        ...(defaultsRef.current as object),
+                        [fieldOrData]: maybeValue,
+                    } as TData;
+                } else {
+                    defaultsRef.current = {
+                        ...(defaultsRef.current as object),
+                        ...(fieldOrData as object),
+                    } as TData;
+                }
+                setDirtyTick((n) => n + 1);
+            },
+            [],
+        );
+
+        const reset = React.useCallback(() => {
+            setDataState(
+                JSON.parse(JSON.stringify(defaultsRef.current)) as TData,
+            );
+            setDirtyTick((n) => n + 1);
+        }, []);
+
+        const isDirty =
+            JSON.stringify(data) !== JSON.stringify(defaultsRef.current);
 
         const clearErrors = React.useCallback((field?: string) => {
             if (field === undefined) {
@@ -113,9 +150,12 @@ vi.mock('@inertiajs/react', () => ({
             data,
             errors,
             processing: false,
+            isDirty,
             setData,
             clearErrors,
             setError,
+            setDefaults,
+            reset,
             transform: React.useCallback(
                 (next: (data: TData) => Record<string, unknown>) => {
                     transformerRef.current = next;

@@ -1,7 +1,7 @@
 import type { FormDataConvertible } from '@inertiajs/core';
 import { router, useForm } from '@inertiajs/react';
 import type { FormEvent } from 'react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { loadField } from '@/lib/form';
 import { firstErrorMessage } from '@/lib/form-errors';
@@ -35,10 +35,6 @@ export function useFlatpackForm({
     form_actions: formActions = [],
 }: FlatpackFormPageProps) {
     const fields = useMemo(() => normalizeFields(schema), [schema]);
-    const initialValues = useMemo(
-        () => buildInitialValues(fields, values),
-        [fields, values],
-    );
     const fieldComponents = useMemo(
         () =>
             Object.fromEntries(
@@ -46,14 +42,27 @@ export function useFlatpackForm({
             ) as Record<string, ReturnType<typeof loadField>>,
         [fields],
     );
+    const baselineSignature = useMemo(
+        () => JSON.stringify(buildInitialValues(fields, values)),
+        [fields, values],
+    );
+
     const initialFormData = useMemo(
         () => ({
-            values: initialValues as Record<string, FormDataConvertible>,
+            values: JSON.parse(baselineSignature) as Record<
+                string,
+                FormDataConvertible
+            >,
         }),
-        [initialValues],
+        [baselineSignature],
     );
+
     // @ts-expect-error Inertia generic recursion over dynamic record values.
     const form = useForm(initialFormData);
+    const formRef = useRef(form);
+    formRef.current = form;
+
+    const { isDirty } = form;
     const fieldErrors = form.errors as Record<string, unknown>;
     const flatpackTopErrors = useMemo(() => {
         const errors = fieldErrorMessages(fieldErrors, 'flatpack');
@@ -73,12 +82,15 @@ export function useFlatpackForm({
         useState<FlatpackFormPendingConfirm | null>(null);
 
     useEffect(() => {
-        form.setData(
-            'values',
-            initialValues as Record<string, FormDataConvertible>,
-        );
-        form.clearErrors();
-    }, [form.clearErrors, form.setData, initialValues]);
+        const nextValues = JSON.parse(baselineSignature) as Record<
+            string,
+            FormDataConvertible
+        >;
+        const f = formRef.current;
+        f.setDefaults({ values: nextValues });
+        f.reset();
+        f.clearErrors();
+    }, [baselineSignature]);
 
     const setFieldValue = useCallback(
         (field: FormFieldProps, fieldId: string, nextValue: unknown) => {
@@ -125,6 +137,13 @@ export function useFlatpackForm({
             preserveScroll: true,
             onSuccess: () => {
                 form.clearErrors();
+                form.setDefaults({
+                    values: form.data.values as Record<
+                        string,
+                        FormDataConvertible
+                    >,
+                });
+                form.reset();
                 if (saveActionConfig?.success_message) {
                     toast.success(saveActionConfig.success_message);
                 }
@@ -192,6 +211,7 @@ export function useFlatpackForm({
 
     return {
         form,
+        isDirty,
         fields,
         fieldComponents,
         fieldErrors,
