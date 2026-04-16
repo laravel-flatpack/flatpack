@@ -18,9 +18,10 @@ $throttle = config('flatpack.login.throttle');
 |
 */
 Route::middleware('guest:' . config('flatpack.guard', 'web'))->group(function () use ($loginStore, $throttle) {
-    /** Login route */
+    /** Renders the Flatpack login page for guest users. */
     Route::get('login', [SessionController::class, 'create'])->name('login');
 
+    /** Submits login credentials to the configured authentication handler. */
     $route = Route::post('login', $loginStore);
 
     if (is_string($throttle) && $throttle !== '') {
