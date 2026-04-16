@@ -24,13 +24,15 @@ export default function FlatpackFormPage(props: FlatpackFormPageProps) {
         handleSubmit,
         runSubmit,
         executeNamedAction,
-        noFieldsMessage,
     } = useFlatpackForm(props);
 
     const displayName = name ?? entity;
     const pageTitle =
         mode === 'create' ? `Create ${displayName}` : `Edit ${displayName}`;
     const formId = `flatpack-form-${entity}-${record ?? 'new'}`;
+    const noFieldsMessage = <p className="text-sm text-muted-foreground">
+        Define fields in <code className="font-mono text-xs bg-muted px-1 py-0.5 rounded-md">{`/${entity}/form.yaml`}</code> to render this form.
+    </p>
 
     return (
         <>
@@ -71,7 +73,7 @@ export default function FlatpackFormPage(props: FlatpackFormPageProps) {
                 <div className="flex flex-col gap-2">
                     <div className="mb-2 flex w-full flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
                         <div className="min-w-0 flex-1">
-                            <h1 className="text-2xl font-semibold tracking-tight">
+                            <h1 className="text-2xl font-semibold tracking-tight capitalize">
                                 {displayName}
                             </h1>
                             <p className="text-muted-foreground">
@@ -108,11 +110,7 @@ export default function FlatpackFormPage(props: FlatpackFormPageProps) {
                 >
                     <FlatpackFormTopErrors errors={flatpackTopErrors} />
 
-                    {noFieldsMessage ? (
-                        <p className="text-sm text-muted-foreground">
-                            {noFieldsMessage}
-                        </p>
-                    ) : (
+                    {fields.length > 0 ? (
                         <FlatpackFormFields
                             entity={entity}
                             mode={mode}
@@ -125,6 +123,8 @@ export default function FlatpackFormPage(props: FlatpackFormPageProps) {
                             }
                             setFieldValue={setFieldValue}
                         />
+                    ) : (
+                        noFieldsMessage
                     )}
                 </form>
             </div>

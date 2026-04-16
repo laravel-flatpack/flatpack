@@ -190,11 +190,6 @@ export function useFlatpackForm({
         [entity, record],
     );
 
-    const noFieldsMessage =
-        fields.length === 0
-            ? 'Define fields in form.yaml to render this form.'
-            : null;
-
     return {
         form,
         fields,
@@ -209,6 +204,5 @@ export function useFlatpackForm({
         handleSubmit,
         runSubmit,
         executeNamedAction,
-        noFieldsMessage,
     };
 }
