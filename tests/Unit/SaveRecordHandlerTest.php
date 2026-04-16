@@ -55,3 +55,66 @@ test('save record handler supports writable fields from form schema', function (
     expect($result?->title)->toBe('Updated from form schema');
     expect($post->fresh()?->title)->toBe('Updated from form schema');
 });
+
+test('save record handler creates a new model from form schema', function () {
+    $request = Request::create('/flatpack/posts', 'POST', [
+        'values' => [
+            'title' => 'Created from form schema',
+            'slug' => 'created-from-form-schema',
+            'status' => 'draft',
+        ],
+    ]);
+
+    $result = (new SaveRecordHandler())->handle(new FlatpackActionContext(
+        request: $request,
+        entity: 'posts',
+        actionName: 'save',
+        modelClass: Post::class,
+        record: null,
+        compositionType: 'form',
+        composition: [
+            'model' => Post::class,
+            'schema' => [
+                'fields' => [
+                    'title' => [
+                        'type' => 'text',
+                        'label' => 'Title',
+                    ],
+                    'slug' => [
+                        'type' => 'text',
+                        'label' => 'Slug',
+                    ],
+                    'status' => [
+                        'type' => 'select',
+                        'label' => 'Status',
+                    ],
+                ],
+            ],
+        ],
+        schema: [
+            'fields' => [
+                'title' => [
+                    'type' => 'text',
+                    'label' => 'Title',
+                ],
+                'slug' => [
+                    'type' => 'text',
+                    'label' => 'Slug',
+                ],
+                'status' => [
+                    'type' => 'select',
+                    'label' => 'Status',
+                ],
+            ],
+        ],
+        model: null,
+    ));
+
+    expect($result)->toBeInstanceOf(Post::class);
+    expect($result?->exists)->toBeTrue();
+    expect($result?->title)->toBe('Created from form schema');
+    expect($result?->slug)->toBe('created-from-form-schema');
+    expect($result?->status)->toBe('draft');
+    expect(Post::query()->where('title', 'Created from form schema')->exists())
+        ->toBeTrue();
+});

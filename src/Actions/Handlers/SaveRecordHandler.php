@@ -13,7 +13,7 @@ final class SaveRecordHandler implements FlatpackAction
 {
     public function handle(FlatpackActionContext $context): mixed
     {
-        $model = $context->model;
+        $model = $this->resolveModel($context);
         if (! $model instanceof Model) {
             return null;
         }
@@ -60,8 +60,25 @@ final class SaveRecordHandler implements FlatpackAction
         return $model->fresh();
     }
 
+    private function resolveModel(FlatpackActionContext $context): ?Model
+    {
+        if ($context->model instanceof Model) {
+            return $context->model;
+        }
+
+        $modelClass = trim($context->modelClass);
+        if ($modelClass === '' || ! class_exists($modelClass)) {
+            return null;
+        }
+        if (! is_subclass_of($modelClass, Model::class)) {
+            return null;
+        }
+
+        /** @var class-string<Model> $modelClass */
+        return new $modelClass();
+    }
+
     /**
-     * @param  array<string, mixed>|null  $schema
      * @param  array<string, mixed>|null  $schema
      * @return array<string, true>
      */
