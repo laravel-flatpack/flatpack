@@ -12,6 +12,8 @@ export type FlatpackListHeaderAction = {
     label: string;
     icon?: string;
     variant?: FlatpackActionVariant;
+    success_message?: string;
+    confirm?: boolean;
 } & ({ href: string; action?: never } | { action: string; href?: never });
 
 export type FlatpackListPageProps = {

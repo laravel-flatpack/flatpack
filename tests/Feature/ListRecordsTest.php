@@ -93,6 +93,8 @@ actions:
     label: Create
     action: create
     variant: primary
+    success_message: Created
+    confirm: true
   docs:
     label: Docs
     href: /docs/posts
@@ -127,6 +129,8 @@ YAML);
                 'icon' => '',
                 'action' => 'create',
                 'variant' => 'default',
+                'success_message' => 'Created',
+                'confirm' => true,
             ],
             [
                 'id' => 'docs',
@@ -824,6 +828,8 @@ bulk_actions:
     label: Delete
     action: delete
     variant: destructive
+    success_message: Posts removed
+    confirm: true
   publish:
     label: Publish
     action: publish
@@ -852,6 +858,8 @@ YAML);
                 'action' => 'delete',
                 'icon' => '',
                 'variant' => 'destructive',
+                'success_message' => 'Posts removed',
+                'confirm' => true,
             ],
         ]);
     } finally {

@@ -147,6 +147,8 @@ actions:
     action: save
     variant: primary
     icon: save
+    success_message: Post saved successfully
+    confirm: true
 fields:
   published_at:
     type: date
@@ -173,6 +175,8 @@ YAML, function (): void {
             ->assertJsonPath('form_actions.0.label', 'Save')
             ->assertJsonPath('form_actions.0.action', 'save')
             ->assertJsonPath('form_actions.0.variant', 'default')
+            ->assertJsonPath('form_actions.0.success_message', 'Post saved successfully')
+            ->assertJsonPath('form_actions.0.confirm', true)
             ->assertJsonPath('schema.fields.published_at.type', 'date-picker')
             ->assertJsonPath('schema.fields.category_id.type', 'combobox')
             ->assertJsonPath('schema.fields.category_id.remote', true)

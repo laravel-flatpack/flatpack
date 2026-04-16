@@ -17,7 +17,7 @@ final class BulkActions
 
     /**
      * @param  array<string, mixed>|null  $schema
-     * @return list<array{id: string, label: string, action?: string, icon?: string, variant: string}>
+     * @return list<array{id: string, label: string, action: string, icon: string, variant: string, success_message?: string, confirm?: bool}>
      */
     public static function fromSchema(?array $schema): array
     {
@@ -51,13 +51,23 @@ final class BulkActions
 
             $id = is_string($key) && $key !== '' ? $key : (string) count($out);
 
-            $out[] = [
+            $normalized = [
                 'id' => $id,
                 'label' => $label,
                 'action' => $action,
                 'icon' => $icon,
                 'variant' => self::normalizeVariant($definition['variant'] ?? null),
             ];
+            if (isset($definition['success_message'])) {
+                $msg = trim((string) $definition['success_message']);
+                if ($msg !== '') {
+                    $normalized['success_message'] = $msg;
+                }
+            }
+            if (($definition['confirm'] ?? null) === true) {
+                $normalized['confirm'] = true;
+            }
+            $out[] = $normalized;
         }
 
         return $out;

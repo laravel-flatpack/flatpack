@@ -40,6 +40,8 @@ export type FlatpackDataTableBulkAction = {
     action?: string;
     icon?: string;
     variant?: FlatpackActionVariant;
+    success_message?: string;
+    confirm?: boolean;
 };
 
 export type FlatpackDataTableColumn = {

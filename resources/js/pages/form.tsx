@@ -1,9 +1,19 @@
 import type { FormDataConvertible } from '@inertiajs/core';
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { Suspense, useCallback, useEffect, useMemo } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import type { DateRange } from 'react-day-picker';
 import { toast } from 'sonner';
 import { LucideIconByName } from '@/components/icons';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { FieldError } from '@/components/ui/field';
 import { Spinner } from '@/components/ui/spinner';
@@ -20,7 +30,10 @@ import { clientValidationErrors, fieldIsRequired } from '@/lib/form-validation';
 import { route } from '@/lib/route';
 import { cn } from '@/lib/utils';
 import type { FormFieldProps } from '@/types/form-fields';
-import type { FlatpackFormPageProps } from '@/types/pages/flatpack';
+import type {
+    FlatpackFormPageProps,
+    FlatpackListHeaderAction,
+} from '@/types/pages/flatpack';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -234,6 +247,22 @@ export default function FlatpackFormPage({
     const pageTitle =
         mode === 'create' ? `Create ${displayName}` : `Edit ${displayName}`;
     const formId = `flatpack-form-${entity}-${record ?? 'new'}`;
+    const saveActionConfig = useMemo(
+        () =>
+            formActions.find(
+                (a): a is FlatpackListHeaderAction & { action: 'save' } =>
+                    'action' in a && a.action === 'save',
+            ),
+        [formActions],
+    );
+    const [pendingConfirm, setPendingConfirm] = useState<
+        | { kind: 'save' }
+        | {
+              kind: 'named';
+              config: FlatpackListHeaderAction & { action: string };
+          }
+        | null
+    >(null);
 
     useEffect(() => {
         form.setData(
@@ -260,57 +289,64 @@ export default function FlatpackFormPage({
         [form],
     );
 
+    const runSubmit = useCallback(() => {
+        const validationErrors = clientValidationErrors(
+            fields,
+            form.data.values,
+        );
+        if (Object.keys(validationErrors).length > 0) {
+            form.clearErrors();
+            form.setError(validationErrors);
+            toast.error(
+                firstErrorMessage(validationErrors) ?? 'Please review errors',
+            );
+            return;
+        }
+
+        const submitUrl =
+            mode === 'create'
+                ? route('flatpack.entities.store', { entity })
+                : route('flatpack.entities.save', {
+                      entity,
+                      record: record ?? '',
+                  });
+
+        form.clearErrors();
+
+        const options = {
+            preserveScroll: true,
+            onSuccess: () => {
+                form.clearErrors();
+                if (saveActionConfig?.success_message) {
+                    toast.success(saveActionConfig.success_message);
+                }
+            },
+            onError: (errors: Record<string, unknown>) => {
+                toast.error(
+                    firstErrorMessage(errors) ?? 'Form save failed',
+                );
+            },
+        };
+
+        if (mode === 'create') {
+            form.post(submitUrl, options);
+            return;
+        }
+
+        form.patch(submitUrl, options);
+    }, [entity, fields, form, mode, record, saveActionConfig]);
+
     const handleSubmit = useCallback(
         (event: React.FormEvent<HTMLFormElement>) => {
             event.preventDefault();
-            const validationErrors = clientValidationErrors(
-                fields,
-                form.data.values,
-            );
-            if (Object.keys(validationErrors).length > 0) {
-                form.clearErrors();
-                form.setError(validationErrors);
-                toast.error(
-                    firstErrorMessage(validationErrors) ??
-                        'Please review errors',
-                );
-                return;
-            }
-
-            const submitUrl =
-                mode === 'create'
-                    ? route('flatpack.entities.store', { entity })
-                    : route('flatpack.entities.save', {
-                          entity,
-                          record: record ?? '',
-                      });
-
-            form.clearErrors();
-
-            const options = {
-                preserveScroll: true,
-                onSuccess: () => {
-                    form.clearErrors();
-                },
-                onError: (errors: Record<string, unknown>) => {
-                    toast.error(
-                        firstErrorMessage(errors) ?? 'Form save failed',
-                    );
-                },
-            };
-
-            if (mode === 'create') {
-                form.post(submitUrl, options);
-                return;
-            }
-
-            form.patch(submitUrl, options);
+            runSubmit();
         },
-        [entity, fields, form, mode, record],
+        [runSubmit],
     );
 
-    const handleNamedAction = useCallback(
-        async (action: string) => {
+    const executeNamedAction = useCallback(
+        async (config: FlatpackListHeaderAction & { action: string }) => {
+            const { action } = config;
             if (action === 'save') {
                 return;
             }
@@ -328,7 +364,12 @@ export default function FlatpackFormPage({
                     {
                         preserveState: true,
                         preserveScroll: true,
-                        onSuccess: () => resolve(),
+                        onSuccess: () => {
+                            resolve();
+                            if (config.success_message) {
+                                toast.success(config.success_message);
+                            }
+                        },
                         onError: (errors) => {
                             const message =
                                 firstErrorMessage(errors) ??
@@ -351,6 +392,45 @@ export default function FlatpackFormPage({
     return (
         <>
             <Head title={pageTitle} />
+            <AlertDialog
+                open={pendingConfirm !== null}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        setPendingConfirm(null);
+                    }
+                }}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>
+                            {pendingConfirm?.kind === 'named'
+                                ? pendingConfirm.config.label
+                                : (saveActionConfig?.label ?? 'Confirm')}
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to continue?
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => {
+                                const pending = pendingConfirm;
+                                setPendingConfirm(null);
+                                if (pending?.kind === 'save') {
+                                    runSubmit();
+                                    return;
+                                }
+                                if (pending?.kind === 'named') {
+                                    void executeNamedAction(pending.config);
+                                }
+                            }}
+                        >
+                            Continue
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
             <div className="flex flex-col gap-6">
                 <div className="flex flex-col gap-2">
                     <div className="mb-2 flex w-full flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
@@ -394,8 +474,16 @@ export default function FlatpackFormPage({
                                     ) : action.action === 'save' ? (
                                         <Button
                                             key={action.id}
-                                            type="submit"
-                                            form={formId}
+                                            type={
+                                                action.confirm
+                                                    ? 'button'
+                                                    : 'submit'
+                                            }
+                                            form={
+                                                action.confirm
+                                                    ? undefined
+                                                    : formId
+                                            }
                                             size="lg"
                                             variant={
                                                 action.variant ?? 'outline'
@@ -408,6 +496,14 @@ export default function FlatpackFormPage({
                                                 action.icon &&
                                                     'inline-flex items-center gap-1.5',
                                             )}
+                                            onClick={
+                                                action.confirm
+                                                    ? () =>
+                                                          setPendingConfirm({
+                                                              kind: 'save',
+                                                          })
+                                                    : undefined
+                                            }
                                         >
                                             {action.icon && (
                                                 <LucideIconByName
@@ -436,9 +532,18 @@ export default function FlatpackFormPage({
                                                 action.icon &&
                                                     'inline-flex items-center gap-1.5',
                                             )}
-                                            onClick={() =>
-                                                handleNamedAction(action.action)
-                                            }
+                                            onClick={() => {
+                                                if (action.confirm) {
+                                                    setPendingConfirm({
+                                                        kind: 'named',
+                                                        config: action,
+                                                    });
+                                                    return;
+                                                }
+                                                void executeNamedAction(
+                                                    action,
+                                                );
+                                            }}
                                         >
                                             {action.icon ? (
                                                 <LucideIconByName

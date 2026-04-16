@@ -71,7 +71,7 @@ export function DataTableToolbar({
     onToggleMultiFilterValue,
     onSetDateFilter,
 }: DataTableToolbarProps) {
-    const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
+    const [isConfirmBulkOpen, setIsConfirmBulkOpen] = useState(false);
     const [pendingActionId, setPendingActionId] = useState<string | null>(null);
     const pendingAction =
         pendingActionId === null
@@ -109,9 +109,9 @@ export function DataTableToolbar({
                                                 : 'default'
                                         }
                                         onSelect={() => {
-                                            if (action.action === 'delete') {
+                                            if (action.confirm === true) {
                                                 setPendingActionId(action.id);
-                                                setIsConfirmDeleteOpen(true);
+                                                setIsConfirmBulkOpen(true);
                                                 return;
                                             }
                                             onBulkAction(action.id);
@@ -175,9 +175,9 @@ export function DataTableToolbar({
                 <DataTableColumnsVisibilityDropdown table={table} />
             </div>
             <AlertDialog
-                open={isConfirmDeleteOpen}
+                open={isConfirmBulkOpen}
                 onOpenChange={(open) => {
-                    setIsConfirmDeleteOpen(open);
+                    setIsConfirmBulkOpen(open);
                     if (!open) {
                         setPendingActionId(null);
                     }
@@ -186,11 +186,12 @@ export function DataTableToolbar({
                 <AlertDialogContent size="sm">
                     <AlertDialogHeader>
                         <AlertDialogTitle>
-                            {pendingAction?.label ?? 'Delete'} selected records?
+                            {pendingAction?.label ?? 'Bulk action'} selected
+                            records?
                         </AlertDialogTitle>
                         <AlertDialogDescription>
-                            This will apply {pendingAction?.label ?? 'Delete'}{' '}
-                            to {selectedRowCount}{' '}
+                            This will apply {pendingAction?.label ?? 'this'}{' '}
+                            action to {selectedRowCount}{' '}
                             {selectedRowCount === 1 ? 'record' : 'records'}. Are
                             you sure you want to continue?
                         </AlertDialogDescription>
@@ -198,16 +199,20 @@ export function DataTableToolbar({
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
                         <AlertDialogAction
-                            variant="destructive"
+                            variant={
+                                pendingAction?.variant === 'destructive'
+                                    ? 'destructive'
+                                    : 'default'
+                            }
                             onClick={() => {
                                 if (pendingActionId !== null) {
                                     onBulkAction(pendingActionId);
                                 }
-                                setIsConfirmDeleteOpen(false);
+                                setIsConfirmBulkOpen(false);
                                 setPendingActionId(null);
                             }}
                         >
-                            {pendingAction?.label ?? 'Delete'}
+                            {pendingAction?.label ?? 'Continue'}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

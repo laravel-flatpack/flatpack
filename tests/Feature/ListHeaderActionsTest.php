@@ -108,6 +108,38 @@ test('fromSchema keeps action-based header actions', function () {
     ]);
 });
 
+test('fromSchema includes success_message and confirm for action-based header actions', function () {
+    $actions = HeaderActions::fromSchema([
+        'actions' => [
+            'save' => [
+                'label' => 'Save',
+                'action' => 'save',
+                'success_message' => 'Saved OK',
+                'confirm' => true,
+            ],
+            'delete' => [
+                'label' => 'Delete',
+                'action' => 'delete',
+                'confirm' => false,
+            ],
+            'restore' => [
+                'label' => 'Restore',
+                'action' => 'restore',
+                'confirm' => 'yes',
+            ],
+        ],
+    ]);
+
+    expect($actions)->toHaveCount(3);
+    expect($actions[0])->toMatchArray([
+        'id' => 'save',
+        'success_message' => 'Saved OK',
+        'confirm' => true,
+    ]);
+    expect($actions[1])->not->toHaveKey('confirm');
+    expect($actions[2])->not->toHaveKey('confirm');
+});
+
 test('fromSchema ignores invalid header actions without exactly one target', function () {
     $actions = HeaderActions::fromSchema([
         'actions' => [

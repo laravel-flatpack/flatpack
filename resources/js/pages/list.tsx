@@ -1,8 +1,18 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { LucideIconByName } from '@/components/icons';
 import { DataTable } from '@/components/table/data-table';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import FlatpackLayout from '@/layouts/flatpack-layout';
 import {
@@ -12,7 +22,10 @@ import {
 import { route } from '@/lib/route';
 import { cn } from '@/lib/utils';
 import type { DataTableBulkDeletePayload } from '@/types/data-table';
-import type { FlatpackListPageProps } from '@/types/pages/flatpack';
+import type {
+    FlatpackListHeaderAction,
+    FlatpackListPageProps,
+} from '@/types/pages/flatpack';
 
 function firstErrorMessage(
     errors: Record<string, unknown>,
@@ -74,6 +87,10 @@ export default function FlatpackListPage({
             : schema?.row_click_edit === false
               ? null
               : modelKey || 'id';
+
+    const [pendingListConfirm, setPendingListConfirm] = useState<
+        (FlatpackListHeaderAction & { action: string }) | null
+    >(null);
 
     const handleRowClick = useCallback(
         (row: Record<string, unknown>) => {
@@ -144,7 +161,15 @@ export default function FlatpackListPage({
                     {
                         preserveState: true,
                         preserveScroll: true,
-                        onSuccess: () => resolve(),
+                        onSuccess: () => {
+                            resolve();
+                            const cfg = bulkActions.find(
+                                (a) => a.action === payload.action,
+                            );
+                            if (cfg?.success_message) {
+                                toast.success(cfg.success_message);
+                            }
+                        },
                         onError: (errors) =>
                             reject(
                                 new Error(
@@ -156,7 +181,7 @@ export default function FlatpackListPage({
                 );
             });
         },
-        [entity],
+        [bulkActions, entity],
     );
     const handleRowAction = useCallback(
         async ({
@@ -194,8 +219,9 @@ export default function FlatpackListPage({
         },
         [entity, modelKey],
     );
-    const handleListAction = useCallback(
-        async (action: string) => {
+    const executeListAction = useCallback(
+        async (config: FlatpackListHeaderAction & { action: string }) => {
+            const { action } = config;
             await new Promise<void>((resolve, reject) => {
                 router.post(
                     route('flatpack.entities.action', { entity }),
@@ -203,7 +229,12 @@ export default function FlatpackListPage({
                     {
                         preserveState: true,
                         preserveScroll: true,
-                        onSuccess: () => resolve(),
+                        onSuccess: () => {
+                            resolve();
+                            if (config.success_message) {
+                                toast.success(config.success_message);
+                            }
+                        },
                         onError: (errors) => {
                             const message =
                                 firstErrorMessage(errors) ??
@@ -292,6 +323,39 @@ export default function FlatpackListPage({
     return (
         <>
             {displayName ? <Head title={pageTitle} /> : null}
+            <AlertDialog
+                open={pendingListConfirm !== null}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        setPendingListConfirm(null);
+                    }
+                }}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>
+                            {pendingListConfirm?.label ?? 'Confirm'}
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to continue?
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => {
+                                const pending = pendingListConfirm;
+                                setPendingListConfirm(null);
+                                if (pending !== null) {
+                                    void executeListAction(pending);
+                                }
+                            }}
+                        >
+                            Continue
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
             <div className="flex flex-col gap-2">
                 {displayName ? (
                     <div className="mb-4 flex h-10 w-full flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
@@ -332,9 +396,13 @@ export default function FlatpackListPage({
                                             action.icon &&
                                                 'inline-flex items-center gap-1.5',
                                         )}
-                                        onClick={() =>
-                                            handleListAction(action.action)
-                                        }
+                                        onClick={() => {
+                                            if (action.confirm) {
+                                                setPendingListConfirm(action);
+                                                return;
+                                            }
+                                            void executeListAction(action);
+                                        }}
                                     >
                                         {action.icon ? (
                                             <LucideIconByName

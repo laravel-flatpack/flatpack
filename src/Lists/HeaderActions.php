@@ -27,7 +27,7 @@ final class HeaderActions
 
     /**
      * @param  array<string, mixed>|null  $schema
-     * @return list<array{id: string, label: string, icon: string, variant: string, href?: string, action?: string}>
+     * @return list<array{id: string, label: string, icon: string, variant: string, href?: string, action?: string, success_message?: string, confirm?: bool}>
      */
     public static function fromSchema(?array $schema): array
     {
@@ -75,6 +75,15 @@ final class HeaderActions
             }
             if ($href !== '') {
                 $normalized['href'] = $href;
+            }
+            if (isset($definition['success_message'])) {
+                $msg = trim((string) $definition['success_message']);
+                if ($msg !== '') {
+                    $normalized['success_message'] = $msg;
+                }
+            }
+            if (($definition['confirm'] ?? null) === true) {
+                $normalized['confirm'] = true;
             }
             $out[] = $normalized;
         }

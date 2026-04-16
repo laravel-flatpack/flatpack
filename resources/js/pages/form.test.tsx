@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 const hoisted = vi.hoisted(() => ({
     post: vi.fn(),
     patch: vi.fn(),
+    toastSuccess: vi.fn(),
     route: vi.fn(
         (
             name: string,
@@ -134,6 +135,7 @@ vi.mock('@/lib/route', () => ({
 vi.mock('sonner', () => ({
     toast: {
         error: hoisted.toastError,
+        success: hoisted.toastSuccess,
     },
 }));
 
@@ -186,6 +188,7 @@ describe('FlatpackFormPage', () => {
         hoisted.patch.mockReset();
         hoisted.route.mockClear();
         hoisted.toastError.mockReset();
+        hoisted.toastSuccess.mockReset();
     });
 
     afterEach(() => {
@@ -509,6 +512,155 @@ describe('FlatpackFormPage', () => {
                     onError: expect.any(Function),
                 }),
             );
+        });
+    });
+
+    it('shows success toast after save when success_message is set', async () => {
+        const user = userEvent.setup();
+        hoisted.post.mockImplementationOnce(
+            (
+                _url: string,
+                _data: unknown,
+                options?: { onSuccess?: () => void },
+            ) => {
+                options?.onSuccess?.();
+            },
+        );
+
+        render(
+            <FlatpackFormPage
+                entity="posts"
+                name="Posts"
+                record={null}
+                mode="create"
+                schema={{
+                    fields: {
+                        title: {
+                            type: 'text',
+                            label: 'Title',
+                            placeholder: 'Title',
+                        },
+                    },
+                }}
+                values={{}}
+                form_actions={[
+                    {
+                        id: 'save',
+                        label: 'Save',
+                        action: 'save',
+                        variant: 'default',
+                        success_message: 'Post saved successfully',
+                    },
+                ]}
+            />,
+        );
+
+        await user.click(
+            await screen.findByRole('button', { name: 'update-title' }),
+        );
+        await user.click(screen.getByRole('button', { name: 'Save' }));
+
+        await waitFor(() => {
+            expect(hoisted.toastSuccess).toHaveBeenCalledWith(
+                'Post saved successfully',
+            );
+        });
+    });
+
+    it('shows confirm dialog before named action when confirm is true', async () => {
+        const user = userEvent.setup();
+
+        render(
+            <FlatpackFormPage
+                entity="posts"
+                name="Posts"
+                record="7"
+                mode="edit"
+                schema={{
+                    fields: {
+                        title: {
+                            type: 'text',
+                            label: 'Title',
+                            placeholder: 'Title',
+                        },
+                    },
+                }}
+                values={{ title: 'Existing title' }}
+                form_actions={[
+                    {
+                        id: 'delete',
+                        label: 'Delete',
+                        action: 'delete',
+                        variant: 'destructive',
+                        confirm: true,
+                    },
+                ]}
+            />,
+        );
+
+        await user.click(screen.getByRole('button', { name: 'Delete' }));
+
+        expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+        expect(hoisted.post).not.toHaveBeenCalled();
+
+        await user.click(screen.getByRole('button', { name: 'Continue' }));
+
+        await waitFor(() => {
+            expect(hoisted.post).toHaveBeenCalledWith(
+                '/flatpack/posts/7/action',
+                { action: 'delete' },
+                expect.objectContaining({
+                    preserveScroll: true,
+                    onSuccess: expect.any(Function),
+                    onError: expect.any(Function),
+                }),
+            );
+        });
+    });
+
+    it('shows confirm dialog before save when confirm is true', async () => {
+        const user = userEvent.setup();
+
+        render(
+            <FlatpackFormPage
+                entity="posts"
+                name="Posts"
+                record={null}
+                mode="create"
+                schema={{
+                    fields: {
+                        title: {
+                            type: 'text',
+                            label: 'Title',
+                            placeholder: 'Title',
+                        },
+                    },
+                }}
+                values={{}}
+                form_actions={[
+                    {
+                        id: 'save',
+                        label: 'Save',
+                        action: 'save',
+                        variant: 'default',
+                        confirm: true,
+                    },
+                ]}
+            />,
+        );
+
+        await user.click(
+            await screen.findByRole('button', { name: 'update-title' }),
+        );
+        await user.click(screen.getByRole('button', { name: 'Save' }));
+
+        expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+        expect(hoisted.post).not.toHaveBeenCalled();
+
+        await user.click(screen.getByRole('button', { name: 'Continue' }));
+
+        await waitFor(() => {
+            expect(hoisted.post).toHaveBeenCalledTimes(1);
         });
     });
 });
