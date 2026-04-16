@@ -49,20 +49,30 @@ export const ComboboxField = ({
     useLayoutEffect(() => {
         if (multiple) {
             const next = Array.isArray(value)
-                ? value.filter(
-                      (item): item is string => typeof item === 'string',
-                  )
+                ? value
+                      .filter(
+                          (item): item is string | number =>
+                              typeof item === 'string' ||
+                              typeof item === 'number',
+                      )
+                      .map((item) => String(item))
                 : [];
             setMultiValue(next);
             return;
         }
 
-        if (typeof value !== 'string' || value.trim() === '') {
+        if (
+            (typeof value !== 'string' && typeof value !== 'number') ||
+            String(value).trim() === ''
+        ) {
             setSingleValue(null);
             return;
         }
 
-        setSingleValue(items.find((item) => item.value === value) ?? null);
+        const valueAsString = String(value);
+        setSingleValue(
+            items.find((item) => String(item.value) === valueAsString) ?? null,
+        );
     }, [items, multiple, value]);
 
     if (multiple) {
@@ -128,7 +138,7 @@ export const ComboboxField = ({
                         id={id}
                         placeholder={singlePlaceholder}
                         showClear={singleValue != null}
-                        className="w-full max-w-sm rounded-3xl"
+                        className="w-full rounded-3xl"
                         aria-labelledby={label ? labelId : undefined}
                     />
                     <ComboboxContent>

@@ -246,6 +246,7 @@ final readonly class FormController
         foreach ($fields as $fieldId => $fieldDefinition) {
             if (! is_array($fieldDefinition)) {
                 $normalizedFields[$fieldId] = $fieldDefinition;
+
                 continue;
             }
 
@@ -332,12 +333,10 @@ final readonly class FormController
             ->newQuery()
             ->orderBy($labelField)
             ->get([$valueField, $labelField])
-            ->map(function (Model $related) use ($labelField, $valueField): array {
-                return [
-                    'value' => (string) $related->getAttribute($valueField),
-                    'label' => (string) $related->getAttribute($labelField),
-                ];
-            })
+            ->map(fn (Model $related): array => [
+                'value' => (string) $related->getAttribute($valueField),
+                'label' => (string) $related->getAttribute($labelField),
+            ])
             ->filter(fn (array $option): bool => $option['value'] !== '' && $option['label'] !== '')
             ->values()
             ->all();

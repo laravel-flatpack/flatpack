@@ -43,7 +43,7 @@ function normalizeFieldType(value: unknown): FormFieldType | undefined {
         return 'date-picker';
     }
     if (value === 'relation') {
-        return 'select';
+        return 'combobox';
     }
     return typeof value === 'string' &&
         supportedFormFieldTypes.includes(value as FormFieldType)
