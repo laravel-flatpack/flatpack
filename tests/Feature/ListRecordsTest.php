@@ -229,9 +229,9 @@ columns:
 YAML);
         config()->set('flatpack.path', $tempPath);
         config()->set('flatpack.actions', [
-            'edit' => \Flatpack\Actions\Handlers\EditRecordHandler::class,
-            'save' => \Flatpack\Actions\Handlers\SaveRecordHandler::class,
-            'delete' => \Flatpack\Actions\Handlers\DeleteRecordHandler::class,
+            'edit' => Flatpack\Actions\Handlers\EditRecordHandler::class,
+            'save' => Flatpack\Actions\Handlers\SaveRecordHandler::class,
+            'delete' => Flatpack\Actions\Handlers\DeleteRecordHandler::class,
         ]);
 
         /** @var User $user */

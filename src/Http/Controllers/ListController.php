@@ -4,22 +4,22 @@ declare(strict_types=1);
 
 namespace Flatpack\Http\Controllers;
 
+use Flatpack\Actions\FlatpackActionContext;
+use Flatpack\Actions\FlatpackBulkActionContext;
 use Flatpack\Actions\Handlers\CreateRecordHandler;
 use Flatpack\Actions\Handlers\DeleteRecordHandler;
 use Flatpack\Actions\Handlers\EditRecordHandler;
 use Flatpack\Actions\Handlers\SaveRecordHandler;
-use Flatpack\Actions\FlatpackActionContext;
-use Flatpack\Actions\FlatpackBulkActionContext;
-use Flatpack\Contracts\Actions\FlatpackAction;
 use Flatpack\Composition\EntityComposition;
+use Flatpack\Contracts\Actions\FlatpackAction;
 use Flatpack\Contracts\Actions\FlatpackBulkAction;
 use Flatpack\Http\FlatpackResponse;
 use Flatpack\Lists\ListBulkActions;
 use Flatpack\Lists\ListHeaderActions;
 use Flatpack\Lists\ListRecordsLoader;
 use Flatpack\Support\ModelKeyResolver;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\MassAssignmentException;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -240,7 +240,7 @@ final readonly class ListController
                 default => null,
             };
         }
-        if (! is_string($handlerClass) || $handlerClass === '') {
+        if (! is_string($handlerClass)) {
             abort(404, 'Flatpack action handler is not configured.');
         }
 
