@@ -30,9 +30,13 @@ export default function FlatpackFormPage(props: FlatpackFormPageProps) {
     const pageTitle =
         mode === 'create' ? `Create ${displayName}` : `Edit ${displayName}`;
     const formId = `flatpack-form-${entity}-${record ?? 'new'}`;
-    const noFieldsMessage = <p className="text-sm text-muted-foreground">
-        Define fields in <code className="font-mono text-xs bg-muted px-1 py-0.5 rounded-md">{`/${entity}/form.yaml`}</code> to render this form.
-    </p>
+    const noFieldsMessage = (
+        <p className="text-sm text-muted-foreground">
+            Define fields in{' '}
+            <code className="font-mono text-xs bg-muted px-1 py-0.5 rounded-md">{`/${entity}/form.yaml`}</code>{' '}
+            to render this form.
+        </p>
+    );
 
     return (
         <>
