@@ -17,7 +17,7 @@ final class ActionRuntime
     {
         $handlerClass = config("flatpack.actions.{$action}");
         if (! is_string($handlerClass) || $handlerClass === '') {
-            abort(404, 'Flatpack action handler is not configured.');
+            abort(404, sprintf('Flatpack action "%s" is not configured. Add it to config/flatpack.php under "actions".', $action));
         }
 
         $handler = app()->make($handlerClass);
@@ -32,7 +32,7 @@ final class ActionRuntime
     {
         $handlerClass = config("flatpack.bulk_actions.{$action}");
         if (! is_string($handlerClass) || $handlerClass === '') {
-            abort(404, 'Flatpack bulk action handler is not configured.');
+            abort(404, sprintf('Flatpack bulk action "%s" is not configured. Add it to config/flatpack.php under "bulk_actions".', $action));
         }
 
         $handler = app()->make($handlerClass);
