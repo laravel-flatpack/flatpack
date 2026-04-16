@@ -8,6 +8,7 @@ use Flatpack\Actions\FlatpackActionContext;
 use Flatpack\Contracts\Actions\FlatpackAction;
 use Illuminate\Database\Eloquent\MassAssignmentException;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Validation\ValidationException;
 
 final class SaveRecordHandler implements FlatpackAction
 {
@@ -52,6 +53,15 @@ final class SaveRecordHandler implements FlatpackAction
 
         if ($filtered === []) {
             return $model;
+        }
+
+        $requiredErrors = $this->requiredFieldErrorsFromSchema(
+            compositionType: $context->compositionType,
+            schema: $context->schema,
+            values: $filtered,
+        );
+        if ($requiredErrors !== []) {
+            throw ValidationException::withMessages($requiredErrors);
         }
 
         $model->fill($filtered);
@@ -157,5 +167,67 @@ final class SaveRecordHandler implements FlatpackAction
         }
 
         return $writable;
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $schema
+     * @param  array<string, mixed>  $values
+     * @return array<string, string>
+     */
+    private function requiredFieldErrorsFromSchema(
+        string $compositionType,
+        ?array $schema,
+        array $values,
+    ): array {
+        if ($compositionType !== 'form' || $schema === null) {
+            return [];
+        }
+
+        $fields = $schema['fields'] ?? null;
+        if (! is_array($fields)) {
+            return [];
+        }
+
+        $errors = [];
+        foreach ($fields as $fieldId => $fieldDefinition) {
+            if (! is_array($fieldDefinition)) {
+                continue;
+            }
+
+            if (($fieldDefinition['required'] ?? false) !== true) {
+                continue;
+            }
+
+            $id = trim((string) ($fieldDefinition['id'] ?? $fieldId));
+            if ($id === '') {
+                continue;
+            }
+
+            if (! $this->isEmptyFormValue($values[$id] ?? null)) {
+                continue;
+            }
+
+            $label = trim((string) ($fieldDefinition['label'] ?? $id));
+            $errors[$id] = sprintf('%s is required.', $label !== '' ? $label : $id);
+        }
+
+        return $errors;
+    }
+
+    private function isEmptyFormValue(mixed $value): bool
+    {
+        if ($value === null) {
+            return true;
+        }
+
+        if (is_string($value)) {
+            return trim($value) === '';
+        }
+
+        if (is_array($value)) {
+            return $value === [];
+        }
+
+        return false;
     }
 }

@@ -36,6 +36,95 @@ vi.mock('@inertiajs/react', () => ({
         post: hoisted.post,
         patch: hoisted.patch,
     },
+    useForm: <TData extends Record<string, unknown>>(initialData: TData) => {
+        const [data, setDataState] = React.useState<TData>(initialData);
+        const [errors, setErrors] = React.useState<Record<string, string>>({});
+        const transformerRef = React.useRef<
+            ((data: TData) => Record<string, unknown>) | null
+        >(null);
+
+        const clearErrors = React.useCallback((field?: string) => {
+            if (field === undefined) {
+                setErrors({});
+                return;
+            }
+            setErrors((current) => {
+                const next = { ...current };
+                delete next[field];
+                return next;
+            });
+        }, []);
+
+        const setData = React.useCallback(
+            (fieldOrData: keyof TData | TData, maybeValue?: unknown) => {
+                if (typeof fieldOrData === 'string') {
+                    setDataState((current) => ({
+                        ...current,
+                        [fieldOrData]: maybeValue,
+                    }));
+                    return;
+                }
+
+                setDataState(fieldOrData as TData);
+            },
+            [],
+        );
+
+        const setError = React.useCallback((next: Record<string, string>) => {
+            setErrors((current) => ({ ...current, ...next }));
+        }, []);
+
+        const submit = React.useCallback(
+            (method: 'post' | 'patch') =>
+                (
+                    url: string,
+                    options?: {
+                        onSuccess?: () => void;
+                        onError?: (errors: Record<string, unknown>) => void;
+                    },
+                ) => {
+                    const payload = transformerRef.current
+                        ? transformerRef.current(data)
+                        : data;
+                    const callbackOptions = {
+                        ...options,
+                        onSuccess: () => {
+                            clearErrors();
+                            options?.onSuccess?.();
+                        },
+                        onError: (nextErrors: Record<string, unknown>) => {
+                            setErrors(nextErrors as Record<string, string>);
+                            options?.onError?.(nextErrors);
+                        },
+                    };
+
+                    if (method === 'post') {
+                        hoisted.post(url, payload, callbackOptions);
+                        return;
+                    }
+
+                    hoisted.patch(url, payload, callbackOptions);
+                },
+            [clearErrors, data],
+        );
+
+        return {
+            data,
+            errors,
+            processing: false,
+            setData,
+            clearErrors,
+            setError,
+            transform: React.useCallback(
+                (next: (data: TData) => Record<string, unknown>) => {
+                    transformerRef.current = next;
+                },
+                [],
+            ),
+            post: submit('post'),
+            patch: submit('patch'),
+        };
+    },
 }));
 
 vi.mock('@/lib/route', () => ({
@@ -308,6 +397,45 @@ describe('FlatpackFormPage', () => {
             );
         });
         expect(screen.getByText('Title is required.')).toBeInTheDocument();
+    });
+
+    it('blocks submit on client when required YAML field is empty', async () => {
+        const user = userEvent.setup();
+
+        render(
+            <FlatpackFormPage
+                entity="posts"
+                name="Posts"
+                record={null}
+                mode="create"
+                schema={{
+                    fields: {
+                        slug: {
+                            type: 'text',
+                            label: 'Slug',
+                            placeholder: 'Slug',
+                            required: true,
+                        },
+                    },
+                }}
+                values={{ slug: '' }}
+                form_actions={[
+                    {
+                        id: 'save',
+                        label: 'Save',
+                        action: 'save',
+                        variant: 'default',
+                    },
+                ]}
+            />,
+        );
+
+        await user.click(await screen.findByRole('button', { name: 'Save' }));
+
+        expect(hoisted.post).not.toHaveBeenCalled();
+        expect(hoisted.patch).not.toHaveBeenCalled();
+        expect(hoisted.toastError).toHaveBeenCalledWith('Slug is required.');
+        expect(screen.getByText('Slug is required.')).toBeInTheDocument();
     });
 
     it('does not render a default submit action when yaml actions are absent', () => {

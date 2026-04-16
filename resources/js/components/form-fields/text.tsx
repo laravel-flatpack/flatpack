@@ -14,6 +14,8 @@ export const TextField = ({
     onKeyDown,
     inline = false,
     inputClassName,
+    required = false,
+    invalid = false,
 }: {
     id: string;
     label: string;
@@ -26,6 +28,8 @@ export const TextField = ({
     onKeyDown?: React.KeyboardEventHandler<HTMLInputElement>;
     inline?: boolean;
     inputClassName?: string;
+    required?: boolean;
+    invalid?: boolean;
 }) => {
     const labelId = `${id}-label`;
 
@@ -37,6 +41,8 @@ export const TextField = ({
             defaultValue={value === undefined ? defaultValue : undefined}
             value={value}
             aria-labelledby={label ? labelId : undefined}
+            aria-invalid={invalid || undefined}
+            required={required}
             className={cn(inputClassName)}
             onChange={(e) => onValueChange?.(e.target.value)}
             onBlur={onBlur}

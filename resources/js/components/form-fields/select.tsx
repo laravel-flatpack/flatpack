@@ -30,6 +30,8 @@ type SelectFieldBaseProps = {
     placeholder: string;
     options: SelectFieldOption[];
     helperText?: string;
+    required?: boolean;
+    invalid?: boolean;
 };
 
 type SelectFieldSingleProps = SelectFieldBaseProps & {
@@ -92,6 +94,7 @@ export const SelectField = ({
     value: valueProp,
     helperText,
     onValueChange,
+    invalid = false,
 }: SelectFieldProps) => {
     const [singleValue, setSingleValue] = useState<string>(() =>
         selectValueFromUnknown(valueProp, options),
@@ -151,6 +154,7 @@ export const SelectField = ({
                                 type="button"
                                 className="flex h-9 w-full min-w-0 items-center justify-between rounded-3xl border border-transparent bg-input/50 px-3 py-2 text-left text-sm transition-[color,box-shadow,background-color] outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
                                 aria-labelledby={label ? labelId : undefined}
+                                aria-invalid={invalid || undefined}
                             >
                                 <span className="flex min-w-0 items-center gap-2">
                                     {selectedCount > 0 ? (
@@ -250,6 +254,7 @@ export const SelectField = ({
                             id={id}
                             className="w-full"
                             aria-labelledby={label ? labelId : undefined}
+                            aria-invalid={invalid || undefined}
                         >
                             <SelectValue placeholder={placeholder} />
                         </SelectTrigger>

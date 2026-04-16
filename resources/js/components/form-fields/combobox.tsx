@@ -52,6 +52,7 @@ export const ComboboxField = ({
     remoteFieldId,
     remotePerPage = 20,
     onValueChange,
+    invalid = false,
 }: {
     id: string;
     label: string;
@@ -68,6 +69,7 @@ export const ComboboxField = ({
     remoteFieldId?: string;
     remotePerPage?: number;
     onValueChange?: (value: unknown) => void;
+    invalid?: boolean;
 }) => {
     const [multiValue, setMultiValue] = useState<string[]>([]);
     const [query, setQuery] = useState('');
@@ -250,6 +252,7 @@ export const ComboboxField = ({
                                 id={id}
                                 placeholder={multiPlaceholder}
                                 aria-labelledby={label ? labelId : undefined}
+                                aria-invalid={invalid || undefined}
                             />
                         </ComboboxChips>
                         <ComboboxContent>
@@ -289,6 +292,7 @@ export const ComboboxField = ({
                         className="w-full rounded-3xl"
                         loading={remoteLoading}
                         aria-labelledby={label ? labelId : undefined}
+                        aria-invalid={invalid || undefined}
                         onChange={(event) => {
                             setQuery(event.currentTarget.value);
                         }}

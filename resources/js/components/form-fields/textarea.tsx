@@ -12,6 +12,8 @@ export const TextareaField = ({
     value,
     className,
     onValueChange,
+    required = false,
+    invalid = false,
 }: {
     id: string;
     label: string;
@@ -22,6 +24,8 @@ export const TextareaField = ({
     value?: string;
     className?: string;
     onValueChange?: (value: string) => void;
+    required?: boolean;
+    invalid?: boolean;
 }) => {
     const labelId = `${id}-label`;
     return (
@@ -38,6 +42,8 @@ export const TextareaField = ({
                     rows={rows}
                     className={cn(className)}
                     aria-labelledby={label ? labelId : undefined}
+                    aria-invalid={invalid || undefined}
+                    required={required}
                     onChange={(e) => onValueChange?.(e.target.value)}
                 />
                 {helperText ? (

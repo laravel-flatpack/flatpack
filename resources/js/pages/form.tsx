@@ -1,5 +1,6 @@
-import { Head, Link, router } from '@inertiajs/react';
-import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import type { FormDataConvertible } from '@inertiajs/core';
+import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Suspense, useCallback, useEffect, useMemo } from 'react';
 import type { DateRange } from 'react-day-picker';
 import { toast } from 'sonner';
 import { LucideIconByName } from '@/components/icons';
@@ -9,122 +10,21 @@ import FlatpackLayout from '@/layouts/flatpack-layout';
 import { localDateSegment } from '@/lib/data-table-utils';
 import { loadField } from '@/lib/form';
 import { mapFormFieldPropsToComponentProps } from '@/lib/form-field-props';
+import {
+    buildInitialValues,
+    fieldErrorMessages,
+    normalizeFields,
+} from '@/lib/form-schema';
+import { clientValidationErrors, fieldIsRequired } from '@/lib/form-validation';
 import { route } from '@/lib/route';
 import { cn } from '@/lib/utils';
-import type { FormFieldProps, FormFieldType } from '@/types/form-fields';
+import type { FormFieldProps } from '@/types/form-fields';
 import type { FlatpackFormPageProps } from '@/types/pages/flatpack';
-
-const supportedFormFieldTypes = [
-    'text',
-    'textarea',
-    'select',
-    'combobox',
-    'date-picker',
-    'date-range-picker',
-    'time-picker',
-    'checkbox',
-    'switch',
-    'rich-text',
-    'block-editor',
-    'table',
-] as const satisfies readonly FormFieldType[];
-
-type FieldEntry = {
-    id: string;
-    field: FormFieldProps;
-};
+import { Loader2Icon } from 'lucide-react';
+import { Spinner } from '@/components/ui/spinner';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-function normalizeFieldType(value: unknown): FormFieldType | undefined {
-    if (value === 'date') {
-        return 'date-picker';
-    }
-    if (value === 'relation') {
-        return 'combobox';
-    }
-    return typeof value === 'string' &&
-        supportedFormFieldTypes.includes(value as FormFieldType)
-        ? (value as FormFieldType)
-        : undefined;
-}
-
-function normalizeFields(
-    schema?: Record<string, unknown> | null,
-): FieldEntry[] {
-    const rawFields = schema?.fields;
-    if (!isRecord(rawFields)) {
-        return [];
-    }
-
-    return Object.entries(rawFields).flatMap(([fieldId, fieldDefinition]) => {
-        if (!isRecord(fieldDefinition)) {
-            return [];
-        }
-        const type = normalizeFieldType(fieldDefinition.type);
-        if (type === undefined) {
-            return [];
-        }
-
-        const id = String(fieldDefinition.id ?? fieldId).trim();
-        if (id === '') {
-            return [];
-        }
-
-        return [
-            {
-                id,
-                field: {
-                    ...fieldDefinition,
-                    type,
-                } as FormFieldProps,
-            },
-        ];
-    });
-}
-
-function defaultValueForField(field: FormFieldProps): unknown {
-    const fieldRecord = field as Record<string, unknown>;
-    if (fieldRecord.value !== undefined) {
-        return fieldRecord.value;
-    }
-
-    switch (field.type) {
-        case 'checkbox':
-        case 'switch':
-            return field.defaultChecked ?? false;
-        case 'table':
-            return field.data ?? [];
-        case 'select':
-            return null;
-        case 'combobox':
-            return field.multiple ? [] : null;
-        default:
-            return undefined;
-    }
-}
-
-function buildInitialValues(
-    fields: FieldEntry[],
-    values: Record<string, unknown>,
-): Record<string, unknown> {
-    const nextValues: Record<string, unknown> = {};
-
-    for (const { id, field } of fields) {
-        if (Object.hasOwn(values, id)) {
-            nextValues[id] = values[id];
-            continue;
-        }
-
-        const defaultValue = defaultValueForField(field);
-        if (defaultValue !== undefined) {
-            nextValues[id] = defaultValue;
-        }
-    }
-
-    return nextValues;
 }
 
 function firstErrorMessage(
@@ -301,27 +201,6 @@ function relationRemoteProps(
     };
 }
 
-function fieldErrorMessages(
-    errors: Record<string, unknown>,
-    fieldId: string,
-): Array<{ message: string }> {
-    const error = errors[fieldId];
-    if (typeof error === 'string' && error.trim() !== '') {
-        return [{ message: error }];
-    }
-
-    if (Array.isArray(error)) {
-        return error
-            .filter(
-                (item): item is string =>
-                    typeof item === 'string' && item.trim() !== '',
-            )
-            .map((message) => ({ message }));
-    }
-
-    return [];
-}
-
 export default function FlatpackFormPage({
     entity,
     name,
@@ -343,43 +222,61 @@ export default function FlatpackFormPage({
             ) as Record<string, ReturnType<typeof loadField>>,
         [fields],
     );
-    const [fieldValues, setFieldValues] =
-        useState<Record<string, unknown>>(initialValues);
-    const [fieldErrors, setFieldErrors] = useState<Record<string, unknown>>({});
-    const [submitting, setSubmitting] = useState(false);
+    const initialFormData = useMemo(
+        () => ({
+            values: initialValues as Record<string, FormDataConvertible>,
+        }),
+        [initialValues],
+    );
+    // @ts-expect-error Inertia generic recursion over dynamic record values.
+    const form = useForm(initialFormData);
+    const fieldErrors = form.errors as Record<string, unknown>;
     const displayName = name ?? entity;
     const pageTitle =
         mode === 'create' ? `Create ${displayName}` : `Edit ${displayName}`;
     const formId = `flatpack-form-${entity}-${record ?? 'new'}`;
 
     useEffect(() => {
-        setFieldValues(initialValues);
-        setFieldErrors({});
-        setSubmitting(false);
-    }, [initialValues]);
+        form.setData(
+            'values',
+            initialValues as Record<string, FormDataConvertible>,
+        );
+        form.clearErrors();
+    }, [form.clearErrors, form.setData, initialValues]);
 
     const setFieldValue = useCallback(
         (field: FormFieldProps, fieldId: string, nextValue: unknown) => {
-            setFieldValues((current) => ({
-                ...current,
-                [fieldId]: serializeFieldValue(field, nextValue),
-            }));
-            setFieldErrors((current) => {
-                if (!Object.hasOwn(current, fieldId)) {
-                    return current;
-                }
-
-                const next = { ...current };
-                delete next[fieldId];
-                return next;
+            form.setData({
+                ...form.data,
+                values: {
+                    ...form.data.values,
+                    [fieldId]: serializeFieldValue(
+                        field,
+                        nextValue,
+                    ) as FormDataConvertible,
+                },
             });
+            form.clearErrors();
         },
-        [],
+        [form],
     );
 
     const handleSubmit = useCallback(
         (event: React.FormEvent<HTMLFormElement>) => {
             event.preventDefault();
+            const validationErrors = clientValidationErrors(
+                fields,
+                form.data.values,
+            );
+            if (Object.keys(validationErrors).length > 0) {
+                form.clearErrors();
+                form.setError(validationErrors);
+                toast.error(
+                    firstErrorMessage(validationErrors) ??
+                        'Please review errors',
+                );
+                return;
+            }
 
             const submitUrl =
                 mode === 'create'
@@ -389,18 +286,14 @@ export default function FlatpackFormPage({
                           record: record ?? '',
                       });
 
-            setSubmitting(true);
-            setFieldErrors({});
+            form.clearErrors();
 
             const options = {
                 preserveScroll: true,
                 onSuccess: () => {
-                    setSubmitting(false);
-                    setFieldErrors({});
+                    form.clearErrors();
                 },
                 onError: (errors: Record<string, unknown>) => {
-                    setSubmitting(false);
-                    setFieldErrors(errors);
                     toast.error(
                         firstErrorMessage(errors) ?? 'Form save failed',
                     );
@@ -408,17 +301,13 @@ export default function FlatpackFormPage({
             };
 
             if (mode === 'create') {
-                router.post(
-                    submitUrl,
-                    { values: fieldValues as never },
-                    options,
-                );
+                form.post(submitUrl, options);
                 return;
             }
 
-            router.patch(submitUrl, { values: fieldValues as never }, options);
+            form.patch(submitUrl, options);
         },
-        [entity, fieldValues, mode, record],
+        [entity, fields, form, mode, record],
     );
 
     const handleNamedAction = useCallback(
@@ -513,7 +402,7 @@ export default function FlatpackFormPage({
                                                 action.variant ?? 'outline'
                                             }
                                             disabled={
-                                                submitting ||
+                                                form.processing ||
                                                 fields.length === 0
                                             }
                                             className={cn(
@@ -521,14 +410,13 @@ export default function FlatpackFormPage({
                                                     'inline-flex items-center gap-1.5',
                                             )}
                                         >
-                                            {action.icon ? (
+                                            {action.icon && (
                                                 <LucideIconByName
                                                     name={action.icon}
                                                 />
-                                            ) : null}
-                                            {submitting
-                                                ? `${action.label}...`
-                                                : action.label}
+                                            )}
+                                            {form.processing && (<Spinner className="size-4" />)}
+                                            {action.label}
                                         </Button>
                                     ) : (
                                         <Button
@@ -539,7 +427,7 @@ export default function FlatpackFormPage({
                                                 action.variant ?? 'outline'
                                             }
                                             disabled={
-                                                submitting ||
+                                                form.processing ||
                                                 record == null ||
                                                 record === ''
                                             }
@@ -568,6 +456,7 @@ export default function FlatpackFormPage({
                 <form
                     id={formId}
                     className="flex flex-col gap-6"
+                    noValidate
                     onSubmit={handleSubmit}
                 >
                     <FieldError
@@ -587,8 +476,15 @@ export default function FlatpackFormPage({
                                     onValueChange: (nextValue: unknown) =>
                                         setFieldValue(field, id, nextValue),
                                 }),
-                                ...componentValueProps(field, fieldValues[id]),
+                                ...componentValueProps(
+                                    field,
+                                    form.data.values[id],
+                                ),
                                 ...relationRemoteProps(field, id, entity),
+                                required: fieldIsRequired(field),
+                                invalid:
+                                    fieldErrorMessages(fieldErrors, id).length >
+                                    0,
                             };
 
                             return (
