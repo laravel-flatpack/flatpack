@@ -1,4 +1,5 @@
 import { ChevronDownIcon, FilterIcon } from 'lucide-react';
+import { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -10,6 +11,7 @@ import type {
     FlatpackDataTableServerFiltersState,
 } from '@/types/data-table';
 import { DatePickerField, SelectField } from '../form-fields';
+import { Badge } from '../ui/badge';
 import { Separator } from '../ui/separator';
 
 type DataTableFiltersDropdownProps = {
@@ -39,6 +41,12 @@ export function DataTableFiltersDropdown({
         }
         return [];
     };
+
+    const selectedFiltersCount = useMemo(() => {
+        return Object.values(serverFilterState).filter(
+            (value) => value !== null,
+        ).length;
+    }, [serverFilterState]);
 
     const resetAllFilters = () => {
         for (const filter of serverFilters) {
@@ -71,6 +79,14 @@ export function DataTableFiltersDropdown({
                 <Button variant="outline" size="sm">
                     <FilterIcon data-icon="inline-start" />
                     Filters
+                    {selectedFiltersCount > 0 && (
+                        <Badge
+                            variant="default"
+                            className="h-4 rounded-full px-2 text-xs ml-2"
+                        >
+                            {selectedFiltersCount}
+                        </Badge>
+                    )}
                     <ChevronDownIcon data-icon="inline-end" />
                 </Button>
             </DropdownMenuTrigger>
