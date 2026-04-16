@@ -1,6 +1,6 @@
 import { format } from 'date-fns';
 import { CalendarIcon, ChevronDownIcon, ClockIcon } from 'lucide-react';
-import { useState } from 'react';
+import { useLayoutEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Calendar } from '../ui/calendar';
 import { Field, FieldContent, FieldGroup, FieldTitle } from '../ui/field';
@@ -17,6 +17,7 @@ export const TimePickerField = ({
     timeLabel,
     dateEmptyLabel,
     timeDefaultValue,
+    value,
     onValueChange,
 }: {
     id: string;
@@ -24,15 +25,21 @@ export const TimePickerField = ({
     timeLabel: string;
     dateEmptyLabel: string;
     timeDefaultValue: string;
+    value?: { date?: Date; time?: string };
     onValueChange?: (value: { date: Date | undefined; time: string }) => void;
 }) => {
     const dateId = `${id}-date`;
     const timeId = `${id}-time`;
     const [open, setOpen] = useState(false);
-    const [date, setDate] = useState<Date | undefined>();
-    const [time, setTime] = useState(timeDefaultValue);
+    const [date, setDate] = useState<Date | undefined>(value?.date);
+    const [time, setTime] = useState(value?.time ?? timeDefaultValue);
     const dateLabelId = `${dateId}-label`;
     const timeLabelId = `${timeId}-label`;
+
+    useLayoutEffect(() => {
+        setDate(value?.date);
+        setTime(value?.time ?? timeDefaultValue);
+    }, [timeDefaultValue, value]);
 
     return (
         <FieldGroup className="w-full flex-row flex-wrap items-end gap-4">
@@ -100,7 +107,7 @@ export const TimePickerField = ({
                             type="time"
                             id={timeId}
                             step={1}
-                            defaultValue={timeDefaultValue}
+                            value={time}
                             className="appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
                             aria-labelledby={
                                 timeLabel ? timeLabelId : undefined

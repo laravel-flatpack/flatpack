@@ -4,6 +4,35 @@ import type {
 } from '@/types/form-field-render';
 import type { FormFieldProps, FormFieldType } from '@/types/form-fields';
 
+function normalizedOptions(
+    options: unknown,
+): Array<{ value: string; label: string; status?: unknown }> {
+    if (!Array.isArray(options)) {
+        return [];
+    }
+
+    return options.flatMap((option) => {
+        if (typeof option !== 'object' || option === null) {
+            return [];
+        }
+
+        const value = 'value' in option ? option.value : undefined;
+        const label = 'label' in option ? option.label : undefined;
+
+        if (typeof value !== 'string' || typeof label !== 'string') {
+            return [];
+        }
+
+        return [
+            {
+                value,
+                label,
+                status: 'status' in option ? option.status : undefined,
+            },
+        ];
+    });
+}
+
 function mapTextTextareaSelect(
     props: FormFieldProps,
     ctx: FormFieldRenderContext,
@@ -16,6 +45,10 @@ function mapTextTextareaSelect(
         ...rest,
         id: ctx.fieldId,
         placeholder: rest.placeholder ?? '',
+        options:
+            props.type === 'select'
+                ? normalizedOptions((rest as { options?: unknown }).options)
+                : undefined,
         onValueChange: ctx.onValueChange,
     };
 }
@@ -47,15 +80,16 @@ function mapRichBlock(props: FormFieldProps, ctx: FormFieldRenderContext) {
 
 function mapCombobox(props: FormFieldProps, ctx: FormFieldRenderContext) {
     const p = props as Extract<FormFieldProps, { type: 'combobox' }>;
+    const options = normalizedOptions(p.options);
     return {
         id: ctx.fieldId,
         label: p.label,
         multiple: p.multiple ?? false,
-        items: p.options.map((o) => ({
+        items: options.map((o) => ({
             value: o.value,
             label: o.label,
         })),
-        multiItems: p.options.map((o) => o.label),
+        multiItems: options.map((o) => o.label),
         singlePlaceholder: p.placeholder ?? '',
         multiPlaceholder: p.placeholder ?? '',
         singleDescription: p.helperText,

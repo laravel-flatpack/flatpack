@@ -87,7 +87,7 @@ export const SelectField = ({
     id,
     label,
     placeholder,
-    options,
+    options = [],
     multiple = false,
     value: valueProp,
     helperText,

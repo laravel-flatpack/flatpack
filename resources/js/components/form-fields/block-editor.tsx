@@ -15,6 +15,7 @@ export const BlockEditorField = ({
     helperText,
     className,
     showFixedToolbar,
+    initialValue,
     onValueChange,
 }: {
     id: string;
@@ -23,6 +24,7 @@ export const BlockEditorField = ({
     helperText?: string;
     className?: string;
     showFixedToolbar?: boolean;
+    initialValue?: Value;
     onValueChange?: (value: Value) => void;
 }) => {
     const labelId = `${id}-label`;
@@ -44,6 +46,7 @@ export const BlockEditorField = ({
                         className={className}
                         placeholder={placeholder}
                         showFixedToolbar={showFixedToolbar}
+                        initialValue={initialValue}
                         onValueChange={onValueChange}
                     />
                 </Suspense>

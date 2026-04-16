@@ -40,4 +40,5 @@ export type FlatpackFormPageProps = {
     record: string | null;
     mode: 'create' | 'edit';
     schema?: Record<string, unknown> | null;
+    values?: Record<string, unknown>;
 };

@@ -5,11 +5,13 @@ export const SwitchField = ({
     id,
     label,
     defaultChecked,
+    checked,
     onValueChange,
 }: {
     id: string;
     label: string;
     defaultChecked?: boolean;
+    checked?: boolean;
     onValueChange?: (checked: boolean) => void;
 }) => {
     const labelId = `${id}-label`;
@@ -17,7 +19,10 @@ export const SwitchField = ({
         <Field orientation="horizontal">
             <Switch
                 id={id}
-                defaultChecked={defaultChecked}
+                defaultChecked={
+                    checked === undefined ? defaultChecked : undefined
+                }
+                checked={checked}
                 aria-labelledby={label ? labelId : undefined}
                 onCheckedChange={(c) => onValueChange?.(c === true)}
             />

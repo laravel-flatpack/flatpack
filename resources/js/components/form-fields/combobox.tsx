@@ -1,4 +1,4 @@
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useLayoutEffect, useState } from 'react';
 import {
     Combobox,
     ComboboxChip,
@@ -25,6 +25,7 @@ export const ComboboxField = ({
     multiPlaceholder,
     singleDescription,
     multiDescription,
+    value,
     onValueChange,
 }: {
     id: string;
@@ -36,6 +37,7 @@ export const ComboboxField = ({
     multiPlaceholder: string;
     singleDescription?: ReactNode;
     multiDescription?: ReactNode;
+    value?: unknown;
     onValueChange?: (value: unknown) => void;
 }) => {
     const [singleValue, setSingleValue] = useState<ComboboxObjectItem | null>(
@@ -43,6 +45,25 @@ export const ComboboxField = ({
     );
     const [multiValue, setMultiValue] = useState<string[]>([]);
     const labelId = `${id}-label`;
+
+    useLayoutEffect(() => {
+        if (multiple) {
+            const next = Array.isArray(value)
+                ? value.filter(
+                      (item): item is string => typeof item === 'string',
+                  )
+                : [];
+            setMultiValue(next);
+            return;
+        }
+
+        if (typeof value !== 'string' || value.trim() === '') {
+            setSingleValue(null);
+            return;
+        }
+
+        setSingleValue(items.find((item) => item.value === value) ?? null);
+    }, [items, multiple, value]);
 
     if (multiple) {
         return (

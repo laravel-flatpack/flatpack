@@ -39,6 +39,12 @@ Route::middleware(['auth:' . config('flatpack.guard', 'web'), EnsureFlatpackAcce
     /** Entity row update route */
     Route::patch('{entity}/{record}', [ListController::class, 'updateRecord'])->name('entities.update');
 
+    /** Entity create form save route */
+    Route::post('{entity}', [FormController::class, 'save'])->name('entities.store');
+
+    /** Entity edit form save route */
+    Route::patch('{entity}/{record}/save', [FormController::class, 'save'])->name('entities.save');
+
     /** Entity list route */
     Route::get('{entity}', [ListController::class, 'index'])->name('entities.index');
 

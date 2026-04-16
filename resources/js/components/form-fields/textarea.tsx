@@ -9,6 +9,7 @@ export const TextareaField = ({
     rows = 4,
     helperText,
     defaultValue = '',
+    value,
     className,
     onValueChange,
 }: {
@@ -18,6 +19,7 @@ export const TextareaField = ({
     rows?: number;
     helperText?: string;
     defaultValue?: string;
+    value?: string;
     className?: string;
     onValueChange?: (value: string) => void;
 }) => {
@@ -29,7 +31,10 @@ export const TextareaField = ({
                 <Textarea
                     id={id}
                     placeholder={placeholder}
-                    defaultValue={defaultValue}
+                    defaultValue={
+                        value === undefined ? defaultValue : undefined
+                    }
+                    value={value}
                     rows={rows}
                     className={cn(className)}
                     aria-labelledby={label ? labelId : undefined}

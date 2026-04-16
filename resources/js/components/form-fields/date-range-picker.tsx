@@ -1,6 +1,6 @@
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useLayoutEffect, useState } from 'react';
 import type { DateRange } from 'react-day-picker';
 import { cn } from '@/lib/utils';
 import { Calendar } from '../ui/calendar';
@@ -32,16 +32,22 @@ export const DateRangePickerField = ({
     id,
     label,
     emptyLabel,
+    value,
     onValueChange,
 }: {
     id: string;
     label: string;
     emptyLabel: string;
+    value?: DateRange;
     onValueChange?: (value: DateRange | undefined) => void;
 }) => {
     const [open, setOpen] = useState(false);
-    const [range, setRange] = useState<DateRange | undefined>();
+    const [range, setRange] = useState<DateRange | undefined>(value);
     const labelId = `${id}-label`;
+
+    useLayoutEffect(() => {
+        setRange(value);
+    }, [value]);
 
     return (
         <Field>
