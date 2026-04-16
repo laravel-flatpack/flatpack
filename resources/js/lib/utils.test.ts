@@ -1,12 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import {
-    cn,
-    getCurrentPath,
-    getRoutePathname,
-    isSamePath,
-    normalizePathname,
-    toUrl,
-} from '@/lib/utils';
+import { cn, getCurrentPath, isEntityListNavActive } from '@/lib/utils';
 
 describe('cn', () => {
     it('merges class lists and resolves tailwind conflicts', () => {
@@ -15,16 +8,6 @@ describe('cn', () => {
 
     it('ignores falsy inputs', () => {
         expect(cn('a', false, undefined, 'b')).toBe('a b');
-    });
-});
-
-describe('toUrl', () => {
-    it('returns string hrefs unchanged', () => {
-        expect(toUrl('/posts')).toBe('/posts');
-    });
-
-    it('reads url from object href', () => {
-        expect(toUrl({ url: '/inertia', method: 'get' })).toBe('/inertia');
     });
 });
 
@@ -52,37 +35,31 @@ describe('getCurrentPath', () => {
     });
 });
 
-describe('normalizePathname', () => {
-    it('parses relative paths against the document origin', () => {
-        expect(normalizePathname('foo/bar')).toBe('/foo/bar');
+describe('isEntityListNavActive', () => {
+    const list = '/flatpack/posts';
+
+    it('is active on the list path', () => {
+        expect(isEntityListNavActive(`${list}/`, list)).toBe(true);
     });
 
-    it('removes trailing slashes except for root', () => {
-        expect(normalizePathname('/a/b/')).toBe('/a/b');
-        expect(normalizePathname('/')).toBe('/');
-        expect(normalizePathname('')).toBe('/');
+    it('is active on create', () => {
+        expect(isEntityListNavActive(`${list}/create`, list)).toBe(true);
     });
 
-    it('strips query and hash from absolute URLs', () => {
-        expect(normalizePathname('https://example.com/page?x=1#h')).toBe(
-            '/page',
+    it('is active on edit', () => {
+        expect(isEntityListNavActive(`${list}/42/edit`, list)).toBe(true);
+        expect(isEntityListNavActive(`${list}/uuid-here/edit`, list)).toBe(
+            true,
         );
     });
-});
 
-describe('getRoutePathname', () => {
-    it('delegates to normalizePathname', () => {
-        expect(getRoutePathname('/route/')).toBe('/route');
-    });
-});
-
-describe('isSamePath', () => {
-    it('treats equivalent paths as equal', () => {
-        expect(isSamePath('/a', '/a/')).toBe(true);
-        expect(isSamePath('/a?x=1', '/a#frag')).toBe(true);
+    it('is not active on another entity list', () => {
+        expect(isEntityListNavActive('/flatpack/other', list)).toBe(false);
     });
 
-    it('distinguishes different pathnames', () => {
-        expect(isSamePath('/a', '/b')).toBe(false);
+    it('is not active on unrelated subpaths', () => {
+        expect(isEntityListNavActive(`${list}/relation-options`, list)).toBe(
+            false,
+        );
     });
 });

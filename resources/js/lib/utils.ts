@@ -1,14 +1,9 @@
-import type { InertiaLinkProps } from '@inertiajs/react';
 import type { ClassValue } from 'clsx';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
-}
-
-export function toUrl(url: NonNullable<InertiaLinkProps['href']>): string {
-    return typeof url === 'string' ? url : url.url;
 }
 
 export function getCurrentPath(url: string): string {
@@ -19,7 +14,7 @@ export function getCurrentPath(url: string): string {
     return url.split('?')[0];
 }
 
-export function normalizePathname(value: string): string {
+function normalizePathname(value: string): string {
     const fallbackOrigin =
         typeof window !== 'undefined'
             ? window.location.origin
@@ -29,10 +24,29 @@ export function normalizePathname(value: string): string {
     return pathname.replace(/\/+$/, '') || '/';
 }
 
-export function getRoutePathname(route: string): string {
-    return normalizePathname(route);
-}
+/**
+ * Sidebar items link to the entity list. Mark active on list, create, and edit routes.
+ */
+export function isEntityListNavActive(
+    currentPath: string,
+    listRoute: string,
+): boolean {
+    const path = normalizePathname(currentPath);
+    const list = normalizePathname(listRoute);
 
-export function isSamePath(a: string, b: string): boolean {
-    return normalizePathname(a) === normalizePathname(b);
+    if (path === list) {
+        return true;
+    }
+
+    if (!path.startsWith(`${list}/`)) {
+        return false;
+    }
+
+    const rest = path.slice(list.length + 1);
+
+    if (rest === 'create') {
+        return true;
+    }
+
+    return /^[^/]+\/edit$/.test(rest);
 }
