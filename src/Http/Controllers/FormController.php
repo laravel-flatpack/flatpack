@@ -5,17 +5,14 @@ declare(strict_types=1);
 namespace Flatpack\Http\Controllers;
 
 use Flatpack\Actions\FlatpackActionContext;
-use Flatpack\Actions\Handlers\SaveRecordHandler;
 use Flatpack\Composition\EntityComposition;
-use Flatpack\Contracts\Actions\FlatpackAction;
 use Flatpack\Http\FlatpackResponse;
-use Flatpack\Lists\ListHeaderActions;
-use Illuminate\Database\Eloquent\MassAssignmentException;
+use Flatpack\Lists\HeaderActions;
+use Flatpack\Services\Actions\ActionRuntime;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
 use Inertia\Response;
 use Throwable;
 
@@ -23,6 +20,7 @@ final readonly class FormController
 {
     public function __construct(
         private EntityComposition $entityComposition,
+        private ActionRuntime $actions,
     ) {}
 
     public function create(Request $request, string $entity): Response|JsonResponse
@@ -43,7 +41,7 @@ final readonly class FormController
             'mode' => 'create',
             'schema' => $normalizedSchema,
             'values' => [],
-            'form_actions' => ListHeaderActions::fromSchema($schema),
+            'form_actions' => HeaderActions::fromSchema($schema),
         ], $request->boolean('json'));
     }
 
@@ -66,7 +64,7 @@ final readonly class FormController
             'mode' => 'edit',
             'schema' => $normalizedSchema,
             'values' => $this->formValuesFromModel($model, $schema),
-            'form_actions' => ListHeaderActions::fromSchema($schema),
+            'form_actions' => HeaderActions::fromSchema($schema),
         ], $request->boolean('json'));
     }
 
@@ -78,8 +76,10 @@ final readonly class FormController
         $form = $this->entityComposition->formFor($entity);
         $schema = $this->entityComposition->formSchema($entity);
         $modelClass = (string) ($form->model ?? '');
-        $model = $record !== null ? $this->resolveRecordModel($modelClass, $record) : null;
-        $handler = $this->resolveRecordActionHandler('save');
+        $model = $record !== null
+            ? $this->actions->resolveRecordModel($modelClass, $record, 'form')
+            : null;
+        $handler = $this->actions->resolveRecordActionHandler('save');
 
         try {
             $result = $handler->handle(new FlatpackActionContext(
@@ -94,7 +94,7 @@ final readonly class FormController
                 model: $model,
             ));
         } catch (Throwable $exception) {
-            throw $this->toUserFacingValidationException($exception);
+            throw $this->actions->toUserFacingValidationException($exception);
         }
 
         if ($result instanceof RedirectResponse) {
@@ -114,63 +114,11 @@ final readonly class FormController
         ])->setStatusCode(303);
     }
 
-    private function resolveRecordActionHandler(string $action): FlatpackAction
-    {
-        $handlerClass = config("flatpack.actions.{$action}");
-        if (! is_string($handlerClass) || $handlerClass === '') {
-            $handlerClass = match ($action) {
-                'save' => SaveRecordHandler::class,
-                default => null,
-            };
-        }
-        if (! is_string($handlerClass)) {
-            abort(404, 'Flatpack action handler is not configured.');
-        }
-
-        $handler = app()->make($handlerClass);
-        if (! $handler instanceof FlatpackAction) {
-            abort(500, 'Flatpack action handler must implement FlatpackAction.');
-        }
-
-        return $handler;
-    }
-
-    private function resolveRecordModel(string $modelClass, string $record): Model
-    {
-        if ($modelClass === '' || ! class_exists($modelClass)) {
-            abort(404, 'Flatpack form model is not configured.');
-        }
-        if (! is_subclass_of($modelClass, Model::class)) {
-            abort(404, 'Flatpack form model class is invalid.');
-        }
-
-        /** @var class-string<Model> $modelClass */
-        $model = new $modelClass();
-        $keyName = $model->getKeyName();
-
-        return $modelClass::query()
-            ->where($keyName, $record)
-            ->firstOrFail();
-    }
-
     private function resolveOptionalRecordModel(
         string $modelClass,
         string $record,
     ): ?Model {
-        if ($modelClass === '' || ! class_exists($modelClass)) {
-            return null;
-        }
-        if (! is_subclass_of($modelClass, Model::class)) {
-            return null;
-        }
-
-        /** @var class-string<Model> $modelClass */
-        $model = new $modelClass();
-        $keyName = $model->getKeyName();
-
-        return $modelClass::query()
-            ->where($keyName, $record)
-            ->first();
+        return $this->actions->resolveOptionalRecordModel($modelClass, $record);
     }
 
     /**
@@ -203,27 +151,6 @@ final readonly class FormController
         }
 
         return $values;
-    }
-
-    private function toUserFacingValidationException(
-        Throwable $exception,
-    ): ValidationException {
-        report($exception);
-
-        $message = 'This change could not be completed.';
-        if ($exception instanceof MassAssignmentException) {
-            $message = config('app.debug')
-                ? $exception->getMessage()
-                : 'This field is not writable for this model.';
-        } elseif (config('app.debug')) {
-            $message = $exception->getMessage() !== ''
-                ? $exception->getMessage()
-                : $message;
-        }
-
-        return ValidationException::withMessages([
-            'flatpack' => $message,
-        ]);
     }
 
     /**
@@ -343,22 +270,5 @@ final readonly class FormController
         }
 
         return $out;
-    }
-
-    /**
-     * @param  array<string, mixed>  $fieldDefinition
-     */
-    private function stringFromField(
-        array $fieldDefinition,
-        string $snakeKey,
-        string $camelKey,
-    ): string {
-        foreach ([$snakeKey, $camelKey] as $key) {
-            if (isset($fieldDefinition[$key]) && is_string($fieldDefinition[$key])) {
-                return trim($fieldDefinition[$key]);
-            }
-        }
-
-        return '';
     }
 }

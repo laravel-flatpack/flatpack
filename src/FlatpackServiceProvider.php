@@ -21,8 +21,8 @@ use Flatpack\Http\Middleware\ConfigureFlatpackViteAssets;
 use Flatpack\Http\Middleware\SetFlatpackInertiaRootView;
 use Flatpack\Http\Middleware\ShareFlatpackInertiaData;
 use Flatpack\Lists\ListRecordsLoader;
-use Flatpack\Menu\MenuBuilder;
-use Flatpack\Registration\RedirectCallbacks;
+use Flatpack\Menu\FlatpackMenuBuilder;
+use Flatpack\Registration\AuthenticationRedirectCallbacks;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Contracts\Http\Kernel as HttpKernelContract;
@@ -77,7 +77,7 @@ final class FlatpackServiceProvider extends ServiceProvider
 
         $this->app->singleton(FlatpackAuthorizer::class, PolicyAwareFlatpackAuthorizer::class);
         $this->app->singleton(ActionResolver::class, DefaultActionResolver::class);
-        $this->app->singleton(MenuBuilderContract::class, MenuBuilder::class);
+        $this->app->singleton(MenuBuilderContract::class, FlatpackMenuBuilder::class);
 
         $this->app->singleton(Flatpack::class, fn ($app): Flatpack => new Flatpack(
             menuBuilder: $app->make(MenuBuilderContract::class),
@@ -97,7 +97,7 @@ final class FlatpackServiceProvider extends ServiceProvider
             $kernel->prependMiddlewareToGroup('web', ConfigureFlatpackViteAssets::class);
             $kernel->appendMiddlewareToGroup('web', ShareFlatpackInertiaData::class);
             $kernel->appendMiddlewareToGroup('web', SetFlatpackInertiaRootView::class);
-            RedirectCallbacks::register();
+            AuthenticationRedirectCallbacks::register();
         });
     }
 

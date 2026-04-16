@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Flatpack\Http\Controllers\DashboardController;
+use Flatpack\Http\Controllers\EntityActionController;
 use Flatpack\Http\Controllers\FormController;
 use Flatpack\Http\Controllers\ListController;
 use Flatpack\Http\Controllers\RelationOptionsController;
@@ -22,39 +23,34 @@ require __DIR__ . '/guest.php';
 |
 */
 Route::middleware(['auth:' . config('flatpack.guard', 'web'), EnsureFlatpackAccess::class])->group(function () {
-    /** Logout route */
+    /** Ends the current authenticated Flatpack session. */
     Route::post('logout', [SessionController::class, 'destroy'])->name('logout');
 
-    /** Dashboard route */
+    /** Renders the Flatpack dashboard landing page. */
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
-    /** Entity bulk actions route */
-    Route::post('{entity}/bulk', [ListController::class, 'bulkAction'])->name('entities.bulk-action');
+    /** Executes a bulk action against selected list records. */
+    Route::post('{entity}/bulk', [EntityActionController::class, 'bulkAction'])->name('entities.bulk-action');
+    /** Executes a list-level action without a specific record target. */
+    Route::post('{entity}/action', [EntityActionController::class, 'listAction'])->name('entities.action');
+    /** Executes a row-level action against a specific record. */
+    Route::post('{entity}/{record}/action', [EntityActionController::class, 'rowAction'])->name('entities.row-action');
+    /** Persists inline edits for a specific list record. */
+    Route::patch('{entity}/{record}', [EntityActionController::class, 'updateRecord'])->name('entities.update');
 
-    /** Entity collection action route */
-    Route::post('{entity}/action', [ListController::class, 'listAction'])->name('entities.action');
-
-    /** Entity row action route */
-    Route::post('{entity}/{record}/action', [ListController::class, 'rowAction'])->name('entities.row-action');
-
-    /** Entity row update route */
-    Route::patch('{entity}/{record}', [ListController::class, 'updateRecord'])->name('entities.update');
-
-    /** Entity create form save route */
+    /** Renders the create form page for an entity. */
+    Route::get('{entity}/create', [FormController::class, 'create'])->name('entities.create');
+    /** Saves a new record submitted from the create form. */
     Route::post('{entity}', [FormController::class, 'save'])->name('entities.store');
 
-    /** Entity edit form save route */
+    /** Renders the edit form page for an existing record. */
+    Route::get('{entity}/{record}/edit', [FormController::class, 'edit'])->name('entities.edit');
+    /** Saves updates submitted from the edit form. */
     Route::patch('{entity}/{record}/save', [FormController::class, 'save'])->name('entities.save');
 
-    /** Entity relation options route */
+    /** Returns paginated relation options for remote combobox fields. */
     Route::get('{entity}/relation-options', RelationOptionsController::class)->name('entities.relation-options');
 
-    /** Entity list route */
+    /** Renders the entity list page with schema-driven records. */
     Route::get('{entity}', [ListController::class, 'index'])->name('entities.index');
-
-    /** Entity create form route */
-    Route::get('{entity}/create', [FormController::class, 'create'])->name('entities.create');
-
-    /** Entity edit form route */
-    Route::get('{entity}/{record}/edit', [FormController::class, 'edit'])->name('entities.edit');
 });

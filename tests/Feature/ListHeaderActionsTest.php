@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-use Flatpack\Lists\ListHeaderActions;
+use Flatpack\Lists\HeaderActions;
 use Flatpack\Tests\TestCase;
 
 uses(TestCase::class);
 
 test('fromSchema keeps literal href values for header actions', function () {
-    $actions = ListHeaderActions::fromSchema([
+    $actions = HeaderActions::fromSchema([
         'actions' => [
             'create' => [
                 'label' => 'Create',
@@ -27,7 +27,7 @@ test('fromSchema keeps literal href values for header actions', function () {
 });
 
 test('fromSchema passes through allowed variant', function () {
-    $actions = ListHeaderActions::fromSchema([
+    $actions = HeaderActions::fromSchema([
         'actions' => [
             'create' => [
                 'label' => 'Create',
@@ -41,7 +41,7 @@ test('fromSchema passes through allowed variant', function () {
 });
 
 test('fromSchema defaults invalid variant to outline', function () {
-    $actions = ListHeaderActions::fromSchema([
+    $actions = HeaderActions::fromSchema([
         'actions' => [
             'create' => [
                 'label' => 'Create',
@@ -55,7 +55,7 @@ test('fromSchema defaults invalid variant to outline', function () {
 });
 
 test('fromSchema maps primary alias to default', function () {
-    $actions = ListHeaderActions::fromSchema([
+    $actions = HeaderActions::fromSchema([
         'actions' => [
             'create' => [
                 'label' => 'Create',
@@ -69,7 +69,7 @@ test('fromSchema maps primary alias to default', function () {
 });
 
 test('fromSchema uses outline for omitted variant and default for primary CTA', function () {
-    $actions = ListHeaderActions::fromSchema([
+    $actions = HeaderActions::fromSchema([
         'actions' => [
             'category' => [
                 'label' => 'New Category',
@@ -88,7 +88,7 @@ test('fromSchema uses outline for omitted variant and default for primary CTA', 
 });
 
 test('fromSchema keeps action-based header actions', function () {
-    $actions = ListHeaderActions::fromSchema([
+    $actions = HeaderActions::fromSchema([
         'actions' => [
             'create' => [
                 'label' => 'Create',
@@ -109,7 +109,7 @@ test('fromSchema keeps action-based header actions', function () {
 });
 
 test('fromSchema ignores invalid header actions without exactly one target', function () {
-    $actions = ListHeaderActions::fromSchema([
+    $actions = HeaderActions::fromSchema([
         'actions' => [
             'missing-target' => [
                 'label' => 'Missing',

@@ -215,7 +215,7 @@ YAML);
     }
 });
 
-test('flatpack entity action route falls back to built-in create action when config is stale', function () {
+test('flatpack entity action route requires configured action handlers', function () {
     $tempPath = sys_get_temp_dir() . '/flatpack-list-action-fallback-' . uniqid('', true);
 
     try {
@@ -243,10 +243,7 @@ YAML);
             ]), [
                 'action' => 'create',
             ])
-            ->assertStatus(303)
-            ->assertRedirect(route('flatpack.entities.create', [
-                'entity' => 'posts',
-            ]));
+            ->assertNotFound();
     } finally {
         File::deleteDirectory($tempPath);
     }
