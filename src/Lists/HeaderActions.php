@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Flatpack\Lists;
 
 use Flatpack\Support\NavigationUrl;
+use Flatpack\Support\SuccessRedirect;
 
 /**
  * Normalizes optional {@code actions} from list.yaml into header buttons.
@@ -27,7 +28,7 @@ final class HeaderActions
 
     /**
      * @param  array<string, mixed>|null  $schema
-     * @return list<array{id: string, label: string, icon: string, variant: string, href?: string, action?: string, success_message?: string, confirm?: bool}>
+     * @return list<array{id: string, label: string, icon: string, variant: string, href?: string, action?: string, success_message?: string, confirm?: bool, success_redirect?: string}>
      */
     public static function fromSchema(?array $schema): array
     {
@@ -84,6 +85,12 @@ final class HeaderActions
             }
             if (($definition['confirm'] ?? null) === true) {
                 $normalized['confirm'] = true;
+            }
+            if (isset($definition['success_redirect'])) {
+                $sr = SuccessRedirect::normalize($definition['success_redirect']);
+                if ($sr !== null) {
+                    $normalized['success_redirect'] = $sr;
+                }
             }
             $out[] = $normalized;
         }

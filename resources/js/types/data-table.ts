@@ -1,5 +1,16 @@
 import type { ReactNode } from 'react';
 
+/** Allowed values for YAML {@code success_redirect} on Flatpack actions (server-driven redirects). */
+export type FlatpackSuccessRedirect =
+    | 'list'
+    | 'edit'
+    | 'create'
+    | 'show'
+    | 'back'
+    | 'previous'
+    | 'current'
+    | 'stay';
+
 export type FlatpackDataTableSelectOptionStatus =
     | 'success'
     | 'pending'
@@ -24,6 +35,7 @@ export type FlatpackDataTableActionButton = {
     action?: string;
     href?: string;
     variant?: FlatpackActionVariant;
+    success_redirect?: FlatpackSuccessRedirect;
 };
 
 export type FlatpackActionVariant =
@@ -42,6 +54,7 @@ export type FlatpackDataTableBulkAction = {
     variant?: FlatpackActionVariant;
     success_message?: string;
     confirm?: boolean;
+    success_redirect?: FlatpackSuccessRedirect;
 };
 
 export type FlatpackDataTableColumn = {

@@ -11,6 +11,7 @@ use Flatpack\Http\Requests\FormSubmitRequest;
 use Flatpack\Lists\HeaderActions;
 use Flatpack\Schema\FormFieldType;
 use Flatpack\Services\Actions\ActionRuntime;
+use Flatpack\Support\SuccessRedirect;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -110,10 +111,21 @@ final readonly class FormController
             ]);
         }
 
-        return redirect()->route('flatpack.entities.edit', [
-            'entity' => $entity,
-            'record' => $savedModel->getKey(),
-        ])->setStatusCode(303);
+        $savedKey = (string) $savedModel->getKey();
+        $target = SuccessRedirect::fromFormSchema($schema);
+        if ($target === null) {
+            return redirect()->route('flatpack.entities.edit', [
+                'entity' => $entity,
+                'record' => $savedKey,
+            ])->setStatusCode(303);
+        }
+
+        return SuccessRedirect::responseForFormSave(
+            $target,
+            $entity,
+            $record === null,
+            $savedKey,
+        );
     }
 
     private function resolveOptionalRecordModel(

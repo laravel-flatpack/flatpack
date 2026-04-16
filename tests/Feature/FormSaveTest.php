@@ -31,6 +31,41 @@ function withTempFormSchema(string $yaml, callable $callback): void
     }
 }
 
+test('flatpack entity create form save respects actions.save success_redirect list', function () {
+    withTempFormSchema(<<<'YAML'
+name: Post
+model: Flatpack\Tests\Models\Post
+actions:
+  save:
+    label: Save
+    action: save
+    success_redirect: list
+fields:
+  title:
+    type: text
+    label: Title
+  slug:
+    type: text
+    label: Slug
+YAML, function (): void {
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        actingAs($user)
+            ->post(route('flatpack.entities.store', ['entity' => 'posts']), [
+                'values' => [
+                    'title' => 'Redirect list',
+                    'slug' => 'redirect-list',
+                ],
+            ])
+            ->assertRedirect(route('flatpack.entities.index', ['entity' => 'posts']));
+
+        expect(
+            Post::query()->where('title', 'Redirect list')->exists(),
+        )->toBeTrue();
+    });
+});
+
 test('flatpack entity create form save creates a record and redirects to edit', function () {
     withTempFormSchema(<<<'YAML'
 name: Post
@@ -149,6 +184,7 @@ actions:
     icon: save
     success_message: Post saved successfully
     confirm: true
+    success_redirect: list
 fields:
   published_at:
     type: date
@@ -177,6 +213,7 @@ YAML, function (): void {
             ->assertJsonPath('form_actions.0.variant', 'default')
             ->assertJsonPath('form_actions.0.success_message', 'Post saved successfully')
             ->assertJsonPath('form_actions.0.confirm', true)
+            ->assertJsonPath('form_actions.0.success_redirect', 'list')
             ->assertJsonPath('schema.fields.published_at.type', 'date-picker')
             ->assertJsonPath('schema.fields.category_id.type', 'combobox')
             ->assertJsonPath('schema.fields.category_id.remote', true)

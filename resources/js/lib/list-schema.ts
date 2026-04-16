@@ -5,7 +5,31 @@ import type {
     FlatpackDataTableColumn,
     FlatpackDataTableColumnOption,
     FlatpackDataTableFilter,
+    FlatpackSuccessRedirect,
 } from '@/types/data-table';
+
+const SUCCESS_REDIRECT_VALUES: readonly FlatpackSuccessRedirect[] = [
+    'list',
+    'edit',
+    'create',
+    'show',
+    'back',
+    'previous',
+    'current',
+    'stay',
+];
+
+function normalizeSuccessRedirect(
+    raw: unknown,
+): FlatpackSuccessRedirect | undefined {
+    if (typeof raw !== 'string') {
+        return undefined;
+    }
+    const v = raw.trim();
+    return SUCCESS_REDIRECT_VALUES.includes(v as FlatpackSuccessRedirect)
+        ? (v as FlatpackSuccessRedirect)
+        : undefined;
+}
 
 function normalizeColumnType(
     raw: unknown,
@@ -215,12 +239,16 @@ function normalizeColumnActions(raw: unknown): FlatpackDataTableActionButton[] {
             return null;
         }
         const icon = typeof rec.icon === 'string' ? rec.icon.trim() : '';
+        const successRedirect = normalizeSuccessRedirect(rec.success_redirect);
         return {
             label,
             ...(icon !== '' ? { icon } : {}),
             ...(actionName !== '' ? { action: actionName } : {}),
             ...(href !== '' ? { href } : {}),
             variant: normalizeActionVariant(rec.variant),
+            ...(successRedirect !== undefined
+                ? { success_redirect: successRedirect }
+                : {}),
         } satisfies FlatpackDataTableActionButton;
     });
 

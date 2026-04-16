@@ -95,6 +95,7 @@ actions:
     variant: primary
     success_message: Created
     confirm: true
+    success_redirect: list
   docs:
     label: Docs
     href: /docs/posts
@@ -131,6 +132,7 @@ YAML);
                 'variant' => 'default',
                 'success_message' => 'Created',
                 'confirm' => true,
+                'success_redirect' => 'list',
             ],
             [
                 'id' => 'docs',
@@ -830,6 +832,7 @@ bulk_actions:
     variant: destructive
     success_message: Posts removed
     confirm: true
+    success_redirect: list
   publish:
     label: Publish
     action: publish
@@ -860,6 +863,7 @@ YAML);
                 'variant' => 'destructive',
                 'success_message' => 'Posts removed',
                 'confirm' => true,
+                'success_redirect' => 'list',
             ],
         ]);
     } finally {

@@ -108,6 +108,27 @@ test('fromSchema keeps action-based header actions', function () {
     ]);
 });
 
+test('fromSchema includes success_redirect for action-based header actions', function () {
+    $actions = HeaderActions::fromSchema([
+        'actions' => [
+            'save' => [
+                'label' => 'Save',
+                'action' => 'save',
+                'success_redirect' => 'list',
+            ],
+            'bad' => [
+                'label' => 'Bad',
+                'action' => 'save',
+                'success_redirect' => 'not-a-valid-target',
+            ],
+        ],
+    ]);
+
+    expect($actions)->toHaveCount(2);
+    expect($actions[0]['success_redirect'])->toBe('list');
+    expect($actions[1])->not->toHaveKey('success_redirect');
+});
+
 test('fromSchema includes success_message and confirm for action-based header actions', function () {
     $actions = HeaderActions::fromSchema([
         'actions' => [

@@ -5,6 +5,7 @@ import type {
     FlatpackDataTableServerFiltersState,
     FlatpackListServerPagination,
     FlatpackListServerSorting,
+    FlatpackSuccessRedirect,
 } from '@/types/data-table';
 
 export type FlatpackListHeaderAction = {
@@ -14,6 +15,7 @@ export type FlatpackListHeaderAction = {
     variant?: FlatpackActionVariant;
     success_message?: string;
     confirm?: boolean;
+    success_redirect?: FlatpackSuccessRedirect;
 } & ({ href: string; action?: never } | { action: string; href?: never });
 
 export type FlatpackListPageProps = {

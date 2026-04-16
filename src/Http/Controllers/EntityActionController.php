@@ -9,6 +9,8 @@ use Flatpack\Actions\FlatpackBulkActionContext;
 use Flatpack\Composition\EntityComposition;
 use Flatpack\Http\Requests\ListRecordUpdateRequest;
 use Flatpack\Services\Actions\ActionRuntime;
+use Flatpack\Support\SuccessRedirect;
+use Flatpack\Support\SuccessRedirectSchema;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Throwable;
@@ -36,6 +38,13 @@ final readonly class EntityActionController
             modelClass: (string) ($list->model ?? ''),
             schema: $schema,
         ));
+
+        $target = SuccessRedirectSchema::findForBulkAction($schema, $action);
+        if ($target !== null) {
+            return SuccessRedirect::responseForEntityAction($target, $entity, null)->with('flatpack', [
+                $action => (int) $result,
+            ]);
+        }
 
         return back(303)->with('flatpack', [
             $action => (int) $result,
@@ -69,6 +78,13 @@ final readonly class EntityActionController
 
         if ($result instanceof RedirectResponse) {
             return $result->setStatusCode(303);
+        }
+
+        $target = SuccessRedirectSchema::findForListHeaderAction($schema, $action);
+        if ($target !== null) {
+            return SuccessRedirect::responseForEntityAction($target, $entity, null)->with('flatpack', [
+                $action => true,
+            ]);
         }
 
         return back(303)->with('flatpack', [
@@ -107,6 +123,14 @@ final readonly class EntityActionController
 
         if ($result instanceof RedirectResponse) {
             return $result->setStatusCode(303);
+        }
+
+        $formSchema = $this->entityComposition->formSchema($entity);
+        $target = SuccessRedirectSchema::findForRowAction($formSchema, $schema, $action);
+        if ($target !== null) {
+            return SuccessRedirect::responseForEntityAction($target, $entity, $record)->with('flatpack', [
+                $action => true,
+            ]);
         }
 
         return back(303)->with('flatpack', [
