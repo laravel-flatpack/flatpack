@@ -35,7 +35,10 @@ export function NavSecondary({
                             <SidebarMenuButton
                                 tooltip={item.name}
                                 asChild
-                                isActive={isEntityListNavActive(currentPath, item.route)}
+                                isActive={isEntityListNavActive(
+                                    currentPath,
+                                    item.route,
+                                )}
                             >
                                 <Link href={item.route}>
                                     <LucideIconByName name={item.icon} />
