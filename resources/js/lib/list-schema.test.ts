@@ -1,0 +1,144 @@
+import { describe, expect, it } from 'vitest';
+import {
+    listYamlColumnsToDataTableColumns,
+    listYamlFiltersToDataTableFilters,
+} from '@/lib/list-schema';
+import type { FlatpackDataTableColumn } from '@/types/data-table';
+
+describe('listYamlColumnsToDataTableColumns', () => {
+    it('returns empty for null or non-object columns', () => {
+        expect(listYamlColumnsToDataTableColumns(null)).toEqual([]);
+        expect(listYamlColumnsToDataTableColumns('x')).toEqual([]);
+    });
+
+    it('normalizes array columns with type aliases and id', () => {
+        const cols = listYamlColumnsToDataTableColumns([
+            { id: 'created', type: 'datetime', label: 'Created' },
+            { id: 'title', type: 'text', label: 'Title' },
+        ]);
+        expect(cols.find((c) => c.id === 'created')?.type).toBe('date');
+        expect(cols.find((c) => c.id === 'title')?.type).toBe('text');
+    });
+
+    it('normalizes object-shaped columns using key as id fallback', () => {
+        const cols = listYamlColumnsToDataTableColumns({
+            name_col: { label: 'Name', type: 'text' },
+        });
+        expect(cols[0]?.id).toBe('name_col');
+        expect(cols[0]?.label).toBe('Name');
+    });
+
+    it('maps relation snake_case keys onto column', () => {
+        const cols = listYamlColumnsToDataTableColumns([
+            {
+                id: 'owner',
+                type: 'relation',
+                label: 'Owner',
+                relation: 'users',
+                relation_name: 'name',
+                relation_value: 'id',
+            },
+        ]);
+        expect(cols[0]).toMatchObject({
+            id: 'owner',
+            relation: 'users',
+            relationName: 'name',
+            relationValue: 'id',
+        });
+    });
+
+    it('drops relation metadata when incomplete', () => {
+        const cols = listYamlColumnsToDataTableColumns([
+            {
+                id: 'owner',
+                type: 'relation',
+                relation: 'users',
+            },
+        ]);
+        expect(cols[0]).not.toHaveProperty('relationName');
+    });
+
+    it('normalizes column actions and maps primary variant to default', () => {
+        const cols = listYamlColumnsToDataTableColumns([
+            {
+                id: 'actions',
+                type: 'actions',
+                label: 'Actions',
+                actions: [
+                    {
+                        label: 'Edit',
+                        action: 'edit',
+                        icon: 'pencil',
+                        variant: 'primary',
+                    },
+                    { label: 'Bad', action: 'a', href: '/x' },
+                ],
+            },
+        ]);
+        const actions = cols[0]?.actions;
+        expect(actions?.[0]).toMatchObject({
+            label: 'Edit',
+            action: 'edit',
+            icon: 'pencil',
+            variant: 'default',
+        });
+        expect(actions?.length).toBe(1);
+    });
+});
+
+describe('listYamlFiltersToDataTableFilters', () => {
+    const columns: FlatpackDataTableColumn[] = [
+        {
+            id: 'status',
+            label: 'Status',
+            type: 'select',
+            options: [
+                { value: 'a', label: 'Active' },
+                { value: 'b', label: 'Archived' },
+            ],
+        },
+        { id: 'created', label: 'Created', type: 'date' },
+        { id: 'title', label: 'Title', type: 'text' },
+    ];
+
+    it('builds select and date filters when column exists', () => {
+        const filters = listYamlFiltersToDataTableFilters(columns, {
+            status: { label: 'Filter status' },
+            created: { mode: 'from' },
+        });
+        expect(filters).toHaveLength(2);
+        expect(filters[0]).toMatchObject({
+            id: 'status',
+            type: 'select',
+            label: 'Filter status',
+            options: [
+                { value: 'a', label: 'Active' },
+                { value: 'b', label: 'Archived' },
+            ],
+        });
+        expect(filters[1]).toMatchObject({
+            id: 'created',
+            type: 'date',
+            mode: 'from',
+        });
+    });
+
+    it('skips unknown column ids and select without options', () => {
+        const noOptions: FlatpackDataTableColumn[] = [
+            { id: 'empty', label: 'E', type: 'select' },
+        ];
+        expect(
+            listYamlFiltersToDataTableFilters(columns, {
+                missing: {},
+                status: {},
+            }),
+        ).toHaveLength(1);
+        expect(
+            listYamlFiltersToDataTableFilters(noOptions, { empty: {} }),
+        ).toEqual([]);
+    });
+
+    it('returns empty when filters config is not an object', () => {
+        expect(listYamlFiltersToDataTableFilters(columns, null)).toEqual([]);
+    });
+});
