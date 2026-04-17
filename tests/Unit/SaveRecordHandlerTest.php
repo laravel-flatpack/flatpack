@@ -23,7 +23,7 @@ test('save record handler supports writable fields from form schema', function (
         ],
     ]);
 
-    $result = (new SaveRecordHandler())->handle(new FlatpackActionContext(
+    $result = app(SaveRecordHandler::class)->handle(new FlatpackActionContext(
         request: $request,
         entity: 'posts',
         actionName: 'save',
@@ -65,7 +65,7 @@ test('save record handler creates a new model from form schema', function () {
         ],
     ]);
 
-    $result = (new SaveRecordHandler())->handle(new FlatpackActionContext(
+    $result = app(SaveRecordHandler::class)->handle(new FlatpackActionContext(
         request: $request,
         entity: 'posts',
         actionName: 'save',

@@ -4,16 +4,23 @@ declare(strict_types=1);
 
 namespace Flatpack\Services\Actions;
 
+use Flatpack\Actions\ActionModelClassResolver;
 use Flatpack\Contracts\Actions\FlatpackAction;
 use Flatpack\Contracts\Actions\FlatpackBulkAction;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\MassAssignmentException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\QueryException;
 use Illuminate\Validation\ValidationException;
 use Throwable;
 
-final class ActionRuntime
+final readonly class ActionRuntime
 {
+    public function __construct(
+        private ActionModelClassResolver $actionModelClassResolver,
+    ) {}
+
     public function resolveRecordActionHandler(string $action): FlatpackAction
     {
         $handlerClass = config("flatpack.actions.{$action}");
@@ -42,6 +49,41 @@ final class ActionRuntime
         }
 
         return $handler;
+    }
+
+    public function ensureRecordActionAuthorized(
+        FlatpackAction $handler,
+        Authenticatable $user,
+        string $modelClass,
+        ?Model $model,
+    ): void {
+        $resolved = $this->actionModelClassResolver->resolveForRecordAuthorize($modelClass, $model);
+        if ($resolved === null) {
+            throw new AuthorizationException($this->invalidModelClassMessage());
+        }
+
+        if ($handler->authorize($user, $resolved, $model)) {
+            return;
+        }
+
+        throw new AuthorizationException($this->recordActionDeniedMessage($handler));
+    }
+
+    public function ensureBulkActionAuthorized(
+        FlatpackBulkAction $handler,
+        Authenticatable $user,
+        string $modelClass,
+    ): void {
+        $resolved = $this->actionModelClassResolver->resolveEloquentModelClassOrNull($modelClass);
+        if ($resolved === null) {
+            throw new AuthorizationException($this->invalidModelClassMessage());
+        }
+
+        if ($handler->authorize($user, $resolved)) {
+            return;
+        }
+
+        throw new AuthorizationException($this->recordActionDeniedMessage($handler));
     }
 
     public function resolveRecordModel(
@@ -111,6 +153,24 @@ final class ActionRuntime
         return ValidationException::withMessages([
             'flatpack' => $message,
         ]);
+    }
+
+    private function invalidModelClassMessage(): string
+    {
+        if (config('app.debug')) {
+            return 'Flatpack could not resolve a valid Eloquent model class for this action.';
+        }
+
+        return 'This action is not authorized.';
+    }
+
+    private function recordActionDeniedMessage(FlatpackAction|FlatpackBulkAction $handler): string
+    {
+        if (config('app.debug')) {
+            return sprintf('Flatpack denied authorization for handler [%s].', $handler::class);
+        }
+
+        return 'This action is not authorized.';
     }
 
     /**

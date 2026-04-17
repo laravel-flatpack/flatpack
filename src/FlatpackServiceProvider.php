@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Flatpack;
 
 use Closure;
+use Flatpack\Actions\ActionModelClassResolver;
 use Flatpack\Actions\DefaultActionResolver;
 use Flatpack\Authorization\PolicyAwareFlatpackAuthorizer;
 use Flatpack\Composition\CompositionValues;
@@ -74,6 +75,8 @@ final class FlatpackServiceProvider extends ServiceProvider
         ));
 
         $this->app->singleton(ListRecordsLoader::class, fn (): ListRecordsLoader => new ListRecordsLoader);
+
+        $this->app->singleton(ActionModelClassResolver::class);
 
         $this->app->singleton(FlatpackAuthorizer::class, PolicyAwareFlatpackAuthorizer::class);
         $this->app->singleton(ActionResolver::class, DefaultActionResolver::class);

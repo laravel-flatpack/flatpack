@@ -5,12 +5,31 @@ declare(strict_types=1);
 namespace Flatpack\Actions\Handlers;
 
 use Flatpack\Actions\FlatpackActionContext;
-use Flatpack\Contracts\Actions\FlatpackAction;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\MassAssignmentException;
 use Illuminate\Database\Eloquent\Model;
 
-final class SaveRecordHandler implements FlatpackAction
+final class SaveRecordHandler extends FlatpackActionHandler
 {
+    public function authorize(Authenticatable $user, string $modelClass, ?Model $model): bool
+    {
+        if ($this->modelExists($model)) {
+            return $this->authorizer()->authorizeModelAbility(
+                user: $user,
+                ability: 'update',
+                modelClass: $modelClass,
+                model: $model,
+            );
+        }
+
+        return $this->authorizer()->authorizeModelAbility(
+            user: $user,
+            ability: 'create',
+            modelClass: $modelClass,
+            model: $model,
+        );
+    }
+
     public function handle(FlatpackActionContext $context): mixed
     {
         $model = $this->resolveModel($context);

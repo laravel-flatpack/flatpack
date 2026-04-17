@@ -18,4 +18,9 @@ final class PostPolicy
     {
         return true;
     }
+
+    public function delete(User $user, Post $post): bool
+    {
+        return true;
+    }
 }

@@ -7,11 +7,11 @@ namespace Flatpack\Tests\Policies;
 use Flatpack\Tests\Models\Post;
 use Flatpack\Tests\Models\User;
 
-final class DenyCreatePostPolicy
+final class DenyDeletePostPolicy
 {
     public function create(User $user): bool
     {
-        return false;
+        return true;
     }
 
     public function update(User $user, Post $post): bool
@@ -21,6 +21,6 @@ final class DenyCreatePostPolicy
 
     public function delete(User $user, Post $post): bool
     {
-        return true;
+        return false;
     }
 }

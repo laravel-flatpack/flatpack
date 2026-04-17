@@ -7,12 +7,11 @@ namespace Flatpack\Http\Requests;
 use Flatpack\Composition\EntityComposition;
 use Flatpack\Contracts\Authorization\FlatpackAuthorizer;
 use Flatpack\Http\Requests\Concerns\InteractsWithFlatpackAuthorization;
-use Flatpack\Services\Actions\ActionRuntime;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * Authorizes inline PATCH updates from the list UI (same update gate as form saves).
+ * Validates inline PATCH updates from the list UI (policy checks run in {@see SaveRecordHandler::authorize}).
  */
 final class ListRecordUpdateRequest extends FormRequest
 {
@@ -54,14 +53,7 @@ final class ListRecordUpdateRequest extends FormRequest
             return $this->denyFlatpackAuthorization('The route is missing the record id.');
         }
 
-        $actions = $this->container->make(ActionRuntime::class);
-        $model = $actions->resolveRecordModel($modelClass, $record, 'list');
-
-        if ($authorizer->authorizeModelAbility($user, 'update', $modelClass, $model)) {
-            return true;
-        }
-
-        return $this->denyFlatpackGateAuthorization($user, 'update', $model);
+        return true;
     }
 
     /**

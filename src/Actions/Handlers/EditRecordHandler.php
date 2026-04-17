@@ -6,10 +6,21 @@ namespace Flatpack\Actions\Handlers;
 
 use Exception;
 use Flatpack\Actions\FlatpackActionContext;
-use Flatpack\Contracts\Actions\FlatpackAction;
+use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Model;
 
-final class EditRecordHandler implements FlatpackAction
+final class EditRecordHandler extends FlatpackActionHandler
 {
+    public function authorize(Authenticatable $user, string $modelClass, ?Model $model): bool
+    {
+        return $this->authorizer()->authorizeModelAbility(
+            user: $user,
+            ability: 'update',
+            modelClass: $modelClass,
+            model: $model,
+        );
+    }
+
     public function handle(FlatpackActionContext $context): mixed
     {
         if ($context->model === null) {

@@ -12,6 +12,7 @@ use Flatpack\Schema\FormFieldType;
 use Flatpack\Schema\HeaderActions;
 use Flatpack\Services\Actions\ActionRuntime;
 use Flatpack\Support\SuccessRedirect;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -83,6 +84,12 @@ final readonly class FormController
             ? $this->actions->resolveRecordModel($modelClass, $record, 'form')
             : null;
         $handler = $this->actions->resolveRecordActionHandler('save');
+        $user = $request->user();
+        if ($user === null) {
+            abort(403);
+        }
+
+        $this->actions->ensureRecordActionAuthorized($handler, $user, $modelClass, $model);
 
         try {
             $result = $handler->handle(new FlatpackActionContext(
@@ -96,6 +103,8 @@ final readonly class FormController
                 schema: $schema,
                 model: $model,
             ));
+        } catch (AuthorizationException $exception) {
+            throw $exception;
         } catch (Throwable $exception) {
             throw $this->actions->toUserFacingValidationException($exception);
         }

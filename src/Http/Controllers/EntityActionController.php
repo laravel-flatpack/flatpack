@@ -11,6 +11,7 @@ use Flatpack\Http\Requests\ListRecordUpdateRequest;
 use Flatpack\Services\Actions\ActionRuntime;
 use Flatpack\Support\SuccessRedirect;
 use Flatpack\Support\SuccessRedirectSchema;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Throwable;
@@ -31,7 +32,13 @@ final readonly class EntityActionController
             abort(404, 'Flatpack bulk action is missing.');
         }
 
+        $user = $request->user();
+        if ($user === null) {
+            abort(403);
+        }
+
         $handler = $this->actions->resolveBulkActionHandler($action);
+        $this->actions->ensureBulkActionAuthorized($handler, $user, trim((string) ($list->model ?? '')));
         $result = $handler->handle(FlatpackBulkActionContext::fromRequest(
             request: $request,
             entity: $entity,
@@ -58,8 +65,14 @@ final readonly class EntityActionController
             abort(404, 'Flatpack list action is missing.');
         }
 
+        $user = $request->user();
+        if ($user === null) {
+            abort(403);
+        }
+
         [$listModelClass, $schema] = $this->listModelAndSchema($entity);
         $handler = $this->actions->resolveRecordActionHandler($action);
+        $this->actions->ensureRecordActionAuthorized($handler, $user, $listModelClass, null);
         try {
             $result = $handler->handle(new FlatpackActionContext(
                 request: $request,
@@ -72,6 +85,8 @@ final readonly class EntityActionController
                 schema: $schema,
                 model: null,
             ));
+        } catch (AuthorizationException $exception) {
+            throw $exception;
         } catch (Throwable $exception) {
             throw $this->actions->toUserFacingValidationException($exception);
         }
@@ -102,9 +117,15 @@ final readonly class EntityActionController
             abort(404, 'Flatpack row action is missing.');
         }
 
+        $user = $request->user();
+        if ($user === null) {
+            abort(403);
+        }
+
         [$listModelClass, $schema] = $this->listModelAndSchema($entity);
         $model = $this->actions->resolveRecordModel($listModelClass, $record, 'list');
         $handler = $this->actions->resolveRecordActionHandler($action);
+        $this->actions->ensureRecordActionAuthorized($handler, $user, $listModelClass, $model);
         try {
             $result = $handler->handle(new FlatpackActionContext(
                 request: $request,
@@ -117,6 +138,8 @@ final readonly class EntityActionController
                 schema: $schema,
                 model: $model,
             ));
+        } catch (AuthorizationException $exception) {
+            throw $exception;
         } catch (Throwable $exception) {
             throw $this->actions->toUserFacingValidationException($exception);
         }
@@ -146,6 +169,12 @@ final readonly class EntityActionController
         [$listModelClass, $schema] = $this->listModelAndSchema($entity);
         $model = $this->actions->resolveRecordModel($listModelClass, $record, 'list');
         $handler = $this->actions->resolveRecordActionHandler('save');
+        $user = $request->user();
+        if ($user === null) {
+            abort(403);
+        }
+
+        $this->actions->ensureRecordActionAuthorized($handler, $user, $listModelClass, $model);
         try {
             $handler->handle(new FlatpackActionContext(
                 request: $request,
@@ -158,6 +187,8 @@ final readonly class EntityActionController
                 schema: $schema,
                 model: $model,
             ));
+        } catch (AuthorizationException $exception) {
+            throw $exception;
         } catch (Throwable $exception) {
             throw $this->actions->toUserFacingValidationException($exception);
         }

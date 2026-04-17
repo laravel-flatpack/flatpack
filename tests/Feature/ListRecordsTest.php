@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Flatpack\Tests\Models\Post;
 use Flatpack\Tests\Models\User;
+use Flatpack\Tests\Policies\DenyDeletePostPolicy;
 use Flatpack\Tests\Policies\DenyUpdatePostPolicy;
 use Flatpack\Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -341,6 +342,82 @@ YAML);
             ->assertForbidden();
 
         expect($post->fresh()?->title)->toBe('Original title');
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
+test('flatpack entity row delete rejects when policy denies delete', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-list-row-delete-policy-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+columns:
+  title:
+    label: Title
+    type: text
+YAML);
+        config()->set('flatpack.path', $tempPath);
+
+        Gate::policy(Post::class, DenyDeletePostPolicy::class);
+
+        /** @var Post $post */
+        $post = Post::factory()->create([
+            'title' => 'Do not delete',
+        ]);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        actingAs($user)
+            ->post(route('flatpack.entities.row-action', [
+                'entity' => 'posts',
+                'record' => (string) $post->getKey(),
+            ]), [
+                'action' => 'delete',
+            ])
+            ->assertForbidden();
+
+        expect($post->fresh())->not->toBeNull();
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
+test('flatpack bulk delete rejects when policy denies delete', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-list-bulk-delete-policy-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+columns:
+  title:
+    label: Title
+YAML);
+        config()->set('flatpack.path', $tempPath);
+
+        Gate::policy(Post::class, DenyDeletePostPolicy::class);
+
+        $target = Post::factory()->create(['title' => 'Should remain']);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        actingAs($user)
+            ->post(route('flatpack.entities.bulk-action', [
+                'entity' => 'posts',
+            ]), [
+                'action' => 'delete',
+                'selection' => [(string) $target->getKey()],
+            ])
+            ->assertForbidden();
+
+        expect($target->fresh())->not->toBeNull();
     } finally {
         File::deleteDirectory($tempPath);
     }

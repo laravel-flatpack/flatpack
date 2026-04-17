@@ -8,7 +8,6 @@ use Closure;
 use Flatpack\Composition\EntityComposition;
 use Flatpack\Contracts\Authorization\FlatpackAuthorizer;
 use Flatpack\Http\Requests\Concerns\InteractsWithFlatpackAuthorization;
-use Flatpack\Services\Actions\ActionRuntime;
 use Flatpack\Validation\FormSchemaRuleBuilder;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -50,11 +49,7 @@ final class FormSubmitRequest extends FormRequest
         }
 
         if ($this->isMethod('POST')) {
-            if ($authorizer->authorizeModelAbility($user, 'create', $modelClass)) {
-                return true;
-            }
-
-            return $this->denyFlatpackGateAuthorization($user, 'create', new $modelClass);
+            return true;
         }
 
         if ($this->isMethod('PATCH')) {
@@ -63,14 +58,7 @@ final class FormSubmitRequest extends FormRequest
                 return $this->denyFlatpackAuthorization('The route is missing the record id.');
             }
 
-            $actions = $this->container->make(ActionRuntime::class);
-            $model = $actions->resolveRecordModel($modelClass, $record, 'form');
-
-            if ($authorizer->authorizeModelAbility($user, 'update', $modelClass, $model)) {
-                return true;
-            }
-
-            return $this->denyFlatpackGateAuthorization($user, 'update', $model);
+            return true;
         }
 
         return $this->denyFlatpackAuthorization('Flatpack form save only supports POST (create) or PATCH (edit).');

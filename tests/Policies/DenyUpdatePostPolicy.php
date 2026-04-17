@@ -18,4 +18,9 @@ final class DenyUpdatePostPolicy
     {
         return false;
     }
+
+    public function delete(User $user, Post $post): bool
+    {
+        return true;
+    }
 }
