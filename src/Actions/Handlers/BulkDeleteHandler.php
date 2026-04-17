@@ -12,10 +12,10 @@ final class BulkDeleteHandler extends FlatpackBulkActionHandler
 {
     public function authorize(Authenticatable $user, string $modelClass): bool
     {
-        return $this->authorizer()->allows(
+        return $this->canPerformAction(
             user: $user,
             ability: 'delete',
-            modelClass: $modelClass,
+            modelClass: $modelClass
         );
     }
 

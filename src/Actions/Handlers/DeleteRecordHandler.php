@@ -12,7 +12,7 @@ final class DeleteRecordHandler extends FlatpackActionHandler
 {
     public function authorize(Authenticatable $user, string $modelClass, ?Model $model): bool
     {
-        return $this->authorizer()->allows(
+        return $this->canPerformAction(
             user: $user,
             ability: 'delete',
             modelClass: $modelClass,
