@@ -23,8 +23,7 @@ const SHORTCUT_CHIP_BASE =
 const SHORTCUT_CHIP_BY_VARIANT: Record<FlatpackActionVariant, string> = {
     default: 'bg-primary-foreground/15 text-primary-foreground',
     secondary: 'bg-secondary-foreground/12 text-secondary-foreground',
-    destructive:
-        'bg-black/50 text-white dark:bg-black/30 dark:text-white',
+    destructive: 'bg-black/50 text-white dark:bg-black/30 dark:text-white',
     ghost: 'bg-muted text-muted-foreground shadow-none',
     link: 'bg-muted/80 text-muted-foreground shadow-none',
     outline:
@@ -243,9 +242,7 @@ function FlatpackFormActionRow({
                     disabled={disabled}
                     className={iconClass}
                     data-flatpack-action-id={action.id}
-                    onClick={
-                        action.confirm ? onSaveConfirmClick : undefined
-                    }
+                    onClick={action.confirm ? onSaveConfirmClick : undefined}
                 >
                     <FormActionButtonBody
                         {...bodyProps}
@@ -258,15 +255,9 @@ function FlatpackFormActionRow({
 
     const disabledByDirty = flatpackActionDisabledByDirty(action, formIsDirty);
     const disabled =
-        formProcessing ||
-        record == null ||
-        record === '' ||
-        disabledByDirty;
+        formProcessing || record == null || record === '' || disabledByDirty;
     const showDirtyTooltip =
-        disabledByDirty &&
-        !formProcessing &&
-        record != null &&
-        record !== '';
+        disabledByDirty && !formProcessing && record != null && record !== '';
 
     return (
         <FlatpackActionDirtyTooltip show={showDirtyTooltip}>
@@ -285,10 +276,7 @@ function FlatpackFormActionRow({
                     void runNamedAction(action);
                 }}
             >
-                <FormActionButtonBody
-                    {...bodyProps}
-                    showSpinner={false}
-                />
+                <FormActionButtonBody {...bodyProps} showSpinner={false} />
             </Button>
         </FlatpackActionDirtyTooltip>
     );
