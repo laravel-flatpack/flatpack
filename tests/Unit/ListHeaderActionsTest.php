@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Flatpack\Lists\HeaderActions;
+use Flatpack\Schema\HeaderActions;
 
 test('prefixedUrl joins flatpack prefix and path', function () {
     expect(HeaderActions::prefixedUrl('/posts/create', 'flatpack'))

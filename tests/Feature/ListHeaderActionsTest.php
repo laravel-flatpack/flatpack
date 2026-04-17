@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Flatpack\Lists\HeaderActions;
+use Flatpack\Schema\HeaderActions;
 use Flatpack\Tests\TestCase;
 
 uses(TestCase::class);

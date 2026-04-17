@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Flatpack\Lists;
+namespace Flatpack\Schema;
 
 use Flatpack\Support\NavigationUrl;
 use Flatpack\Support\SuccessRedirect;
 
 /**
- * Normalizes optional {@code actions} from list.yaml into header buttons.
+ * Normalizes optional {@code actions} from entity YAML (e.g. list and form) into header buttons.
  */
 final class HeaderActions
 {
@@ -28,7 +28,7 @@ final class HeaderActions
 
     /**
      * @param  array<string, mixed>|null  $schema
-     * @return list<array{id: string, label: string, icon: string, variant: string, href?: string, action?: string, success_message?: string, confirm?: bool, success_redirect?: string, disable_until_dirty?: true}>
+     * @return list<array{id: string, label: string, icon: string, variant: string, href?: string, action?: string, success_message?: string, confirm?: bool, success_redirect?: string, disable_until_dirty?: true, shortcut?: string}>
      */
     public static function fromSchema(?array $schema): array
     {
@@ -95,6 +95,12 @@ final class HeaderActions
             }
             if ($globalDisableUntilDirty || (($definition['disable_until_dirty'] ?? false) === true)) {
                 $normalized['disable_until_dirty'] = true;
+            }
+            if (isset($definition['shortcut'])) {
+                $shortcut = trim((string) $definition['shortcut']);
+                if ($shortcut !== '') {
+                    $normalized['shortcut'] = $shortcut;
+                }
             }
             $out[] = $normalized;
         }
