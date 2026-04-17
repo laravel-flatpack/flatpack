@@ -8,6 +8,14 @@ import { useFlatpackForm } from '@/hooks/use-flatpack-form';
 import FlatpackLayout from '@/layouts/flatpack-layout';
 import type { FlatpackFormPageProps } from '@/types/pages/flatpack';
 
+const NoFieldsMessage = ({ entity }: { entity: string }) => (
+    <p className="text-sm text-muted-foreground">
+        Define fields in{' '}
+        <code className="font-mono text-xs bg-muted px-1 py-0.5 rounded-md">{`/${entity}/form.yaml`}</code>{' '}
+        to render this form.
+    </p>
+);
+
 export default function FlatpackFormPage(props: FlatpackFormPageProps) {
     const { entity, name, record, mode } = props;
     const {
@@ -31,13 +39,6 @@ export default function FlatpackFormPage(props: FlatpackFormPageProps) {
     const pageTitle =
         mode === 'create' ? `Create ${displayName}` : `Edit ${displayName}`;
     const formId = `flatpack-form-${entity}-${record ?? 'new'}`;
-    const noFieldsMessage = (
-        <p className="text-sm text-muted-foreground">
-            Define fields in{' '}
-            <code className="font-mono text-xs bg-muted px-1 py-0.5 rounded-md">{`/${entity}/form.yaml`}</code>{' '}
-            to render this form.
-        </p>
-    );
 
     return (
         <>
@@ -130,7 +131,7 @@ export default function FlatpackFormPage(props: FlatpackFormPageProps) {
                             setFieldValue={setFieldValue}
                         />
                     ) : (
-                        noFieldsMessage
+                        <NoFieldsMessage entity={entity} />
                     )}
                 </form>
             </div>
