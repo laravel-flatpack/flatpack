@@ -14,7 +14,7 @@ final class SaveRecordHandler extends FlatpackActionHandler
     public function authorize(Authenticatable $user, string $modelClass, ?Model $model): bool
     {
         if ($this->modelExists($model)) {
-            return $this->authorizer()->authorizeModelAbility(
+            return $this->authorizer()->allows(
                 user: $user,
                 ability: 'update',
                 modelClass: $modelClass,
@@ -22,7 +22,7 @@ final class SaveRecordHandler extends FlatpackActionHandler
             );
         }
 
-        return $this->authorizer()->authorizeModelAbility(
+        return $this->authorizer()->allows(
             user: $user,
             ability: 'create',
             modelClass: $modelClass,

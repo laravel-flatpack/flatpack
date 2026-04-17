@@ -16,7 +16,7 @@ interface FlatpackAuthorizer
     /**
      * Whether the user may perform a policy ability on a model class (optional instance for "update"/"delete").
      */
-    public function authorizeModelAbility(
+    public function allows(
         ?Authenticatable $user,
         string $ability,
         string $modelClass,

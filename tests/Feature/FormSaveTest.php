@@ -336,7 +336,7 @@ YAML, function (): void {
                 return false;
             }
 
-            public function authorizeModelAbility(
+            public function allows(
                 ?Authenticatable $user,
                 string $ability,
                 string $modelClass,

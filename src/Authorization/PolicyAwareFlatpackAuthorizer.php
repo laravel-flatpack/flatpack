@@ -23,7 +23,7 @@ final class PolicyAwareFlatpackAuthorizer implements FlatpackAuthorizer
         return (bool) call_user_func([$user, 'canAccessFlatpack']);
     }
 
-    public function authorizeModelAbility(
+    public function allows(
         ?Authenticatable $user,
         string $ability,
         string $modelClass,

@@ -12,7 +12,7 @@ final class CreateRecordHandler extends FlatpackActionHandler
 {
     public function authorize(Authenticatable $user, string $modelClass, ?Model $model): bool
     {
-        return $this->authorizer()->authorizeModelAbility(
+        return $this->authorizer()->allows(
             user: $user,
             ability: 'create',
             modelClass: $modelClass
