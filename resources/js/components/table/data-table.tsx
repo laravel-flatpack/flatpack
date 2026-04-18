@@ -35,6 +35,7 @@ import { DataTableToolbar } from '@/components/table/data-table-toolbar';
 import { useDataTableReorder } from '@/hooks/use-data-table-reorder';
 import { useDataTableServerState } from '@/hooks/use-data-table-server-state';
 import { stableRowId } from '@/lib/data-table-utils';
+import { LIST_ROOT_SORT_ORDER } from '@/lib/generated/composition-schema-keys';
 import { cn } from '@/lib/utils';
 import type { DataTableProps } from '@/types/data-table';
 
@@ -124,7 +125,7 @@ export function DataTable({
     const hasBulkActions = bulkActions.length > 0;
     const reorderKey =
         reorderableProp === true
-            ? 'sort_order'
+            ? LIST_ROOT_SORT_ORDER
             : typeof reorderableProp === 'string'
               ? reorderableProp
               : null;

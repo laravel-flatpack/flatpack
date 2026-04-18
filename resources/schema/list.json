@@ -20,6 +20,14 @@
             "type": "integer",
 			"description": "Sort order of the sidebar menu item"
         },
+        "reorderable": {
+            "type": "boolean",
+            "description": "When true, row reordering may be enabled for this list when supported."
+        },
+        "sort_order": {
+            "type": "integer",
+            "description": "Sidebar menu ordering weight; prefer `order` unless standardizing on this key."
+        },
         "columns": {
             "oneOf": [
                 {

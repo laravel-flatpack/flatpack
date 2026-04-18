@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Flatpack\Composition;
 
+use Flatpack\Schema\Generated\CompositionSchemaKeys;
+
 /**
  * Reads common keys from parsed composition YAML.
  */
@@ -18,8 +20,8 @@ final readonly class CompositionValues
             return null;
         }
 
-        if (isset($data['name']) && is_string($data['name'])) {
-            return $data['name'];
+        if (isset($data[CompositionSchemaKeys::LIST_ROOT_NAME]) && is_string($data[CompositionSchemaKeys::LIST_ROOT_NAME])) {
+            return $data[CompositionSchemaKeys::LIST_ROOT_NAME];
         }
 
         if (isset($data['title']) && is_string($data['title'])) {
@@ -38,8 +40,8 @@ final readonly class CompositionValues
             return null;
         }
 
-        if (isset($data['model']) && is_string($data['model'])) {
-            return $data['model'];
+        if (isset($data[CompositionSchemaKeys::LIST_ROOT_MODEL]) && is_string($data[CompositionSchemaKeys::LIST_ROOT_MODEL])) {
+            return $data[CompositionSchemaKeys::LIST_ROOT_MODEL];
         }
 
         return null;
@@ -54,8 +56,8 @@ final readonly class CompositionValues
             return null;
         }
 
-        if (isset($data['icon']) && is_string($data['icon'])) {
-            return $data['icon'];
+        if (isset($data[CompositionSchemaKeys::LIST_ROOT_ICON]) && is_string($data[CompositionSchemaKeys::LIST_ROOT_ICON])) {
+            return $data[CompositionSchemaKeys::LIST_ROOT_ICON];
         }
 
         return null;
@@ -70,6 +72,15 @@ final readonly class CompositionValues
             return 99;
         }
 
-        return (int) ($data['sort_order'] ?? 99);
+        foreach ([
+            CompositionSchemaKeys::LIST_ROOT_ORDER,
+            CompositionSchemaKeys::LIST_ROOT_SORT_ORDER,
+        ] as $key) {
+            if (isset($data[$key]) && is_numeric($data[$key])) {
+                return (int) $data[$key];
+            }
+        }
+
+        return 99;
     }
 }

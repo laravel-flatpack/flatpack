@@ -13,6 +13,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { LIST_ROOT_SORT_ORDER } from '@/lib/generated/composition-schema-keys';
 import type { DashboardSectionsTableCatalog } from '@/types/dashboard';
 
 export function DashboardDataTable({
@@ -31,7 +32,7 @@ export function DashboardDataTable({
         () =>
             catalog.value.map((row, i) => ({
                 ...row,
-                sort_order: i + 1,
+                [LIST_ROOT_SORT_ORDER]: i + 1,
             })),
         [catalog.value],
     );
