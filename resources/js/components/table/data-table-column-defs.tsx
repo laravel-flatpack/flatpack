@@ -3,6 +3,7 @@ import { DataTableActionsCell } from '@/components/table/data-table-actions-cell
 import { DataTableColumnHeader } from '@/components/table/data-table-column-header';
 import { DataTableSchemaCell } from '@/components/table/data-table-schema-cell';
 import { Checkbox } from '@/components/ui/checkbox';
+import { normalizeColumnActions } from '@/lib/list-schema';
 import type {
     BuildDataTableColumnDefsOptions,
     FlatpackDataTableColumn,
@@ -77,12 +78,13 @@ export function buildDataTableColumnDefs(
             enableHiding: true,
             cell: ({ row }) => {
                 if (col.type === 'actions') {
-                    if (!col.actions || col.actions.length === 0) {
+                    const rowActions = normalizeColumnActions(col.actions);
+                    if (rowActions.length === 0) {
                         return <span className="text-muted-foreground">—</span>;
                     }
                     return (
                         <DataTableActionsCell
-                            actions={col.actions}
+                            actions={rowActions}
                             row={row.original}
                             onAction={options.onRowAction}
                         />

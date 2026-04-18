@@ -218,11 +218,19 @@ function normalizeActionVariant(raw: unknown): FlatpackActionVariant {
     return 'outline';
 }
 
-function normalizeColumnActions(raw: unknown): FlatpackDataTableActionButton[] {
-    if (!Array.isArray(raw)) {
+/** Normalizes list column row actions from YAML/PHP (array or associative map) to a button list. */
+export function normalizeColumnActions(
+    raw: unknown,
+): FlatpackDataTableActionButton[] {
+    let items: unknown[];
+    if (Array.isArray(raw)) {
+        items = raw;
+    } else if (raw != null && typeof raw === 'object') {
+        items = Object.values(raw as Record<string, unknown>);
+    } else {
         return [];
     }
-    const normalized = raw.map((action) => {
+    const normalized = items.map((action) => {
         if (action == null || typeof action !== 'object') {
             return null;
         }

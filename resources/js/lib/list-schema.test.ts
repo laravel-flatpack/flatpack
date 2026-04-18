@@ -84,6 +84,31 @@ describe('listYamlColumnsToDataTableColumns', () => {
         });
         expect(actions?.length).toBe(1);
     });
+
+    it('normalizes associative (object) column actions from JSON/PHP', () => {
+        const cols = listYamlColumnsToDataTableColumns([
+            {
+                id: 'actions',
+                type: 'actions',
+                label: 'Actions',
+                actions: {
+                    edit: {
+                        label: 'Edit',
+                        icon: 'edit',
+                        action: 'edit',
+                    },
+                    delete: {
+                        label: 'Delete',
+                        icon: 'delete',
+                        action: 'delete',
+                    },
+                },
+            },
+        ]);
+        const actions = cols[0]?.actions;
+        expect(actions).toHaveLength(2);
+        expect(actions?.map((a) => a.action)).toEqual(['edit', 'delete']);
+    });
 });
 
 describe('listYamlFiltersToDataTableFilters', () => {

@@ -267,7 +267,7 @@ final class DemoController
                             'label' => 'Actions',
                             'type' => 'actions',
                             'invisible' => false,
-                            'buttons' => [
+                            'actions' => [
                                 'edit' => [
                                     'label' => 'Edit',
                                     'icon' => 'edit',
