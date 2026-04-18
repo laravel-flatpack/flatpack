@@ -1,10 +1,16 @@
 import { Head, Link } from '@inertiajs/react';
-import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import type { ReactElement } from 'react';
 import { route } from 'ziggy-js';
-import { ReactElement } from 'react';
+import { Button } from '@/components/ui/button';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import FlatpackLayout from '@/layouts/flatpack-layout';
-import { BoxIcon, CircleAlertIcon, PackageOpenIcon } from 'lucide-react';
 
 export type FlatpackRecordNotFoundPageProps = {
     entity: string;
@@ -24,16 +30,30 @@ export default function FlatpackRecordNotFoundPage({
                     <Card size="sm" className="mx-auto w-full max-w-md">
                         <CardHeader>
                             <CardTitle>{title}</CardTitle>
-                            <CardDescription>The {entityName} you are looking for does not exist.</CardDescription>
+                            <CardDescription>
+                                The {entityName} you are looking for does not
+                                exist.
+                            </CardDescription>
                             <CardContent className="flex flex-col items-center gap-2 !px-0">
                                 <p className="my-10">
-                                    We could not find that {entityName}. It may have been removed, or you might not have
+                                    We could not find that {entityName}. It may
+                                    have been removed, or you might not have
                                     permission to view it.
                                 </p>
                             </CardContent>
                             <CardFooter className="flex-col gap-2 !px-0">
-                                <Button variant="default" className="w-full" asChild>
-                                    <Link href={route('flatpack.entities.index', { entity })}>Back to {entityName} list</Link>
+                                <Button
+                                    variant="default"
+                                    className="w-full"
+                                    asChild
+                                >
+                                    <Link
+                                        href={route('flatpack.entities.index', {
+                                            entity,
+                                        })}
+                                    >
+                                        Back to {entityName} list
+                                    </Link>
                                 </Button>
                             </CardFooter>
                         </CardHeader>
@@ -43,6 +63,6 @@ export default function FlatpackRecordNotFoundPage({
         </>
     );
 }
-FlatpackRecordNotFoundPage.layout = (page: ReactElement<FlatpackRecordNotFoundPageProps>) => (
-    <FlatpackLayout>{page}</FlatpackLayout>
-);
+FlatpackRecordNotFoundPage.layout = (
+    page: ReactElement<FlatpackRecordNotFoundPageProps>,
+) => <FlatpackLayout>{page}</FlatpackLayout>;
