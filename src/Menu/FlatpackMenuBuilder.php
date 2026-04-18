@@ -94,7 +94,7 @@ final readonly class FlatpackMenuBuilder implements MenuBuilderContract
             $list = $this->compositions->optional($entry, 'list');
             $displayName = $this->compositionValues->displayName($list);
             $icon = $this->compositionValues->icon($list);
-            $sortOrder = $this->compositionValues->sortOrder($list);
+            $navOrder = $this->compositionValues->navOrder($list);
 
             $items[] = new MenuItem(
                 slug: $entry,
@@ -105,7 +105,7 @@ final readonly class FlatpackMenuBuilder implements MenuBuilderContract
                     ->toString(),
                 icon: $icon ?? 'folder',
                 url: action([ListController::class, 'index'], ['entity' => $entry]),
-                sortOrder: $sortOrder,
+                navOrder: $navOrder,
             );
         }
 
@@ -119,7 +119,7 @@ final readonly class FlatpackMenuBuilder implements MenuBuilderContract
     private function sortMenuItems(array $items): array
     {
         usort($items, function (MenuItem $a, MenuItem $b): int {
-            $byOrder = $a->sortOrder <=> $b->sortOrder;
+            $byOrder = $a->navOrder <=> $b->navOrder;
 
             return $byOrder !== 0 ? $byOrder : strcasecmp($a->name, $b->name);
         });

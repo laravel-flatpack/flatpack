@@ -63,7 +63,7 @@ final readonly class ListController
             'model' => $list->model,
             'model_key' => $this->modelKeyResolver->resolve($list->model),
             'icon' => $list->icon,
-            'order' => $list->order,
+            'nav_order' => $list->nav_order,
             'schema' => $schema,
             'records' => $result['records'],
             'pagination' => $result['pagination'],

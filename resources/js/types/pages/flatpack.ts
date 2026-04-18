@@ -33,7 +33,7 @@ export type FlatpackListPageProps = {
     model?: string;
     model_key?: string;
     icon?: string;
-    order?: number;
+    nav_order?: number;
     schema?: Record<string, unknown> | null;
     records?: Record<string, unknown>[];
     pagination?: FlatpackListServerPagination;

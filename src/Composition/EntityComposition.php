@@ -24,7 +24,7 @@ final readonly class EntityComposition
             name: $this->values->displayName($data),
             model: $this->values->modelClass($data),
             icon: $this->values->icon($data),
-            order: $this->values->sortOrder($data),
+            nav_order: $this->values->navOrder($data),
         );
     }
 

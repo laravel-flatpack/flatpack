@@ -66,19 +66,15 @@ final readonly class CompositionValues
     /**
      * @param  array<string, mixed>|null  $data
      */
-    public function sortOrder(?array $data): int
+    public function navOrder(?array $data): int
     {
         if ($data === null) {
             return 99;
         }
 
-        foreach ([
-            CompositionSchemaKeys::LIST_ROOT['order'],
-            CompositionSchemaKeys::LIST_ROOT['sort_order'],
-        ] as $key) {
-            if (isset($data[$key]) && is_numeric($data[$key])) {
-                return (int) $data[$key];
-            }
+        $key = CompositionSchemaKeys::LIST_ROOT['nav_order'];
+        if (isset($data[$key]) && is_numeric($data[$key])) {
+            return (int) $data[$key];
         }
 
         return 99;

@@ -16,17 +16,23 @@
             "type": "string",
 			"description": "Icon name from Lucide icon library: https://lucide.dev/icons/"
         },
-        "order": {
+        "nav_order": {
             "type": "integer",
-			"description": "Sort order of the sidebar menu item"
+            "description": "Sidebar menu ordering weight (lower appears first)."
         },
         "reorderable": {
-            "type": "boolean",
-            "description": "When true, row reordering may be enabled for this list when supported."
-        },
-        "sort_order": {
-            "type": "integer",
-            "description": "Sidebar menu ordering weight; prefer `order` unless standardizing on this key."
+            "oneOf": [
+                {
+                    "type": "boolean",
+                    "description": "When true, use the default reorder column (`sort_order`)."
+                },
+                {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Database column name used for manual row order."
+                }
+            ],
+            "description": "Enable drag-and-drop row reordering: true for default column, or pass the column name."
         },
         "columns": {
             "oneOf": [

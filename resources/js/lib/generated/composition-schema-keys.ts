@@ -18,7 +18,7 @@ export const FORM_ROOT_PROPERTY_KEYS = [
     'name',
 ] as const;
 
-/** Identity map of list.json root property names; use `LIST_ROOT.sort_order`, `LIST_ROOT['bulk_actions']`, etc. */
+/** Identity map of list.json root property names; use `LIST_ROOT.nav_order`, `LIST_ROOT['bulk_actions']`, etc. */
 export const LIST_ROOT = {
     actions: 'actions',
     bulk_actions: 'bulk_actions',
@@ -27,12 +27,16 @@ export const LIST_ROOT = {
     icon: 'icon',
     model: 'model',
     name: 'name',
-    order: 'order',
+    nav_order: 'nav_order',
     reorderable: 'reorderable',
-    sort_order: 'sort_order',
 } as const;
 
 export type ListRootKey = keyof typeof LIST_ROOT;
+
+/**
+ * Default DB column when list.yaml has `reorderable: true`. Not a list.yaml root key.
+ */
+export const DEFAULT_LIST_ROW_REORDER_COLUMN = 'sort_order' as const;
 
 /**
  * Top-level list.yaml keys from list.json `properties`. Same names as keys of `LIST_ROOT`, sorted.
@@ -45,9 +49,8 @@ export const LIST_ROOT_PROPERTY_KEYS = [
     'icon',
     'model',
     'name',
-    'order',
+    'nav_order',
     'reorderable',
-    'sort_order',
 ] as const;
 
 /**

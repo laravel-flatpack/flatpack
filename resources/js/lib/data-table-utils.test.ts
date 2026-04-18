@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { LIST_ROOT } from '@/lib/generated/composition-schema-keys';
 import {
     cellControlDomId,
     columnEditableInDrawer,
@@ -15,6 +14,7 @@ import {
     stableRowId,
     truncateDisplayString,
 } from '@/lib/data-table-utils';
+import { DEFAULT_LIST_ROW_REORDER_COLUMN } from '@/lib/generated/composition-schema-keys';
 import type { FlatpackDataTableColumn } from '@/types/data-table';
 
 describe('stableRowId', () => {
@@ -42,17 +42,20 @@ describe('stableRowId', () => {
 describe('reindexReorderColumn', () => {
     it('sets reorder key to 1-based index', () => {
         const rows = [{ id: 'a' }, { id: 'b' }];
-        const out = reindexReorderColumn(rows, LIST_ROOT.sort_order);
+        const out = reindexReorderColumn(rows, DEFAULT_LIST_ROW_REORDER_COLUMN);
         expect(out).toEqual([
-            { id: 'a', [LIST_ROOT.sort_order]: 1 },
-            { id: 'b', [LIST_ROOT.sort_order]: 2 },
+            { id: 'a', [DEFAULT_LIST_ROW_REORDER_COLUMN]: 1 },
+            { id: 'b', [DEFAULT_LIST_ROW_REORDER_COLUMN]: 2 },
         ]);
     });
 
     it('does not mutate original rows', () => {
-        const rows = [{ id: 1, [LIST_ROOT.sort_order]: 99 }];
-        reindexReorderColumn(rows, LIST_ROOT.sort_order);
-        expect(rows[0]).toEqual({ id: 1, [LIST_ROOT.sort_order]: 99 });
+        const rows = [{ id: 1, [DEFAULT_LIST_ROW_REORDER_COLUMN]: 99 }];
+        reindexReorderColumn(rows, DEFAULT_LIST_ROW_REORDER_COLUMN);
+        expect(rows[0]).toEqual({
+            id: 1,
+            [DEFAULT_LIST_ROW_REORDER_COLUMN]: 99,
+        });
     });
 });
 

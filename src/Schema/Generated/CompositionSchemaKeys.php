@@ -39,10 +39,15 @@ final class CompositionSchemaKeys
         'icon' => 'icon',
         'model' => 'model',
         'name' => 'name',
-        'order' => 'order',
+        'nav_order' => 'nav_order',
         'reorderable' => 'reorderable',
-        'sort_order' => 'sort_order',
     ];
+
+    /**
+     * Default database column for row reorder when list.yaml has `reorderable: true`.
+     * Not a list.yaml root property; unrelated to sidebar `nav_order`.
+     */
+    public const string DEFAULT_LIST_ROW_REORDER_COLUMN = 'sort_order';
 
     /**
      * Top-level keys from list.json `properties` (entity list.yaml). Same names as keys of `LIST_ROOT`, sorted.
@@ -57,9 +62,8 @@ final class CompositionSchemaKeys
         'icon',
         'model',
         'name',
-        'order',
+        'nav_order',
         'reorderable',
-        'sort_order',
     ];
 
     /**

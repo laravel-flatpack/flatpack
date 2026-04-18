@@ -163,6 +163,7 @@ PHP;
         $body = '';
         $body .= self::constBlock('Top-level keys from form.json `properties` (entity form.yaml).', 'FORM_ROOT_PROPERTY_KEYS', $formRoot);
         $body .= self::listRootAssocPhp($listRoot);
+        $body .= self::defaultListRowReorderColumnPhp();
         $body .= self::constBlock('Top-level keys from list.json `properties` (entity list.yaml). Same names as keys of `LIST_ROOT`, sorted.', 'LIST_ROOT_PROPERTY_KEYS', $listRoot);
         $body .= self::constBlock('Canonical field types after YAML aliases are stripped (see yamlFormFieldType enum minus date/relation).', 'FORM_FIELD_TYPES_CANONICAL', $canonicalTypes);
         $body .= self::constBlock('Union of nested keys allowed on toolbar/header action entries (form headerActionDefinition ∪ list headerActionEntry).', 'HEADER_ACTION_ENTRY_KEYS', $headerUnion);
@@ -205,6 +206,7 @@ PHP;
             $keys['formRootPropertyKeys'],
         );
         $out .= self::listRootObjectTs($keys['listRootPropertyKeys']);
+        $out .= self::defaultListRowReorderColumnTs();
         $out .= self::tsConstAsConst(
             'Top-level list.yaml keys from list.json `properties`. Same names as keys of `LIST_ROOT`, sorted.',
             'LIST_ROOT_PROPERTY_KEYS',
@@ -415,13 +417,35 @@ PHP;
             $lines[] = '    ' . $prop . ': ' . $json;
         }
 
-        $out = '/** Identity map of list.json root property names; use `LIST_ROOT.sort_order`, `LIST_ROOT[\'bulk_actions\']`, etc. */' . "\n";
+        $out = '/** Identity map of list.json root property names; use `LIST_ROOT.nav_order`, `LIST_ROOT[\'bulk_actions\']`, etc. */' . "\n";
         $out .= 'export const LIST_ROOT = {' . "\n";
         $out .= implode(",\n", $lines);
         $out .= ",\n} as const;\n\n";
         $out .= 'export type ListRootKey = keyof typeof LIST_ROOT;' . "\n\n";
 
         return $out;
+    }
+
+    /**
+     * Row reorder column default (not derived from list.json properties).
+     */
+    private static function defaultListRowReorderColumnPhp(): string
+    {
+        $out = '    /**' . "\n";
+        $out .= '     * Default database column for row reorder when list.yaml has `reorderable: true`.' . "\n";
+        $out .= '     * Not a list.yaml root property; unrelated to sidebar `nav_order`.' . "\n";
+        $out .= '     */' . "\n";
+        $out .= '    public const string DEFAULT_LIST_ROW_REORDER_COLUMN = \'sort_order\';' . "\n\n";
+
+        return $out;
+    }
+
+    /**
+     * Row reorder column default (not derived from list.json properties).
+     */
+    private static function defaultListRowReorderColumnTs(): string
+    {
+        return "/**\n * Default DB column when list.yaml has `reorderable: true`. Not a list.yaml root key.\n */\nexport const DEFAULT_LIST_ROW_REORDER_COLUMN = 'sort_order' as const;\n\n";
     }
 
     /**

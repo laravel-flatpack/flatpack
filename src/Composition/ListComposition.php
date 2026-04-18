@@ -10,6 +10,6 @@ final readonly class ListComposition
         public ?string $name,
         public ?string $model,
         public ?string $icon,
-        public int $order,
+        public int $nav_order,
     ) {}
 }
