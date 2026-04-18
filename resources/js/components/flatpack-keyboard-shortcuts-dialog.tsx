@@ -1,3 +1,4 @@
+import { KeyboardIcon } from 'lucide-react';
 import { FlatpackParsedShortcutKbd } from '@/components/flatpack-parsed-shortcut-kbd';
 import {
     Dialog,
@@ -8,7 +9,6 @@ import {
 } from '@/components/ui/dialog';
 import { useFlatpackRegisteredShortcuts } from '@/contexts/flatpack-shortcuts-registry';
 import { useIsMacPlatform } from '@/hooks/use-is-mac-platform';
-import { KeyboardIcon } from 'lucide-react';
 
 type FlatpackKeyboardShortcutsDialogProps = {
     open: boolean;
@@ -40,19 +40,26 @@ export function FlatpackKeyboardShortcutsDialog({
                     <thead>
                         <tr>
                             <th className="text-left py-3 text-xs">Shortcut</th>
-                            <th className="text-left py-3 text-xs">Description</th>
+                            <th className="text-left py-3 text-xs">
+                                Description
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
                         {shortcuts.map((row) => (
-                            <tr key={row.id} className="border-b border-border last:border-b-0">
+                            <tr
+                                key={row.id}
+                                className="border-b border-border last:border-b-0"
+                            >
                                 <td className="py-3">
                                     <FlatpackParsedShortcutKbd
                                         shortcut={row.shortcut}
                                         isMac={isMacPlatform}
                                     />
                                 </td>
-                                <td className="py-3 text-sm">{row.description}</td>
+                                <td className="py-3 text-sm">
+                                    {row.description}
+                                </td>
                             </tr>
                         ))}
                     </tbody>

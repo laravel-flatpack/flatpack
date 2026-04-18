@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useFlatpackKeyboardShortcutsDialog } from '@/contexts/flatpack-keyboard-shortcuts-dialog';
 import { useIsMacPlatform } from '@/hooks/use-is-mac-platform';
+import { FLATPACK_SHELL_KEYBOARD_SHORTCUTS_DIALOG_KEY } from '@/lib/flatpack-shell-shortcuts';
 
 function isKeyboardShortcutFormFieldTarget(
     target: EventTarget | null,
@@ -41,15 +42,18 @@ function isKeyboardShortcutFormFieldTarget(
 }
 
 /**
- * Shell shortcut: Cmd/Ctrl+K toggles the keyboard shortcuts cheat sheet (see `flatpack-shell-shortcuts.ts`).
+ * Shell shortcut: Cmd/Ctrl + {@link FLATPACK_SHELL_KEYBOARD_SHORTCUTS_DIALOG_KEY} toggles the cheat sheet (see `flatpack-shell-shortcuts.ts`).
  */
 export function FlatpackKeyboardShortcutsGlobalHotkey() {
     const { toggleShortcutsDialog } = useFlatpackKeyboardShortcutsDialog();
     const isMacPlatform = useIsMacPlatform();
 
     useEffect(() => {
+        const lower = FLATPACK_SHELL_KEYBOARD_SHORTCUTS_DIALOG_KEY.toLowerCase();
+        const upper = FLATPACK_SHELL_KEYBOARD_SHORTCUTS_DIALOG_KEY.toUpperCase();
+
         const onKeyDown = (event: KeyboardEvent) => {
-            if (event.key !== 'k' && event.key !== 'K') {
+            if (event.key !== lower && event.key !== upper) {
                 return;
             }
 
