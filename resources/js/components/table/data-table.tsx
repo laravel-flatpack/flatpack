@@ -29,7 +29,10 @@ import {
     leafColumnIdsInSchemaOrder,
     visibilityFromSchema,
 } from '@/components/table/data-table-column-visibility';
-import { DATA_TABLE_LABEL } from '@/components/table/data-table-constants';
+import {
+    DATA_TABLE_LABEL,
+    DATA_TABLE_ROW_CLICK_IGNORE_SELECTOR,
+} from '@/components/table/data-table-constants';
 import { DataTableFooter } from '@/components/table/data-table-footer';
 import { DataTableToolbar } from '@/components/table/data-table-toolbar';
 import { useDataTableReorder } from '@/hooks/use-data-table-reorder';
@@ -66,9 +69,6 @@ export function DataTable({
     serverSorting = { sort_by: null, sort_direction: null },
     onServerPaginationChange,
 }: DataTableProps) {
-    const rowClickInteractiveSelector =
-        'a,button,input,select,textarea,[role="button"],[role="checkbox"],[data-no-row-click]';
-
     const handleRowClick = React.useCallback(
         (
             event: React.MouseEvent<HTMLTableRowElement>,
@@ -82,7 +82,7 @@ export function DataTable({
                 onRowClick(row);
                 return;
             }
-            if (target.closest(rowClickInteractiveSelector)) {
+            if (target.closest(DATA_TABLE_ROW_CLICK_IGNORE_SELECTOR)) {
                 return;
             }
             onRowClick(row);

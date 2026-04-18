@@ -38,16 +38,130 @@ function iconForAction(iconOrKey?: string): LucideIcon | null {
 }
 
 function actionIsDestructive(
-    actionKey: string,
+    actionSlug: string,
     cfg: FlatpackDataTableActionButton,
 ): boolean {
     const a = cfg.action?.toLowerCase();
     return (
-        actionKey.toLowerCase() === 'delete' ||
+        actionSlug.toLowerCase() === 'delete' ||
         cfg.icon?.toLowerCase() === 'delete' ||
         a === 'delete' ||
         a === 'destroy' ||
         a === 'remove'
+    );
+}
+
+function stableRowActionKey(cfg: FlatpackDataTableActionButton): string {
+    return [
+        cfg.action ?? '',
+        cfg.label,
+        cfg.href ?? '',
+        cfg.variant ?? '',
+        cfg.icon ?? '',
+    ].join('|');
+}
+
+function partitionRowActions(actions: FlatpackDataTableActionButton[]): {
+    primary: FlatpackDataTableActionButton[];
+    destructive: FlatpackDataTableActionButton[];
+} {
+    const primary: FlatpackDataTableActionButton[] = [];
+    const destructive: FlatpackDataTableActionButton[] = [];
+    for (const cfg of actions) {
+        const slug = cfg.action ?? cfg.label;
+        if (actionIsDestructive(slug, cfg)) {
+            destructive.push(cfg);
+        } else {
+            primary.push(cfg);
+        }
+    }
+    return { primary, destructive };
+}
+
+function ActionRowLabel({
+    cfg,
+    actionSlug,
+}: {
+    cfg: FlatpackDataTableActionButton;
+    actionSlug: string;
+}) {
+    const Icon = iconForAction(cfg.icon) ?? iconForAction(actionSlug);
+    const displayLabel = truncateActionMenuLabel(cfg.label);
+    const charTruncated = displayLabel !== cfg.label;
+    return (
+        <span className="flex items-center gap-2">
+            {Icon ? (
+                <Icon className="size-3.5 shrink-0 opacity-70" aria-hidden />
+            ) : null}
+            <span
+                className={cn(
+                    'whitespace-nowrap',
+                    charTruncated && 'min-w-0 max-w-full truncate',
+                )}
+                title={charTruncated ? cfg.label : undefined}
+            >
+                {displayLabel}
+            </span>
+        </span>
+    );
+}
+
+function RowActionMenuItem({
+    cfg,
+    row,
+    destructive,
+    onAction,
+}: {
+    cfg: FlatpackDataTableActionButton;
+    row: Record<string, unknown>;
+    destructive: boolean;
+    onAction?: (
+        action: string,
+        row: Record<string, unknown>,
+    ) => void | Promise<void>;
+}) {
+    const slug = cfg.action ?? cfg.label;
+    const template = cfg.href ?? '';
+    const resolvedHref = template
+        ? interpolateRowPlaceholders(template, row)
+        : '';
+    const variantProps = destructive ? { variant: 'destructive' as const } : {};
+    const dataAttrs = cfg.action
+        ? ({ 'data-flatpack-action': cfg.action } as const)
+        : {};
+
+    const label = <ActionRowLabel cfg={cfg} actionSlug={slug} />;
+
+    if (resolvedHref) {
+        const external = /^https?:\/\//i.test(resolvedHref);
+        return (
+            <DropdownMenuItem asChild {...variantProps} {...dataAttrs}>
+                {external ? (
+                    <a
+                        href={resolvedHref}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        {label}
+                    </a>
+                ) : (
+                    <Link href={resolvedHref}>{label}</Link>
+                )}
+            </DropdownMenuItem>
+        );
+    }
+
+    return (
+        <DropdownMenuItem
+            {...variantProps}
+            onSelect={() => {
+                if (cfg.action) {
+                    void onAction?.(cfg.action, row);
+                }
+            }}
+        >
+            {label}
+        </DropdownMenuItem>
     );
 }
 
@@ -63,43 +177,10 @@ export function DataTableActionsCell({
         row: Record<string, unknown>,
     ) => void | Promise<void>;
 }) {
-    const primary = actions
-        .filter((cfg) => !actionIsDestructive(cfg.action ?? cfg.label, cfg))
-        .map((cfg, index) => [String(index), cfg] as const);
-    const destructive = actions
-        .filter((cfg) => actionIsDestructive(cfg.action ?? cfg.label, cfg))
-        .map((cfg, index) => [String(index), cfg] as const);
-
-    const actionRowLabel = (
-        cfg: FlatpackDataTableActionButton,
-        actionKey: string,
-    ) => {
-        const Icon = iconForAction(cfg.icon) ?? iconForAction(actionKey);
-        const displayLabel = truncateActionMenuLabel(cfg.label);
-        const charTruncated = displayLabel !== cfg.label;
-        return (
-            <span className="flex items-center gap-2">
-                {Icon ? (
-                    <Icon
-                        className="size-3.5 shrink-0 opacity-70"
-                        aria-hidden
-                    />
-                ) : null}
-                <span
-                    className={cn(
-                        'whitespace-nowrap',
-                        charTruncated && 'min-w-0 max-w-full truncate',
-                    )}
-                    title={charTruncated ? cfg.label : undefined}
-                >
-                    {displayLabel}
-                </span>
-            </span>
-        );
-    };
+    const { primary, destructive } = partitionRowActions(actions);
 
     return (
-        <div className="flex justify-end">
+        <div className="flex justify-end" data-no-row-click>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button
@@ -112,108 +193,32 @@ export function DataTableActionsCell({
                         <span className="sr-only">Open row actions</span>
                     </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="min-w-44 max-w-xs">
-                    {primary.map(([actionKey, cfg]) => {
-                        const template = cfg.href ?? '';
-                        const resolved = template
-                            ? interpolateRowPlaceholders(template, row)
-                            : '';
-                        const label = actionRowLabel(cfg, actionKey);
-
-                        if (resolved) {
-                            const external = /^https?:\/\//i.test(resolved);
-                            return (
-                                <DropdownMenuItem
-                                    key={actionKey}
-                                    asChild
-                                    {...(cfg.action
-                                        ? {
-                                              'data-flatpack-action':
-                                                  cfg.action,
-                                          }
-                                        : {})}
-                                >
-                                    {external ? (
-                                        <a
-                                            href={resolved}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                        >
-                                            {label}
-                                        </a>
-                                    ) : (
-                                        <Link href={resolved}>{label}</Link>
-                                    )}
-                                </DropdownMenuItem>
-                            );
-                        }
-
-                        return (
-                            <DropdownMenuItem
-                                key={actionKey}
-                                onClick={() =>
-                                    cfg.action
-                                        ? onAction?.(cfg.action, row)
-                                        : undefined
-                                }
-                            >
-                                {label}
-                            </DropdownMenuItem>
-                        );
-                    })}
+                <DropdownMenuContent
+                    align="end"
+                    className="min-w-44 max-w-xs"
+                    onCloseAutoFocus={(event) => event.preventDefault()}
+                >
+                    {primary.map((cfg) => (
+                        <RowActionMenuItem
+                            key={`p-${stableRowActionKey(cfg)}`}
+                            cfg={cfg}
+                            row={row}
+                            destructive={false}
+                            onAction={onAction}
+                        />
+                    ))}
                     {primary.length > 0 && destructive.length > 0 ? (
                         <DropdownMenuSeparator />
                     ) : null}
-                    {destructive.map(([actionKey, cfg]) => {
-                        const template = cfg.href ?? '';
-                        const resolved = template
-                            ? interpolateRowPlaceholders(template, row)
-                            : '';
-                        const label = actionRowLabel(cfg, actionKey);
-
-                        if (resolved) {
-                            const external = /^https?:\/\//i.test(resolved);
-                            return (
-                                <DropdownMenuItem
-                                    key={actionKey}
-                                    variant="destructive"
-                                    asChild
-                                    {...(cfg.action
-                                        ? {
-                                              'data-flatpack-action':
-                                                  cfg.action,
-                                          }
-                                        : {})}
-                                >
-                                    {external ? (
-                                        <a
-                                            href={resolved}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                        >
-                                            {label}
-                                        </a>
-                                    ) : (
-                                        <Link href={resolved}>{label}</Link>
-                                    )}
-                                </DropdownMenuItem>
-                            );
-                        }
-
-                        return (
-                            <DropdownMenuItem
-                                key={actionKey}
-                                variant="destructive"
-                                onClick={() =>
-                                    cfg.action
-                                        ? onAction?.(cfg.action, row)
-                                        : undefined
-                                }
-                            >
-                                {label}
-                            </DropdownMenuItem>
-                        );
-                    })}
+                    {destructive.map((cfg) => (
+                        <RowActionMenuItem
+                            key={`d-${stableRowActionKey(cfg)}`}
+                            cfg={cfg}
+                            row={row}
+                            destructive
+                            onAction={onAction}
+                        />
+                    ))}
                 </DropdownMenuContent>
             </DropdownMenu>
         </div>
