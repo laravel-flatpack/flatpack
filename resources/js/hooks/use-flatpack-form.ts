@@ -1,14 +1,9 @@
 import type { FormDataConvertible } from '@inertiajs/core';
 import { router, useForm } from '@inertiajs/react';
 import type { FormEvent } from 'react';
-import {
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
-} from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { useFormFieldPresets } from '@/hooks/use-form-field-presets';
 import { loadField } from '@/lib/form';
 import { firstErrorMessage } from '@/lib/form-errors';
 import { serializeFieldValue } from '@/lib/form-page-field-values';
@@ -19,7 +14,6 @@ import {
 } from '@/lib/form-schema';
 import { clientValidationErrors } from '@/lib/form-validation';
 import { route } from '@/lib/route';
-import { useFormFieldPresets } from '@/hooks/use-form-field-presets';
 import type { FormFieldProps } from '@/types/form-fields';
 import type {
     FlatpackFormPageProps,

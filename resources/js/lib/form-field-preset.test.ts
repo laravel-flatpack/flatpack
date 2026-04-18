@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { serializeFieldValue } from '@/lib/form-page-field-values';
 import {
     applyPresetCascade,
     buildInitialPresetBlockedIds,
@@ -7,6 +6,7 @@ import {
     formatPresetValue,
     parsePreset,
 } from '@/lib/form-field-preset';
+import { serializeFieldValue } from '@/lib/form-page-field-values';
 import type { FormFieldEntry } from '@/lib/form-schema';
 import type { FormFieldProps } from '@/types/form-fields';
 
@@ -43,7 +43,9 @@ describe('formatPresetValue', () => {
 
     it('file replaces whitespace and strips path-ish characters', () => {
         expect(formatPresetValue('my file name', 'file')).toBe('my-file-name');
-        expect(formatPresetValue('a/b:test?.txt', 'file')).toBe('a-b-test-.txt');
+        expect(formatPresetValue('a/b:test?.txt', 'file')).toBe(
+            'a-b-test-.txt',
+        );
     });
 });
 
@@ -111,7 +113,14 @@ describe('buildInitialPresetBlockedIds', () => {
 describe('applyPresetCascade', () => {
     const fieldsById = new Map<string, FormFieldProps>([
         ['title', { type: 'text', label: 'Title' }],
-        ['url', { type: 'text', label: 'URL', preset: { field: 'title', type: 'url' } }],
+        [
+            'url',
+            {
+                type: 'text',
+                label: 'URL',
+                preset: { field: 'title', type: 'url' },
+            },
+        ],
     ]);
 
     it('fills preset destination from source when allowed', () => {

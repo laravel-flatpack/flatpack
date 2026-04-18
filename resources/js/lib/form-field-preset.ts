@@ -1,10 +1,10 @@
 import { serializeFieldValue } from '@/lib/form-page-field-values';
 import type { FormFieldEntry } from '@/lib/form-schema';
 import {
-    formFieldPresetTypes,
     type FormFieldPreset,
     type FormFieldPresetType,
     type FormFieldProps,
+    formFieldPresetTypes,
 } from '@/types/form-fields';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -100,10 +100,7 @@ function formatFilePreset(raw: string): string {
         .replace(/^-+|-+$/g, '');
 }
 
-const presetFormatters: Record<
-    FormFieldPresetType,
-    (raw: string) => string
-> = {
+const presetFormatters: Record<FormFieldPresetType, (raw: string) => string> = {
     exact: (raw) => raw,
     slug: (raw) => slugifySegment(raw),
     url: (raw) => {
