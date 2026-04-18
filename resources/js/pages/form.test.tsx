@@ -442,6 +442,63 @@ describe('FlatpackFormPage', () => {
         expect(screen.getByText('Title is required.')).toBeInTheDocument();
     });
 
+    it('fills preset destination from source until destination is edited', async () => {
+        const user = userEvent.setup();
+
+        render(
+            <FlatpackFormPage
+                entity="posts"
+                name="Posts"
+                record={null}
+                mode="create"
+                schema={{
+                    fields: {
+                        title: {
+                            type: 'text',
+                            label: 'Title',
+                            placeholder: 'Title',
+                        },
+                        url: {
+                            type: 'text',
+                            label: 'URL',
+                            placeholder: 'URL',
+                            preset: { field: 'title', type: 'url' },
+                        },
+                    },
+                }}
+                values={{}}
+                form_actions={[
+                    {
+                        id: 'save',
+                        label: 'Save',
+                        action: 'save',
+                        variant: 'default',
+                    },
+                ]}
+            />,
+        );
+
+        expect(await screen.findByTestId('field-url')).toHaveTextContent(
+            /^URL:\s*$/,
+        );
+
+        await user.click(screen.getByRole('button', { name: 'update-title' }));
+
+        await waitFor(() => {
+            expect(screen.getByTestId('field-url')).toHaveTextContent(
+                'URL: /changed-title',
+            );
+        });
+
+        await user.click(screen.getByRole('button', { name: 'update-url' }));
+
+        await user.click(screen.getByRole('button', { name: 'update-title' }));
+
+        expect(screen.getByTestId('field-url')).toHaveTextContent(
+            'URL: changed-url',
+        );
+    });
+
     it('blocks submit on client when required YAML field is empty', async () => {
         const user = userEvent.setup();
 

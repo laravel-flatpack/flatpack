@@ -37,7 +37,7 @@ function mapTextTextareaSelect(
     props: FormFieldProps,
     ctx: FormFieldRenderContext,
 ) {
-    const { type: _t, ...rest } = props as Extract<
+    const { type: _t, preset: _preset, ...rest } = props as Extract<
         FormFieldProps,
         { type: 'text' | 'textarea' | 'select' }
     >;

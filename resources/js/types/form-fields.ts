@@ -10,6 +10,21 @@ export type SelectFieldOption = {
     status?: FlatpackDataTableSelectOptionStatus;
 };
 
+export const formFieldPresetTypes = [
+    'exact',
+    'slug',
+    'url',
+    'camel',
+    'file',
+] as const;
+
+export type FormFieldPresetType = (typeof formFieldPresetTypes)[number];
+
+export type FormFieldPreset = {
+    field: string;
+    type: FormFieldPresetType;
+};
+
 export type FormFieldOutput = {
     show: boolean;
     label: string;
@@ -18,6 +33,11 @@ export type FormFieldOutput = {
 type FormFieldBase = {
     label: string;
     helperText?: string;
+    /**
+     * When set, the field auto-fills from {@link FormFieldPreset.field} until the user edits this field
+     * or the field was non-empty when the form loaded (e.g. existing record).
+     */
+    preset?: FormFieldPreset;
     onValueChange?: (value: unknown) => void;
 };
 

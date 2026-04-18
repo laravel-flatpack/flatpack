@@ -1,7 +1,13 @@
 import type { FormDataConvertible } from '@inertiajs/core';
 import { router, useForm } from '@inertiajs/react';
 import type { FormEvent } from 'react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from 'react';
 import { toast } from 'sonner';
 import { loadField } from '@/lib/form';
 import { firstErrorMessage } from '@/lib/form-errors';
@@ -13,6 +19,7 @@ import {
 } from '@/lib/form-schema';
 import { clientValidationErrors } from '@/lib/form-validation';
 import { route } from '@/lib/route';
+import { useFormFieldPresets } from '@/hooks/use-form-field-presets';
 import type { FormFieldProps } from '@/types/form-fields';
 import type {
     FlatpackFormPageProps,
@@ -92,21 +99,27 @@ export function useFlatpackForm({
         f.clearErrors();
     }, [baselineSignature]);
 
+    const { mergeFieldChange } = useFormFieldPresets({
+        fields,
+        baselineSignature,
+    });
+
     const setFieldValue = useCallback(
         (field: FormFieldProps, fieldId: string, nextValue: unknown) => {
+            const nextValues = mergeFieldChange(
+                field,
+                fieldId,
+                serializeFieldValue(field, nextValue),
+                form.data.values as Record<string, unknown>,
+            );
+
             form.setData({
                 ...form.data,
-                values: {
-                    ...form.data.values,
-                    [fieldId]: serializeFieldValue(
-                        field,
-                        nextValue,
-                    ) as FormDataConvertible,
-                },
+                values: nextValues as Record<string, FormDataConvertible>,
             });
             form.clearErrors();
         },
-        [form],
+        [form, mergeFieldChange],
     );
 
     const runSubmit = useCallback(() => {

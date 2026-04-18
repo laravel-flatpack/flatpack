@@ -97,7 +97,41 @@ final class FormSchemaNormalizer
             );
         }
 
+        if (isset($fieldDefinition['preset'])) {
+            $normalizedPreset = $this->normalizePreset($fieldDefinition['preset']);
+            if ($normalizedPreset !== null) {
+                $fieldDefinition['preset'] = $normalizedPreset;
+            } else {
+                unset($fieldDefinition['preset']);
+            }
+        }
+
         return $fieldDefinition;
+    }
+
+    /**
+     * @param  mixed  $preset
+     * @return array{field: string, type: string}|null
+     */
+    private function normalizePreset(mixed $preset): ?array
+    {
+        if (! is_array($preset)) {
+            return null;
+        }
+
+        $field = isset($preset['field']) && is_string($preset['field'])
+            ? trim($preset['field'])
+            : '';
+        $type = isset($preset['type']) && is_string($preset['type'])
+            ? trim($preset['type'])
+            : '';
+
+        $allowed = ['exact', 'slug', 'url', 'camel', 'file'];
+        if ($field === '' || ! in_array($type, $allowed, true)) {
+            return null;
+        }
+
+        return ['field' => $field, 'type' => $type];
     }
 
     /**
