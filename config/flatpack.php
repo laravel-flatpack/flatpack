@@ -265,4 +265,18 @@ return [
     |
     */
     'enable_demo' => env('FLATPACK_ENABLE_DEMO', false),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Dashboard UI
+    |--------------------------------------------------------------------------
+    |
+    | Controls shell chrome behavior. When show_action_shortcut_hints is false
+    | (default), shortcut hints are hidden on header action buttons; shortcuts
+    | remain active and appear in the Keyboard shortcuts dialog from the user menu.
+    |
+    */
+    'ui' => [
+        'show_action_shortcut_hints' => env('FLATPACK_SHOW_ACTION_SHORTCUT_HINTS', false),
+    ],
 ];

@@ -32,6 +32,10 @@ final readonly class ShareFlatpackInertiaData
                 ),
                 'secondaryMenu' => config('flatpack.secondary_menu'),
                 'bottomMenu' => config('flatpack.bottom_menu'),
+                'showActionShortcutHints' => (bool) config(
+                    'flatpack.ui.show_action_shortcut_hints',
+                    false,
+                ),
                 'user' => $request->user() ? FlatpackUser::make($request->user()) : null,
             ]);
         }

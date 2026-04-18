@@ -21,6 +21,8 @@ export type FlatpackPageProps = {
         menu: FlatpackMenuItem[] | null;
         secondaryMenu?: FlatpackSecondaryMenu;
         bottomMenu?: FlatpackSecondaryMenu;
+        /** When true, header action buttons show shortcut chips inline. Default from config `flatpack.ui.show_action_shortcut_hints`. */
+        showActionShortcutHints?: boolean;
         user?: FlatpackUser;
     };
 };

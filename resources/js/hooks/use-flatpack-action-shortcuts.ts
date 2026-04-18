@@ -1,4 +1,5 @@
 import { useEffect, useMemo } from 'react';
+import { useIsMacPlatform } from '@/hooks/use-is-mac-platform';
 import {
     type ParsedFlatpackShortcut,
     parseFlatpackActionShortcut,
@@ -20,13 +21,7 @@ export function useFlatpackActionShortcuts({
     actions,
     disabled = false,
 }: UseFlatpackActionShortcutsParams): UseFlatpackActionShortcutsResult {
-    const isMacPlatform = useMemo(() => {
-        if (typeof window === 'undefined') {
-            return false;
-        }
-
-        return window.navigator.platform.toLowerCase().includes('mac');
-    }, []);
+    const isMacPlatform = useIsMacPlatform();
 
     const shortcutByActionId = useMemo(() => {
         const byActionId = new Map<string, ParsedFlatpackShortcut>();

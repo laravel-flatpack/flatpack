@@ -37,6 +37,13 @@ vi.mock('@inertiajs/react', () => ({
         post: hoisted.post,
         patch: hoisted.patch,
     },
+    usePage: () => ({
+        props: {
+            flatpack: {
+                showActionShortcutHints: false,
+            },
+        },
+    }),
     useForm: <TData extends Record<string, unknown>>(initialData: TData) => {
         const defaultsRef = React.useRef<TData>(
             JSON.parse(JSON.stringify(initialData)) as TData,
@@ -220,7 +227,16 @@ vi.mock('@/lib/form', () => ({
     ),
 }));
 
+import { FlatpackShortcutsProvider } from '@/contexts/flatpack-shortcuts-registry';
 import FlatpackFormPage from '@/pages/form';
+
+function renderFlatpackFormPage(page: React.ReactElement) {
+    return render(page, {
+        wrapper: ({ children }) => (
+            <FlatpackShortcutsProvider>{children}</FlatpackShortcutsProvider>
+        ),
+    });
+}
 
 describe('FlatpackFormPage', () => {
     beforeEach(() => {
@@ -236,7 +252,7 @@ describe('FlatpackFormPage', () => {
     });
 
     it('renders schema-driven fields with hydrated edit values', async () => {
-        render(
+        renderFlatpackFormPage(
             <FlatpackFormPage
                 entity="posts"
                 name="Posts"
@@ -289,7 +305,7 @@ describe('FlatpackFormPage', () => {
     it('submits create mode through the store route', async () => {
         const user = userEvent.setup();
 
-        render(
+        renderFlatpackFormPage(
             <FlatpackFormPage
                 entity="posts"
                 name="Posts"
@@ -339,7 +355,7 @@ describe('FlatpackFormPage', () => {
     it('submits edit mode through the save route', async () => {
         const user = userEvent.setup();
 
-        render(
+        renderFlatpackFormPage(
             <FlatpackFormPage
                 entity="posts"
                 name="Posts"
@@ -405,7 +421,7 @@ describe('FlatpackFormPage', () => {
             },
         );
 
-        render(
+        renderFlatpackFormPage(
             <FlatpackFormPage
                 entity="posts"
                 name="Posts"
@@ -445,7 +461,7 @@ describe('FlatpackFormPage', () => {
     it('fills preset destination from source until destination is edited', async () => {
         const user = userEvent.setup();
 
-        render(
+        renderFlatpackFormPage(
             <FlatpackFormPage
                 entity="posts"
                 name="Posts"
@@ -502,7 +518,7 @@ describe('FlatpackFormPage', () => {
     it('blocks submit on client when required YAML field is empty', async () => {
         const user = userEvent.setup();
 
-        render(
+        renderFlatpackFormPage(
             <FlatpackFormPage
                 entity="posts"
                 name="Posts"
@@ -539,7 +555,7 @@ describe('FlatpackFormPage', () => {
     });
 
     it('does not render a default submit action when yaml actions are absent', () => {
-        render(
+        renderFlatpackFormPage(
             <FlatpackFormPage
                 entity="posts"
                 name="Posts"
@@ -570,7 +586,7 @@ describe('FlatpackFormPage', () => {
     it('renders non-save yaml actions and posts row actions for edit mode', async () => {
         const user = userEvent.setup();
 
-        render(
+        renderFlatpackFormPage(
             <FlatpackFormPage
                 entity="posts"
                 name="Posts"
@@ -624,7 +640,7 @@ describe('FlatpackFormPage', () => {
             },
         );
 
-        render(
+        renderFlatpackFormPage(
             <FlatpackFormPage
                 entity="posts"
                 name="Posts"
@@ -667,7 +683,7 @@ describe('FlatpackFormPage', () => {
     it('shows confirm dialog before named action when confirm is true', async () => {
         const user = userEvent.setup();
 
-        render(
+        renderFlatpackFormPage(
             <FlatpackFormPage
                 entity="posts"
                 name="Posts"
@@ -718,7 +734,7 @@ describe('FlatpackFormPage', () => {
     it('shows confirm dialog before save when confirm is true', async () => {
         const user = userEvent.setup();
 
-        render(
+        renderFlatpackFormPage(
             <FlatpackFormPage
                 entity="posts"
                 name="Posts"

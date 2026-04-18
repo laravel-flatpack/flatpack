@@ -1,4 +1,5 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
+import { useMemo } from 'react';
 import {
     FlatpackActionDirtyTooltip,
     flatpackActionDisabledByDirty,
@@ -6,6 +7,10 @@ import {
 import { LucideIconByName } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
+import {
+    type RegisteredFlatpackShortcut,
+    useRegisterFlatpackShortcuts,
+} from '@/contexts/flatpack-shortcuts-registry';
 import { useFlatpackActionShortcuts } from '@/hooks/use-flatpack-action-shortcuts';
 import {
     formatShortcutHintCompact,
@@ -13,6 +18,7 @@ import {
 } from '@/lib/flatpack-action-shortcuts';
 import { cn } from '@/lib/utils';
 import type { FlatpackActionVariant } from '@/types/data-table';
+import type { FlatpackPageProps } from '@/types/flatpack';
 import type { FlatpackListHeaderAction } from '@/types/pages/flatpack';
 
 const VARIANT_FALLBACK: FlatpackActionVariant = 'outline';
@@ -119,9 +125,38 @@ export function FlatpackFormActions({
     onNamedActionConfirm,
     runNamedAction,
 }: FlatpackFormActionsProps) {
+    const {
+        props: { flatpack },
+    } = usePage<FlatpackPageProps>();
+
+    const showShortcutHintsOnButtons =
+        flatpack.showActionShortcutHints === true;
+
     const { shortcutByActionId, isMacPlatform } = useFlatpackActionShortcuts({
         actions: formActions,
     });
+
+    const registeredPageShortcuts =
+        useMemo((): RegisteredFlatpackShortcut[] => {
+            const rows: RegisteredFlatpackShortcut[] = [];
+            for (const action of formActions) {
+                const shortcut = shortcutByActionId.get(action.id);
+                if (!shortcut) {
+                    continue;
+                }
+                rows.push({
+                    id: `action:${action.id}`,
+                    description: action.label,
+                    shortcut,
+                });
+            }
+            return rows;
+        }, [formActions, shortcutByActionId]);
+
+    useRegisterFlatpackShortcuts(
+        'flatpack-form-actions',
+        registeredPageShortcuts,
+    );
 
     if (formActions.length === 0) {
         return null;
@@ -139,7 +174,11 @@ export function FlatpackFormActions({
                     formProcessing={formProcessing}
                     isMacPlatform={isMacPlatform}
                     record={record}
-                    shortcut={shortcutByActionId?.get(action.id)}
+                    shortcut={
+                        showShortcutHintsOnButtons
+                            ? shortcutByActionId.get(action.id)
+                            : undefined
+                    }
                     onNamedActionConfirm={onNamedActionConfirm}
                     onSaveConfirmClick={onSaveConfirmClick}
                     runNamedAction={runNamedAction}
