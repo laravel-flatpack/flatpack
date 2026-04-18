@@ -162,7 +162,8 @@ PHP;
 
         $body = '';
         $body .= self::constBlock('Top-level keys from form.json `properties` (entity form.yaml).', 'FORM_ROOT_PROPERTY_KEYS', $formRoot);
-        $body .= self::constBlock('Top-level keys from list.json `properties` (entity list.yaml).', 'LIST_ROOT_PROPERTY_KEYS', $listRoot);
+        $body .= self::listRootAssocPhp($listRoot);
+        $body .= self::constBlock('Top-level keys from list.json `properties` (entity list.yaml). Same names as keys of `LIST_ROOT`, sorted.', 'LIST_ROOT_PROPERTY_KEYS', $listRoot);
         $body .= self::constBlock('Canonical field types after YAML aliases are stripped (see yamlFormFieldType enum minus date/relation).', 'FORM_FIELD_TYPES_CANONICAL', $canonicalTypes);
         $body .= self::constBlock('Union of nested keys allowed on toolbar/header action entries (form headerActionDefinition ∪ list headerActionEntry).', 'HEADER_ACTION_ENTRY_KEYS', $headerUnion);
         $body .= self::constBlock('Nested keys for each bulk_actions entry (list.json bulkActionDefinition).', 'LIST_BULK_ACTION_ENTRY_KEYS', $bulkKeys);
@@ -203,8 +204,9 @@ PHP;
             'FORM_ROOT_PROPERTY_KEYS',
             $keys['formRootPropertyKeys'],
         );
+        $out .= self::listRootObjectTs($keys['listRootPropertyKeys']);
         $out .= self::tsConstAsConst(
-            'Top-level list.yaml keys from list.json `properties`.',
+            'Top-level list.yaml keys from list.json `properties`. Same names as keys of `LIST_ROOT`, sorted.',
             'LIST_ROOT_PROPERTY_KEYS',
             $keys['listRootPropertyKeys'],
         );
@@ -366,6 +368,72 @@ PHP;
                 "JSON schema mismatch: {$name} enum differs between form.json and list.json.",
             );
         }
+    }
+
+    /**
+     * Identity map of list.json root property names (each key maps to itself). Use {@see LIST_ROOT}['columns'] or array access for string tokens without repeating literals.
+     *
+     * @param  list<string>  $listRoot
+     */
+    private static function listRootAssocPhp(array $listRoot): string
+    {
+        $out = '    /**' . "\n";
+        $out .= '     * Identity map of list.json root property names.' . "\n";
+        $out .= '     * Use `LIST_ROOT[\'columns\']` (or array access with a variable key) for string tokens.' . "\n";
+        $out .= '     *' . "\n";
+        $out .= '     * @var array<string, string>' . "\n";
+        $out .= '     */' . "\n";
+        $out .= '    public const array LIST_ROOT = ';
+        if ($listRoot === []) {
+            $out .= '[];' . "\n\n";
+
+            return $out;
+        }
+
+        $lines = [];
+        foreach ($listRoot as $key) {
+            $lines[] = '        ' . var_export($key, true) . ' => ' . var_export($key, true);
+        }
+        $out .= "[\n" . implode(",\n", $lines) . ",\n    ];\n\n";
+
+        return $out;
+    }
+
+    /**
+     * @param  list<string>  $listRoot
+     */
+    private static function listRootObjectTs(array $listRoot): string
+    {
+        if ($listRoot === []) {
+            return "/** Identity map of list.json root keys (empty). */\nexport const LIST_ROOT = {} as const;\n\nexport type ListRootKey = keyof typeof LIST_ROOT;\n\n";
+        }
+
+        $lines = [];
+        foreach ($listRoot as $key) {
+            $prop = self::tsObjectPropertyName($key);
+            $json = json_encode($key, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
+            $lines[] = '    ' . $prop . ': ' . $json;
+        }
+
+        $out = '/** Identity map of list.json root property names; use `LIST_ROOT.sort_order`, `LIST_ROOT[\'bulk_actions\']`, etc. */' . "\n";
+        $out .= 'export const LIST_ROOT = {' . "\n";
+        $out .= implode(",\n", $lines);
+        $out .= ",\n} as const;\n\n";
+        $out .= 'export type ListRootKey = keyof typeof LIST_ROOT;' . "\n\n";
+
+        return $out;
+    }
+
+    /**
+     * Unquoted object property name when valid in JS; otherwise quoted JSON string.
+     */
+    private static function tsObjectPropertyName(string $key): string
+    {
+        if (preg_match('/^[a-zA-Z_$][a-zA-Z0-9_$]*$/', $key) === 1) {
+            return $key;
+        }
+
+        return json_encode($key, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
     }
 
     /**

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { LIST_ROOT_SORT_ORDER } from '@/lib/generated/composition-schema-keys';
+import { LIST_ROOT } from '@/lib/generated/composition-schema-keys';
 import {
     cellControlDomId,
     columnEditableInDrawer,
@@ -42,17 +42,17 @@ describe('stableRowId', () => {
 describe('reindexReorderColumn', () => {
     it('sets reorder key to 1-based index', () => {
         const rows = [{ id: 'a' }, { id: 'b' }];
-        const out = reindexReorderColumn(rows, LIST_ROOT_SORT_ORDER);
+        const out = reindexReorderColumn(rows, LIST_ROOT.sort_order);
         expect(out).toEqual([
-            { id: 'a', [LIST_ROOT_SORT_ORDER]: 1 },
-            { id: 'b', [LIST_ROOT_SORT_ORDER]: 2 },
+            { id: 'a', [LIST_ROOT.sort_order]: 1 },
+            { id: 'b', [LIST_ROOT.sort_order]: 2 },
         ]);
     });
 
     it('does not mutate original rows', () => {
-        const rows = [{ id: 1, [LIST_ROOT_SORT_ORDER]: 99 }];
-        reindexReorderColumn(rows, LIST_ROOT_SORT_ORDER);
-        expect(rows[0]).toEqual({ id: 1, [LIST_ROOT_SORT_ORDER]: 99 });
+        const rows = [{ id: 1, [LIST_ROOT.sort_order]: 99 }];
+        reindexReorderColumn(rows, LIST_ROOT.sort_order);
+        expect(rows[0]).toEqual({ id: 1, [LIST_ROOT.sort_order]: 99 });
     });
 });
 

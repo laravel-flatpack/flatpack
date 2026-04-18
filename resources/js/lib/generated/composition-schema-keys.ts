@@ -18,8 +18,24 @@ export const FORM_ROOT_PROPERTY_KEYS = [
     'name',
 ] as const;
 
+/** Identity map of list.json root property names; use `LIST_ROOT.sort_order`, `LIST_ROOT['bulk_actions']`, etc. */
+export const LIST_ROOT = {
+    actions: 'actions',
+    bulk_actions: 'bulk_actions',
+    columns: 'columns',
+    filters: 'filters',
+    icon: 'icon',
+    model: 'model',
+    name: 'name',
+    order: 'order',
+    reorderable: 'reorderable',
+    sort_order: 'sort_order',
+} as const;
+
+export type ListRootKey = keyof typeof LIST_ROOT;
+
 /**
- * Top-level list.yaml keys from list.json `properties`.
+ * Top-level list.yaml keys from list.json `properties`. Same names as keys of `LIST_ROOT`, sorted.
  */
 export const LIST_ROOT_PROPERTY_KEYS = [
     'actions',
@@ -33,36 +49,6 @@ export const LIST_ROOT_PROPERTY_KEYS = [
     'reorderable',
     'sort_order',
 ] as const;
-
-/** list.json root property `actions` */
-export const LIST_ROOT_ACTIONS = 'actions' as const;
-
-/** list.json root property `bulk_actions` */
-export const LIST_ROOT_BULK_ACTIONS = 'bulk_actions' as const;
-
-/** list.json root property `columns` */
-export const LIST_ROOT_COLUMNS = 'columns' as const;
-
-/** list.json root property `filters` */
-export const LIST_ROOT_FILTERS = 'filters' as const;
-
-/** list.json root property `icon` */
-export const LIST_ROOT_ICON = 'icon' as const;
-
-/** list.json root property `model` */
-export const LIST_ROOT_MODEL = 'model' as const;
-
-/** list.json root property `name` */
-export const LIST_ROOT_NAME = 'name' as const;
-
-/** list.json root property `order` */
-export const LIST_ROOT_ORDER = 'order' as const;
-
-/** list.json root property `reorderable` */
-export const LIST_ROOT_REORDERABLE = 'reorderable' as const;
-
-/** list.json root property `sort_order` */
-export const LIST_ROOT_SORT_ORDER = 'sort_order' as const;
 
 /**
  * Canonical field types (yamlFormFieldType minus date/relation). Mirrors PHP `CompositionSchemaKeys::FORM_FIELD_TYPES_CANONICAL`.

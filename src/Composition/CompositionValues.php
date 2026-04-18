@@ -20,8 +20,8 @@ final readonly class CompositionValues
             return null;
         }
 
-        if (isset($data[CompositionSchemaKeys::LIST_ROOT_NAME]) && is_string($data[CompositionSchemaKeys::LIST_ROOT_NAME])) {
-            return $data[CompositionSchemaKeys::LIST_ROOT_NAME];
+        if (isset($data[CompositionSchemaKeys::LIST_ROOT['name']]) && is_string($data[CompositionSchemaKeys::LIST_ROOT['name']])) {
+            return $data[CompositionSchemaKeys::LIST_ROOT['name']];
         }
 
         if (isset($data['title']) && is_string($data['title'])) {
@@ -40,8 +40,8 @@ final readonly class CompositionValues
             return null;
         }
 
-        if (isset($data[CompositionSchemaKeys::LIST_ROOT_MODEL]) && is_string($data[CompositionSchemaKeys::LIST_ROOT_MODEL])) {
-            return $data[CompositionSchemaKeys::LIST_ROOT_MODEL];
+        if (isset($data[CompositionSchemaKeys::LIST_ROOT['model']]) && is_string($data[CompositionSchemaKeys::LIST_ROOT['model']])) {
+            return $data[CompositionSchemaKeys::LIST_ROOT['model']];
         }
 
         return null;
@@ -56,8 +56,8 @@ final readonly class CompositionValues
             return null;
         }
 
-        if (isset($data[CompositionSchemaKeys::LIST_ROOT_ICON]) && is_string($data[CompositionSchemaKeys::LIST_ROOT_ICON])) {
-            return $data[CompositionSchemaKeys::LIST_ROOT_ICON];
+        if (isset($data[CompositionSchemaKeys::LIST_ROOT['icon']]) && is_string($data[CompositionSchemaKeys::LIST_ROOT['icon']])) {
+            return $data[CompositionSchemaKeys::LIST_ROOT['icon']];
         }
 
         return null;
@@ -73,8 +73,8 @@ final readonly class CompositionValues
         }
 
         foreach ([
-            CompositionSchemaKeys::LIST_ROOT_ORDER,
-            CompositionSchemaKeys::LIST_ROOT_SORT_ORDER,
+            CompositionSchemaKeys::LIST_ROOT['order'],
+            CompositionSchemaKeys::LIST_ROOT['sort_order'],
         ] as $key) {
             if (isset($data[$key]) && is_numeric($data[$key])) {
                 return (int) $data[$key];

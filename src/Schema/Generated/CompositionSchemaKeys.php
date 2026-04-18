@@ -26,7 +26,26 @@ final class CompositionSchemaKeys
     ];
 
     /**
-     * Top-level keys from list.json `properties` (entity list.yaml).
+     * Identity map of list.json root property names.
+     * Use `LIST_ROOT['columns']` (or array access with a variable key) for string tokens.
+     *
+     * @var array<string, string>
+     */
+    public const array LIST_ROOT = [
+        'actions' => 'actions',
+        'bulk_actions' => 'bulk_actions',
+        'columns' => 'columns',
+        'filters' => 'filters',
+        'icon' => 'icon',
+        'model' => 'model',
+        'name' => 'name',
+        'order' => 'order',
+        'reorderable' => 'reorderable',
+        'sort_order' => 'sort_order',
+    ];
+
+    /**
+     * Top-level keys from list.json `properties` (entity list.yaml). Same names as keys of `LIST_ROOT`, sorted.
      *
      * @var list<string>
      */
@@ -42,56 +61,6 @@ final class CompositionSchemaKeys
         'reorderable',
         'sort_order',
     ];
-
-    /**
-     * list.json root property `actions`.
-     */
-    public const string LIST_ROOT_ACTIONS = 'actions';
-
-    /**
-     * list.json root property `bulk_actions`.
-     */
-    public const string LIST_ROOT_BULK_ACTIONS = 'bulk_actions';
-
-    /**
-     * list.json root property `columns`.
-     */
-    public const string LIST_ROOT_COLUMNS = 'columns';
-
-    /**
-     * list.json root property `filters`.
-     */
-    public const string LIST_ROOT_FILTERS = 'filters';
-
-    /**
-     * list.json root property `icon`.
-     */
-    public const string LIST_ROOT_ICON = 'icon';
-
-    /**
-     * list.json root property `model`.
-     */
-    public const string LIST_ROOT_MODEL = 'model';
-
-    /**
-     * list.json root property `name`.
-     */
-    public const string LIST_ROOT_NAME = 'name';
-
-    /**
-     * list.json root property `order`.
-     */
-    public const string LIST_ROOT_ORDER = 'order';
-
-    /**
-     * list.json root property `reorderable`.
-     */
-    public const string LIST_ROOT_REORDERABLE = 'reorderable';
-
-    /**
-     * list.json root property `sort_order`.
-     */
-    public const string LIST_ROOT_SORT_ORDER = 'sort_order';
 
     /**
      * Canonical field types after YAML aliases are stripped (see yamlFormFieldType enum minus date/relation).
