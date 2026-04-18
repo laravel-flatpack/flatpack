@@ -1,12 +1,21 @@
 import { router } from '@inertiajs/react';
 import {
-    BellIcon,
-    CircleUserRoundIcon,
-    CreditCardIcon,
     EllipsisVerticalIcon,
+    KeyboardIcon,
     LogOutIcon,
+    MoonIcon,
+    SunIcon,
 } from 'lucide-react';
+import { useTheme } from 'next-themes';
+import { type ReactNode, useEffect, useMemo, useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -16,6 +25,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Kbd, KbdGroup } from '@/components/ui/kbd';
 import {
     SidebarMenu,
     SidebarMenuButton,
@@ -25,8 +35,73 @@ import {
 import { route } from '@/lib/route';
 import type { FlatpackUser } from '@/types/flatpack';
 
+function userInitials(name: string): string {
+    const trimmed = name.trim();
+    if (!trimmed) {
+        return '?';
+    }
+
+    const parts = trimmed.split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) {
+        return `${parts[0]?.[0] ?? ''}${parts[parts.length - 1]?.[0] ?? ''}`.toUpperCase();
+    }
+
+    return trimmed.slice(0, 2).toUpperCase();
+}
+
+type ShellShortcutRow = {
+    description: string;
+    keysMac: ReactNode;
+    keysOther: ReactNode;
+};
+
+const SHELL_KEYBOARD_SHORTCUTS: ShellShortcutRow[] = [
+    {
+        description: 'Toggle sidebar',
+        keysMac: (
+            <KbdGroup className="pointer-events-none">
+                <Kbd>⌘</Kbd>
+                <Kbd>B</Kbd>
+            </KbdGroup>
+        ),
+        keysOther: (
+            <KbdGroup className="pointer-events-none">
+                <Kbd>Ctrl</Kbd>
+                <Kbd>B</Kbd>
+            </KbdGroup>
+        ),
+    },
+];
+
 export function NavUser({ user }: { user: FlatpackUser }) {
     const { isMobile } = useSidebar();
+    const { resolvedTheme, setTheme } = useTheme();
+    const [mounted, setMounted] = useState(false);
+    const [shortcutsOpen, setShortcutsOpen] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    const isMacPlatform = useMemo(() => {
+        if (typeof window === 'undefined') {
+            return false;
+        }
+
+        return window.navigator.platform.toLowerCase().includes('mac');
+    }, []);
+
+    const themeLabel = !mounted
+        ? 'Switch theme'
+        : resolvedTheme === 'dark'
+          ? 'Switch to light theme'
+          : 'Switch to dark theme';
+
+    const ThemeIcon = !mounted
+        ? MoonIcon
+        : resolvedTheme === 'dark'
+          ? SunIcon
+          : MoonIcon;
 
     return (
         <SidebarMenu>
@@ -37,13 +112,13 @@ export function NavUser({ user }: { user: FlatpackUser }) {
                             size="lg"
                             className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                         >
-                            <Avatar className="h-8 w-8 rounded-lg grayscale">
+                            <Avatar className="h-8 w-8 rounded-lg">
                                 <AvatarImage
                                     src={user.avatar}
                                     alt={user.name}
                                 />
                                 <AvatarFallback className="rounded-lg">
-                                    CN
+                                    {userInitials(user.name)}
                                 </AvatarFallback>
                             </Avatar>
                             <div className="grid flex-1 text-left text-sm leading-tight">
@@ -71,7 +146,7 @@ export function NavUser({ user }: { user: FlatpackUser }) {
                                         alt={user.name}
                                     />
                                     <AvatarFallback className="rounded-lg">
-                                        CN
+                                        {userInitials(user.name)}
                                     </AvatarFallback>
                                 </Avatar>
                                 <div className="grid flex-1 text-left text-sm leading-tight">
@@ -86,17 +161,23 @@ export function NavUser({ user }: { user: FlatpackUser }) {
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuGroup>
-                            <DropdownMenuItem>
-                                <CircleUserRoundIcon />
-                                Account
+                            <DropdownMenuItem
+                                onClick={() =>
+                                    setTheme(
+                                        resolvedTheme === 'dark'
+                                            ? 'light'
+                                            : 'dark',
+                                    )
+                                }
+                            >
+                                <ThemeIcon />
+                                {themeLabel}
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
-                                <CreditCardIcon />
-                                Billing
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                                <BellIcon />
-                                Notifications
+                            <DropdownMenuItem
+                                onClick={() => setShortcutsOpen(true)}
+                            >
+                                <KeyboardIcon />
+                                Keyboard shortcuts
                             </DropdownMenuItem>
                         </DropdownMenuGroup>
                         <DropdownMenuSeparator />
@@ -110,6 +191,31 @@ export function NavUser({ user }: { user: FlatpackUser }) {
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
+                <Dialog open={shortcutsOpen} onOpenChange={setShortcutsOpen}>
+                    <DialogContent className="sm:max-w-md" showCloseButton>
+                        <DialogHeader>
+                            <DialogTitle>Keyboard shortcuts</DialogTitle>
+                            <DialogDescription>
+                                Shortcuts available across the Flatpack shell.
+                                Context-specific shortcuts appear on buttons
+                                when configured.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <ul className="flex flex-col gap-3 pt-1">
+                            {SHELL_KEYBOARD_SHORTCUTS.map((row) => (
+                                <li
+                                    key={row.description}
+                                    className="flex items-center justify-between gap-4 text-sm"
+                                >
+                                    <span>{row.description}</span>
+                                    {isMacPlatform
+                                        ? row.keysMac
+                                        : row.keysOther}
+                                </li>
+                            ))}
+                        </ul>
+                    </DialogContent>
+                </Dialog>
             </SidebarMenuItem>
         </SidebarMenu>
     );

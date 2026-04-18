@@ -1,4 +1,5 @@
 import { usePage } from '@inertiajs/react';
+import { ThemeProvider } from 'next-themes';
 import { AppSidebar } from '@/components/app-sidebar';
 import { SiteHeader } from '@/components/site-header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
@@ -37,24 +38,26 @@ export default function FlatpackLayout({
                 } as React.CSSProperties
             }
         >
-            <TooltipProvider delayDuration={0}>
-                <AppSidebar
-                    variant="inset"
-                    navigation={navigation}
-                    currentPath={currentPath}
-                />
-                <SidebarInset>
-                    <SiteHeader title={title} />
-                    <div className="flex flex-1 flex-col">
-                        <div className="@container/main flex flex-1 flex-col gap-2">
-                            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 lg:px-6">
-                                {children}
+            <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+                <TooltipProvider delayDuration={0}>
+                    <AppSidebar
+                        variant="inset"
+                        navigation={navigation}
+                        currentPath={currentPath}
+                    />
+                    <SidebarInset>
+                        <SiteHeader title={title} />
+                        <div className="flex flex-1 flex-col">
+                            <div className="@container/main flex flex-1 flex-col gap-2">
+                                <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 lg:px-6">
+                                    {children}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </SidebarInset>
-                <Toaster richColors />
-            </TooltipProvider>
+                    </SidebarInset>
+                    <Toaster richColors />
+                </TooltipProvider>
+            </ThemeProvider>
         </SidebarProvider>
     );
 }
