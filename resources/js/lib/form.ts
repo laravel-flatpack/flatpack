@@ -1,6 +1,8 @@
 import { type ComponentType, type LazyExoticComponent, lazy } from 'react';
 import type { FormFieldType } from '@/types/form-fields';
 
+const fieldModules = import.meta.glob('../components/form-fields/*.tsx');
+
 function fieldComponentExportName(type: FormFieldType): string {
     return `${type
         .split('-')
@@ -8,12 +10,17 @@ function fieldComponentExportName(type: FormFieldType): string {
         .join('')}Field`;
 }
 
-const fieldModules = import.meta.glob('../components/form-fields/*.tsx');
 type FormFieldModules = Record<string, () => Promise<unknown>>;
 
-export function loadField(
+/** One lazy component per type so remounts (e.g. after Inertia save) do not re-trigger Suspense fallbacks. */
+const lazyFieldByType = new Map<
+    FormFieldType,
+    LazyExoticComponent<ComponentType<Record<string, unknown>>>
+>();
+
+function createLazyField(
     type: FormFieldType,
-    modules: FormFieldModules = fieldModules,
+    modules: FormFieldModules,
 ): LazyExoticComponent<ComponentType<Record<string, unknown>>> {
     const path = `../components/form-fields/${type}.tsx`;
     return lazy(async () => {
@@ -36,4 +43,19 @@ export function loadField(
         }
         return { default: Comp };
     });
+}
+
+export function loadField(
+    type: FormFieldType,
+    modules: FormFieldModules = fieldModules,
+): LazyExoticComponent<ComponentType<Record<string, unknown>>> {
+    if (modules === fieldModules) {
+        let cached = lazyFieldByType.get(type);
+        if (cached === undefined) {
+            cached = createLazyField(type, modules);
+            lazyFieldByType.set(type, cached);
+        }
+        return cached;
+    }
+    return createLazyField(type, modules);
 }

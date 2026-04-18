@@ -195,6 +195,48 @@ YAML, function (): void {
     });
 });
 
+test('flatpack entity edit GET inertia props include values persisted by PATCH', function () {
+    withTempFormSchema(<<<'YAML'
+name: Post
+model: Flatpack\Tests\Models\Post
+fields:
+  title:
+    type: text
+    label: Title
+YAML, function (): void {
+        /** @var User $user */
+        $user = User::factory()->createOne();
+        $post = Post::factory()->createOne([
+            'title' => 'Original title',
+            'slug' => 'original-title',
+        ]);
+
+        actingAs($user)
+            ->patch(route('flatpack.entities.save', [
+                'entity' => 'posts',
+                'record' => (string) $post->getKey(),
+            ]), [
+                'values' => [
+                    'title' => 'Updated title',
+                ],
+            ])
+            ->assertRedirect(route('flatpack.entities.edit', [
+                'entity' => 'posts',
+                'record' => (string) $post->getKey(),
+            ]));
+
+        actingAs($user)
+            ->get(route('flatpack.entities.edit', [
+                'entity' => 'posts',
+                'record' => (string) $post->getKey(),
+            ]))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('form', false)
+                ->where('values.title', 'Updated title'));
+    });
+});
+
 test('flatpack entity edit form returns values for configured fields', function () {
     withTempFormSchema(<<<'YAML'
 name: Post

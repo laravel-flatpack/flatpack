@@ -90,6 +90,7 @@ export function useFlatpackForm({
     useEffect(() => {
         pendingSaveActionIdRef.current = defaultSaveActionId;
     }, [defaultSaveActionId]);
+
     const [pendingConfirm, setPendingConfirm] =
         useState<FlatpackFormPendingConfirm | null>(null);
 
@@ -162,6 +163,8 @@ export function useFlatpackForm({
 
         const options = {
             preserveScroll: true,
+            /** Default PATCH merges {@code preserveState: true}, which keeps stale props after 303 → same edit URL. */
+            preserveState: false,
             onSuccess: () => {
                 form.clearErrors();
                 form.setDefaults({
