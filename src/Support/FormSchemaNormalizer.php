@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Flatpack\Support;
 
+use Flatpack\Schema\FormFieldPresetType;
 use Flatpack\Schema\FormFieldType;
 use Illuminate\Database\Eloquent\Model;
 
@@ -37,6 +38,8 @@ final class FormSchemaNormalizer
 
             $normalizedFields[$fieldId] = $this->normalizedFieldDefinition($fieldDefinition);
         }
+
+        $normalizedFields = $this->stripInvalidPresets($normalizedFields);
 
         $normalized = $schema;
         $normalized['fields'] = $normalizedFields;
@@ -97,7 +100,10 @@ final class FormSchemaNormalizer
             );
         }
 
-        if (isset($fieldDefinition['preset'])) {
+        $canonicalType = $fieldDefinition['type'];
+        if ($canonicalType !== 'text' && $canonicalType !== 'textarea') {
+            unset($fieldDefinition['preset']);
+        } elseif (isset($fieldDefinition['preset'])) {
             $normalizedPreset = $this->normalizePreset($fieldDefinition['preset']);
             if ($normalizedPreset !== null) {
                 $fieldDefinition['preset'] = $normalizedPreset;
@@ -110,7 +116,57 @@ final class FormSchemaNormalizer
     }
 
     /**
-     * @param  mixed  $preset
+     * Drops preset when the source field id is missing or points at this field (self-reference).
+     *
+     * @param  array<string, mixed>  $fields
+     * @return array<string, mixed>
+     */
+    private function stripInvalidPresets(array $fields): array
+    {
+        $ids = $this->fieldIdsFromDefinitions($fields);
+
+        foreach ($fields as $yamlKey => $definition) {
+            if (! is_array($definition)) {
+                continue;
+            }
+
+            if (! isset($definition['preset']) || ! is_array($definition['preset'])) {
+                continue;
+            }
+
+            $destId = trim((string) ($definition['id'] ?? $yamlKey));
+            $source = trim((string) ($definition['preset']['field'] ?? ''));
+
+            if ($source === '' || $source === $destId || ! isset($ids[$source])) {
+                unset($fields[$yamlKey]['preset']);
+            }
+        }
+
+        return $fields;
+    }
+
+    /**
+     * @param  array<string, mixed>  $fields
+     * @return array<string, true>
+     */
+    private function fieldIdsFromDefinitions(array $fields): array
+    {
+        $ids = [];
+        foreach ($fields as $yamlKey => $definition) {
+            if (! is_array($definition)) {
+                continue;
+            }
+
+            $id = trim((string) ($definition['id'] ?? $yamlKey));
+            if ($id !== '') {
+                $ids[$id] = true;
+            }
+        }
+
+        return $ids;
+    }
+
+    /**
      * @return array{field: string, type: string}|null
      */
     private function normalizePreset(mixed $preset): ?array
@@ -126,8 +182,7 @@ final class FormSchemaNormalizer
             ? trim($preset['type'])
             : '';
 
-        $allowed = ['exact', 'slug', 'url', 'camel', 'file'];
-        if ($field === '' || ! in_array($type, $allowed, true)) {
+        if ($field === '' || ! in_array($type, FormFieldPresetType::ALLOWED, true)) {
             return null;
         }
 
