@@ -107,7 +107,7 @@ Defining a list:
 title: Post
 model: App\Models\Post
 icon: book-open
-order: 1
+nav_order: 1
 
 toolbar:
     create:
