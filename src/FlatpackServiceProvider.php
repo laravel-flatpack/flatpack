@@ -12,6 +12,7 @@ use Flatpack\Composition\CompositionValues;
 use Flatpack\Composition\DefaultCompositionQuery;
 use Flatpack\Composition\EntityComposition;
 use Flatpack\Composition\YamlCompositionLoader;
+use Flatpack\Console\Commands\GenerateCompositionSchemaKeysCommand;
 use Flatpack\Contracts\Actions\ActionResolver;
 use Flatpack\Contracts\Authorization\FlatpackAuthorizer;
 use Flatpack\Contracts\Composition\CompositionLoader;
@@ -24,6 +25,7 @@ use Flatpack\Http\Middleware\ShareFlatpackInertiaData;
 use Flatpack\Lists\ListRecordsLoader;
 use Flatpack\Menu\FlatpackMenuBuilder;
 use Flatpack\Registration\AuthenticationRedirectCallbacks;
+use Flatpack\Support\FormSchemaNormalizer;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Contracts\Http\Kernel as HttpKernelContract;
@@ -75,6 +77,8 @@ final class FlatpackServiceProvider extends ServiceProvider
         ));
 
         $this->app->singleton(ListRecordsLoader::class, fn (): ListRecordsLoader => new ListRecordsLoader);
+
+        $this->app->singleton(FormSchemaNormalizer::class);
 
         $this->app->singleton(ActionModelClassResolver::class);
 
@@ -152,7 +156,7 @@ final class FlatpackServiceProvider extends ServiceProvider
     protected function registerCommands(): void
     {
         $this->commands([
-            // MakeCommand::class,
+            GenerateCompositionSchemaKeysCommand::class,
         ]);
     }
 

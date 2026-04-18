@@ -2,21 +2,10 @@ import type { ReactNode } from 'react';
 
 /** Allowed values for YAML {@code success_redirect} on Flatpack actions (server-driven redirects). */
 export type FlatpackSuccessRedirect =
-    | 'list'
-    | 'edit'
-    | 'create'
-    | 'show'
-    | 'back'
-    | 'previous'
-    | 'current'
-    | 'stay';
+    typeof import('@/lib/generated/composition-schema-keys').SUCCESS_REDIRECT_VALUES[number];
 
 export type FlatpackDataTableSelectOptionStatus =
-    | 'success'
-    | 'pending'
-    | 'warning'
-    | 'error'
-    | 'info';
+    typeof import('@/lib/generated/composition-schema-keys').OPTION_STATUS_VALUES[number];
 
 export type FlatpackDataTableColumnOption = {
     value: string;
@@ -29,6 +18,9 @@ export type FlatpackDataTableColumnMeta = {
     label: string;
 };
 
+export type FlatpackActionVariant =
+    typeof import('@/lib/generated/composition-schema-keys').BUTTON_VARIANT_UI_VALUES[number];
+
 export type FlatpackDataTableActionButton = {
     label: string;
     icon?: string;
@@ -37,14 +29,6 @@ export type FlatpackDataTableActionButton = {
     variant?: FlatpackActionVariant;
     success_redirect?: FlatpackSuccessRedirect;
 };
-
-export type FlatpackActionVariant =
-    | 'default'
-    | 'outline'
-    | 'secondary'
-    | 'ghost'
-    | 'destructive'
-    | 'link';
 
 export type FlatpackDataTableBulkAction = {
     id: string;
@@ -57,17 +41,16 @@ export type FlatpackDataTableBulkAction = {
     success_redirect?: FlatpackSuccessRedirect;
 };
 
+/** Normalized column display type ({@link LIST_COLUMN_YAML_TYPES} with {@code datetime} folded into {@code date}). */
+export type FlatpackDataTableColumnType = Exclude<
+    typeof import('@/lib/generated/composition-schema-keys').LIST_COLUMN_YAML_TYPES[number],
+    'datetime'
+>;
+
 export type FlatpackDataTableColumn = {
     id: string;
     label: string;
-    type?:
-        | 'text'
-        | 'select'
-        | 'date'
-        | 'actions'
-        | 'badge'
-        | 'status'
-        | 'relation';
+    type?: FlatpackDataTableColumnType;
     relation?: string;
     relationName?: string;
     relationValue?: string;
@@ -83,13 +66,17 @@ export type FlatpackDataTableColumn = {
     truncate?: number;
 };
 
-export type FlatpackDataTableFilterDateMode = 'exact' | 'from';
+export type FlatpackDataTableFilterDateMode =
+    typeof import('@/lib/generated/composition-schema-keys').LIST_FILTER_DATE_MODES[number];
+
+export type FlatpackDataTableFilterType =
+    typeof import('@/lib/generated/composition-schema-keys').LIST_FILTER_TYPES[number];
 
 export type FlatpackDataTableFilter = {
     id: string;
     label: string;
     placeholder?: string;
-    type: 'select' | 'date';
+    type: FlatpackDataTableFilterType;
     multiple?: boolean;
     mode?: FlatpackDataTableFilterDateMode;
     options?: FlatpackDataTableColumnOption[];

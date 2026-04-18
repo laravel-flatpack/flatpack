@@ -4,23 +4,10 @@ declare(strict_types=1);
 
 namespace Flatpack\Lists;
 
+use Flatpack\Schema\Generated\CompositionSchemaKeys;
+
 final class SchemaInspector
 {
-    private const string FILTER_TYPE_SELECT = 'select';
-
-    private const string FILTER_TYPE_DATE = 'date';
-
-    /**
-     * @var list<string>
-     */
-    private const array SELECT_OPTION_STATUSES = [
-        'success',
-        'pending',
-        'warning',
-        'error',
-        'info',
-    ];
-
     /**
      * @return list<string>
      */
@@ -116,13 +103,13 @@ final class SchemaInspector
             $configuredType = isset($config['type']) ? trim((string) $config['type']) : '';
             $type = in_array(
                 $configuredType,
-                [self::FILTER_TYPE_SELECT, self::FILTER_TYPE_DATE],
+                CompositionSchemaKeys::LIST_FILTER_TYPES,
                 true,
             )
                 ? $configuredType
                 : $columnType;
 
-            if ($type !== self::FILTER_TYPE_SELECT && $type !== self::FILTER_TYPE_DATE) {
+            if (! in_array($type, CompositionSchemaKeys::LIST_FILTER_TYPES, true)) {
                 continue;
             }
 
@@ -133,7 +120,7 @@ final class SchemaInspector
                 ? trim($config['placeholder'])
                 : '';
 
-            if ($type === self::FILTER_TYPE_SELECT) {
+            if ($type === 'select') {
                 $options = self::normalizeSelectFilterOptions($config['options'] ?? null);
                 if ($options === [] && is_array($column)) {
                     $options = self::normalizeSelectFilterOptions($column['options'] ?? null);
@@ -145,7 +132,7 @@ final class SchemaInspector
                     id: $id,
                     label: $label !== '' ? $label : $id,
                     placeholder: $placeholder,
-                    type: self::FILTER_TYPE_SELECT,
+                    type: 'select',
                     multiple: ($config['multiple'] ?? false) === true,
                     options: $options,
                 );
@@ -158,7 +145,7 @@ final class SchemaInspector
                 id: $id,
                 label: $label !== '' ? $label : $id,
                 placeholder: $placeholder,
-                type: self::FILTER_TYPE_DATE,
+                type: 'date',
                 multiple: false,
                 mode: $mode,
             );
@@ -280,7 +267,7 @@ final class SchemaInspector
 
         $columnType = isset($column['type']) ? trim((string) $column['type']) : 'text';
         if ($columnType === 'datetime') {
-            return self::FILTER_TYPE_DATE;
+            return 'date';
         }
 
         return $columnType;
@@ -296,7 +283,7 @@ final class SchemaInspector
         }
 
         $status = trim($rawStatus);
-        if (! in_array($status, self::SELECT_OPTION_STATUSES, true)) {
+        if (! in_array($status, CompositionSchemaKeys::OPTION_STATUS_VALUES, true)) {
             return null;
         }
 

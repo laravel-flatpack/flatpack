@@ -1,28 +1,23 @@
 import { Skeleton } from '@/components/ui/skeleton';
-import type { FieldLoadingProps } from '@/types/loading';
+import type { FormFieldProps } from '@/types/form-fields';
 
-export function FieldLoading({
-    label = true,
-    textField = true,
-    textareaField = false,
-    helperText = false,
-}: FieldLoadingProps) {
+/**
+ * Lazy field Suspense fallback — matches {@link FlatpackFormFields}.
+ */
+export function FieldLoading(props: FormFieldProps) {
     return (
-        <div className="flex flex-col gap-4" data-slot="field-loading">
-            <div className="flex flex-col gap-4">
-                {label && (
-                    <Skeleton className="h-4 w-32 rounded-full bg-muted-foreground/15 dark:bg-muted-foreground/25" />
-                )}
-                {textField && (
-                    <Skeleton className="h-8 w-full rounded-xl bg-muted-foreground/15 dark:bg-muted-foreground/25" />
-                )}
-                {textareaField && (
-                    <Skeleton className="h-40 w-full rounded-xl bg-muted-foreground/15 dark:bg-muted-foreground/25" />
-                )}
-            </div>
-            {helperText && (
-                <Skeleton className="h-4 w-40 rounded-full bg-muted-foreground/15 dark:bg-muted-foreground/25" />
+        <>
+            {props.label ? (
+                <Skeleton className="mb-4 h-4 w-32 rounded-full" />
+            ) : null}
+            {['textarea', 'rich-text', 'block-editor'].includes(props.type) ? (
+                <Skeleton className="h-25 w-full rounded-3xl" />
+            ) : (
+                <Skeleton className="h-9 rounded-3xl" />
             )}
-        </div>
+            {props.helperText ? (
+                <Skeleton className="h-4 w-40 rounded-full" />
+            ) : null}
+        </>
     );
 }

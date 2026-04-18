@@ -4,6 +4,7 @@ import { FlatpackConfirmDialog } from '@/components/flatpack/flatpack-confirm-di
 import { FlatpackFormActions } from '@/components/flatpack-form/flatpack-form-actions';
 import { FlatpackFormFields } from '@/components/flatpack-form/flatpack-form-fields';
 import { FlatpackFormTopErrors } from '@/components/flatpack-form/flatpack-form-top-errors';
+import { useCompositionDebugLog } from '@/hooks/use-composition-debug-log';
 import { useFlatpackForm } from '@/hooks/use-flatpack-form';
 import FlatpackLayout from '@/layouts/flatpack-layout';
 import type { FlatpackFormPageProps } from '@/types/pages/flatpack';
@@ -17,6 +18,7 @@ const NoFieldsMessage = ({ entity }: { entity: string }) => (
 );
 
 export default function FlatpackFormPage(props: FlatpackFormPageProps) {
+    useCompositionDebugLog(props.composition_debug);
     const { entity, name, record, mode } = props;
     const {
         form,

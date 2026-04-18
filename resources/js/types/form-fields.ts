@@ -10,15 +10,8 @@ export type SelectFieldOption = {
     status?: FlatpackDataTableSelectOptionStatus;
 };
 
-export const formFieldPresetTypes = [
-    'exact',
-    'slug',
-    'url',
-    'camel',
-    'file',
-] as const;
-
-export type FormFieldPresetType = (typeof formFieldPresetTypes)[number];
+export type FormFieldPresetType =
+    typeof import('@/lib/generated/composition-schema-keys').FORM_PRESET_TYPES[number];
 
 export type FormFieldPreset = {
     field: string;

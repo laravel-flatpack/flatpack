@@ -4,6 +4,32 @@ Contributions are welcome! Please see [CONTRIBUTING](CONTRIBUTING.md) for detail
 
 This document covers local frontend tooling for the **Flatpack Laravel package** (not a standalone Laravel app). Vite reads **only this package’s `.env`** (`envDir` in `vite.config.ts`); the host application’s `.env` is not used for `npm run dev` / `npm run build`.
 
+## JSON Schema and generated PHP constants
+
+Forms and lists normalization read **allowlists** derived from `resources/schema/form.json` and `resources/schema/list.json`. When you add or rename a top-level key, field type, column shape, header action property, or bulk-action property, regenerate the committed PHP file **after** editing the JSON.
+
+From the package root (with dev dependencies installed, so `vendor/bin/testbench` exists):
+
+```bash
+composer run schema:keys
+```
+
+That writes `src/Schema/Generated/CompositionSchemaKeys.php`, `resources/js/lib/generated/composition-schema-keys.ts`, and formats the TypeScript with **Biome** when `node_modules/.bin/biome` exists. Commit both generated files with your schema change.
+
+In an application that depends on Flatpack, the same command is registered as Artisan:
+
+```bash
+php artisan flatpack:generate-composition-schema-keys
+```
+
+| Flag / script                  | Purpose                                                                                                                                                                                                                             |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`--check`**                  | Exits with a non-zero status if the JSON schema’s extracted key sets no longer match **`src/Schema/Generated/CompositionSchemaKeys.php`** or **`resources/js/lib/generated/composition-schema-keys.ts`**. Does not write any files. |
+| **`composer run schema:keys`** | Runs `--check` via Testbench (same as CI).                                                                                                                                                                                          |
+| **`composer run check`**       | Runs lint, static analysis, **`schema:keys`**, and tests.                                                                                                                                                                           |
+
+The React bundle does **not** import full `form.json` / `list.json` (would inflate the client bundle). It imports **`resources/js/lib/generated/composition-schema-keys.ts`**, emitted by the same Artisan command as the PHP file. **`form-schema-contract.ts`** re-exports field-type allowlists from that module for `normalizeFields`.
+
 ## Frontend (Vite)
 
 Flatpack ships an Inertia + React UI under `resources/js` and `resources/css`.

@@ -3,11 +3,13 @@ import type { ReactElement } from 'react';
 import { FlatpackConfirmDialog } from '@/components/flatpack/flatpack-confirm-dialog';
 import { FlatpackListHeader } from '@/components/flatpack-list/flatpack-list-header';
 import { DataTable } from '@/components/table/data-table';
+import { useCompositionDebugLog } from '@/hooks/use-composition-debug-log';
 import { useFlatpackList } from '@/hooks/use-flatpack-list';
 import FlatpackLayout from '@/layouts/flatpack-layout';
 import type { FlatpackListPageProps } from '@/types/pages/flatpack';
 
 export default function FlatpackListPage(props: FlatpackListPageProps) {
+    useCompositionDebugLog(props.composition_debug);
     const {
         displayName,
         pageTitle,

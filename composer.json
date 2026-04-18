@@ -32,6 +32,7 @@
         "tightenco/ziggy": "^2.6"
     },
     "require-dev": {
+        "justinrainbow/json-schema": "^6.0",
         "larastan/larastan": "^3.9",
         "laravel/framework": "^13.0",
         "laravel/pint": "^1.0",
@@ -73,7 +74,8 @@
         "lint:test": "pint --test",
         "phpstan": "phpstan analyse --memory-limit=512M",
         "rector": "rector --dry-run",
+        "schema:keys": "php vendor/bin/testbench flatpack:generate-composition-schema-keys --check",
         "test": "pest",
-        "check": "composer run lint && composer run rector && composer run phpstan && composer run test"
+        "check": "composer run lint && composer run rector && composer run phpstan && composer run schema:keys && composer run test"
     }
 }

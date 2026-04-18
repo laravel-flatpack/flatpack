@@ -1,0 +1,464 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "Flatpack form composition",
+    "description": "Structural contract for entity form.yaml (decoded to JSON). Each field is a discriminated union on type: only the options valid for that type are allowed (additionalProperties: false). Runtime still normalizes aliases (e.g. date → date-picker).",
+    "type": "object",
+    "properties": {
+        "name": {
+            "type": "string",
+            "description": "Display name of the entity"
+        },
+        "model": {
+            "type": "string",
+            "description": "Fully-qualified Eloquent model class name"
+        },
+        "icon": {
+            "type": "string",
+            "description": "Icon name from Lucide icon library: https://lucide.dev/icons/"
+        },
+        "fields": {
+            "type": "object",
+            "additionalProperties": {
+                "$ref": "#/$defs/fieldDefinition"
+            }
+        },
+        "actions": {
+            "$ref": "#/$defs/formActionsBlock"
+        }
+    },
+    "additionalProperties": true,
+    "$defs": {
+        "formActionsBlock": {
+            "type": "object",
+            "description": "Named actions (e.g. save). Merged with header-style action entries by loaders.",
+            "additionalProperties": {
+                "$ref": "#/$defs/headerActionDefinition"
+            }
+        },
+        "headerActionDefinition": {
+            "type": "object",
+            "required": ["label"],
+            "properties": {
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "action": {
+                    "type": "string"
+                },
+                "href": {
+                    "type": "string"
+                },
+                "icon": {
+                    "type": "string"
+                },
+                "variant": {
+                    "$ref": "#/$defs/buttonVariant"
+                },
+                "success_message": {
+                    "type": "string"
+                },
+                "confirm": {
+                    "type": "boolean"
+                },
+                "success_redirect": {
+                    "$ref": "#/$defs/successRedirect"
+                },
+                "disable_until_dirty": {
+                    "type": "boolean"
+                },
+                "shortcut": {
+                    "type": "string"
+                }
+            },
+            "oneOf": [
+                {
+                    "required": ["action"],
+                    "not": {
+                        "required": ["href"]
+                    }
+                },
+                {
+                    "required": ["href"],
+                    "not": {
+                        "required": ["action"]
+                    }
+                }
+            ],
+            "additionalProperties": true
+        },
+        "buttonVariant": {
+            "type": "string",
+            "enum": [
+                "default",
+                "outline",
+                "secondary",
+                "ghost",
+                "destructive",
+                "link",
+                "primary"
+            ],
+            "description": "primary is accepted in YAML and normalized to default in UI code"
+        },
+        "successRedirect": {
+            "type": "string",
+            "enum": [
+                "list",
+                "edit",
+                "create",
+                "show",
+                "back",
+                "previous",
+                "current",
+                "stay"
+            ]
+        },
+        "yamlFormFieldType": {
+            "type": "string",
+            "description": "YAML type before/after FormFieldType::normalizeYamlType. date is normalized to date-picker; relation becomes combobox with remote options.",
+            "enum": [
+                "text",
+                "textarea",
+                "select",
+                "combobox",
+                "relation",
+                "date",
+                "date-picker",
+                "date-range-picker",
+                "time-picker",
+                "checkbox",
+                "switch",
+                "rich-text",
+                "block-editor",
+                "table"
+            ]
+        },
+        "selectOption": {
+            "type": "object",
+            "required": ["value", "label"],
+            "properties": {
+                "value": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "status": {
+                    "$ref": "#/$defs/optionStatus"
+                },
+                "icon": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": true
+        },
+        "optionStatus": {
+            "type": "string",
+            "enum": ["success", "pending", "warning", "error", "info"]
+        },
+        "selectOptions": {
+            "oneOf": [
+                {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/selectOption"
+                    }
+                },
+                {
+                    "type": "object",
+                    "minProperties": 1,
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                }
+            ]
+        },
+        "validationRules": {
+            "oneOf": [
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            ]
+        },
+        "preset": {
+            "type": "object",
+            "required": ["field", "type"],
+            "properties": {
+                "field": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Source field id to copy from"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": ["exact", "slug", "url", "camel", "file"]
+                }
+            },
+            "additionalProperties": false
+        },
+        "fieldDefinition": {
+            "description": "Discriminated union on type. Only keys valid for that field type are permitted.",
+            "oneOf": [
+                { "$ref": "#/$defs/fieldText" },
+                { "$ref": "#/$defs/fieldTextarea" },
+                { "$ref": "#/$defs/fieldSelect" },
+                { "$ref": "#/$defs/fieldCombobox" },
+                { "$ref": "#/$defs/fieldRelation" },
+                { "$ref": "#/$defs/fieldDate" },
+                { "$ref": "#/$defs/fieldDatePicker" },
+                { "$ref": "#/$defs/fieldDateRangePicker" },
+                { "$ref": "#/$defs/fieldTimePicker" },
+                { "$ref": "#/$defs/fieldCheckbox" },
+                { "$ref": "#/$defs/fieldSwitch" },
+                { "$ref": "#/$defs/fieldRichText" },
+                { "$ref": "#/$defs/fieldBlockEditor" },
+                { "$ref": "#/$defs/fieldTable" }
+            ]
+        },
+        "fieldText": {
+            "type": "object",
+            "required": ["type", "label"],
+            "properties": {
+                "type": { "const": "text" },
+                "id": { "type": "string" },
+                "label": { "type": "string", "minLength": 1 },
+                "helperText": { "type": "string" },
+                "placeholder": { "type": "string" },
+                "required": { "type": "boolean" },
+                "rules": { "$ref": "#/$defs/validationRules" },
+                "value": {},
+                "preset": { "$ref": "#/$defs/preset" }
+            },
+            "additionalProperties": false
+        },
+        "fieldTextarea": {
+            "type": "object",
+            "required": ["type", "label"],
+            "properties": {
+                "type": { "const": "textarea" },
+                "id": { "type": "string" },
+                "label": { "type": "string", "minLength": 1 },
+                "helperText": { "type": "string" },
+                "placeholder": { "type": "string" },
+                "required": { "type": "boolean" },
+                "rules": { "$ref": "#/$defs/validationRules" },
+                "value": {},
+                "rows": { "type": "integer", "minimum": 1 },
+                "preset": { "$ref": "#/$defs/preset" }
+            },
+            "additionalProperties": false
+        },
+        "fieldSelect": {
+            "type": "object",
+            "required": ["type", "label", "options"],
+            "properties": {
+                "type": { "const": "select" },
+                "id": { "type": "string" },
+                "label": { "type": "string", "minLength": 1 },
+                "helperText": { "type": "string" },
+                "placeholder": { "type": "string" },
+                "required": { "type": "boolean" },
+                "rules": { "$ref": "#/$defs/validationRules" },
+                "value": {},
+                "options": { "$ref": "#/$defs/selectOptions" }
+            },
+            "additionalProperties": false
+        },
+        "fieldCombobox": {
+            "type": "object",
+            "required": ["type", "label"],
+            "properties": {
+                "type": { "const": "combobox" },
+                "id": { "type": "string" },
+                "label": { "type": "string", "minLength": 1 },
+                "helperText": { "type": "string" },
+                "placeholder": { "type": "string" },
+                "required": { "type": "boolean" },
+                "rules": { "$ref": "#/$defs/validationRules" },
+                "value": {},
+                "options": { "$ref": "#/$defs/selectOptions" },
+                "multiple": { "type": "boolean" },
+                "relation": { "type": "string", "minLength": 1 },
+                "remote": { "type": "boolean" }
+            },
+            "additionalProperties": false
+        },
+        "fieldRelation": {
+            "type": "object",
+            "required": ["type", "label", "relation"],
+            "properties": {
+                "type": { "const": "relation" },
+                "id": { "type": "string" },
+                "label": { "type": "string", "minLength": 1 },
+                "helperText": { "type": "string" },
+                "placeholder": { "type": "string" },
+                "required": { "type": "boolean" },
+                "rules": { "$ref": "#/$defs/validationRules" },
+                "value": {},
+                "relation": { "type": "string", "minLength": 1 },
+                "options": { "$ref": "#/$defs/selectOptions" },
+                "multiple": { "type": "boolean" },
+                "remote": { "type": "boolean" }
+            },
+            "additionalProperties": false
+        },
+        "fieldDate": {
+            "type": "object",
+            "required": ["type", "label"],
+            "properties": {
+                "type": { "const": "date" },
+                "id": { "type": "string" },
+                "label": { "type": "string", "minLength": 1 },
+                "helperText": { "type": "string" },
+                "placeholder": { "type": "string" },
+                "required": { "type": "boolean" },
+                "rules": { "$ref": "#/$defs/validationRules" },
+                "value": {}
+            },
+            "additionalProperties": false
+        },
+        "fieldDatePicker": {
+            "type": "object",
+            "required": ["type", "label"],
+            "properties": {
+                "type": { "const": "date-picker" },
+                "id": { "type": "string" },
+                "label": { "type": "string", "minLength": 1 },
+                "helperText": { "type": "string" },
+                "placeholder": { "type": "string" },
+                "required": { "type": "boolean" },
+                "rules": { "$ref": "#/$defs/validationRules" },
+                "value": {}
+            },
+            "additionalProperties": false
+        },
+        "fieldDateRangePicker": {
+            "type": "object",
+            "required": ["type", "label"],
+            "properties": {
+                "type": { "const": "date-range-picker" },
+                "id": { "type": "string" },
+                "label": { "type": "string", "minLength": 1 },
+                "helperText": { "type": "string" },
+                "placeholder": { "type": "string" },
+                "required": { "type": "boolean" },
+                "rules": { "$ref": "#/$defs/validationRules" },
+                "value": {}
+            },
+            "additionalProperties": false
+        },
+        "fieldTimePicker": {
+            "type": "object",
+            "required": ["type", "label"],
+            "properties": {
+                "type": { "const": "time-picker" },
+                "id": { "type": "string" },
+                "label": { "type": "string", "minLength": 1 },
+                "helperText": { "type": "string" },
+                "placeholder": { "type": "string" },
+                "required": { "type": "boolean" },
+                "rules": { "$ref": "#/$defs/validationRules" },
+                "value": {},
+                "dateLabel": { "type": "string" },
+                "datePlaceholder": { "type": "string" },
+                "timeLabel": { "type": "string" },
+                "timeDefaultValue": { "type": "string" }
+            },
+            "additionalProperties": false
+        },
+        "fieldCheckbox": {
+            "type": "object",
+            "required": ["type", "label"],
+            "properties": {
+                "type": { "const": "checkbox" },
+                "id": { "type": "string" },
+                "label": { "type": "string", "minLength": 1 },
+                "helperText": { "type": "string" },
+                "required": { "type": "boolean" },
+                "rules": { "$ref": "#/$defs/validationRules" },
+                "value": {},
+                "defaultChecked": { "type": "boolean" }
+            },
+            "additionalProperties": false
+        },
+        "fieldSwitch": {
+            "type": "object",
+            "required": ["type", "label"],
+            "properties": {
+                "type": { "const": "switch" },
+                "id": { "type": "string" },
+                "label": { "type": "string", "minLength": 1 },
+                "helperText": { "type": "string" },
+                "required": { "type": "boolean" },
+                "rules": { "$ref": "#/$defs/validationRules" },
+                "value": {},
+                "defaultChecked": { "type": "boolean" }
+            },
+            "additionalProperties": false
+        },
+        "fieldRichText": {
+            "type": "object",
+            "required": ["type", "label"],
+            "properties": {
+                "type": { "const": "rich-text" },
+                "id": { "type": "string" },
+                "label": { "type": "string", "minLength": 1 },
+                "helperText": { "type": "string" },
+                "placeholder": { "type": "string" },
+                "required": { "type": "boolean" },
+                "rules": { "$ref": "#/$defs/validationRules" },
+                "value": {},
+                "showFixedToolbar": { "type": "boolean" }
+            },
+            "additionalProperties": false
+        },
+        "fieldBlockEditor": {
+            "type": "object",
+            "required": ["type", "label"],
+            "properties": {
+                "type": { "const": "block-editor" },
+                "id": { "type": "string" },
+                "label": { "type": "string", "minLength": 1 },
+                "helperText": { "type": "string" },
+                "placeholder": { "type": "string" },
+                "required": { "type": "boolean" },
+                "rules": { "$ref": "#/$defs/validationRules" },
+                "value": {},
+                "showFixedToolbar": { "type": "boolean" }
+            },
+            "additionalProperties": false
+        },
+        "fieldTable": {
+            "type": "object",
+            "required": ["type", "label", "columns"],
+            "properties": {
+                "type": { "const": "table" },
+                "id": { "type": "string" },
+                "label": { "type": "string", "minLength": 1 },
+                "helperText": { "type": "string" },
+                "required": { "type": "boolean" },
+                "rules": { "$ref": "#/$defs/validationRules" },
+                "value": {},
+                "columns": { "type": "array" },
+                "data": { "type": "array" },
+                "bulkActions": { "type": "array" },
+                "actions": { "type": "array" },
+                "reorderable": {
+                    "oneOf": [
+                        { "type": "boolean" },
+                        { "type": "string" }
+                    ]
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}

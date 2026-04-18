@@ -71,6 +71,10 @@ final class FlatpackSchema extends JsonResource
                 array_key_exists('values', $resource),
                 data_get($resource, 'values'),
             ),
+            'composition_debug' => $this->when(
+                array_key_exists('composition_debug', $resource),
+                data_get($resource, 'composition_debug', []),
+            ),
             /** Demo catalog properties */
             'catalog' => $this->when(! empty($catalog), $catalog),
         ];

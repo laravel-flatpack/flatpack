@@ -27,35 +27,6 @@ import type {
     DemoComponentCatalogEntry,
     DemoComponentsInertiaProps,
 } from '@/types/demo';
-import type { FieldLoadingProps } from '@/types/loading';
-
-const FIELD_LOADING_TEXT_TYPES = new Set([
-    'text',
-    'date-picker',
-    'date-range-picker',
-    'time-picker',
-    'select',
-    'combobox',
-]);
-
-const FIELD_LOADING_TEXTAREA_TYPES = new Set([
-    'textarea',
-    'rich-text',
-    'block-editor',
-    'table',
-]);
-
-function fieldLoadingPropsForEntry(
-    entry: DemoComponentCatalogEntry,
-): FieldLoadingProps {
-    const { type, label, helperText } = entry.props;
-    return {
-        label: Boolean(label),
-        helperText: Boolean(helperText),
-        textField: FIELD_LOADING_TEXT_TYPES.has(type),
-        textareaField: FIELD_LOADING_TEXTAREA_TYPES.has(type),
-    };
-}
 
 function formatDemoLiveValue(value: unknown): string {
     return JSON.stringify(
@@ -100,18 +71,15 @@ function DemoFieldPreview({
 
     const LazyField = lazyByType[entry.props.type];
 
-    const fieldLoadingProps = useMemo(
-        () => fieldLoadingPropsForEntry(entry),
-        [entry],
-    );
-
     const showLiveValue = resolveDemoShowValue(entry, demoQueryFlat);
 
     return (
         <div className="flex flex-col gap-4">
-            <Suspense fallback={<FieldLoading {...fieldLoadingProps} />}>
-                <LazyField {...fieldProps} />
-            </Suspense>
+            <div className="space-y-2">
+                <Suspense fallback={<FieldLoading {...entry.props} />}>
+                    <LazyField {...fieldProps} />
+                </Suspense>
+            </div>
             {showLiveValue ? (
                 <Collapsible defaultOpen={true}>
                     <CollapsibleTrigger

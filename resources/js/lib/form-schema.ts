@@ -1,19 +1,5 @@
+import { SUPPORTED_FORM_FIELD_TYPES } from '@/lib/form-schema-contract';
 import type { FormFieldProps, FormFieldType } from '@/types/form-fields';
-
-const supportedFormFieldTypes = [
-    'text',
-    'textarea',
-    'select',
-    'combobox',
-    'date-picker',
-    'date-range-picker',
-    'time-picker',
-    'checkbox',
-    'switch',
-    'rich-text',
-    'block-editor',
-    'table',
-] as const satisfies readonly FormFieldType[];
 
 export type FormFieldEntry = {
     id: string;
@@ -32,7 +18,7 @@ function normalizeFieldType(value: unknown): FormFieldType | undefined {
         return 'combobox';
     }
     return typeof value === 'string' &&
-        supportedFormFieldTypes.includes(value as FormFieldType)
+        SUPPORTED_FORM_FIELD_TYPES.includes(value as FormFieldType)
         ? (value as FormFieldType)
         : undefined;
 }

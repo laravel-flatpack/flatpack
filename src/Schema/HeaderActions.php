@@ -4,28 +4,17 @@ declare(strict_types=1);
 
 namespace Flatpack\Schema;
 
+use Flatpack\Schema\Generated\CompositionSchemaKeys;
 use Flatpack\Support\NavigationUrl;
 use Flatpack\Support\SuccessRedirect;
 
 /**
  * Normalizes optional {@code actions} from entity YAML (e.g. list and form) into header buttons.
+ *
+ * YAML {@code variant} values: {@see CompositionSchemaKeys::BUTTON_VARIANT_VALUES} ({@code primary} → {@code default}).
  */
 final class HeaderActions
 {
-    /**
-     * Matches `buttonVariants` in resources/js/components/ui/button.tsx.
-     * - Omitted {@code variant} → {@code outline} (secondary actions).
-     * - {@code primary} → {@code default} (main filled / brand CTA).
-     */
-    private const array ALLOWED_VARIANTS = [
-        'default',
-        'outline',
-        'secondary',
-        'ghost',
-        'destructive',
-        'link',
-    ];
-
     /**
      * @param  array<string, mixed>|null  $schema
      * @return list<array{id: string, label: string, icon: string, variant: string, href?: string, action?: string, success_message?: string, confirm?: bool, success_redirect?: string, disable_until_dirty?: true, shortcut?: string}>
@@ -140,7 +129,7 @@ final class HeaderActions
         if ($v === 'primary') {
             return 'default';
         }
-        if (in_array($v, self::ALLOWED_VARIANTS, true)) {
+        if (in_array($v, CompositionSchemaKeys::BUTTON_VARIANT_UI_VALUES, true)) {
             return $v;
         }
 

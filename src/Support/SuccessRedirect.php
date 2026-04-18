@@ -4,24 +4,16 @@ declare(strict_types=1);
 
 namespace Flatpack\Support;
 
+use Flatpack\Schema\Generated\CompositionSchemaKeys;
 use Illuminate\Http\RedirectResponse;
 
 /**
  * Allowed {@code success_redirect} string values from Flatpack YAML (forms, lists, bulk, row actions).
+ *
+ * @see CompositionSchemaKeys::SUCCESS_REDIRECT_VALUES
  */
 final class SuccessRedirect
 {
-    public const array ALLOWED = [
-        'list',
-        'edit',
-        'create',
-        'show',
-        'back',
-        'previous',
-        'current',
-        'stay',
-    ];
-
     public static function normalize(mixed $raw): ?string
     {
         if ($raw === null || ! is_string($raw)) {
@@ -33,7 +25,7 @@ final class SuccessRedirect
             return null;
         }
 
-        return in_array($v, self::ALLOWED, true) ? $v : null;
+        return in_array($v, CompositionSchemaKeys::SUCCESS_REDIRECT_VALUES, true) ? $v : null;
     }
 
     /**

@@ -3,8 +3,10 @@ import { lazy, Suspense } from 'react';
 import { SectionCards } from '@/components/section-cards';
 import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
 import data from '@/data/data.json';
+import { useCompositionDebugLog } from '@/hooks/use-composition-debug-log';
 import FlatpackLayout from '@/layouts/flatpack-layout';
 import type { DashboardSectionsTableCatalog } from '@/types/dashboard';
+import type { FlatpackDashboardPageProps } from '@/types/pages/flatpack';
 
 const ChartAreaInteractive = lazy(() =>
     import('@/components/chart-area-interactive').then((module) => ({
@@ -18,7 +20,9 @@ const DashboardDataTable = lazy(() =>
     })),
 );
 
-export default function FlatpackDashboard() {
+export default function FlatpackDashboard(props: FlatpackDashboardPageProps) {
+    useCompositionDebugLog(props.composition_debug);
+
     return (
         <div className="flex flex-col gap-4 md:gap-6">
             <Head title="Dashboard" />

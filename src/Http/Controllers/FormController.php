@@ -173,7 +173,7 @@ final readonly class FormController
             'icon' => $form->icon,
             'record' => $record,
             'mode' => $mode,
-            'schema' => $this->formSchemaNormalizer->normalizedFormSchema($schema),
+            'schema' => $schema,
             'values' => $values,
             'form_actions' => HeaderActions::fromSchema($schema),
         ];

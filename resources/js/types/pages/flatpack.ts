@@ -21,6 +21,12 @@ export type FlatpackListHeaderAction = {
     disable_until_dirty?: boolean;
 } & ({ href: string; action?: never } | { action: string; href?: never });
 
+/** Props for `/flatpack` dashboard (Inertia `dashboard` page). */
+export type FlatpackDashboardPageProps = {
+    schema?: Record<string, unknown> | null;
+    composition_debug?: string[];
+};
+
 export type FlatpackListPageProps = {
     entity: string;
     name?: string;
@@ -37,6 +43,8 @@ export type FlatpackListPageProps = {
     sorting?: FlatpackListServerSorting;
     list_actions?: FlatpackListHeaderAction[];
     bulk_actions?: FlatpackDataTableBulkAction[];
+    /** Non-sensitive debug messages when composition YAML was sanitized (APP_DEBUG). */
+    composition_debug?: string[];
 };
 
 export type FlatpackFormPageProps = {
@@ -49,4 +57,6 @@ export type FlatpackFormPageProps = {
     schema?: Record<string, unknown> | null;
     values?: Record<string, unknown>;
     form_actions?: FlatpackListHeaderAction[];
+    /** Non-sensitive debug messages when composition YAML was sanitized (APP_DEBUG). */
+    composition_debug?: string[];
 };

@@ -1,23 +1,26 @@
 import { normalizeColumnTruncate } from '@/lib/data-table-utils';
+import {
+    BUTTON_VARIANT_UI_VALUES,
+    LIST_COLUMN_YAML_TYPES,
+    LIST_FILTER_DATE_MODES,
+    LIST_FILTER_TYPES,
+    SUCCESS_REDIRECT_VALUES,
+} from '@/lib/generated/composition-schema-keys';
 import type {
     FlatpackActionVariant,
     FlatpackDataTableActionButton,
     FlatpackDataTableColumn,
     FlatpackDataTableColumnOption,
     FlatpackDataTableFilter,
+    FlatpackDataTableFilterDateMode,
+    FlatpackDataTableFilterType,
     FlatpackSuccessRedirect,
 } from '@/types/data-table';
 
-const SUCCESS_REDIRECT_VALUES: readonly FlatpackSuccessRedirect[] = [
-    'list',
-    'edit',
-    'create',
-    'show',
-    'back',
-    'previous',
-    'current',
-    'stay',
-];
+const listColumnYamlSet = new Set<string>(LIST_COLUMN_YAML_TYPES);
+const filterTypesSet = new Set<string>(LIST_FILTER_TYPES);
+const filterDateModesSet = new Set<string>(LIST_FILTER_DATE_MODES);
+const buttonVariantUiSet = new Set<string>(BUTTON_VARIANT_UI_VALUES);
 
 function normalizeSuccessRedirect(
     raw: unknown,
@@ -26,7 +29,7 @@ function normalizeSuccessRedirect(
         return undefined;
     }
     const v = raw.trim();
-    return SUCCESS_REDIRECT_VALUES.includes(v as FlatpackSuccessRedirect)
+    return (SUCCESS_REDIRECT_VALUES as readonly string[]).includes(v)
         ? (v as FlatpackSuccessRedirect)
         : undefined;
 }
@@ -34,20 +37,17 @@ function normalizeSuccessRedirect(
 function normalizeColumnType(
     raw: unknown,
 ): FlatpackDataTableColumn['type'] | undefined {
-    if (raw === 'datetime' || raw === 'date') {
+    if (typeof raw !== 'string') {
+        return undefined;
+    }
+    const r = raw.trim();
+    if (r === 'datetime' || r === 'date') {
         return 'date';
     }
-    if (
-        raw === 'text' ||
-        raw === 'select' ||
-        raw === 'badge' ||
-        raw === 'status' ||
-        raw === 'actions' ||
-        raw === 'relation'
-    ) {
-        return raw;
+    if (!listColumnYamlSet.has(r)) {
+        return undefined;
     }
-    return undefined;
+    return r as NonNullable<FlatpackDataTableColumn['type']>;
 }
 
 function pickRelationColumnFields(
@@ -206,15 +206,8 @@ function normalizeActionVariant(raw: unknown): FlatpackActionVariant {
     if (value === 'primary') {
         return 'default';
     }
-    if (
-        value === 'default' ||
-        value === 'outline' ||
-        value === 'secondary' ||
-        value === 'ghost' ||
-        value === 'destructive' ||
-        value === 'link'
-    ) {
-        return value;
+    if (buttonVariantUiSet.has(value)) {
+        return value as FlatpackActionVariant;
     }
     return 'outline';
 }
@@ -261,9 +254,9 @@ function normalizeColumnActions(raw: unknown): FlatpackDataTableActionButton[] {
 type FilterOverride = {
     label?: string;
     placeholder?: string;
-    type?: 'select' | 'date';
+    type?: FlatpackDataTableFilterType;
     multiple?: boolean;
-    mode?: 'exact' | 'from';
+    mode?: FlatpackDataTableFilterDateMode;
 };
 
 function normalizeFilterOverrides(raw: unknown): FilterOverride {
@@ -280,14 +273,14 @@ function normalizeFilterOverrides(raw: unknown): FilterOverride {
             ? rec.placeholder.trim()
             : undefined;
     const type =
-        rec.type === 'select' || rec.type === 'date' ? rec.type : undefined;
+        typeof rec.type === 'string' && filterTypesSet.has(rec.type)
+            ? (rec.type as FlatpackDataTableFilterType)
+            : undefined;
     const multiple = rec.multiple === true ? true : undefined;
     const mode =
-        rec.mode === 'from'
-            ? 'from'
-            : rec.mode === 'exact'
-              ? 'exact'
-              : undefined;
+        typeof rec.mode === 'string' && filterDateModesSet.has(rec.mode)
+            ? (rec.mode as FlatpackDataTableFilterDateMode)
+            : undefined;
     return { label, placeholder, type, multiple, mode };
 }
 

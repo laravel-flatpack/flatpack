@@ -12,7 +12,7 @@ use function Pest\Laravel\actingAs;
 
 uses(TestCase::class, RefreshDatabase::class);
 
-test('flatpack dashboard returns empty JSON resource when json query is true and no dashboard schema', function () {
+test('flatpack dashboard returns minimal JSON resource when json query is true and no dashboard schema', function () {
     /** @var User $user */
     $user = User::factory()->createOne();
 
@@ -21,7 +21,7 @@ test('flatpack dashboard returns empty JSON resource when json query is true and
         ->assertOk()
         ->json();
 
-    expect($payload)->toBe([]);
+    expect($payload)->toBe(['composition_debug' => []]);
 });
 
 test('flatpack dashboard returns JSON schema when json query is true and dashboard list yaml exists', function () {

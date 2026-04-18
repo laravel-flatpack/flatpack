@@ -1,10 +1,10 @@
 import { serializeFieldValue } from '@/lib/form-page-field-values';
 import type { FormFieldEntry } from '@/lib/form-schema';
-import {
-    type FormFieldPreset,
-    type FormFieldPresetType,
-    type FormFieldProps,
-    formFieldPresetTypes,
+import { FORM_PRESET_TYPES } from '@/lib/generated/composition-schema-keys';
+import type {
+    FormFieldPreset,
+    FormFieldPresetType,
+    FormFieldProps,
 } from '@/types/form-fields';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -24,7 +24,7 @@ export function parsePreset(field: FormFieldProps): FormFieldPreset | null {
     }
     if (
         typeof presetType !== 'string' ||
-        !formFieldPresetTypes.includes(presetType as FormFieldPresetType)
+        !(FORM_PRESET_TYPES as readonly string[]).includes(presetType)
     ) {
         return null;
     }
@@ -197,7 +197,10 @@ export function applyPresetCascade(params: {
     let next: Record<string, unknown> = values;
 
     while (queue.length > 0) {
-        const sourceId = queue.shift()!;
+        const sourceId = queue.shift();
+        if (sourceId === undefined) {
+            break;
+        }
         if (seenSources.has(sourceId)) {
             continue;
         }

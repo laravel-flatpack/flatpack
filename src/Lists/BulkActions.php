@@ -4,19 +4,11 @@ declare(strict_types=1);
 
 namespace Flatpack\Lists;
 
+use Flatpack\Schema\Generated\CompositionSchemaKeys;
 use Flatpack\Support\SuccessRedirect;
 
 final class BulkActions
 {
-    private const array ALLOWED_VARIANTS = [
-        'default',
-        'outline',
-        'secondary',
-        'ghost',
-        'destructive',
-        'link',
-    ];
-
     /**
      * @param  array<string, mixed>|null  $schema
      * @return list<array{id: string, label: string, action: string, icon: string, variant: string, success_message?: string, confirm?: bool, success_redirect?: string}>
@@ -103,7 +95,7 @@ final class BulkActions
             return 'default';
         }
 
-        if (in_array($variant, self::ALLOWED_VARIANTS, true)) {
+        if (in_array($variant, CompositionSchemaKeys::BUTTON_VARIANT_UI_VALUES, true)) {
             return $variant;
         }
 
