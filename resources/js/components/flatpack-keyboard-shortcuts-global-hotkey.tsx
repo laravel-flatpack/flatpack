@@ -49,8 +49,10 @@ export function FlatpackKeyboardShortcutsGlobalHotkey() {
     const isMacPlatform = useIsMacPlatform();
 
     useEffect(() => {
-        const lower = FLATPACK_SHELL_KEYBOARD_SHORTCUTS_DIALOG_KEY.toLowerCase();
-        const upper = FLATPACK_SHELL_KEYBOARD_SHORTCUTS_DIALOG_KEY.toUpperCase();
+        const lower =
+            FLATPACK_SHELL_KEYBOARD_SHORTCUTS_DIALOG_KEY.toLowerCase();
+        const upper =
+            FLATPACK_SHELL_KEYBOARD_SHORTCUTS_DIALOG_KEY.toUpperCase();
 
         const onKeyDown = (event: KeyboardEvent) => {
             if (event.key !== lower && event.key !== upper) {
