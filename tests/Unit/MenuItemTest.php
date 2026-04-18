@@ -10,7 +10,7 @@ test('menu item converts to array', function () {
     expect($item->toArray())->toBe([
         'slug' => 'posts',
         'name' => 'Posts',
-        'route' => 'flatpack.posts.index',
+        'url' => 'flatpack.posts.index',
         'icon' => 'book-open',
     ]);
 });

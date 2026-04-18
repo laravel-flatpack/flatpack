@@ -1,6 +1,6 @@
 export type FlatpackMenuItem = {
     name: string;
-    route: string;
+    url: string;
     icon: string;
 };
 

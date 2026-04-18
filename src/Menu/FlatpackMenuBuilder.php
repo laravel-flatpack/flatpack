@@ -50,8 +50,8 @@ final readonly class FlatpackMenuBuilder implements MenuBuilderContract
             }
 
             $name = (string) ($entry['name'] ?? $slug);
-            $route = NavigationUrl::sanitize((string) ($entry['route'] ?? ''), $allowExternalOrigins);
-            if ($route === '') {
+            $url = NavigationUrl::sanitize((string) ($entry['url'] ?? ''), $allowExternalOrigins);
+            if ($url === '') {
                 continue;
             }
             $icon = (string) ($entry['icon'] ?? 'folder');
@@ -61,7 +61,7 @@ final readonly class FlatpackMenuBuilder implements MenuBuilderContract
                 slug: $key,
                 name: $name,
                 icon: $icon,
-                route: $route,
+                url: $url,
             );
         }
 
@@ -104,7 +104,7 @@ final readonly class FlatpackMenuBuilder implements MenuBuilderContract
                     ->plural()
                     ->toString(),
                 icon: $icon ?? 'folder',
-                route: action([ListController::class, 'index'], ['entity' => $entry]),
+                url: action([ListController::class, 'index'], ['entity' => $entry]),
                 sortOrder: $sortOrder,
             );
         }

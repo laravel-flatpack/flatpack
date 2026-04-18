@@ -13,7 +13,7 @@ test('flatpack shares menu from config override', function () {
     config()->set('flatpack.menu', [
         'posts' => [
             'name' => 'Posts',
-            'route' => 'flatpack.posts.index',
+            'url' => 'flatpack.posts.index',
             'icon' => 'book-open',
         ],
     ]);
@@ -25,7 +25,7 @@ test('flatpack shares menu from config override', function () {
         ->assertInertia(fn ($page) => $page
             ->where('flatpack.menu.0.slug', 'posts')
             ->where('flatpack.menu.0.name', 'Posts')
-            ->where('flatpack.menu.0.route', 'flatpack.posts.index')
+            ->where('flatpack.menu.0.url', 'flatpack.posts.index')
             ->where('flatpack.menu.0.icon', 'book-open')
         );
 });
@@ -47,10 +47,10 @@ test('flatpack builds default menu from filesystem path when menu override is nu
                 ->has('flatpack.menu', 2)
                 ->where('flatpack.menu.0.slug', 'categories')
                 ->where('flatpack.menu.0.name', 'Categories')
-                ->where('flatpack.menu.0.route', url('/flatpack/categories'))
+                ->where('flatpack.menu.0.url', url('/flatpack/categories'))
                 ->where('flatpack.menu.1.slug', 'posts')
                 ->where('flatpack.menu.1.name', 'Posts')
-                ->where('flatpack.menu.1.route', url('/flatpack/posts'))
+                ->where('flatpack.menu.1.url', url('/flatpack/posts'))
             );
     } finally {
         File::deleteDirectory($tempPath);
@@ -74,27 +74,27 @@ test('flatpack filters unsafe menu routes from config override', function () {
     config()->set('flatpack.menu', [
         'safe-relative' => [
             'name' => 'Safe Relative',
-            'route' => '/flatpack/posts',
+            'url' => '/flatpack/posts',
             'icon' => 'book-open',
         ],
         'safe-same-origin' => [
             'name' => 'Safe Same Origin',
-            'route' => 'https://app.test/flatpack/categories',
+            'url' => 'https://app.test/flatpack/categories',
             'icon' => 'folder',
         ],
         'unsafe-javascript' => [
             'name' => 'Unsafe JS',
-            'route' => 'javascript:alert(1)',
+            'url' => 'javascript:alert(1)',
             'icon' => 'bug',
         ],
         'unsafe-external' => [
             'name' => 'Unsafe External',
-            'route' => 'https://evil.example/phish',
+            'url' => 'https://evil.example/phish',
             'icon' => 'triangle-alert',
         ],
         'unsafe-protocol-relative' => [
             'name' => 'Unsafe Protocol Relative',
-            'route' => '//cdn.example/path',
+            'url' => '//cdn.example/path',
             'icon' => 'link',
         ],
     ]);
@@ -106,8 +106,8 @@ test('flatpack filters unsafe menu routes from config override', function () {
         ->assertInertia(fn ($page) => $page
             ->has('flatpack.menu', 2)
             ->where('flatpack.menu.0.slug', 'safe-relative')
-            ->where('flatpack.menu.0.route', '/flatpack/posts')
+            ->where('flatpack.menu.0.url', '/flatpack/posts')
             ->where('flatpack.menu.1.slug', 'safe-same-origin')
-            ->where('flatpack.menu.1.route', 'https://app.test/flatpack/categories')
+            ->where('flatpack.menu.1.url', 'https://app.test/flatpack/categories')
         );
 });

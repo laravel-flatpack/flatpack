@@ -9,7 +9,7 @@ final readonly class MenuItem
     public function __construct(
         public string $slug,
         public string $name,
-        public string $route,
+        public string $url,
         public string $icon = 'menu',
         public int $sortOrder = 99,
     ) {}
@@ -22,7 +22,7 @@ final readonly class MenuItem
         return [
             'slug' => $this->slug,
             'name' => $this->name,
-            'route' => $this->route,
+            'url' => $this->url,
             'icon' => $this->icon,
         ];
     }

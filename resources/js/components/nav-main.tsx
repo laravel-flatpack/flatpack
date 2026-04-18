@@ -30,7 +30,7 @@ export function NavMain({
                                 className="min-w-8 bg-primary text-primary-foreground duration-200 ease-linear hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground"
                                 asChild
                             >
-                                <Link href={quickAction.route}>
+                                <Link href={quickAction.url}>
                                     <LucideIconByName name={quickAction.icon} />
                                     <span>{quickAction.name}</span>
                                 </Link>
@@ -40,16 +40,16 @@ export function NavMain({
                 )}
                 <SidebarMenu>
                     {items.map((item) => (
-                        <SidebarMenuItem key={item.route}>
+                        <SidebarMenuItem key={item.url}>
                             <SidebarMenuButton
                                 tooltip={item.name}
                                 asChild
                                 isActive={isEntityListNavActive(
                                     currentPath,
-                                    item.route,
+                                    item.url,
                                 )}
                             >
-                                <Link href={item.route}>
+                                <Link href={item.url}>
                                     <LucideIconByName name={item.icon} />
                                     <span>{item.name}</span>
                                 </Link>

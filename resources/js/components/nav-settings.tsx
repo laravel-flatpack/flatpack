@@ -34,9 +34,9 @@ export function NavSettings({
                 {items && (
                     <SidebarMenu>
                         {items.map((item) => (
-                            <SidebarMenuItem key={item.route}>
+                            <SidebarMenuItem key={item.url}>
                                 <SidebarMenuButton asChild>
-                                    <Link href={item.route}>
+                                    <Link href={item.url}>
                                         <LucideIconByName name={item.icon} />
                                         <span>{item.name}</span>
                                     </Link>

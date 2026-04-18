@@ -58,7 +58,7 @@ export function AppSidebar({
                     items={[
                         {
                             name: 'Dashboard',
-                            route: route('flatpack.dashboard'),
+                            url: route('flatpack.dashboard'),
                             icon: 'layout-dashboard',
                         },
                         ...mainMenuItems,

@@ -191,7 +191,7 @@ return [
     | Example:
     | 'quick_action' => [
     |     'name' => 'Create Post',
-    |     'route' => '/flatpack/posts/create',
+    |     'url' => '/flatpack/posts/create',
     |     'icon' => 'plus'
     | ],
     |
@@ -208,8 +208,8 @@ return [
     | When set, replaces filesystem-derived menu.
     | Example:
     | 'menu' => [
-    |     ['name' => 'Page Name', 'route' => '/path/to/page', 'icon' => 'book'],
-    |     ['name' => 'Page Name 2', 'route' => '/path/to/page-2', 'icon' => 'folder'],
+    |     ['name' => 'Page Name', 'url' => '/path/to/page', 'icon' => 'book'],
+    |     ['name' => 'Page Name 2', 'url' => '/path/to/page-2', 'icon' => 'folder'],
     | ],
     |
     */
@@ -227,8 +227,8 @@ return [
     | 'secondary_menu' => [
     |     'label' => 'Secondary Menu',
     |     'items' => [
-    |         ['name' => 'Item 1', 'route' => '/path/to/page-1', 'icon' => 'book'],
-    |         ['name' => 'Item 2', 'route' => '/path/to/page-2', 'icon' => 'folder'],
+    |         ['name' => 'Item 1', 'url' => '/path/to/page-1', 'icon' => 'book'],
+    |         ['name' => 'Item 2', 'url' => '/path/to/page-2', 'icon' => 'folder'],
     |     ],
     | ],
     |
@@ -247,8 +247,8 @@ return [
     | 'bottom_menu' => [
     |     'label' => 'Settings',
     |     'items' => [
-    |         ['name' => 'Item 1', 'route' => '/path/to/page-1', 'icon' => 'settings'],
-    |         ['name' => 'Item 2', 'route' => '/path/to/page-2', 'icon' => 'user'],
+    |         ['name' => 'Item 1', 'url' => '/path/to/page-1', 'icon' => 'settings'],
+    |         ['name' => 'Item 2', 'url' => '/path/to/page-2', 'icon' => 'user'],
     |     ],
     | ],
     |
