@@ -32,10 +32,6 @@ final readonly class FormController
 
     /**
      * Display the create form for a new record.
-     * 
-     * @param  Request  $request
-     * @param  string  $entity
-     * @return Response|JsonResponse
      */
     public function create(Request $request, string $entity): Response|JsonResponse
     {
@@ -51,11 +47,6 @@ final readonly class FormController
 
     /**
      * Display the edit form for an existing record.
-     * 
-     * @param  Request  $request
-     * @param  string  $entity
-     * @param  string  $record
-     * @return Response|JsonResponse
      */
     public function edit(Request $request, string $entity, string $record): Response|JsonResponse
     {

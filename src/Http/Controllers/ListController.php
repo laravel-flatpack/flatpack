@@ -24,10 +24,6 @@ final readonly class ListController
 
     /**
      * Display the entity list with pagination, search, filters, and sorting.
-     *
-     * @param  Request  $request
-     * @param  string  $entity
-     * @return Response|JsonResponse
      */
     public function index(Request $request, string $entity): Response|JsonResponse
     {

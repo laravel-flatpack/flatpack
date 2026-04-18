@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Flatpack\Tests\Models\Post;
 use Flatpack\Tests\Models\User;
 use Flatpack\Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -112,16 +113,23 @@ test('flatpack entity edit returns JSON schema when json query is true', functio
 
     try {
         File::ensureDirectoryExists($tempPath . '/posts');
-        File::put($tempPath . '/posts/form.yaml', "name: Post\n");
+        File::put($tempPath . '/posts/form.yaml', <<<'YAML'
+name: Post
+model: Flatpack\Tests\Models\Post
+fields: []
+YAML);
         config()->set('flatpack.path', $tempPath);
 
         /** @var User $user */
         $user = User::factory()->createOne();
 
+        /** @var Post $post */
+        $post = Post::factory()->createOne();
+
         actingAs($user)
             ->getJson(route('flatpack.entities.edit', [
                 'entity' => 'posts',
-                'record' => '1',
+                'record' => (string) $post->getKey(),
                 'json' => true,
             ]))
             ->assertOk()
