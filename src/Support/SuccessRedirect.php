@@ -9,6 +9,7 @@ use Illuminate\Http\RedirectResponse;
 
 /**
  * Allowed {@code success_redirect} string values from Flatpack YAML (forms, lists, bulk, row actions).
+ * YAML may use boolean {@code true} as an alias for {@code list}.
  *
  * @see CompositionSchemaKeys::SUCCESS_REDIRECT_VALUES
  */
@@ -16,13 +17,25 @@ final class SuccessRedirect
 {
     public static function normalize(mixed $raw): ?string
     {
-        if ($raw === null || ! is_string($raw)) {
+        if ($raw === true) {
+            return 'list';
+        }
+
+        if ($raw === false || $raw === null) {
+            return null;
+        }
+
+        if (! is_string($raw)) {
             return null;
         }
 
         $v = trim($raw);
         if ($v === '') {
             return null;
+        }
+
+        if (strcasecmp($v, 'true') === 0) {
+            return 'list';
         }
 
         return in_array($v, CompositionSchemaKeys::SUCCESS_REDIRECT_VALUES, true) ? $v : null;
@@ -48,6 +61,37 @@ final class SuccessRedirect
         }
 
         return self::normalize($save['success_redirect'] ?? null);
+    }
+
+    /**
+     * Resolves redirect after form POST/PATCH when YAML defines multiple header keys with {@code action: save}
+     * (e.g. {@code save} vs {@code save_and_quit}). Uses {@code form_action_id} from the request when present.
+     *
+     * @param  non-empty-string|null  $formActionId  YAML action key from {@see HeaderActions} ({@code id} field).
+     */
+    public static function successRedirectForFormSave(?array $schema, ?string $formActionId): ?string
+    {
+        $id = $formActionId !== null ? trim($formActionId) : '';
+        if ($schema === null) {
+            return null;
+        }
+
+        $actions = $schema['actions'] ?? null;
+        if (! is_array($actions)) {
+            return null;
+        }
+
+        if ($id !== '') {
+            $block = $actions[$id] ?? null;
+            if (is_array($block)) {
+                $direct = self::normalize($block['success_redirect'] ?? null);
+                if ($direct !== null) {
+                    return $direct;
+                }
+            }
+        }
+
+        return self::fromFormSchema($schema);
     }
 
     /**

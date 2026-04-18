@@ -95,6 +95,7 @@ final class FormSubmitRequest extends FormRequest
                         }
                     },
                 ],
+                'form_action_id' => ['nullable', 'string', 'max:191'],
             ],
             $valueRules,
         );

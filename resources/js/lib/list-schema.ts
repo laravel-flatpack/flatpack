@@ -25,10 +25,16 @@ const buttonVariantUiSet = new Set<string>(BUTTON_VARIANT_UI_VALUES);
 function normalizeSuccessRedirect(
     raw: unknown,
 ): FlatpackSuccessRedirect | undefined {
+    if (raw === true) {
+        return 'list';
+    }
     if (typeof raw !== 'string') {
         return undefined;
     }
     const v = raw.trim();
+    if (v.toLowerCase() === 'true') {
+        return 'list';
+    }
     return (SUCCESS_REDIRECT_VALUES as readonly string[]).includes(v)
         ? (v as FlatpackSuccessRedirect)
         : undefined;

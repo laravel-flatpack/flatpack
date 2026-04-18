@@ -46,8 +46,8 @@ final class CompositionSchemaKeysGenerator
         $formDefs = $formSchema['$defs'] ?? [];
         $listDefs = $listSchema['$defs'] ?? [];
 
-        $formSuccess = self::enumStrings($formDefs['successRedirect']['enum'] ?? null);
-        $listSuccess = self::enumStrings($listDefs['successRedirect']['enum'] ?? null);
+        $formSuccess = self::successRedirectStringTargets($formDefs['successRedirect'] ?? null);
+        $listSuccess = self::successRedirectStringTargets($listDefs['successRedirect'] ?? null);
         self::assertEnumListsMatch('successRedirect', $formSuccess, $listSuccess);
 
         $formButton = self::enumStrings($formDefs['buttonVariant']['enum'] ?? null);
@@ -345,6 +345,39 @@ PHP;
         sort($values, SORT_STRING);
 
         return $values;
+    }
+
+    /**
+     * String targets allowed in YAML for {@code success_redirect} (boolean {@code true} is a runtime alias for list, not part of this list).
+     *
+     * @param  array<string, mixed>|null  $def  JSON Schema {@code $defs.successRedirect} (legacy enum or {@code oneOf} string branch).
+     * @return list<string>
+     */
+    private static function successRedirectStringTargets(?array $def): array
+    {
+        if ($def === null) {
+            return [];
+        }
+
+        if (isset($def['enum']) && is_array($def['enum'])) {
+            return self::enumStrings($def['enum']);
+        }
+
+        if (isset($def['oneOf']) && is_array($def['oneOf'])) {
+            $out = [];
+            foreach ($def['oneOf'] as $branch) {
+                if (! is_array($branch)) {
+                    continue;
+                }
+                if (($branch['type'] ?? null) === 'string' && isset($branch['enum']) && is_array($branch['enum'])) {
+                    $out = [...$out, ...self::enumStrings($branch['enum'])];
+                }
+            }
+
+            return self::sortedStringList($out);
+        }
+
+        return [];
     }
 
     /**

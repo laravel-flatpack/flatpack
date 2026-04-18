@@ -105,7 +105,13 @@ type FlatpackFormActionsProps = {
     formIsDirty?: boolean;
     fieldsLength: number;
     record: string | null;
-    onSaveConfirmClick: () => void;
+    /** Called before save so the correct YAML action key is submitted as {@code form_action_id}. */
+    onSaveIntent: (
+        action: FlatpackListHeaderAction & { action: 'save' },
+    ) => void;
+    onSaveConfirmClick: (
+        action: FlatpackListHeaderAction & { action: 'save' },
+    ) => void;
     onNamedActionConfirm: (
         action: FlatpackListHeaderAction & { action: string },
     ) => void;
@@ -121,6 +127,7 @@ export function FlatpackFormActions({
     formIsDirty = true,
     fieldsLength,
     record,
+    onSaveIntent,
     onSaveConfirmClick,
     onNamedActionConfirm,
     runNamedAction,
@@ -180,6 +187,7 @@ export function FlatpackFormActions({
                             : undefined
                     }
                     onNamedActionConfirm={onNamedActionConfirm}
+                    onSaveIntent={onSaveIntent}
                     onSaveConfirmClick={onSaveConfirmClick}
                     runNamedAction={runNamedAction}
                 />
@@ -197,6 +205,7 @@ type FlatpackFormActionRowProps = {
     record: string | null;
     isMacPlatform: boolean;
     shortcut?: ParsedFlatpackShortcut;
+    onSaveIntent: FlatpackFormActionsProps['onSaveIntent'];
     onSaveConfirmClick: FlatpackFormActionsProps['onSaveConfirmClick'];
     onNamedActionConfirm: FlatpackFormActionsProps['onNamedActionConfirm'];
     runNamedAction: FlatpackFormActionsProps['runNamedAction'];
@@ -212,6 +221,7 @@ function FlatpackFormActionRow({
     record,
     shortcut,
     onNamedActionConfirm,
+    onSaveIntent,
     onSaveConfirmClick,
     runNamedAction,
 }: FlatpackFormActionRowProps) {
@@ -262,6 +272,9 @@ function FlatpackFormActionRow({
     }
 
     if (action.action === 'save') {
+        const saveAction = action as FlatpackListHeaderAction & {
+            action: 'save';
+        };
         const disabledByDirty = flatpackActionDisabledByDirty(
             action,
             formIsDirty,
@@ -281,7 +294,16 @@ function FlatpackFormActionRow({
                     disabled={disabled}
                     className={iconClass}
                     data-flatpack-action-id={action.id}
-                    onClick={action.confirm ? onSaveConfirmClick : undefined}
+                    onClick={
+                        action.confirm
+                            ? () => {
+                                  onSaveIntent(saveAction);
+                                  onSaveConfirmClick(saveAction);
+                              }
+                            : () => {
+                                  onSaveIntent(saveAction);
+                              }
+                    }
                 >
                     <FormActionButtonBody
                         {...bodyProps}

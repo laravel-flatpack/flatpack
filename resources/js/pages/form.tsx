@@ -28,7 +28,7 @@ export default function FlatpackFormPage(props: FlatpackFormPageProps) {
         fieldErrors,
         flatpackTopErrors,
         formActions,
-        saveActionConfig,
+        prepareSaveSubmit,
         pendingConfirm,
         setPendingConfirm,
         setFieldValue,
@@ -52,29 +52,23 @@ export default function FlatpackFormPage(props: FlatpackFormPageProps) {
                         setPendingConfirm(null);
                     }
                 }}
-                title={
-                    pendingConfirm?.kind === 'named'
-                        ? pendingConfirm.config.label
-                        : (saveActionConfig?.label ?? 'Confirm')
-                }
+                title={pendingConfirm?.config.label ?? 'Confirm'}
                 continueVariant={
-                    (pendingConfirm?.kind === 'save' &&
-                        saveActionConfig?.variant === 'destructive') ||
-                    (pendingConfirm?.kind === 'named' &&
-                        pendingConfirm.config.variant === 'destructive')
+                    pendingConfirm?.config.variant === 'destructive'
                         ? 'destructive'
                         : 'default'
                 }
                 onContinue={() => {
                     const pending = pendingConfirm;
                     setPendingConfirm(null);
-                    if (pending?.kind === 'save') {
+                    if (pending === null) {
+                        return;
+                    }
+                    if (pending.config.action === 'save') {
                         runSubmit();
                         return;
                     }
-                    if (pending?.kind === 'named') {
-                        void executeNamedAction(pending.config);
-                    }
+                    void executeNamedAction(pending.config);
                 }}
             />
             <div className="flex flex-col gap-6">
@@ -97,14 +91,12 @@ export default function FlatpackFormPage(props: FlatpackFormPageProps) {
                             formIsDirty={isDirty}
                             fieldsLength={fields.length}
                             record={record}
-                            onSaveConfirmClick={() =>
-                                setPendingConfirm({ kind: 'save' })
+                            onSaveIntent={prepareSaveSubmit}
+                            onSaveConfirmClick={(action) =>
+                                setPendingConfirm({ config: action })
                             }
                             onNamedActionConfirm={(action) =>
-                                setPendingConfirm({
-                                    kind: 'named',
-                                    config: action,
-                                })
+                                setPendingConfirm({ config: action })
                             }
                             runNamedAction={executeNamedAction}
                         />

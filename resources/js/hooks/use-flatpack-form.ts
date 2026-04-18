@@ -20,12 +20,10 @@ import type {
     FlatpackListHeaderAction,
 } from '@/types/pages/flatpack';
 
-export type FlatpackFormPendingConfirm =
-    | { kind: 'save' }
-    | {
-          kind: 'named';
-          config: FlatpackListHeaderAction & { action: string };
-      };
+/** Header action waiting for confirm dialog; branch on {@code config.action === 'save'} vs named action. */
+export type FlatpackFormPendingConfirm = {
+    config: FlatpackListHeaderAction & { action: string };
+};
 
 export function useFlatpackForm({
     entity,
@@ -71,14 +69,27 @@ export function useFlatpackForm({
             ...new Map(errors.map((error) => [error?.message, error])).values(),
         ];
     }, [fieldErrors]);
-    const saveActionConfig = useMemo(
+    const defaultSaveActionId = useMemo(
         () =>
             formActions.find(
                 (a): a is FlatpackListHeaderAction & { action: 'save' } =>
                     'action' in a && a.action === 'save',
-            ),
+            )?.id ?? '',
         [formActions],
     );
+
+    const pendingSaveActionIdRef = useRef(defaultSaveActionId);
+
+    const prepareSaveSubmit = useCallback(
+        (action: FlatpackListHeaderAction & { action: 'save' }) => {
+            pendingSaveActionIdRef.current = action.id;
+        },
+        [],
+    );
+
+    useEffect(() => {
+        pendingSaveActionIdRef.current = defaultSaveActionId;
+    }, [defaultSaveActionId]);
     const [pendingConfirm, setPendingConfirm] =
         useState<FlatpackFormPendingConfirm | null>(null);
 
@@ -88,7 +99,9 @@ export function useFlatpackForm({
             FormDataConvertible
         >;
         const f = formRef.current;
-        f.setDefaults({ values: nextValues });
+        f.setDefaults({
+            values: nextValues,
+        });
         f.reset();
         f.clearErrors();
     }, [baselineSignature]);
@@ -140,6 +153,13 @@ export function useFlatpackForm({
 
         form.clearErrors();
 
+        const submittedActionId = pendingSaveActionIdRef.current;
+
+        form.transform((data) => ({
+            ...data,
+            form_action_id: submittedActionId,
+        }));
+
         const options = {
             preserveScroll: true,
             onSuccess: () => {
@@ -151,8 +171,11 @@ export function useFlatpackForm({
                     >,
                 });
                 form.reset();
-                if (saveActionConfig?.success_message) {
-                    toast.success(saveActionConfig.success_message);
+                const submittedAction = formActions.find(
+                    (a) => a.id === submittedActionId,
+                );
+                if (submittedAction?.success_message) {
+                    toast.success(submittedAction.success_message);
                 }
             },
             onError: (errors: Record<string, unknown>) => {
@@ -166,7 +189,7 @@ export function useFlatpackForm({
         }
 
         form.patch(submitUrl, options);
-    }, [entity, fields, form, mode, record, saveActionConfig]);
+    }, [entity, fields, form, formActions, mode, record]);
 
     const handleSubmit = useCallback(
         (event: FormEvent<HTMLFormElement>) => {
@@ -224,7 +247,7 @@ export function useFlatpackForm({
         fieldErrors,
         flatpackTopErrors,
         formActions,
-        saveActionConfig,
+        prepareSaveSubmit,
         pendingConfirm,
         setPendingConfirm,
         setFieldValue,

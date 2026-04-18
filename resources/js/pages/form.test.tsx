@@ -343,7 +343,10 @@ describe('FlatpackFormPage', () => {
 
         expect(hoisted.post).toHaveBeenCalledWith(
             '/flatpack/posts',
-            { values: { title: 'changed-title' } },
+            {
+                values: { title: 'changed-title' },
+                form_action_id: 'save',
+            },
             expect.objectContaining({
                 preserveScroll: true,
                 onSuccess: expect.any(Function),
@@ -395,7 +398,10 @@ describe('FlatpackFormPage', () => {
 
         expect(hoisted.patch).toHaveBeenCalledWith(
             '/flatpack/posts/7/save',
-            { values: { title: 'changed-title' } },
+            {
+                values: { title: 'changed-title' },
+                form_action_id: 'save',
+            },
             expect.objectContaining({
                 preserveScroll: true,
                 onSuccess: expect.any(Function),

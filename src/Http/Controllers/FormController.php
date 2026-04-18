@@ -138,7 +138,11 @@ final readonly class FormController
         }
 
         $savedKey = (string) $savedModel->getKey();
-        $target = SuccessRedirect::fromFormSchema($schema);
+        $formActionId = $request->input('form_action_id');
+        $target = SuccessRedirect::successRedirectForFormSave(
+            $schema,
+            is_string($formActionId) ? $formActionId : null,
+        );
         if ($target === null) {
             return redirect()->route('flatpack.entities.edit', [
                 'entity' => $entity,

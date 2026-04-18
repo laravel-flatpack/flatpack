@@ -31,6 +31,45 @@ function withTempFormSchema(string $yaml, callable $callback): void
     }
 }
 
+test('flatpack entity create form save respects save_and_quit action key success_redirect list', function () {
+    withTempFormSchema(<<<'YAML'
+name: Post
+model: Flatpack\Tests\Models\Post
+actions:
+  save:
+    label: Save
+    action: save
+  save_and_quit:
+    label: Save and quit
+    action: save
+    success_redirect: list
+fields:
+  title:
+    type: text
+    label: Title
+  slug:
+    type: text
+    label: Slug
+YAML, function (): void {
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        actingAs($user)
+            ->post(route('flatpack.entities.store', ['entity' => 'posts']), [
+                'values' => [
+                    'title' => 'Via save_and_quit',
+                    'slug' => 'via-save-and-quit',
+                ],
+                'form_action_id' => 'save_and_quit',
+            ])
+            ->assertRedirect(route('flatpack.entities.index', ['entity' => 'posts']));
+
+        expect(
+            Post::query()->where('title', 'Via save_and_quit')->exists(),
+        )->toBeTrue();
+    });
+});
+
 test('flatpack entity create form save respects actions.save success_redirect list', function () {
     withTempFormSchema(<<<'YAML'
 name: Post

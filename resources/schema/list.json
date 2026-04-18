@@ -168,16 +168,25 @@
             ]
         },
         "successRedirect": {
-            "type": "string",
-            "enum": [
-                "list",
-                "edit",
-                "create",
-                "show",
-                "back",
-                "previous",
-                "current",
-                "stay"
+            "oneOf": [
+                {
+                    "type": "string",
+                    "enum": [
+                        "list",
+                        "edit",
+                        "create",
+                        "show",
+                        "back",
+                        "previous",
+                        "current",
+                        "stay"
+                    ]
+                },
+                {
+                    "type": "boolean",
+                    "enum": [true],
+                    "description": "Alias for list (redirect to entity index after success)."
+                }
             ]
         },
         "listColumnType": {
