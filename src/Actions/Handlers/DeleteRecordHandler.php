@@ -27,6 +27,10 @@ final class DeleteRecordHandler extends FlatpackActionHandler
             return null;
         }
 
-        return $model->delete();
+        $model->delete();
+
+        return redirect()->route('flatpack.entities.index', [
+            'entity' => $context->entity,
+        ]);
     }
 }
