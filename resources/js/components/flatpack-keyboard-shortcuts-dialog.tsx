@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/dialog';
 import { useFlatpackRegisteredShortcuts } from '@/contexts/flatpack-shortcuts-registry';
 import { useIsMacPlatform } from '@/hooks/use-is-mac-platform';
+import { KeyboardIcon } from 'lucide-react';
 
 type FlatpackKeyboardShortcutsDialogProps = {
     open: boolean;
@@ -25,29 +26,37 @@ export function FlatpackKeyboardShortcutsDialog({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-md" showCloseButton>
                 <DialogHeader>
-                    <DialogTitle>Keyboard shortcuts</DialogTitle>
+                    <DialogTitle className="flex items-center gap-2 text-lg font-medium">
+                        <KeyboardIcon className="w-4 h-4" />
+                        Keyboard shortcuts
+                    </DialogTitle>
                     <DialogDescription className="text-sm text-muted-foreground">
                         The following keyboard shortcuts are available on
                         <br />
                         this page.
                     </DialogDescription>
                 </DialogHeader>
-                <ul className="flex max-h-[min(60vh,28rem)] flex-col gap-2 overflow-y-auto pt-1">
-                    {shortcuts.map((row) => (
-                        <li
-                            key={row.id}
-                            className="flex items-center justify-between gap-4 text-sm border-b border-border pb-3 last:border-b-0"
-                        >
-                            <span className="min-w-0 shrink">
-                                {row.description}
-                            </span>
-                            <FlatpackParsedShortcutKbd
-                                shortcut={row.shortcut}
-                                isMac={isMacPlatform}
-                            />
-                        </li>
-                    ))}
-                </ul>
+                <table className="w-full">
+                    <thead>
+                        <tr>
+                            <th className="text-left py-3 text-xs">Shortcut</th>
+                            <th className="text-left py-3 text-xs">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {shortcuts.map((row) => (
+                            <tr key={row.id} className="border-b border-border last:border-b-0">
+                                <td className="py-3">
+                                    <FlatpackParsedShortcutKbd
+                                        shortcut={row.shortcut}
+                                        isMac={isMacPlatform}
+                                    />
+                                </td>
+                                <td className="py-3 text-sm">{row.description}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
             </DialogContent>
         </Dialog>
     );
