@@ -17,7 +17,7 @@
         "test:watch": "vitest",
         "test:backend": "composer run test",
         "check": "npm run format && npm run lint:fix && npm run types:check:all && npm run test",
-        "check:all": "npm run check && composer run check"
+        "check:all": "composer run schema:keys && npm run check && composer run check"
     },
     "devDependencies": {
         "@biomejs/biome": "^2.4.10",

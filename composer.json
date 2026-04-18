@@ -76,6 +76,6 @@
         "rector": "rector --dry-run",
         "schema:keys": "php vendor/bin/testbench flatpack:generate-composition-schema-keys --check",
         "test": "pest",
-        "check": "composer run lint && composer run rector && composer run phpstan && composer run schema:keys && composer run test"
+        "check": "composer run lint && composer run rector && composer run phpstan && composer run test"
     }
 }
