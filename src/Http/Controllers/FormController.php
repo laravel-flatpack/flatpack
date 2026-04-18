@@ -6,17 +6,19 @@ namespace Flatpack\Http\Controllers;
 
 use Flatpack\Actions\FlatpackActionContext;
 use Flatpack\Composition\EntityComposition;
+use Flatpack\Composition\FormComposition;
 use Flatpack\Http\FlatpackResponse;
 use Flatpack\Http\Requests\FormSubmitRequest;
-use Flatpack\Schema\FormFieldType;
 use Flatpack\Schema\HeaderActions;
 use Flatpack\Services\Actions\ActionRuntime;
+use Flatpack\Support\FormSchemaNormalizer;
 use Flatpack\Support\SuccessRedirect;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Inertia\Response;
 use Throwable;
 
@@ -25,58 +27,80 @@ final readonly class FormController
     public function __construct(
         private EntityComposition $entityComposition,
         private ActionRuntime $actions,
+        private FormSchemaNormalizer $formSchemaNormalizer,
     ) {}
 
+    /**
+     * Display the create form for a new record.
+     * 
+     * @param  Request  $request
+     * @param  string  $entity
+     * @return Response|JsonResponse
+     */
     public function create(Request $request, string $entity): Response|JsonResponse
     {
         $form = $this->entityComposition->formFor($entity);
         $schema = $this->entityComposition->formSchema($entity);
-        $normalizedSchema = $this->normalizedFormSchema(
-            $schema,
-            (string) ($form->model ?? ''),
-        );
 
-        return FlatpackResponse::inertia('form', [
-            'entity' => $entity,
-            'name' => $form->name,
-            'model' => $form->model,
-            'icon' => $form->icon,
-            'record' => null,
-            'mode' => 'create',
-            'schema' => $normalizedSchema,
-            'values' => [],
-            'form_actions' => HeaderActions::fromSchema($schema),
-        ], $request->boolean('json'));
+        return FlatpackResponse::inertia(
+            'form',
+            $this->formPageProps($entity, $form, $schema, 'create', null, []),
+            $request->boolean('json'),
+        );
     }
 
+    /**
+     * Display the edit form for an existing record.
+     * 
+     * @param  Request  $request
+     * @param  string  $entity
+     * @param  string  $record
+     * @return Response|JsonResponse
+     */
     public function edit(Request $request, string $entity, string $record): Response|JsonResponse
     {
-        $form = $this->entityComposition->formFor($entity);
+        $showJsonResponse = $request->boolean('json');
         $schema = $this->entityComposition->formSchema($entity);
-        $normalizedSchema = $this->normalizedFormSchema(
-            $schema,
+        $form = $this->entityComposition->formFor($entity);
+        $model = $this->actions->resolveOptionalRecordModel(
             (string) ($form->model ?? ''),
+            $record,
         );
-        $model = $this->resolveOptionalRecordModel((string) ($form->model ?? ''), $record);
 
-        return FlatpackResponse::inertia('form', [
-            'entity' => $entity,
-            'name' => $form->name,
-            'model' => $form->model,
-            'icon' => $form->icon,
-            'record' => $record,
-            'mode' => 'edit',
-            'schema' => $normalizedSchema,
-            'values' => $this->formValuesFromModel($model, $schema),
-            'form_actions' => HeaderActions::fromSchema($schema),
-        ], $request->boolean('json'));
+        if (is_null($model)) {
+            return FlatpackResponse::inertia('errors/record-not-found', [
+                'entity' => $entity,
+                'entityName' => mb_strtolower($form->name ?? $entity),
+            ], $showJsonResponse);
+        }
+
+        return FlatpackResponse::inertia(
+            'form',
+            $this->formPageProps(
+                $entity,
+                $form,
+                $schema,
+                'edit',
+                $record,
+                $this->formSchemaNormalizer->formValuesFromModel($model, $schema),
+            ),
+            $showJsonResponse,
+        );
     }
 
-    public function save(
-        FormSubmitRequest $request,
-        string $entity,
-        ?string $record = null,
-    ): RedirectResponse {
+    /**
+     * Persist create or update from the form submission.
+     *
+     * Uses HTTP 303 redirects after successful POST so the browser replaces the
+     * POST URL in history (see PRG pattern). Handler-provided redirects keep
+     * their 303 status as well.
+     *
+     * @throws AuthorizationException When the action handler denies access.
+     * @throws ValidationException When the save fails in a user-recoverable way.
+     * @throws Throwable
+     */
+    public function save(FormSubmitRequest $request, string $entity, ?string $record = null): RedirectResponse
+    {
         $form = $this->entityComposition->formFor($entity);
         $schema = $this->entityComposition->formSchema($entity);
         $modelClass = (string) ($form->model ?? '');
@@ -103,9 +127,11 @@ final readonly class FormController
                 schema: $schema,
                 model: $model,
             ));
-        } catch (AuthorizationException $exception) {
-            throw $exception;
         } catch (Throwable $exception) {
+            if ($exception instanceof AuthorizationException) {
+                throw $exception;
+            }
+
             throw $this->actions->toUserFacingValidationException($exception);
         }
 
@@ -137,159 +163,28 @@ final readonly class FormController
         );
     }
 
-    private function resolveOptionalRecordModel(
-        string $modelClass,
-        string $record,
-    ): ?Model {
-        return $this->actions->resolveOptionalRecordModel($modelClass, $record);
-    }
-
     /**
      * @param  array<string, mixed>|null  $schema
      * @return array<string, mixed>
      */
-    private function formValuesFromModel(?Model $model, ?array $schema): array
-    {
-        if (! $model instanceof Model || $schema === null) {
-            return [];
-        }
-
-        $fields = $schema['fields'] ?? null;
-        if (! is_array($fields)) {
-            return [];
-        }
-
-        $values = [];
-        foreach ($fields as $fieldId => $fieldDefinition) {
-            if (! is_array($fieldDefinition)) {
-                continue;
-            }
-
-            $id = trim((string) ($fieldDefinition['id'] ?? $fieldId));
-            if ($id === '') {
-                continue;
-            }
-
-            $values[$id] = $model->getAttribute($id);
-        }
-
-        return $values;
-    }
-
-    /**
-     * @param  array<string, mixed>|null  $schema
-     * @return array<string, mixed>|null
-     */
-    private function normalizedFormSchema(?array $schema, string $modelClass): ?array
-    {
-        if ($schema === null) {
-            return null;
-        }
-
-        $fields = $schema['fields'] ?? null;
-        if (! is_array($fields)) {
-            return $schema;
-        }
-
-        $normalizedFields = [];
-        foreach ($fields as $fieldId => $fieldDefinition) {
-            if (! is_array($fieldDefinition)) {
-                $normalizedFields[$fieldId] = $fieldDefinition;
-
-                continue;
-            }
-
-            $normalizedFields[$fieldId] = $this->normalizedFieldDefinition(
-                $fieldDefinition,
-                $modelClass,
-            );
-        }
-
-        $normalized = $schema;
-        $normalized['fields'] = $normalizedFields;
-
-        return $normalized;
-    }
-
-    /**
-     * @param  array<string, mixed>  $fieldDefinition
-     * @return array<string, mixed>
-     */
-    private function normalizedFieldDefinition(
-        array $fieldDefinition,
-        string $modelClass,
+    private function formPageProps(
+        string $entity,
+        FormComposition $form,
+        ?array $schema,
+        string $mode,
+        ?string $record,
+        array $values,
     ): array {
-        $rawType = isset($fieldDefinition['type'])
-            ? trim((string) $fieldDefinition['type'])
-            : '';
-
-        $fieldDefinition['type'] = FormFieldType::normalizeYamlType($rawType);
-
-        if ($rawType === 'relation') {
-            $fieldDefinition['type'] = 'combobox';
-            $fieldDefinition['options'] = [];
-            $fieldDefinition['remote'] = true;
-        } elseif ($rawType === 'select' || $rawType === 'combobox') {
-            $fieldDefinition['options'] = $this->normalizeFieldOptions(
-                $fieldDefinition['options'] ?? null,
-            );
-        }
-
-        return $fieldDefinition;
-    }
-
-    /**
-     * @return list<array{value: string, label: string, status?: string, icon?: string}>
-     */
-    private function normalizeFieldOptions(mixed $raw): array
-    {
-        if (! is_array($raw)) {
-            return [];
-        }
-
-        $out = [];
-        if (array_is_list($raw)) {
-            foreach ($raw as $option) {
-                if (! is_array($option)) {
-                    continue;
-                }
-
-                $value = isset($option['value']) ? trim((string) $option['value']) : '';
-                $label = isset($option['label']) ? trim((string) $option['label']) : '';
-                if ($value === '' || $label === '') {
-                    continue;
-                }
-
-                $normalized = ['value' => $value, 'label' => $label];
-                if (isset($option['status']) && is_string($option['status']) && trim($option['status']) !== '') {
-                    $normalized['status'] = trim($option['status']);
-                }
-                if (isset($option['icon']) && is_string($option['icon']) && trim($option['icon']) !== '') {
-                    $normalized['icon'] = trim($option['icon']);
-                }
-                $out[] = $normalized;
-            }
-
-            return $out;
-        }
-
-        foreach ($raw as $value => $label) {
-            if (! is_string($label)) {
-                continue;
-            }
-
-            $normalizedValue = trim((string) $value);
-            $normalizedLabel = trim($label);
-            if ($normalizedValue === '' || $normalizedLabel === '') {
-                continue;
-            }
-
-            $out[] = [
-                'value' => $normalizedValue,
-                'label' => $normalizedLabel,
-            ];
-        }
-
-        return $out;
+        return [
+            'entity' => $entity,
+            'name' => $form->name,
+            'model' => $form->model,
+            'icon' => $form->icon,
+            'record' => $record,
+            'mode' => $mode,
+            'schema' => $this->formSchemaNormalizer->normalizedFormSchema($schema),
+            'values' => $values,
+            'form_actions' => HeaderActions::fromSchema($schema),
+        ];
     }
 }

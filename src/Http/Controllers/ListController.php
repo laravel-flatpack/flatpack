@@ -22,6 +22,13 @@ final readonly class ListController
         private ModelKeyResolver $modelKeyResolver,
     ) {}
 
+    /**
+     * Display the entity list with pagination, search, filters, and sorting.
+     *
+     * @param  Request  $request
+     * @param  string  $entity
+     * @return Response|JsonResponse
+     */
     public function index(Request $request, string $entity): Response|JsonResponse
     {
         $list = $this->entityComposition->listFor($entity);
