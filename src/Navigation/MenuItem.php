@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Flatpack\Menu;
+namespace Flatpack\Navigation;
 
 final readonly class MenuItem
 {

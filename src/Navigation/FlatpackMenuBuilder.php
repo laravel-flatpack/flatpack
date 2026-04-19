@@ -2,17 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Flatpack\Menu;
+namespace Flatpack\Navigation;
 
 use Flatpack\Composition\CompositionValues;
 use Flatpack\Contracts\Composition\CompositionQuery;
-use Flatpack\Contracts\Menu\MenuBuilder as MenuBuilderContract;
 use Flatpack\Http\Controllers\ListController;
 use Flatpack\Support\NavigationUrl;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Support\Str;
 
-final readonly class FlatpackMenuBuilder implements MenuBuilderContract
+final readonly class FlatpackMenuBuilder implements MenuBuilder
 {
     public function __construct(
         private ConfigRepository $config,

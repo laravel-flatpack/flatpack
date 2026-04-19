@@ -29,6 +29,7 @@ final readonly class ShareFlatpackInertiaData
                 'secondaryMenu' => Flatpack::secondaryMenu(),
                 'bottomMenu' => Flatpack::bottomMenu(),
                 'showActionShortcutHints' => Flatpack::showActionShortcutHints(),
+                'breadcrumbs' => Flatpack::breadcrumbs($request),
                 'user' => $request->user() ? FlatpackUser::make($request->user()) : null,
             ]);
         }

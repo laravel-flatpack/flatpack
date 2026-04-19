@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Facade;
 /**
  * Static proxy for the {@see FlatpackBinding} container singleton.
  *
- * @method static array<int, \Flatpack\Menu\MenuItem> menu()
+ * @method static array<int, \Flatpack\Navigation\MenuItem> menu()
  * @method static string version()
  * @method static string routePrefix()
  * @method static string dashboardEntity()
@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static mixed quickAction()
  * @method static mixed secondaryMenu()
  * @method static mixed bottomMenu()
+ * @method static array<int, array{label: string, href: string|null}> breadcrumbs(\Illuminate\Http\Request $request)
  */
 final class Flatpack extends Facade
 {

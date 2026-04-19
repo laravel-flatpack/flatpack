@@ -17,13 +17,14 @@ use Flatpack\Contracts\Actions\ActionResolver;
 use Flatpack\Contracts\Authorization\FlatpackAuthorizer;
 use Flatpack\Contracts\Composition\CompositionLoader;
 use Flatpack\Contracts\Composition\CompositionQuery;
-use Flatpack\Contracts\Menu\MenuBuilder as MenuBuilderContract;
 use Flatpack\Http\FlatpackRequest;
 use Flatpack\Http\Middleware\ConfigureFlatpackViteAssets;
 use Flatpack\Http\Middleware\SetFlatpackInertiaRootView;
 use Flatpack\Http\Middleware\ShareFlatpackInertiaData;
 use Flatpack\Lists\ListRecordsLoader;
-use Flatpack\Menu\FlatpackMenuBuilder;
+use Flatpack\Navigation\BreadcrumbsBuilder;
+use Flatpack\Navigation\FlatpackMenuBuilder;
+use Flatpack\Navigation\MenuBuilder;
 use Flatpack\Registration\AuthenticationRedirectCallbacks;
 use Flatpack\Support\FormSchemaNormalizer;
 use Illuminate\Auth\AuthenticationException;
@@ -62,9 +63,20 @@ final class FlatpackServiceProvider extends ServiceProvider
     protected function registerContainerBindings(): void
     {
         $this->registerCompositionBindings();
+        $this->registerNavigationBindings();
         $this->registerContractBindings();
         $this->registerFlatpackSingleton();
         $this->registerConcreteServiceSingletons();
+    }
+
+    protected function registerNavigationBindings(): void
+    {
+        $this->app->singleton(BreadcrumbsBuilder::class, fn ($app): BreadcrumbsBuilder => new BreadcrumbsBuilder(
+            $app->make(EntityComposition::class),
+            $app->make(Repository::class),
+        ));
+
+        $this->app->singleton(MenuBuilder::class, FlatpackMenuBuilder::class);
     }
 
     protected function registerCompositionBindings(): void
@@ -99,13 +111,13 @@ final class FlatpackServiceProvider extends ServiceProvider
     {
         $this->app->singleton(FlatpackAuthorizer::class, PolicyAwareFlatpackAuthorizer::class);
         $this->app->singleton(ActionResolver::class, DefaultActionResolver::class);
-        $this->app->singleton(MenuBuilderContract::class, FlatpackMenuBuilder::class);
     }
 
     protected function registerFlatpackSingleton(): void
     {
         $this->app->singleton(Flatpack::class, fn ($app): Flatpack => new Flatpack(
-            menuBuilder: $app->make(MenuBuilderContract::class),
+            menuBuilder: $app->make(MenuBuilder::class),
+            breadcrumbsBuilder: $app->make(BreadcrumbsBuilder::class),
             config: $app->make(Repository::class),
             version: Flatpack::composerPackageVersion(),
         ));

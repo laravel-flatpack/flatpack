@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Flatpack;
 
 use Composer\InstalledVersions;
-use Flatpack\Contracts\Menu\MenuBuilder;
-use Flatpack\Menu\MenuItem;
+use Flatpack\Navigation\BreadcrumbsBuilder;
+use Flatpack\Navigation\MenuBuilder;
+use Flatpack\Navigation\MenuItem;
 use Illuminate\Contracts\Config\Repository;
+use Illuminate\Http\Request;
 use Throwable;
 
 /**
@@ -23,6 +25,7 @@ final readonly class Flatpack
 {
     public function __construct(
         private MenuBuilder $menuBuilder,
+        private BreadcrumbsBuilder $breadcrumbsBuilder,
         private Repository $config,
         private string $version,
     ) {}
@@ -56,6 +59,14 @@ final readonly class Flatpack
     public function menu(): array
     {
         return $this->menuBuilder->build();
+    }
+
+    /**
+     * @return list<array{label: string, href: string|null}>
+     */
+    public function breadcrumbs(Request $request): array
+    {
+        return $this->breadcrumbsBuilder->forRequest($request);
     }
 
     /**
