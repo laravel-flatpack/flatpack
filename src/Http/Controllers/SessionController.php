@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Flatpack\Http\Controllers;
 
+use Flatpack\Facades\Flatpack;
 use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -43,7 +44,7 @@ final class SessionController
             'password' => ['required', 'string'],
         ]);
 
-        $guard = Auth::guard((string) config('flatpack.guard', 'web'));
+        $guard = Auth::guard(Flatpack::authGuard());
 
         if (! $guard instanceof StatefulGuard) {
             abort(500, 'Flatpack login requires a stateful guard (e.g. web).');
@@ -68,7 +69,7 @@ final class SessionController
      */
     public function destroy(Request $request): RedirectResponse
     {
-        $guard = Auth::guard((string) config('flatpack.guard', 'web'));
+        $guard = Auth::guard(Flatpack::authGuard());
 
         if (! $guard instanceof StatefulGuard) {
             abort(500, 'Flatpack logout requires a stateful guard (e.g. web).');
@@ -107,7 +108,7 @@ final class SessionController
 
     private function isFlatpackUrl(string $url): bool
     {
-        $prefix = trim((string) config('flatpack.prefix', 'flatpack'), '/');
+        $prefix = Flatpack::routePrefix();
         $path = trim((string) parse_url($url, PHP_URL_PATH), '/');
 
         if ($path === '') {

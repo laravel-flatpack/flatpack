@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Flatpack\Http\Controllers;
 
 use Flatpack\Composition\EntityComposition;
+use Flatpack\Facades\Flatpack;
 use Flatpack\Http\FlatpackResponse;
 use Flatpack\Lists\BulkActions;
 use Flatpack\Lists\ListRecordsLoader;
@@ -31,10 +32,10 @@ final readonly class ListController
         $schema = $this->entityComposition->listSchema($entity);
 
         $page = max(1, (int) $request->query('page', 1));
-        $maxPerPage = (int) config('flatpack.list.max_per_page', 100);
+        $maxPerPage = Flatpack::maxListPerPage();
         $perPage = (int) $request->query(
             'per_page',
-            (int) config('flatpack.list.per_page', 10),
+            Flatpack::defaultListPerPage(),
         );
         $perPage = max(1, min($maxPerPage, $perPage));
         $searchTerm = trim((string) $request->query('search', ''));

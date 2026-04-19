@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Flatpack\Http\Middleware;
 
 use Closure;
-use Flatpack\Flatpack;
+use Flatpack\Facades\Flatpack;
 use Flatpack\Http\FlatpackRequest;
 use Flatpack\Http\Resources\FlatpackUser;
 use Illuminate\Http\Request;
@@ -14,10 +14,6 @@ use Symfony\Component\HttpFoundation\Response;
 
 final readonly class ShareFlatpackInertiaData
 {
-    public function __construct(
-        private Flatpack $flatpack,
-    ) {}
-
     /**
      * @param  Closure(Request): (Response)  $next
      */
@@ -25,17 +21,14 @@ final readonly class ShareFlatpackInertiaData
     {
         if (FlatpackRequest::matches($request)) {
             Inertia::share('flatpack', [
-                'quickAction' => config('flatpack.quick_action'),
+                'quickAction' => Flatpack::quickAction(),
                 'menu' => array_map(
                     static fn ($item): array => $item->toArray(),
-                    $this->flatpack->menu(),
+                    Flatpack::menu(),
                 ),
-                'secondaryMenu' => config('flatpack.secondary_menu'),
-                'bottomMenu' => config('flatpack.bottom_menu'),
-                'showActionShortcutHints' => (bool) config(
-                    'flatpack.ui.show_action_shortcut_hints',
-                    false,
-                ),
+                'secondaryMenu' => Flatpack::secondaryMenu(),
+                'bottomMenu' => Flatpack::bottomMenu(),
+                'showActionShortcutHints' => Flatpack::showActionShortcutHints(),
                 'user' => $request->user() ? FlatpackUser::make($request->user()) : null,
             ]);
         }

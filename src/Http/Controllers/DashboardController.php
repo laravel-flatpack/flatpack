@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Flatpack\Http\Controllers;
 
 use Flatpack\Contracts\Composition\CompositionQuery;
+use Flatpack\Facades\Flatpack;
 use Flatpack\Http\FlatpackResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -20,7 +21,7 @@ final readonly class DashboardController
     {
         /** @var array<string, mixed>|null $schema */
         $schema = $this->compositions->optional(
-            config('flatpack.dashboard_entity', 'dashboard'),
+            Flatpack::dashboardEntity(),
             'list'
         );
 

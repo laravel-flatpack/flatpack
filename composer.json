@@ -57,7 +57,10 @@
         "laravel": {
             "providers": [
                 "Flatpack\\FlatpackServiceProvider"
-            ]
+            ],
+            "aliases": {
+                "Flatpack": "Flatpack\\Facades\\Flatpack"
+            }
         }
     },
     "config": {

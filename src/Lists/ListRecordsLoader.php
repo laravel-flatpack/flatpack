@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Flatpack\Lists;
 
+use Flatpack\Facades\Flatpack;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 
@@ -55,8 +56,8 @@ final readonly class ListRecordsLoader
         ?string $sortBy = null,
         string $sortDirection = 'desc',
     ): array {
-        $perPage ??= (int) config('flatpack.list.per_page', 10);
-        $maxPerPage = (int) config('flatpack.list.max_per_page', 100);
+        $perPage ??= Flatpack::defaultListPerPage();
+        $maxPerPage = Flatpack::maxListPerPage();
         $perPage = max(1, min($maxPerPage, $perPage));
         $page = max(1, $page);
 

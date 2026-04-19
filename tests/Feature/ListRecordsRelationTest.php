@@ -29,7 +29,7 @@ test('list records eager-load relations in a bounded number of queries', functio
         ],
     ];
 
-    $loader = new ListRecordsLoader();
+    $loader = app(ListRecordsLoader::class);
 
     DB::enableQueryLog();
     $result = $loader->load(Post::class, $schema, 1, 15);
