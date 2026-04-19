@@ -4,13 +4,22 @@ declare(strict_types=1);
 
 namespace Flatpack\Support;
 
-use Flatpack\Schema\Generated\CompositionSchemaKeys;
+use Flatpack\Support\ListSchema\ListSchemaPipelineState;
+use Flatpack\Support\ListSchema\Pipes\LogUnknownListRootKeysPipe;
+use Flatpack\Support\ListSchema\Pipes\WarnUnknownListBulkActionsNestedKeysPipe;
+use Flatpack\Support\ListSchema\Pipes\WarnUnknownListHeaderActionsNestedKeysPipe;
+use Illuminate\Pipeline\Pipeline;
 
 /**
  * Prepares list composition YAML for Inertia / JSON responses.
+ * Normalization runs as a Laravel {@see Pipeline} of discrete validation / debug stages.
  */
-final class ListSchemaNormalizer
+final readonly class ListSchemaNormalizer
 {
+    public function __construct(
+        private ?Pipeline $pipeline = null,
+    ) {}
+
     /**
      * @param  array<string, mixed>|null  $schema
      * @return array<string, mixed>|null
@@ -21,37 +30,23 @@ final class ListSchemaNormalizer
             return null;
         }
 
-        if ($debug !== null) {
-            $this->logUnknownTopLevelListKeys($schema, $debug);
-            CompositionNestedKeyWarnings::forStringKeyedBlocks(
-                $schema['actions'] ?? null,
-                CompositionSchemaKeys::HEADER_ACTION_ENTRY_KEYS,
-                'actions',
-                $debug,
-            );
-            CompositionNestedKeyWarnings::forStringKeyedBlocks(
-                $schema['bulk_actions'] ?? null,
-                CompositionSchemaKeys::LIST_BULK_ACTION_ENTRY_KEYS,
-                'bulk_actions',
-                $debug,
-            );
-        }
+        $state = new ListSchemaPipelineState($schema, $debug);
 
-        return $schema;
+        /** @var ListSchemaPipelineState $out */
+        $out = $this->resolvePipeline()
+            ->send($state)
+            ->through([
+                LogUnknownListRootKeysPipe::class,
+                WarnUnknownListHeaderActionsNestedKeysPipe::class,
+                WarnUnknownListBulkActionsNestedKeysPipe::class,
+            ])
+            ->thenReturn();
+
+        return $out->schema;
     }
 
-    /**
-     * @param  array<string, mixed>  $schema
-     */
-    private function logUnknownTopLevelListKeys(array $schema, CompositionDebugLog $debug): void
+    private function resolvePipeline(): Pipeline
     {
-        $keys = array_keys($schema);
-        sort($keys, SORT_STRING);
-
-        foreach ($keys as $key) {
-            if (! in_array($key, CompositionSchemaKeys::LIST_ROOT_PROPERTY_KEYS, true)) {
-                $debug->add(sprintf('Unknown top-level list key "%s" (ignored at runtime).', $key));
-            }
-        }
+        return $this->pipeline ?? app(Pipeline::class);
     }
 }

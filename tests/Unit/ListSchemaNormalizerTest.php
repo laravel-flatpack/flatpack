@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 use Flatpack\Support\CompositionDebugLog;
 use Flatpack\Support\ListSchemaNormalizer;
+use Flatpack\Tests\TestCase;
+
+uses(TestCase::class);
 
 it('records unknown keys under list actions in debug log', function (): void {
     $log = new CompositionDebugLog('posts/list.yaml');
