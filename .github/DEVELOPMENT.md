@@ -11,10 +11,12 @@ Forms and lists normalization read **allowlists** derived from `resources/schema
 From the package root (with dev dependencies installed, so `vendor/bin/testbench` exists):
 
 ```bash
-composer run schema:keys
+composer run schema:keys:generate
 ```
 
-That writes `src/Schema/Generated/CompositionSchemaKeys.php`, `resources/js/lib/generated/composition-schema-keys.ts`, and formats the TypeScript with **Biome** when `node_modules/.bin/biome` exists. Commit both generated files with your schema change.
+That **writes** `src/Schema/Generated/CompositionSchemaKeys.php`, `resources/js/lib/generated/composition-schema-keys.ts`, and formats the TypeScript with **Biome** when `node_modules/.bin/biome` exists. Commit both generated files with your schema change.
+
+**`composer run schema:keys`** runs the same Artisan command **with `--check`** only: it verifies generated files match the JSON schemas and **does not write anything**. Use it locally or in CI before merge.
 
 In an application that depends on Flatpack, the same command is registered as Artisan:
 
@@ -22,11 +24,12 @@ In an application that depends on Flatpack, the same command is registered as Ar
 php artisan flatpack:generate-composition-schema-keys
 ```
 
-| Flag / script                  | Purpose                                                                                                                                                                                                                             |
-| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **`--check`**                  | Exits with a non-zero status if the JSON schema’s extracted key sets no longer match **`src/Schema/Generated/CompositionSchemaKeys.php`** or **`resources/js/lib/generated/composition-schema-keys.ts`**. Does not write any files. |
-| **`composer run schema:keys`** | Runs `--check` via Testbench (same as CI).                                                                                                                                                                                          |
-| **`composer run check`**       | Runs lint, static analysis, **`schema:keys`**, and tests.                                                                                                                                                                           |
+| Flag / script                           | Purpose                                                                                                                                                                                                                             |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`--check`**                           | Exits with a non-zero status if the JSON schema’s extracted key sets no longer match **`src/Schema/Generated/CompositionSchemaKeys.php`** or **`resources/js/lib/generated/composition-schema-keys.ts`**. Does not write any files. |
+| **`composer run schema:keys`**          | Runs **`--check`** via Testbench (same as CI): verify only, no writes.                                                                                                                                                              |
+| **`composer run schema:keys:generate`** | Regenerates PHP + TS from **`resources/schema/form.json`** and **`list.json`** (no `--check`).                                                                                                                                      |
+| **`composer run check`**                | Runs lint, static analysis, **`schema:keys`** (verify), and tests.                                                                                                                                                                  |
 
 The React bundle does **not** import full `form.json` / `list.json` (would inflate the client bundle). It imports **`resources/js/lib/generated/composition-schema-keys.ts`**, emitted by the same Artisan command as the PHP file. **`form-schema-contract.ts`** re-exports field-type allowlists from that module for `normalizeFields`.
 
