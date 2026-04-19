@@ -7,7 +7,7 @@ namespace Flatpack\Http\Requests;
 use Flatpack\Composition\EntityComposition;
 use Flatpack\Contracts\Authorization\FlatpackAuthorizer;
 use Flatpack\Http\Requests\Concerns\InteractsWithFlatpackAuthorization;
-use Flatpack\Schema\Lists\Validation\ListSchemaRuleBuilder;
+use Flatpack\Schema\Validation\ListSchemaRuleBuilder;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Override;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Flatpack\Schema\Lists\Validation\ListSchemaRuleBuilder;
+use Flatpack\Schema\Validation\ListSchemaRuleBuilder;
 use Flatpack\Tests\Models\Post;
 use Flatpack\Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;

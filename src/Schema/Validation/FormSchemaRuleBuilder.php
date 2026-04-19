@@ -2,11 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Flatpack\Schema\Forms\Validation;
+namespace Flatpack\Schema\Validation;
 
 use Flatpack\Relations\RelationFieldQuery;
 use Flatpack\Schema\Forms\FormFieldType;
-use Flatpack\Schema\Validation\RuleListParser;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\In;
 
