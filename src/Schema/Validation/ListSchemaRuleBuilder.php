@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Flatpack\Schema\Validation;
 
-use Flatpack\Relations\RelationFieldQuery;
+use Flatpack\Schema\RelationFieldQuery;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\In;
 

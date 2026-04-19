@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Flatpack\Http\Controllers;
 
 use Flatpack\Composition\EntityComposition;
-use Flatpack\Relations\RelationFieldQuery;
 use Flatpack\Schema\Forms\FormFieldType;
 use Flatpack\Schema\Forms\FormSchemaFields;
+use Flatpack\Schema\RelationFieldQuery;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

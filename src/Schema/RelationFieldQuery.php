@@ -2,14 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Flatpack\Relations;
+namespace Flatpack\Schema;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 
 /**
- * Resolves Eloquent relation query + label/value columns for Flatpack relation form fields.
+ * Resolves Eloquent relation query plus label/value columns from form or list YAML
+ * ({@code relation}, {@code relation_name}/{@code relationName}, {@code relation_value}/{@code relationValue}).
  */
 final class RelationFieldQuery
 {
