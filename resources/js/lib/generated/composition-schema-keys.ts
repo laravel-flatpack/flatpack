@@ -56,7 +56,7 @@ export const LIST_ROOT_PROPERTY_KEYS = [
 ] as const;
 
 /**
- * Canonical field types (yamlFormFieldType minus date/relation). Mirrors PHP `CompositionSchemaKeys::FORM_FIELD_TYPES_CANONICAL`.
+ * Canonical field types (yamlFormFieldType minus date). Mirrors PHP `CompositionSchemaKeys::FORM_FIELD_TYPES_CANONICAL`.
  */
 export const FORM_FIELD_TYPES_CANONICAL = [
     'block-editor',

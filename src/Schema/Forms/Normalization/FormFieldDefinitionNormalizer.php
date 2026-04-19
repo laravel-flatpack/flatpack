@@ -32,11 +32,7 @@ final class FormFieldDefinitionNormalizer
             $fieldDefinition['type'] = 'text';
         }
 
-        if ($rawType === 'relation') {
-            $fieldDefinition['type'] = 'combobox';
-            $fieldDefinition['options'] = [];
-            $fieldDefinition['remote'] = true;
-        } elseif ($fieldDefinition['type'] === 'table') {
+        if ($fieldDefinition['type'] === 'table') {
             $relation = isset($fieldDefinition['relation'])
                 ? trim((string) $fieldDefinition['relation'])
                 : '';
@@ -63,6 +59,14 @@ final class FormFieldDefinitionNormalizer
             $fieldDefinition['options'] = $this->normalizeFieldOptions(
                 $fieldDefinition['options'] ?? null,
             );
+            if ($fieldDefinition['type'] === 'combobox') {
+                $relation = isset($fieldDefinition['relation'])
+                    ? trim((string) $fieldDefinition['relation'])
+                    : '';
+                if ($relation !== '') {
+                    $fieldDefinition['remote'] = true;
+                }
+            }
         }
 
         $canonicalType = $fieldDefinition['type'];

@@ -146,7 +146,6 @@ export function relationRemoteProps(
 
     const relationField = field as FormFieldProps & {
         relation?: unknown;
-        remote?: unknown;
     };
     if (
         typeof relationField.relation !== 'string' ||
@@ -156,7 +155,7 @@ export function relationRemoteProps(
     }
 
     return {
-        remote: relationField.remote === true,
+        remote: true,
         remoteEndpoint: route('flatpack.entities.relation-options', { entity }),
         remoteFieldId: fieldId,
     };

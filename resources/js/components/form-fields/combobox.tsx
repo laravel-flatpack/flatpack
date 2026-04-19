@@ -37,12 +37,37 @@ function dedupeItems(items: ComboboxObjectItem[]): ComboboxObjectItem[] {
     return [...map.values()];
 }
 
+/**
+ * Base UI multi-select passes selected entries as {@link ComboboxObjectItem} objects;
+ * form state and chips expect string ids (values).
+ */
+function comboboxMultipleSelectionToIds(selected: unknown): string[] {
+    if (!Array.isArray(selected)) {
+        return [];
+    }
+    const out: string[] = [];
+    for (const entry of selected) {
+        if (entry !== null && typeof entry === 'object' && 'value' in entry) {
+            const raw = (entry as ComboboxObjectItem).value;
+            const s = String(raw).trim();
+            if (s !== '') {
+                out.push(s);
+            }
+        } else if (typeof entry === 'string' || typeof entry === 'number') {
+            const s = String(entry).trim();
+            if (s !== '') {
+                out.push(s);
+            }
+        }
+    }
+    return out;
+}
+
 export const ComboboxField = ({
     id,
     label,
     multiple,
     items,
-    multiItems,
     singlePlaceholder,
     multiPlaceholder,
     singleDescription,
@@ -61,7 +86,6 @@ export const ComboboxField = ({
     label: string;
     multiple: boolean;
     items: ComboboxObjectItem[];
-    multiItems: readonly string[];
     singlePlaceholder: string;
     multiPlaceholder: string;
     singleDescription?: ReactNode;
@@ -90,6 +114,14 @@ export const ComboboxField = ({
         () => (remote ? remoteItems : items),
         [items, remote, remoteItems],
     );
+    /** Multi-select: hide options already chosen so duplicates cannot be added. */
+    const selectableItems = useMemo(() => {
+        if (!multiple) {
+            return normalizedItems;
+        }
+        const selected = new Set(multiValue.map((id) => String(id)));
+        return normalizedItems.filter((o) => !selected.has(String(o.value)));
+    }, [multiple, multiValue, normalizedItems]);
     const selectedValue =
         typeof value === 'string' || typeof value === 'number'
             ? String(value)
@@ -175,7 +207,7 @@ export const ComboboxField = ({
                         )
                         .map((item) => String(item))
                   : [];
-            setMultiValue(next);
+            setMultiValue([...new Set(next)]);
         } else {
             setMultiValue([]);
         }
@@ -240,29 +272,33 @@ export const ComboboxField = ({
                 {label ? <FieldTitle id={labelId}>{label}</FieldTitle> : null}
                 <FieldContent>
                     <Combobox
-                        items={[...multiItems]}
+                        items={selectableItems}
                         multiple
                         value={multiValue}
                         onValueChange={(v) => {
-                            setMultiValue(v);
+                            const ids = [
+                                ...new Set(comboboxMultipleSelectionToIds(v)),
+                            ];
+                            setMultiValue(ids);
                             if (useRelationRowPayload) {
                                 onValueChange?.(
-                                    idsToRelationRows(v, relationValueKey),
+                                    idsToRelationRows(ids, relationValueKey),
                                 );
                             } else {
-                                onValueChange?.(v);
+                                onValueChange?.(ids);
                             }
                         }}
                     >
                         <ComboboxChips className="w-full">
                             <ComboboxValue>
                                 {multiValue.map((item) => {
+                                    const id = String(item);
                                     const chipLabel =
                                         normalizedItems.find(
-                                            (o) => o.value === item,
-                                        )?.label ?? item;
+                                            (o) => String(o.value) === id,
+                                        )?.label ?? id;
                                     return (
-                                        <ComboboxChip key={item}>
+                                        <ComboboxChip key={id}>
                                             {chipLabel}
                                         </ComboboxChip>
                                     );
@@ -273,17 +309,29 @@ export const ComboboxField = ({
                                 placeholder={multiPlaceholder}
                                 aria-labelledby={label ? labelId : undefined}
                                 aria-invalid={invalid || undefined}
+                                onChange={(event) => {
+                                    setQuery(event.currentTarget.value);
+                                }}
                             />
                         </ComboboxChips>
                         <ComboboxContent>
-                            <ComboboxEmpty>No matches</ComboboxEmpty>
-                            <ComboboxList>
-                                {(item: string) => (
-                                    <ComboboxItem key={item} value={item}>
-                                        {item}
+                            <ComboboxList
+                                onScroll={remote ? handleListScroll : undefined}
+                            >
+                                {(item: ComboboxObjectItem) => (
+                                    <ComboboxItem key={item.value} value={item}>
+                                        {item.label}
                                     </ComboboxItem>
                                 )}
                             </ComboboxList>
+                            {remoteLoading ? (
+                                <div className="px-3 py-2 text-sm text-muted-foreground">
+                                    Loading...
+                                </div>
+                            ) : null}
+                            <ComboboxEmpty>
+                                {remoteLoading ? 'Loading...' : 'No matches'}
+                            </ComboboxEmpty>
                         </ComboboxContent>
                     </Combobox>
                     {multiDescription ? (

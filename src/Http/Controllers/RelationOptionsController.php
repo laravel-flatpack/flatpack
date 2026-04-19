@@ -46,7 +46,7 @@ final readonly class RelationOptionsController
     private function relationFieldDefinition(?array $schema, string $fieldId): ?array
     {
         $fieldDefinition = FormSchemaFields::fieldDefinitionById($schema, $fieldId);
-        if ($fieldDefinition === null || ! FormFieldType::isRelationField($fieldDefinition)) {
+        if ($fieldDefinition === null || ! FormFieldType::isRelationBackedCombobox($fieldDefinition)) {
             return null;
         }
 

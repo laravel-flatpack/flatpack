@@ -99,7 +99,6 @@ function mapCombobox(props: FormFieldProps, ctx: FormFieldRenderContext) {
             value: o.value,
             label: o.label,
         })),
-        multiItems: options.map((o) => o.label),
         singlePlaceholder: p.placeholder ?? '',
         multiPlaceholder: p.placeholder ?? '',
         singleDescription: p.helperText,

@@ -73,6 +73,36 @@ describe('form composition schema (resources/schema/form.json)', function () {
 
         expect($errors)->not->toBeEmpty();
     });
+
+    it('accepts combobox with relation for remote relation picker', function () {
+        $errors = CompositionSchemaAsserter::validateForm([
+            'fields' => [
+                'category_id' => [
+                    'type' => 'combobox',
+                    'label' => 'Category',
+                    'relation' => 'category',
+                    'relation_name' => 'name',
+                    'relation_value' => 'id',
+                ],
+            ],
+        ]);
+
+        expect($errors)->toBeEmpty();
+    });
+
+    it('rejects obsolete form field type relation', function () {
+        $errors = CompositionSchemaAsserter::validateForm([
+            'fields' => [
+                'category_id' => [
+                    'type' => 'relation',
+                    'label' => 'Category',
+                    'relation' => 'category',
+                ],
+            ],
+        ]);
+
+        expect($errors)->not->toBeEmpty();
+    });
 });
 
 describe('list composition schema (resources/schema/list.json)', function () {

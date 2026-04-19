@@ -11,7 +11,7 @@ import type {
 
 /**
  * Raw form composition from `form.yaml` (decoded JSON). Parity with `resources/schema/form.json`.
- * Runtime normalizes aliases (e.g. `date` → `date-picker`, relation → combobox behavior).
+ * Runtime normalizes aliases (e.g. `date` → `date-picker`). Relation pickers use `type: combobox` with `relation`.
  */
 
 export type FlatpackFormCompositionValidationRulesYaml = string | string[];
@@ -101,23 +101,6 @@ export type FlatpackFormCompositionFieldComboboxYaml = {
     relation?: string;
     relation_name?: string;
     relation_value?: string;
-    remote?: boolean;
-};
-
-export type FlatpackFormCompositionFieldRelationYaml = {
-    type: 'relation';
-    id?: string;
-    label: string;
-    helperText?: string;
-    placeholder?: string;
-    required?: boolean;
-    rules?: FlatpackFormCompositionValidationRulesYaml;
-    value?: unknown;
-    relation: string;
-    relation_name?: string;
-    relation_value?: string;
-    options?: FlatpackListCompositionColumnOptionsYaml;
-    multiple?: boolean;
     remote?: boolean;
 };
 
@@ -248,7 +231,6 @@ export type FlatpackFormCompositionFieldYaml =
     | FlatpackFormCompositionFieldTextareaYaml
     | FlatpackFormCompositionFieldSelectYaml
     | FlatpackFormCompositionFieldComboboxYaml
-    | FlatpackFormCompositionFieldRelationYaml
     | FlatpackFormCompositionFieldDateYaml
     | FlatpackFormCompositionFieldDatePickerYaml
     | FlatpackFormCompositionFieldDateRangePickerYaml

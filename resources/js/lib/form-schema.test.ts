@@ -13,17 +13,34 @@ describe('normalizeFields', () => {
         expect(normalizeFields({ fields: 'bad' })).toEqual([]);
     });
 
-    it('maps date and relation aliases to canonical types', () => {
+    it('maps date alias to date-picker and keeps combobox with relation', () => {
         const entries = normalizeFields({
             fields: {
                 a: { id: 'a', type: 'date' },
-                b: { id: 'b', type: 'relation' },
+                b: {
+                    id: 'b',
+                    type: 'combobox',
+                    relation: 'category',
+                },
             },
         });
         expect(entries.map((e) => [e.id, e.field.type])).toEqual([
             ['a', 'date-picker'],
             ['b', 'combobox'],
         ]);
+    });
+
+    it('drops type relation (use combobox with relation in form.yaml)', () => {
+        const entries = normalizeFields({
+            fields: {
+                legacy: {
+                    id: 'legacy',
+                    type: 'relation',
+                    relation: 'category',
+                },
+            },
+        });
+        expect(entries).toEqual([]);
     });
 
     it('drops entries with unknown type or empty id', () => {

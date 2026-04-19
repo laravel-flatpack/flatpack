@@ -23,16 +23,24 @@ final class FormFieldType
     }
 
     /**
-     * Relation-backed field: {@code type: relation} or remote combobox with {@code relation} set.
+     * Single-value relation picker: {@code type: combobox} with non-empty {@code relation} (remote options API + exists rules).
+     * Not for {@code type: table} — use {@see isRelationBackedTable()} / {@see shouldDeferToRelationSync()}.
      *
      * @param  array<string, mixed>  $fieldDefinition
      */
-    public static function isRelationField(array $fieldDefinition): bool
+    public static function isRelationBackedCombobox(array $fieldDefinition): bool
     {
         $type = self::normalizeYamlType(trim((string) ($fieldDefinition['type'] ?? '')));
 
-        return $type === 'relation'
-            || ($type === 'combobox' && isset($fieldDefinition['relation']));
+        if ($type !== 'combobox') {
+            return false;
+        }
+
+        $relation = isset($fieldDefinition['relation'])
+            ? trim((string) $fieldDefinition['relation'])
+            : '';
+
+        return $relation !== '';
     }
 
     /**

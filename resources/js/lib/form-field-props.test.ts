@@ -81,7 +81,6 @@ describe('mapFormFieldPropsToComponentProps', () => {
             { value: 'a', label: 'A' },
             { value: 'b', label: 'B' },
         ]);
-        expect(out.multiItems).toEqual(['A', 'B']);
         expect(out.multiple).toBe(true);
     });
 

@@ -16,7 +16,7 @@ final class CompositionSchemaKeysGenerator
      *
      * @var list<string>
      */
-    private const array YAML_ONLY_FORM_FIELD_TYPE_ALIASES = ['date', 'relation'];
+    private const array YAML_ONLY_FORM_FIELD_TYPE_ALIASES = ['date'];
 
     /**
      * Basenames of list.json $defs for each columnDefinition oneOf branch (e.g. columnSelect, columnRelation).
@@ -181,7 +181,7 @@ PHP;
         $body .= self::listRootAssocPhp($listRoot);
         $body .= self::defaultListRowReorderColumnPhp();
         $body .= self::constBlock('Top-level keys from list.json `properties` (entity list.yaml). Same names as keys of `LIST_ROOT`, sorted.', 'LIST_ROOT_PROPERTY_KEYS', $listRoot);
-        $body .= self::constBlock('Canonical field types after YAML aliases are stripped (see yamlFormFieldType enum minus date/relation).', 'FORM_FIELD_TYPES_CANONICAL', $canonicalTypes);
+        $body .= self::constBlock('Canonical field types after YAML aliases are stripped (see yamlFormFieldType enum minus date).', 'FORM_FIELD_TYPES_CANONICAL', $canonicalTypes);
         $body .= self::constBlock('Union of nested keys allowed on toolbar/header action entries (form headerActionDefinition ∪ list headerActionEntry).', 'HEADER_ACTION_ENTRY_KEYS', $headerUnion);
         $body .= self::constBlock('Nested keys for each bulk_actions entry (list.json bulkActionDefinition).', 'LIST_BULK_ACTION_ENTRY_KEYS', $bulkKeys);
         $body .= self::constBlock('Nested keys for each list column `actions` button (list.json columnActionButton).', 'LIST_COLUMN_ACTION_BUTTON_ENTRY_KEYS', $keys['listColumnActionButtonEntryKeys']);
@@ -231,7 +231,7 @@ PHP;
             $keys['listRootPropertyKeys'],
         );
         $out .= self::tsConstAsConst(
-            'Canonical field types (yamlFormFieldType minus date/relation). Mirrors PHP `CompositionSchemaKeys::FORM_FIELD_TYPES_CANONICAL`.',
+            'Canonical field types (yamlFormFieldType minus date). Mirrors PHP `CompositionSchemaKeys::FORM_FIELD_TYPES_CANONICAL`.',
             'FORM_FIELD_TYPES_CANONICAL',
             $keys['formFieldTypesCanonical'],
         );

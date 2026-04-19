@@ -69,7 +69,7 @@ final class CompositionSchemaKeys
     ];
 
     /**
-     * Canonical field types after YAML aliases are stripped (see yamlFormFieldType enum minus date/relation).
+     * Canonical field types after YAML aliases are stripped (see yamlFormFieldType enum minus date).
      *
      * @var list<string>
      */

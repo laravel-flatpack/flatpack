@@ -294,7 +294,7 @@ fields:
     type: date
     label: Published At
   category_id:
-    type: relation
+    type: combobox
     label: Category
     relation: category
     relation_name: name
@@ -331,7 +331,7 @@ name: Post
 model: Flatpack\Tests\Models\Post
 fields:
   category_id:
-    type: relation
+    type: combobox
     label: Category
     relation: category
     relation_name: name
@@ -578,7 +578,7 @@ fields:
     type: text
     label: Slug
   category_id:
-    type: relation
+    type: combobox
     label: Category
     relation: category
     relation_name: name

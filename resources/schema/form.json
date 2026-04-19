@@ -124,13 +124,12 @@
         },
         "yamlFormFieldType": {
             "type": "string",
-            "description": "YAML type before/after FormFieldType::normalizeYamlType. date is normalized to date-picker; relation becomes combobox with remote options.",
+            "description": "YAML type before/after FormFieldType::normalizeYamlType. date is normalized to date-picker. Use type combobox with relation for remote relation pickers (like type table with relation).",
             "enum": [
                 "text",
                 "textarea",
                 "select",
                 "combobox",
-                "relation",
                 "date",
                 "date-picker",
                 "date-range-picker",
@@ -220,7 +219,6 @@
                 { "$ref": "#/$defs/fieldTextarea" },
                 { "$ref": "#/$defs/fieldSelect" },
                 { "$ref": "#/$defs/fieldCombobox" },
-                { "$ref": "#/$defs/fieldRelation" },
                 { "$ref": "#/$defs/fieldDate" },
                 { "$ref": "#/$defs/fieldDatePicker" },
                 { "$ref": "#/$defs/fieldDateRangePicker" },
@@ -295,7 +293,11 @@
                 "value": {},
                 "options": { "$ref": "#/$defs/selectOptions" },
                 "multiple": { "type": "boolean" },
-                "relation": { "type": "string", "minLength": 1 },
+                "relation": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Eloquent relation method for remote options; use type combobox + relation instead of obsolete type relation."
+                },
                 "relation_name": {
                     "type": "string",
                     "minLength": 1,
@@ -306,35 +308,6 @@
                     "minLength": 1,
                     "description": "Value column on related model (often id)"
                 },
-                "remote": { "type": "boolean" }
-            },
-            "additionalProperties": false
-        },
-        "fieldRelation": {
-            "type": "object",
-            "required": ["type", "label", "relation"],
-            "properties": {
-                "type": { "const": "relation" },
-                "id": { "type": "string" },
-                "label": { "type": "string", "minLength": 1 },
-                "helperText": { "type": "string" },
-                "placeholder": { "type": "string" },
-                "required": { "type": "boolean" },
-                "rules": { "$ref": "#/$defs/validationRules" },
-                "value": {},
-                "relation": { "type": "string", "minLength": 1 },
-                "relation_name": {
-                    "type": "string",
-                    "minLength": 1,
-                    "description": "Label column on related model for relation-options"
-                },
-                "relation_value": {
-                    "type": "string",
-                    "minLength": 1,
-                    "description": "Value column on related model (often id)"
-                },
-                "options": { "$ref": "#/$defs/selectOptions" },
-                "multiple": { "type": "boolean" },
                 "remote": { "type": "boolean" }
             },
             "additionalProperties": false
