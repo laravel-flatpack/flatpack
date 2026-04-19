@@ -293,6 +293,14 @@
                 "variant": {
                     "$ref": "#/$defs/buttonVariant"
                 },
+                "success_message": {
+                    "type": "string",
+                    "description": "Shown as a success toast after the row action completes (same as header toolbar and bulk actions)."
+                },
+                "confirm": {
+                    "type": "boolean",
+                    "description": "When true, opens a confirmation dialog before submitting the row action."
+                },
                 "success_redirect": {
                     "$ref": "#/$defs/successRedirect"
                 }

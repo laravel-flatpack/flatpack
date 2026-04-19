@@ -103,6 +103,20 @@ export const LIST_BULK_ACTION_ENTRY_KEYS = [
 ] as const;
 
 /**
+ * List column row action buttons (list.json columnActionButton). Mirrors PHP `CompositionSchemaKeys::LIST_COLUMN_ACTION_BUTTON_ENTRY_KEYS`.
+ */
+export const LIST_COLUMN_ACTION_BUTTON_ENTRY_KEYS = [
+    'action',
+    'confirm',
+    'href',
+    'icon',
+    'label',
+    'success_message',
+    'success_redirect',
+    'variant',
+] as const;
+
+/**
  * Union of list columnDefinition variant property keys.
  */
 export const LIST_COLUMN_DEFINITION_PROPERTY_KEYS = [
@@ -163,6 +177,15 @@ export const LIST_COLUMN_YAML_TYPES = [
     'datetime',
     'relation',
     'select',
+    'status',
+    'text',
+] as const;
+
+/**
+ * Generic list column type enum (columnGeneric.type). Mirrors PHP `CompositionSchemaKeys::LIST_COLUMN_GENERIC_YAML_TYPES`.
+ */
+export const LIST_COLUMN_GENERIC_YAML_TYPES = [
+    'badge',
     'status',
     'text',
 ] as const;

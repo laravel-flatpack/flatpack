@@ -122,6 +122,22 @@ final class CompositionSchemaKeys
     ];
 
     /**
+     * Nested keys for each list column `actions` button (list.json columnActionButton).
+     *
+     * @var list<string>
+     */
+    public const array LIST_COLUMN_ACTION_BUTTON_ENTRY_KEYS = [
+        'action',
+        'confirm',
+        'href',
+        'icon',
+        'label',
+        'success_message',
+        'success_redirect',
+        'variant',
+    ];
+
+    /**
      * Union of property keys across list columnDefinition oneOf variants.
      *
      * @var list<string>
@@ -190,6 +206,17 @@ final class CompositionSchemaKeys
         'datetime',
         'relation',
         'select',
+        'status',
+        'text',
+    ];
+
+    /**
+     * list.json `$defs.columnGeneric.properties.type` enum (text-like column kinds when type is set).
+     *
+     * @var list<string>
+     */
+    public const array LIST_COLUMN_GENERIC_YAML_TYPES = [
+        'badge',
         'status',
         'text',
     ];
