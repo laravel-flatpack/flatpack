@@ -12,10 +12,8 @@ import { SidebarTrigger } from '@/components/ui/sidebar';
 import type { FlatpackBreadcrumb } from '@/types/flatpack';
 
 export function SiteHeader({
-    title,
     breadcrumbs,
 }: {
-    title?: string;
     breadcrumbs?: FlatpackBreadcrumb[];
 }) {
     const hasBreadcrumbs = Array.isArray(breadcrumbs) && breadcrumbs.length > 0;

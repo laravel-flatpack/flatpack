@@ -53,5 +53,5 @@ export default function FlatpackDashboard(props: FlatpackDashboardPageProps) {
 }
 
 FlatpackDashboard.layout = (page: React.ReactNode) => (
-    <FlatpackLayout title="Dashboard">{page}</FlatpackLayout>
+    <FlatpackLayout>{page}</FlatpackLayout>
 );
