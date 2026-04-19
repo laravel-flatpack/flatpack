@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Flatpack\Authorization;
+namespace Flatpack\Support;
 
 use Flatpack\Contracts\Authorization\FlatpackAuthorizer;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\Gate;
 
-final class PolicyAwareFlatpackAuthorizer implements FlatpackAuthorizer
+final class PolicyAwareAuthorizer implements FlatpackAuthorizer
 {
     public function canAccessPanel(?Authenticatable $user): bool
     {

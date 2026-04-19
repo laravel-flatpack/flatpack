@@ -7,7 +7,6 @@ namespace Flatpack;
 use Closure;
 use Flatpack\Actions\ActionModelClassResolver;
 use Flatpack\Actions\DefaultActionResolver;
-use Flatpack\Authorization\PolicyAwareFlatpackAuthorizer;
 use Flatpack\Composition\CompositionValues;
 use Flatpack\Composition\DefaultCompositionQuery;
 use Flatpack\Composition\EntityComposition;
@@ -27,6 +26,7 @@ use Flatpack\Navigation\MenuBuilder;
 use Flatpack\Schema\Forms\FormSchemaNormalizer;
 use Flatpack\Schema\Lists\ListRecordsLoader;
 use Flatpack\Support\AuthenticationRedirectCallbacks;
+use Flatpack\Support\PolicyAwareAuthorizer;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Debug\ExceptionHandler;
@@ -109,7 +109,7 @@ final class FlatpackServiceProvider extends ServiceProvider
 
     protected function registerContractBindings(): void
     {
-        $this->app->singleton(FlatpackAuthorizer::class, PolicyAwareFlatpackAuthorizer::class);
+        $this->app->singleton(FlatpackAuthorizer::class, PolicyAwareAuthorizer::class);
         $this->app->singleton(ActionResolver::class, DefaultActionResolver::class);
     }
 
