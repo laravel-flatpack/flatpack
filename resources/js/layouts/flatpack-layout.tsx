@@ -23,7 +23,8 @@ export default function FlatpackLayout({
         props: { flatpack },
         url,
     } = usePage<FlatpackPageProps>();
-    const { quickAction, menu, secondaryMenu, bottomMenu, user } = flatpack;
+    const { quickAction, menu, secondaryMenu, bottomMenu, user, breadcrumbs } =
+        flatpack;
     const navigation = {
         quickAction,
         menu: Array.isArray(menu) ? menu : [],
@@ -58,7 +59,10 @@ export default function FlatpackLayout({
                                 currentPath={currentPath}
                             />
                             <SidebarInset>
-                                <SiteHeader title={title} />
+                                <SiteHeader
+                                    title={title}
+                                    breadcrumbs={breadcrumbs}
+                                />
                                 <div className="flex flex-1 flex-col">
                                     <div className="@container/main flex flex-1 flex-col gap-2">
                                         <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 lg:px-6">

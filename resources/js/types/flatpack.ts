@@ -15,6 +15,11 @@ export type FlatpackUser = {
     avatar: string;
 };
 
+export type FlatpackBreadcrumb = {
+    label: string;
+    href: string | null;
+};
+
 export type FlatpackPageProps = {
     flatpack: {
         quickAction?: FlatpackMenuItem;
@@ -23,6 +28,8 @@ export type FlatpackPageProps = {
         bottomMenu?: FlatpackSecondaryMenu;
         /** When true, header action buttons show shortcut chips inline. Default from config `flatpack.ui.show_action_shortcut_hints`. */
         showActionShortcutHints?: boolean;
+        /** Current page trail: last item is the active page (`href` null). */
+        breadcrumbs?: FlatpackBreadcrumb[];
         user?: FlatpackUser;
     };
 };
