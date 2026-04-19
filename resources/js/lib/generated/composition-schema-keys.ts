@@ -29,6 +29,7 @@ export const LIST_ROOT = {
     name: 'name',
     nav_order: 'nav_order',
     reorderable: 'reorderable',
+    row_click_edit: 'row_click_edit',
 } as const;
 
 export type ListRootKey = keyof typeof LIST_ROOT;
@@ -51,6 +52,7 @@ export const LIST_ROOT_PROPERTY_KEYS = [
     'name',
     'nav_order',
     'reorderable',
+    'row_click_edit',
 ] as const;
 
 /**

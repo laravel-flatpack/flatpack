@@ -34,6 +34,20 @@
             ],
             "description": "Enable drag-and-drop row reordering: true for default column, or pass the column name."
         },
+        "row_click_edit": {
+            "oneOf": [
+                {
+                    "type": "boolean",
+                    "description": "When false, row clicks do not open the edit page. When true, use the default record key (same as omitting this property)."
+                },
+                {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Row field whose value identifies the record for the edit URL (defaults to the model primary key / `id` when omitted or true)."
+                }
+            ],
+            "description": "Whether clicking a table row navigates to that record’s edit page. Omit or set true for default click-to-edit; set false to disable; use a string to choose which row field supplies the record id."
+        },
         "columns": {
             "oneOf": [
                 {

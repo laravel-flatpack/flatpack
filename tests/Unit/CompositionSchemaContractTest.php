@@ -175,4 +175,29 @@ describe('list composition schema (resources/schema/list.json)', function () {
 
         expect($errors)->toBeEmpty();
     });
+
+    it('accepts row_click_edit false, true, or a column name string', function () {
+        $minimalColumns = [
+            [
+                'id' => 'title',
+                'type' => 'text',
+                'label' => 'Title',
+            ],
+        ];
+
+        expect(CompositionSchemaAsserter::validateList([
+            'row_click_edit' => false,
+            'columns' => $minimalColumns,
+        ]))->toBeEmpty();
+
+        expect(CompositionSchemaAsserter::validateList([
+            'row_click_edit' => true,
+            'columns' => $minimalColumns,
+        ]))->toBeEmpty();
+
+        expect(CompositionSchemaAsserter::validateList([
+            'row_click_edit' => 'uuid',
+            'columns' => $minimalColumns,
+        ]))->toBeEmpty();
+    });
 });
