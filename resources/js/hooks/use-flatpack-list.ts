@@ -7,7 +7,11 @@ import {
     listYamlFiltersToDataTableFilters,
 } from '@/lib/list-schema';
 import { route } from '@/lib/route';
-import type { DataTableBulkDeletePayload } from '@/types/data-table';
+import type {
+    DataTableBulkDeletePayload,
+    DataTableRowActionPayload,
+    FlatpackActionVariant,
+} from '@/types/data-table';
 import type {
     FlatpackListHeaderAction,
     FlatpackListPageProps,
@@ -56,6 +60,13 @@ export function useFlatpackList({
     const [pendingListConfirm, setPendingListConfirm] = useState<
         (FlatpackListHeaderAction & { action: string }) | null
     >(null);
+    const [pendingRowActionConfirm, setPendingRowActionConfirm] = useState<{
+        action: string;
+        row: Record<string, unknown>;
+        label: string;
+        variant?: FlatpackActionVariant;
+        success_message?: string;
+    } | null>(null);
 
     const handleRowClick = useCallback(
         (row: Record<string, unknown>) => {
@@ -145,15 +156,13 @@ export function useFlatpackList({
         [bulkActions, entity],
     );
 
-    const handleRowAction = useCallback(
-        async ({
-            action,
-            row,
-        }: {
+    const executeRowAction = useCallback(
+        async (opts: {
             action: string;
             row: Record<string, unknown>;
+            success_message?: string;
         }) => {
-            const record = row[modelKey || 'id'];
+            const record = opts.row[modelKey || 'id'];
             if (record == null || record === '') {
                 throw new Error('Record key is missing');
             }
@@ -163,11 +172,16 @@ export function useFlatpackList({
                         entity,
                         record: String(record),
                     }),
-                    { action },
+                    { action: opts.action },
                     {
                         preserveState: true,
                         preserveScroll: true,
-                        onSuccess: () => resolve(),
+                        onSuccess: () => {
+                            resolve();
+                            if (opts.success_message) {
+                                toast.success(opts.success_message);
+                            }
+                        },
                         onError: (errors) => {
                             const message =
                                 firstErrorMessage(errors) ??
@@ -180,6 +194,28 @@ export function useFlatpackList({
             });
         },
         [entity, modelKey],
+    );
+
+    const handleRowAction = useCallback(
+        async (payload: DataTableRowActionPayload) => {
+            const { action, row, button } = payload;
+            if (button?.confirm === true) {
+                setPendingRowActionConfirm({
+                    action,
+                    row,
+                    label: button.label,
+                    variant: button.variant,
+                    success_message: button.success_message,
+                });
+                return;
+            }
+            await executeRowAction({
+                action,
+                row,
+                success_message: button?.success_message,
+            });
+        },
+        [executeRowAction],
     );
 
     const executeListAction = useCallback(
@@ -300,7 +336,10 @@ export function useFlatpackList({
         reorderable,
         rowClickEditKey,
         pendingListConfirm,
+        pendingRowActionConfirm,
         setPendingListConfirm,
+        setPendingRowActionConfirm,
+        executeRowAction,
         handleRowClick,
         handleServerPaginationChange,
         handleBulkAction,

@@ -32,5 +32,7 @@ it('keeps generated CompositionSchemaKeys aligned with the JSON schema files', f
         ->and($sets['buttonVariantUiValues'])->toBe(CompositionSchemaKeys::BUTTON_VARIANT_UI_VALUES)
         ->and($sets['optionStatusValues'])->toBe(CompositionSchemaKeys::OPTION_STATUS_VALUES)
         ->and($sets['listFilterTypes'])->toBe(CompositionSchemaKeys::LIST_FILTER_TYPES)
-        ->and($sets['listFilterDateModes'])->toBe(CompositionSchemaKeys::LIST_FILTER_DATE_MODES);
+        ->and($sets['listFilterDateModes'])->toBe(CompositionSchemaKeys::LIST_FILTER_DATE_MODES)
+        ->and($sets['listColumnGenericYamlTypes'])->toBe(CompositionSchemaKeys::LIST_COLUMN_GENERIC_YAML_TYPES)
+        ->and($sets['listColumnActionButtonEntryKeys'])->toBe(CompositionSchemaKeys::LIST_COLUMN_ACTION_BUTTON_ENTRY_KEYS);
 });

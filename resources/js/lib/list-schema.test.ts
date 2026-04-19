@@ -109,6 +109,31 @@ describe('listYamlColumnsToDataTableColumns', () => {
         expect(actions).toHaveLength(2);
         expect(actions?.map((a) => a.action)).toEqual(['edit', 'delete']);
     });
+
+    it('preserves confirm and success_message on column actions', () => {
+        const cols = listYamlColumnsToDataTableColumns([
+            {
+                id: 'actions',
+                type: 'actions',
+                label: 'Actions',
+                actions: [
+                    {
+                        label: 'Delete',
+                        action: 'delete',
+                        variant: 'destructive',
+                        confirm: true,
+                        success_message: 'Removed.',
+                    },
+                ],
+            },
+        ]);
+        expect(cols[0]?.actions?.[0]).toMatchObject({
+            action: 'delete',
+            confirm: true,
+            success_message: 'Removed.',
+            variant: 'destructive',
+        });
+    });
 });
 
 describe('listYamlFiltersToDataTableFilters', () => {

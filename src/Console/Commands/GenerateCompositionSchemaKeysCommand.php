@@ -107,6 +107,8 @@ final class GenerateCompositionSchemaKeysCommand extends Command
      *     optionStatusValues: list<string>,
      *     listFilterTypes: list<string>,
      *     listFilterDateModes: list<string>,
+     *     listColumnGenericYamlTypes: list<string>,
+     *     listColumnActionButtonEntryKeys: list<string>,
      * }  $expected
      */
     private function generatedPhpMatches(array $expected): bool
@@ -124,7 +126,9 @@ final class GenerateCompositionSchemaKeysCommand extends Command
             && $expected['buttonVariantUiValues'] === SchemaKeys::BUTTON_VARIANT_UI_VALUES
             && $expected['optionStatusValues'] === SchemaKeys::OPTION_STATUS_VALUES
             && $expected['listFilterTypes'] === SchemaKeys::LIST_FILTER_TYPES
-            && $expected['listFilterDateModes'] === SchemaKeys::LIST_FILTER_DATE_MODES;
+            && $expected['listFilterDateModes'] === SchemaKeys::LIST_FILTER_DATE_MODES
+            && $expected['listColumnGenericYamlTypes'] === SchemaKeys::LIST_COLUMN_GENERIC_YAML_TYPES
+            && $expected['listColumnActionButtonEntryKeys'] === SchemaKeys::LIST_COLUMN_ACTION_BUTTON_ENTRY_KEYS;
     }
 
     private function maybeRunPint(string $packageRoot, string $outPath): void

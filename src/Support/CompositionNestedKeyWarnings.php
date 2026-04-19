@@ -27,7 +27,11 @@ final class CompositionNestedKeyWarnings
                 continue;
             }
 
-            $id = is_string($entryId) && $entryId !== '' ? $entryId : 'entry';
+            $id = match (true) {
+                is_string($entryId) && $entryId !== '' => $entryId,
+                is_int($entryId) => (string) $entryId,
+                default => 'entry',
+            };
             $keys = array_keys($definition);
             sort($keys, SORT_STRING);
 

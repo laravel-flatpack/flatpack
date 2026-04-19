@@ -19,6 +19,20 @@ final class CompositionSchemaKeysGenerator
     private const array YAML_ONLY_FORM_FIELD_TYPE_ALIASES = ['date', 'relation'];
 
     /**
+     * Basenames of list.json $defs for each columnDefinition oneOf branch (e.g. columnSelect, columnRelation).
+     * When you add a new list column variant, add the corresponding $defs name here so LIST_COLUMN_DEFINITION_PROPERTY_KEYS stays complete.
+     *
+     * @var list<string>
+     */
+    private const array LIST_COLUMN_VARIANT_DEF_NAMES = [
+        'columnSelect',
+        'columnRelation',
+        'columnActions',
+        'columnDate',
+        'columnGeneric',
+    ];
+
+    /**
      * Key lists derived from decoded JSON Schema (used by tests and {@see generate()}).
      *
      * @return array{
@@ -36,6 +50,8 @@ final class CompositionSchemaKeysGenerator
      *     optionStatusValues: list<string>,
      *     listFilterTypes: list<string>,
      *     listFilterDateModes: list<string>,
+     *     listColumnGenericYamlTypes: list<string>,
+     *     listColumnActionButtonEntryKeys: list<string>,
      * }
      */
     public function extractKeySets(array $formSchema, array $listSchema): array
@@ -61,6 +77,10 @@ final class CompositionSchemaKeysGenerator
         $presetTypes = self::enumStrings($formDefs['preset']['properties']['type']['enum'] ?? null);
 
         $listColumnYamlTypes = self::enumStrings($listDefs['listColumnType']['enum'] ?? null);
+
+        $listColumnGenericYamlTypes = self::enumStrings($listDefs['columnGeneric']['properties']['type']['enum'] ?? null);
+
+        $listColumnActionButtonEntryKeys = self::propertyKeysSorted($listDefs['columnActionButton'] ?? []);
 
         $buttonVariantUiValues = self::sortedStringList(array_values(array_filter(
             $formButton,
@@ -89,15 +109,8 @@ final class CompositionSchemaKeysGenerator
 
         $bulkKeys = self::propertyKeysSorted($listDefs['bulkActionDefinition'] ?? []);
 
-        $columnVariantKeys = [
-            'columnSelect',
-            'columnRelation',
-            'columnActions',
-            'columnDate',
-            'columnGeneric',
-        ];
         $columnUnion = [];
-        foreach ($columnVariantKeys as $defName) {
+        foreach (self::LIST_COLUMN_VARIANT_DEF_NAMES as $defName) {
             $columnUnion = [...$columnUnion, ...self::propertyKeysSorted($listDefs[$defName] ?? [])];
         }
         $columnUnion = self::sortedStringList(array_values(array_unique($columnUnion)));
@@ -117,6 +130,8 @@ final class CompositionSchemaKeysGenerator
             'optionStatusValues' => $formOptionStatus,
             'listFilterTypes' => $listFilterTypes,
             'listFilterDateModes' => $listFilterDateModes,
+            'listColumnGenericYamlTypes' => $listColumnGenericYamlTypes,
+            'listColumnActionButtonEntryKeys' => $listColumnActionButtonEntryKeys,
         ];
     }
 
@@ -141,6 +156,7 @@ final class CompositionSchemaKeysGenerator
         $optionStatusValues = $keys['optionStatusValues'];
         $listFilterTypes = $keys['listFilterTypes'];
         $listFilterDateModes = $keys['listFilterDateModes'];
+        $listColumnGenericYamlTypes = $keys['listColumnGenericYamlTypes'];
 
         $header = <<<'PHP'
 <?php
@@ -168,10 +184,12 @@ PHP;
         $body .= self::constBlock('Canonical field types after YAML aliases are stripped (see yamlFormFieldType enum minus date/relation).', 'FORM_FIELD_TYPES_CANONICAL', $canonicalTypes);
         $body .= self::constBlock('Union of nested keys allowed on toolbar/header action entries (form headerActionDefinition ∪ list headerActionEntry).', 'HEADER_ACTION_ENTRY_KEYS', $headerUnion);
         $body .= self::constBlock('Nested keys for each bulk_actions entry (list.json bulkActionDefinition).', 'LIST_BULK_ACTION_ENTRY_KEYS', $bulkKeys);
+        $body .= self::constBlock('Nested keys for each list column `actions` button (list.json columnActionButton).', 'LIST_COLUMN_ACTION_BUTTON_ENTRY_KEYS', $keys['listColumnActionButtonEntryKeys']);
         $body .= self::constBlock('Union of property keys across list columnDefinition oneOf variants.', 'LIST_COLUMN_DEFINITION_PROPERTY_KEYS', $columnUnion);
         $body .= self::constBlock('form.json `$defs.preset.properties.type` enum (field preset kinds).', 'FORM_PRESET_TYPES', $formPresetTypes);
         $body .= self::constBlock('form.json / list.json `$defs.successRedirect` enum.', 'SUCCESS_REDIRECT_VALUES', $successRedirectValues);
         $body .= self::constBlock('list.json `$defs.listColumnType` enum (raw YAML column types).', 'LIST_COLUMN_YAML_TYPES', $listColumnYamlTypes);
+        $body .= self::constBlock('list.json `$defs.columnGeneric.properties.type` enum (text-like column kinds when type is set).', 'LIST_COLUMN_GENERIC_YAML_TYPES', $listColumnGenericYamlTypes);
         $body .= self::constBlock('form.json `$defs.buttonVariant` enum (includes YAML alias `primary`).', 'BUTTON_VARIANT_VALUES', $buttonVariantValues);
         $body .= self::constBlock('Button variants after normalizing `primary` → `default` (shadcn / runtime output).', 'BUTTON_VARIANT_UI_VALUES', $buttonVariantUiValues);
         $body .= self::constBlock('form.json `$defs.optionStatus` enum (select/column option status).', 'OPTION_STATUS_VALUES', $optionStatusValues);
@@ -228,6 +246,11 @@ PHP;
             $keys['listBulkActionEntryKeys'],
         );
         $out .= self::tsConstAsConst(
+            'List column row action buttons (list.json columnActionButton). Mirrors PHP `CompositionSchemaKeys::LIST_COLUMN_ACTION_BUTTON_ENTRY_KEYS`.',
+            'LIST_COLUMN_ACTION_BUTTON_ENTRY_KEYS',
+            $keys['listColumnActionButtonEntryKeys'],
+        );
+        $out .= self::tsConstAsConst(
             'Union of list columnDefinition variant property keys.',
             'LIST_COLUMN_DEFINITION_PROPERTY_KEYS',
             $keys['listColumnDefinitionPropertyKeys'],
@@ -246,6 +269,11 @@ PHP;
             'Raw list column types (list.json listColumnType). Mirrors PHP `CompositionSchemaKeys::LIST_COLUMN_YAML_TYPES`.',
             'LIST_COLUMN_YAML_TYPES',
             $keys['listColumnYamlTypes'],
+        );
+        $out .= self::tsConstAsConst(
+            'Generic list column type enum (columnGeneric.type). Mirrors PHP `CompositionSchemaKeys::LIST_COLUMN_GENERIC_YAML_TYPES`.',
+            'LIST_COLUMN_GENERIC_YAML_TYPES',
+            $keys['listColumnGenericYamlTypes'],
         );
         $out .= self::tsConstAsConst(
             'YAML button variants (includes primary). Mirrors PHP `CompositionSchemaKeys::BUTTON_VARIANT_VALUES`.',

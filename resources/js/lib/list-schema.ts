@@ -247,6 +247,12 @@ export function normalizeColumnActions(
         }
         const icon = typeof rec.icon === 'string' ? rec.icon.trim() : '';
         const successRedirect = normalizeSuccessRedirect(rec.success_redirect);
+        const confirm = rec.confirm === true ? true : undefined;
+        const successMessage =
+            typeof rec.success_message === 'string' &&
+            rec.success_message.trim() !== ''
+                ? rec.success_message.trim()
+                : undefined;
         return {
             label,
             ...(icon !== '' ? { icon } : {}),
@@ -255,6 +261,10 @@ export function normalizeColumnActions(
             variant: normalizeActionVariant(rec.variant),
             ...(successRedirect !== undefined
                 ? { success_redirect: successRedirect }
+                : {}),
+            ...(confirm === true ? { confirm: true } : {}),
+            ...(successMessage !== undefined
+                ? { success_message: successMessage }
                 : {}),
         } satisfies FlatpackDataTableActionButton;
     });

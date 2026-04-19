@@ -300,7 +300,7 @@ export function DataTable({
                 reorderable: isReorderable,
                 onCellChange: handleCellChange,
                 onRowReplace: handleRowReplace,
-                onRowAction: (action, row) => onRowAction?.({ action, row }),
+                onRowAction,
             }),
         [
             schemaColumns,

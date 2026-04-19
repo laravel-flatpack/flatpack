@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Flatpack\Schema\Validation;
 
+use Flatpack\Schema\Generated\CompositionSchemaKeys;
 use Flatpack\Schema\RelationFieldQuery;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\In;
@@ -111,7 +112,7 @@ final class ListSchemaRuleBuilder
             return array_merge($rules, ['array']);
         }
 
-        if (in_array($type, ['text', 'badge', 'status'], true) || $type === '') {
+        if (in_array($type, CompositionSchemaKeys::LIST_COLUMN_GENERIC_YAML_TYPES, true) || $type === '') {
             return array_merge($rules, ['string']);
         }
 

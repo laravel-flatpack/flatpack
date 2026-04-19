@@ -27,6 +27,32 @@ it('records unknown keys under list actions in debug log', function (): void {
     expect($joined)->toContain('actions.create');
 });
 
+it('records unknown keys under list column row actions in debug log', function (): void {
+    $log = new CompositionDebugLog('posts/list.yaml');
+    $normalizer = new ListSchemaNormalizer;
+    $normalizer->normalizedListSchema([
+        'name' => 'Posts',
+        'columns' => [
+            [
+                'id' => 'actions',
+                'type' => 'actions',
+                'label' => 'Actions',
+                'actions' => [
+                    [
+                        'label' => 'Delete',
+                        'action' => 'delete',
+                        'bogus_flag' => true,
+                    ],
+                ],
+            ],
+        ],
+    ], $log);
+
+    $joined = implode(' ', $log->all());
+    expect($joined)->toContain('bogus_flag');
+    expect($joined)->toContain('columns.actions.actions.0');
+});
+
 it('records unknown top-level list keys in debug log', function (): void {
     $log = new CompositionDebugLog('posts/list.yaml');
     $normalizer = new ListSchemaNormalizer;

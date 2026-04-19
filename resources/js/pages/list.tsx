@@ -19,7 +19,10 @@ export default function FlatpackListPage(props: FlatpackListPageProps) {
         reorderable,
         rowClickEditKey,
         pendingListConfirm,
+        pendingRowActionConfirm,
         setPendingListConfirm,
+        setPendingRowActionConfirm,
+        executeRowAction,
         handleRowClick,
         handleServerPaginationChange,
         handleBulkAction,
@@ -42,23 +45,40 @@ export default function FlatpackListPage(props: FlatpackListPageProps) {
         <>
             {displayName ? <Head title={pageTitle} /> : null}
             <FlatpackConfirmDialog
-                open={pendingListConfirm !== null}
+                open={
+                    pendingListConfirm !== null ||
+                    pendingRowActionConfirm !== null
+                }
                 onOpenChange={(open) => {
                     if (!open) {
                         setPendingListConfirm(null);
+                        setPendingRowActionConfirm(null);
                     }
                 }}
-                title={pendingListConfirm?.label ?? 'Confirm'}
+                title={
+                    pendingListConfirm?.label ??
+                    pendingRowActionConfirm?.label ??
+                    'Confirm'
+                }
                 continueVariant={
-                    pendingListConfirm?.variant === 'destructive'
+                    pendingListConfirm?.variant === 'destructive' ||
+                    pendingRowActionConfirm?.variant === 'destructive'
                         ? 'destructive'
                         : 'default'
                 }
                 onContinue={() => {
-                    const pending = pendingListConfirm;
+                    const listPending = pendingListConfirm;
+                    const rowPending = pendingRowActionConfirm;
                     setPendingListConfirm(null);
-                    if (pending !== null) {
-                        void executeListAction(pending);
+                    setPendingRowActionConfirm(null);
+                    if (listPending !== null) {
+                        void executeListAction(listPending);
+                    } else if (rowPending !== null) {
+                        void executeRowAction({
+                            action: rowPending.action,
+                            row: rowPending.row,
+                            success_message: rowPending.success_message,
+                        });
                     }
                 }}
             />

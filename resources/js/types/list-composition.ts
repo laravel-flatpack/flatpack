@@ -40,6 +40,8 @@ export type FlatpackListCompositionColumnActionButtonYaml = {
         icon?: string;
         variant?: ListCompositionButtonVariantYaml;
         success_redirect?: FlatpackSuccessRedirect | true;
+        success_message?: string;
+        confirm?: boolean;
     };
 
 type ListCompositionHeaderActionSuccessRedirect =

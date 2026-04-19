@@ -18,7 +18,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { interpolateRowPlaceholders } from '@/lib/data-table-utils';
 import { cn } from '@/lib/utils';
-import type { FlatpackDataTableActionButton } from '@/types/data-table';
+import type {
+    DataTableRowActionPayload,
+    FlatpackDataTableActionButton,
+} from '@/types/data-table';
 
 function iconForAction(iconOrKey?: string): LucideIcon | null {
     const k = iconOrKey?.toLowerCase() ?? '';
@@ -115,10 +118,7 @@ function RowActionMenuItem({
     cfg: FlatpackDataTableActionButton;
     row: Record<string, unknown>;
     destructive: boolean;
-    onAction?: (
-        action: string,
-        row: Record<string, unknown>,
-    ) => void | Promise<void>;
+    onAction?: (payload: DataTableRowActionPayload) => void | Promise<void>;
 }) {
     const slug = cfg.action ?? cfg.label;
     const template = cfg.href ?? '';
@@ -156,7 +156,11 @@ function RowActionMenuItem({
             {...variantProps}
             onSelect={() => {
                 if (cfg.action) {
-                    void onAction?.(cfg.action, row);
+                    void onAction?.({
+                        action: cfg.action,
+                        row,
+                        button: cfg,
+                    });
                 }
             }}
         >
@@ -172,10 +176,7 @@ export function DataTableActionsCell({
 }: {
     actions: FlatpackDataTableActionButton[];
     row: Record<string, unknown>;
-    onAction?: (
-        action: string,
-        row: Record<string, unknown>,
-    ) => void | Promise<void>;
+    onAction?: (payload: DataTableRowActionPayload) => void | Promise<void>;
 }) {
     const { primary, destructive } = partitionRowActions(actions);
 

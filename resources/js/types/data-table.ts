@@ -28,6 +28,9 @@ export type FlatpackDataTableActionButton = {
     href?: string;
     variant?: FlatpackActionVariant;
     success_redirect?: FlatpackSuccessRedirect;
+    /** When true, list row actions show a confirmation dialog before POST. */
+    confirm?: boolean;
+    success_message?: string;
 };
 
 export type FlatpackDataTableBulkAction = {
@@ -89,20 +92,19 @@ export type FlatpackDataTableServerFiltersState = Record<
     FlatpackDataTableServerFilterValue
 >;
 
+export type DataTableRowActionPayload = {
+    action: string;
+    row: Record<string, unknown>;
+    /** Present for `type: actions` column buttons (schema-driven confirm / toast). */
+    button?: FlatpackDataTableActionButton;
+};
+
 export type BuildDataTableColumnDefsOptions = {
     hasBulkActions?: boolean;
     reorderable?: boolean;
     onCellChange?: (rowId: string, columnId: string, value: unknown) => void;
     onRowReplace?: (rowId: string, nextRow: Record<string, unknown>) => void;
-    onRowAction?: (
-        action: string,
-        row: Record<string, unknown>,
-    ) => void | Promise<void>;
-};
-
-export type DataTableRowActionPayload = {
-    action: string;
-    row: Record<string, unknown>;
+    onRowAction?: (payload: DataTableRowActionPayload) => void | Promise<void>;
 };
 
 export type DataTableCellUpdatePayload = {
