@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
+use Flatpack\Schema\Forms\FormSchemaNormalizer;
 use Flatpack\Support\CompositionDebugLog;
-use Flatpack\Support\FormSchemaNormalizer;
 use Flatpack\Tests\TestCase;
 
 uses(TestCase::class);

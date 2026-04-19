@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
+use Flatpack\Schema\Lists\ListSchemaNormalizer;
 use Flatpack\Support\CompositionDebugLog;
-use Flatpack\Support\ListSchemaNormalizer;
 use Flatpack\Tests\TestCase;
 
 uses(TestCase::class);

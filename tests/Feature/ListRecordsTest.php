@@ -305,6 +305,56 @@ YAML);
     }
 });
 
+test('flatpack entity list inline update validates select column values from list yaml', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-list-select-validation-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+columns:
+  title:
+    label: Title
+    type: text
+    editable: true
+  status:
+    label: Status
+    type: select
+    editable: true
+    options:
+      draft: Draft
+      active: Active
+YAML);
+        config()->set('flatpack.path', $tempPath);
+
+        /** @var Post $post */
+        $post = Post::factory()->create([
+            'title' => 'Hello',
+            'status' => 'draft',
+        ]);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        actingAs($user)
+            ->from(route('flatpack.entities.index', ['entity' => 'posts']))
+            ->patch(route('flatpack.entities.update', [
+                'entity' => 'posts',
+                'record' => (string) $post->getKey(),
+            ]), [
+                'field' => 'status',
+                'value' => 'not-an-option',
+            ])
+            ->assertRedirect(route('flatpack.entities.index', ['entity' => 'posts']))
+            ->assertSessionHasErrors('values.status');
+
+        expect($post->fresh()?->status)->toBe('draft');
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
 test('flatpack entity list inline update rejects when policy denies update', function () {
     $tempPath = sys_get_temp_dir() . '/flatpack-list-update-policy-' . uniqid('', true);
 

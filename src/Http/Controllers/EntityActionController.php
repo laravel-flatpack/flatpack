@@ -7,13 +7,14 @@ namespace Flatpack\Http\Controllers;
 use Flatpack\Actions\FlatpackActionContext;
 use Flatpack\Actions\FlatpackBulkActionContext;
 use Flatpack\Composition\EntityComposition;
+use Flatpack\Http\Requests\BulkActionRequest;
+use Flatpack\Http\Requests\ListActionRequest;
 use Flatpack\Http\Requests\ListRecordUpdateRequest;
-use Flatpack\Services\Actions\ActionRuntime;
+use Flatpack\Support\ActionRuntime;
 use Flatpack\Support\SuccessRedirect;
 use Flatpack\Support\SuccessRedirectSchema;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Throwable;
 
 final readonly class EntityActionController
@@ -23,7 +24,7 @@ final readonly class EntityActionController
         private ActionRuntime $actions,
     ) {}
 
-    public function bulkAction(Request $request, string $entity): RedirectResponse
+    public function bulkAction(BulkActionRequest $request, string $entity): RedirectResponse
     {
         $list = $this->entityComposition->listFor($entity);
         $schema = $this->entityComposition->listSchema($entity);
@@ -58,7 +59,7 @@ final readonly class EntityActionController
         ]);
     }
 
-    public function listAction(Request $request, string $entity): RedirectResponse
+    public function listAction(ListActionRequest $request, string $entity): RedirectResponse
     {
         $action = trim((string) $request->input('action', ''));
         if ($action === '') {
@@ -108,7 +109,7 @@ final readonly class EntityActionController
     }
 
     public function rowAction(
-        Request $request,
+        ListActionRequest $request,
         string $entity,
         string $record,
     ): RedirectResponse {

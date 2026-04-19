@@ -8,7 +8,7 @@ use Closure;
 use Flatpack\Composition\EntityComposition;
 use Flatpack\Contracts\Authorization\FlatpackAuthorizer;
 use Flatpack\Http\Requests\Concerns\InteractsWithFlatpackAuthorization;
-use Flatpack\Validation\FormSchemaRuleBuilder;
+use Flatpack\Schema\Forms\Validation\FormSchemaRuleBuilder;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Override;

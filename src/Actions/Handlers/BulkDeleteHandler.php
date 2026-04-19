@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Flatpack\Actions\Handlers;
 
 use Flatpack\Actions\FlatpackBulkActionContext;
-use Flatpack\Lists\BulkDeleteService;
+use Flatpack\Schema\Lists\BulkDeleteService;
 use Illuminate\Contracts\Auth\Authenticatable;
 
 final class BulkDeleteHandler extends FlatpackBulkActionHandler

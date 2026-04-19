@@ -6,8 +6,8 @@ namespace Flatpack\Http\Controllers;
 
 use Flatpack\Composition\EntityComposition;
 use Flatpack\Relations\RelationFieldQuery;
-use Flatpack\Schema\FormFieldType;
-use Flatpack\Schema\FormSchemaFields;
+use Flatpack\Schema\Forms\FormFieldType;
+use Flatpack\Schema\Forms\FormSchemaFields;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

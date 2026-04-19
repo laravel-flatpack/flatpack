@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Flatpack\Lists\BulkActions;
+use Flatpack\Schema\Lists\BulkActions;
 use Flatpack\Tests\TestCase;
 
 uses(TestCase::class);

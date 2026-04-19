@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Flatpack\Http;
 
 use Flatpack\Http\Resources\FlatpackSchema;
+use Flatpack\Schema\Forms\FormSchemaNormalizer;
+use Flatpack\Schema\Lists\ListSchemaNormalizer;
 use Flatpack\Support\CompositionDebugLog;
-use Flatpack\Support\FormSchemaNormalizer;
-use Flatpack\Support\ListSchemaNormalizer;
 use Illuminate\Http\JsonResponse;
 use Inertia\Inertia;
 use Inertia\Response;
