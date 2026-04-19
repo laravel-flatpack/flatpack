@@ -27,6 +27,7 @@ use Flatpack\Menu\FlatpackMenuBuilder;
 use Flatpack\Registration\AuthenticationRedirectCallbacks;
 use Flatpack\Support\FormSchemaNormalizer;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Contracts\Http\Kernel as HttpKernelContract;
 use Illuminate\Foundation\Exceptions\Handler;
@@ -60,6 +61,14 @@ final class FlatpackServiceProvider extends ServiceProvider
 
     protected function registerContainerBindings(): void
     {
+        $this->registerCompositionBindings();
+        $this->registerContractBindings();
+        $this->registerFlatpackSingleton();
+        $this->registerConcreteServiceSingletons();
+    }
+
+    protected function registerCompositionBindings(): void
+    {
         $this->app->singleton(CompositionLoader::class, fn ($app): YamlCompositionLoader => new YamlCompositionLoader(
             $app->make('files'),
             (string) $app['config']->get('flatpack.path', base_path('flatpack')),
@@ -75,19 +84,30 @@ final class FlatpackServiceProvider extends ServiceProvider
             $app->make(CompositionQuery::class),
             $app->make(CompositionValues::class),
         ));
+    }
 
+    protected function registerConcreteServiceSingletons(): void
+    {
         $this->app->singleton(ListRecordsLoader::class, fn (): ListRecordsLoader => new ListRecordsLoader);
 
         $this->app->singleton(FormSchemaNormalizer::class);
 
         $this->app->singleton(ActionModelClassResolver::class);
+    }
 
+    protected function registerContractBindings(): void
+    {
         $this->app->singleton(FlatpackAuthorizer::class, PolicyAwareFlatpackAuthorizer::class);
         $this->app->singleton(ActionResolver::class, DefaultActionResolver::class);
         $this->app->singleton(MenuBuilderContract::class, FlatpackMenuBuilder::class);
+    }
 
+    protected function registerFlatpackSingleton(): void
+    {
         $this->app->singleton(Flatpack::class, fn ($app): Flatpack => new Flatpack(
             menuBuilder: $app->make(MenuBuilderContract::class),
+            config: $app->make(Repository::class),
+            version: Flatpack::composerPackageVersion(),
         ));
     }
 
