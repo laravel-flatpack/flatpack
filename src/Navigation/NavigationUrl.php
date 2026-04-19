@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Flatpack\Support;
+namespace Flatpack\Navigation;
 
 use Throwable;
 

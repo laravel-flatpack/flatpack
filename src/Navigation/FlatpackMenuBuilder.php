@@ -7,7 +7,6 @@ namespace Flatpack\Navigation;
 use Flatpack\Composition\CompositionValues;
 use Flatpack\Contracts\Composition\CompositionQuery;
 use Flatpack\Http\Controllers\ListController;
-use Flatpack\Support\NavigationUrl;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Support\Str;
 
