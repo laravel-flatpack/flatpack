@@ -119,6 +119,8 @@ export const LIST_COLUMN_DEFINITION_PROPERTY_KEYS = [
     'relationValue',
     'relation_name',
     'relation_value',
+    'required',
+    'rules',
     'searchable',
     'sortable',
     'timezone',

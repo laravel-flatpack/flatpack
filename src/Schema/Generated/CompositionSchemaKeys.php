@@ -140,6 +140,8 @@ final class CompositionSchemaKeys
         'relationValue',
         'relation_name',
         'relation_value',
+        'required',
+        'rules',
         'searchable',
         'sortable',
         'timezone',

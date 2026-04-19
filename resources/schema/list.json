@@ -83,6 +83,20 @@
     },
     "additionalProperties": true,
     "$defs": {
+        "validationRules": {
+            "description": "Laravel validation rules as a pipe-separated string or list of strings (same as form composition).",
+            "oneOf": [
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            ]
+        },
         "listActionsBlock": {
             "type": "object",
             "description": "Header actions (list page toolbar). Each value is one button.",
@@ -333,6 +347,8 @@
                 "sortable": { "type": "boolean" },
                 "searchable": { "type": "boolean" },
                 "editable": { "type": "boolean" },
+                "required": { "type": "boolean" },
+                "rules": { "$ref": "#/$defs/validationRules" },
                 "detailDrawer": { "type": "boolean" },
                 "invisible": { "type": "boolean" },
                 "truncate": { "type": "integer", "minimum": 1 }
@@ -355,6 +371,8 @@
                 "sortable": { "type": "boolean" },
                 "searchable": { "type": "boolean" },
                 "editable": { "type": "boolean" },
+                "required": { "type": "boolean" },
+                "rules": { "$ref": "#/$defs/validationRules" },
                 "detailDrawer": { "type": "boolean" },
                 "invisible": { "type": "boolean" },
                 "truncate": { "type": "integer", "minimum": 1 }
@@ -390,6 +408,8 @@
                 "sortable": { "type": "boolean" },
                 "searchable": { "type": "boolean" },
                 "editable": { "type": "boolean" },
+                "required": { "type": "boolean" },
+                "rules": { "$ref": "#/$defs/validationRules" },
                 "detailDrawer": { "type": "boolean" },
                 "invisible": { "type": "boolean" },
                 "truncate": { "type": "integer", "minimum": 1 }
@@ -411,6 +431,8 @@
                 "sortable": { "type": "boolean" },
                 "searchable": { "type": "boolean" },
                 "editable": { "type": "boolean" },
+                "required": { "type": "boolean" },
+                "rules": { "$ref": "#/$defs/validationRules" },
                 "detailDrawer": { "type": "boolean" },
                 "invisible": { "type": "boolean" },
                 "truncate": { "type": "integer", "minimum": 1 }
@@ -432,6 +454,8 @@
                 "sortable": { "type": "boolean" },
                 "searchable": { "type": "boolean" },
                 "editable": { "type": "boolean" },
+                "required": { "type": "boolean" },
+                "rules": { "$ref": "#/$defs/validationRules" },
                 "detailDrawer": { "type": "boolean" },
                 "invisible": { "type": "boolean" },
                 "truncate": { "type": "integer", "minimum": 1 }
