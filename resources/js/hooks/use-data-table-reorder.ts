@@ -2,7 +2,11 @@ import type { DragEndEvent } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
 import type { Table as TanStackTable } from '@tanstack/react-table';
 import * as React from 'react';
-import { reindexReorderColumn, stableRowId } from '@/lib/data-table-utils';
+import {
+    deferNotifyParentFormValues,
+    reindexReorderColumn,
+    stableRowId,
+} from '@/lib/data-table-utils';
 
 type UseDataTableReorderOptions = {
     data: Record<string, unknown>[];
@@ -67,7 +71,7 @@ export function useDataTableReorder({
             const withOrder = reindexReorderColumn(next, reorderKey);
             onReorderApplied(withOrder);
             onReorderCompleted?.();
-            onValueChange?.(withOrder);
+            deferNotifyParentFormValues(onValueChange, withOrder);
         },
         [
             data,

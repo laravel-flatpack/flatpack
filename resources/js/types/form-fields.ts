@@ -3,6 +3,7 @@ import type {
     FlatpackDataTableColumn,
     FlatpackDataTableSelectOptionStatus,
 } from '@/types/data-table';
+import type { FlatpackListCompositionColumnsYaml } from '@/types/list-composition';
 
 export type SelectFieldOption = {
     value: string;
@@ -52,6 +53,11 @@ type ComboboxFieldProps = FormFieldBase &
     WithPlaceholder & {
         options: SelectFieldOption[];
         multiple?: boolean;
+        /** Remote relation picker / multi relation collection */
+        relation?: string;
+        relation_name?: string;
+        relation_value?: string;
+        remote?: boolean;
     };
 type DatePickerFieldProps = FormFieldBase & WithPlaceholder;
 type DateRangePickerFieldProps = FormFieldBase & WithPlaceholder;
@@ -77,11 +83,23 @@ type BlockEditorFieldProps = FormFieldBase &
         showFixedToolbar?: boolean;
     };
 type TableFieldProps = FormFieldBase & {
-    columns: FlatpackDataTableColumn[];
+    /** List page column shape (array or id-keyed map); normalized to DataTable columns in the mapper. */
+    columns: FlatpackDataTableColumn[] | FlatpackListCompositionColumnsYaml;
     data?: Record<string, unknown>[];
+    /** Same entries as {@link bulkActions}; list-style YAML key, normalized in the form field mapper. */
+    bulk_actions?: unknown;
     bulkActions?: FlatpackDataTableBulkAction[];
-    actions?: unknown[];
+    /** Toolbar buttons (Create / Add, …); YAML key {@code actions} (map or array). Normalized to DataTable props. */
+    actions?: unknown;
+    /** @deprecated Use {@link actions} (same shape). Accepted for backwards compatibility. */
+    toolbar_actions?: unknown;
+    /** @deprecated Use {@link actions}. */
+    toolbarActions?: unknown;
     reorderable?: boolean | string;
+    /** Relation-backed table: hydrate + sync as RelationRow[] */
+    relation?: string;
+    relation_value?: string;
+    limit?: number;
 };
 
 export type FormFieldProps =

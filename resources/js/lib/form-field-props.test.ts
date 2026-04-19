@@ -1,5 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 import { mapFormFieldPropsToComponentProps } from '@/lib/form-field-props';
+import type {
+    FlatpackDataTableColumn,
+    FlatpackFormTableToolbarAction,
+} from '@/types/data-table';
 import type { FormFieldProps } from '@/types/form-fields';
 
 const context = { fieldId: 'field-1', onValueChange: vi.fn() };
@@ -106,6 +110,71 @@ describe('mapFormFieldPropsToComponentProps', () => {
         });
     });
 
+    it('maps bulk_actions snake_case map to bulkActions for DataTable', () => {
+        const props = {
+            type: 'table',
+            label: 'Comments',
+            relation: 'comments',
+            bulk_actions: {
+                remove: {
+                    label: 'Delete',
+                    action: 'remove',
+                    variant: 'destructive',
+                    confirm: true,
+                    icon: 'trash',
+                },
+            },
+            columns: [{ id: 'content', label: 'Content', type: 'text' }],
+            data: [],
+        } satisfies FormFieldProps;
+        const out = mapFormFieldPropsToComponentProps(props, context);
+        expect(out.bulkActions).toEqual([
+            {
+                id: 'remove',
+                label: 'Delete',
+                action: 'remove',
+                variant: 'destructive',
+                confirm: true,
+                icon: 'trash',
+            },
+        ]);
+    });
+
+    it('maps table field list.yaml-style map columns to DataTable columns', () => {
+        const props = {
+            type: 'table',
+            label: 'Comments',
+            columns: {
+                content: {
+                    label: 'Content',
+                    type: 'text',
+                    searchable: true,
+                    sortable: true,
+                },
+                user_id: {
+                    label: 'User',
+                    type: 'relation',
+                    relation: 'user',
+                    relation_name: 'name',
+                    relation_value: 'id',
+                    searchable: true,
+                    sortable: true,
+                },
+            },
+            data: [],
+        } satisfies FormFieldProps;
+        const out = mapFormFieldPropsToComponentProps(props, context);
+        const cols = out.columns as FlatpackDataTableColumn[];
+        expect(cols).toHaveLength(2);
+        expect(cols.map((c) => c.id)).toEqual(['content', 'user_id']);
+        expect(cols[1]).toMatchObject({
+            id: 'user_id',
+            relation: 'user',
+            relationName: 'name',
+            relationValue: 'id',
+        });
+    });
+
     it('maps table field with columns and row data', () => {
         const props: FormFieldProps = {
             type: 'table',
@@ -127,7 +196,12 @@ describe('mapFormFieldPropsToComponentProps', () => {
         expect(out.columns).toHaveLength(2);
         expect(out.data).toEqual([{ name: 'Ada', status: 'a' }]);
         expect(out.bulkActions).toEqual([
-            { id: 'delete', label: 'Delete', action: 'delete' },
+            {
+                id: 'delete',
+                label: 'Delete',
+                action: 'delete',
+                variant: 'outline',
+            },
         ]);
     });
 
@@ -169,5 +243,106 @@ describe('mapFormFieldPropsToComponentProps', () => {
         }[];
         expect(cols[0].type).toBe('actions');
         expect(cols[0].actions?.[0]?.action).toBe('edit');
+    });
+
+    it('normalizes actions map to toolbarActions', () => {
+        const props: FormFieldProps = {
+            type: 'table',
+            label: 'Lines',
+            columns: [{ id: 'name', label: 'Name' }],
+            actions: {
+                create: {
+                    label: 'Create',
+                    action: 'create',
+                    icon: 'plus',
+                    variant: 'primary',
+                },
+            },
+            relation: 'lines',
+            data: [],
+        };
+        const out = mapFormFieldPropsToComponentProps(props, {
+            ...context,
+            parentRecordKey: null,
+        });
+        expect(out.toolbarActions).toEqual([
+            {
+                id: 'create',
+                label: 'Create',
+                action: 'create',
+                icon: 'plus',
+                variant: 'default',
+            },
+        ]);
+        expect(out.toolbarActionsDisabled).toBe(true);
+        expect(out.toolbarActionsDisabledTitle).toBe(
+            'Save the parent record before using these actions.',
+        );
+    });
+
+    it('does not disable toolbar when parent record exists for relation tables', () => {
+        const props: FormFieldProps = {
+            type: 'table',
+            label: 'Lines',
+            columns: [{ id: 'name', label: 'Name' }],
+            actions: {
+                create: { label: 'Create', action: 'create', icon: 'plus' },
+            },
+            relation: 'lines',
+            data: [],
+        };
+        const out = mapFormFieldPropsToComponentProps(props, {
+            ...context,
+            parentRecordKey: '42',
+        });
+        expect(out.toolbarActionsDisabled).toBeUndefined();
+        expect(out.toolbarActionsDisabledTitle).toBeUndefined();
+    });
+
+    it('does not disable toolbar for non-relation tables without a parent record', () => {
+        const props: FormFieldProps = {
+            type: 'table',
+            label: 'Embedded',
+            columns: [{ id: 'name', label: 'Name' }],
+            actions: {
+                add: { label: 'Add row', action: 'add', icon: 'plus' },
+            },
+            data: [],
+        };
+        const out = mapFormFieldPropsToComponentProps(props, {
+            ...context,
+            parentRecordKey: null,
+        });
+        const toolbarActions = out.toolbarActions as
+            | FlatpackFormTableToolbarAction[]
+            | undefined;
+        expect(toolbarActions?.length).toBe(1);
+        expect(out.toolbarActionsDisabled).toBeUndefined();
+    });
+
+    it('still normalizes deprecated toolbar_actions when actions is omitted', () => {
+        const props: FormFieldProps = {
+            type: 'table',
+            label: 'Legacy',
+            columns: [{ id: 'name', label: 'Name' }],
+            toolbar_actions: {
+                create: {
+                    label: 'Create',
+                    action: 'create',
+                    icon: 'plus',
+                },
+            },
+            relation: 'lines',
+            data: [],
+        };
+        const out = mapFormFieldPropsToComponentProps(props, {
+            ...context,
+            parentRecordKey: null,
+        });
+        const toolbarActions = out.toolbarActions as
+            | FlatpackFormTableToolbarAction[]
+            | undefined;
+        expect(toolbarActions?.length).toBe(1);
+        expect(toolbarActions?.[0]?.id).toBe('create');
     });
 });

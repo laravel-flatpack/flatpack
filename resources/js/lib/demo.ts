@@ -93,5 +93,6 @@ export function buildDemoFieldRenderProps(
     return mapFormFieldPropsToComponentProps(propsForField, {
         fieldId: entry.id,
         onValueChange: options.onValueChange,
+        parentRecordKey: null,
     });
 }

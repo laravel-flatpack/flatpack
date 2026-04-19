@@ -115,23 +115,33 @@ function DrawerRowField({
     );
 }
 
-export function DataTableRowDetailDrawer({
-    triggerColumn,
-    row,
-    rowId,
-    schemaColumns,
-    onRowReplace,
-}: {
-    triggerColumn: FlatpackDataTableColumn;
+export type DataTableRowDrawerPanelProps = {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    /** Optional trigger rendered inside the drawer root (e.g. link-style cell opener). */
+    trigger?: React.ReactNode;
     row: Record<string, unknown>;
     rowId: string;
     schemaColumns: FlatpackDataTableColumn[];
+    titleColumn: FlatpackDataTableColumn;
     onRowReplace: (rowId: string, nextRow: Record<string, unknown>) => void;
-}) {
+};
+
+/**
+ * Controlled drawer shell + fields for editing a single row (list detail column or embedded form table row click).
+ */
+export function DataTableRowDrawerPanel({
+    open,
+    onOpenChange,
+    trigger,
+    row,
+    rowId,
+    schemaColumns,
+    titleColumn,
+    onRowReplace,
+}: DataTableRowDrawerPanelProps) {
     const isMobile = useIsMobile();
-    const [open, setOpen] = React.useState(false);
     const [draft, setDraft] = React.useState<Record<string, unknown>>(row);
-    const drawerTriggerRef = React.useRef<HTMLButtonElement>(null);
 
     React.useLayoutEffect(() => {
         if (open) {
@@ -143,37 +153,20 @@ export function DataTableRowDetailDrawer({
         setDraft((d) => ({ ...d, [columnId]: next }));
     }, []);
 
-    const openDrawer = React.useCallback(() => {
-        drawerTriggerRef.current?.blur();
-        setOpen(true);
-    }, []);
-
     const formColumns = schemaColumns.filter((c) => c.type !== 'actions');
 
     return (
         <Drawer
             direction={isMobile ? 'bottom' : 'right'}
-            onOpenChange={setOpen}
+            onOpenChange={onOpenChange}
             open={open}
         >
-            <Button
-                ref={drawerTriggerRef}
-                type="button"
-                variant="link"
-                aria-expanded={open}
-                aria-haspopup="dialog"
-                className="h-auto min-h-0 w-fit max-w-full justify-start px-0 py-0 text-left font-normal text-foreground"
-                onClick={openDrawer}
-            >
-                <span className="truncate">
-                    {formatCellValue(row[triggerColumn.id]) || '—'}
-                </span>
-            </Button>
+            {trigger}
             <DrawerContent>
                 <DrawerHeader className="gap-1">
                     <DrawerTitle>
-                        {formatCellValue(draft[triggerColumn.id]) ||
-                            triggerColumn.label}
+                        {formatCellValue(draft[titleColumn.id]) ||
+                            titleColumn.label}
                     </DrawerTitle>
                     <DrawerDescription>
                         Edit row fields and save your changes.
@@ -196,7 +189,7 @@ export function DataTableRowDetailDrawer({
                         type="button"
                         onClick={() => {
                             onRowReplace(rowId, draft);
-                            setOpen(false);
+                            onOpenChange(false);
                         }}
                     >
                         Save changes
@@ -207,5 +200,54 @@ export function DataTableRowDetailDrawer({
                 </DrawerFooter>
             </DrawerContent>
         </Drawer>
+    );
+}
+
+export function DataTableRowDetailDrawer({
+    triggerColumn,
+    row,
+    rowId,
+    schemaColumns,
+    onRowReplace,
+}: {
+    triggerColumn: FlatpackDataTableColumn;
+    row: Record<string, unknown>;
+    rowId: string;
+    schemaColumns: FlatpackDataTableColumn[];
+    onRowReplace: (rowId: string, nextRow: Record<string, unknown>) => void;
+}) {
+    const [open, setOpen] = React.useState(false);
+    const drawerTriggerRef = React.useRef<HTMLButtonElement>(null);
+
+    const openDrawer = React.useCallback(() => {
+        drawerTriggerRef.current?.blur();
+        setOpen(true);
+    }, []);
+
+    return (
+        <>
+            <Button
+                ref={drawerTriggerRef}
+                type="button"
+                variant="link"
+                aria-expanded={open}
+                aria-haspopup="dialog"
+                className="h-auto min-h-0 w-fit max-w-full justify-start px-0 py-0 text-left font-normal text-foreground"
+                onClick={openDrawer}
+            >
+                <span className="truncate">
+                    {formatCellValue(row[triggerColumn.id]) || '—'}
+                </span>
+            </Button>
+            <DataTableRowDrawerPanel
+                open={open}
+                onOpenChange={setOpen}
+                row={row}
+                rowId={rowId}
+                schemaColumns={schemaColumns}
+                titleColumn={triggerColumn}
+                onRowReplace={onRowReplace}
+            />
+        </>
     );
 }

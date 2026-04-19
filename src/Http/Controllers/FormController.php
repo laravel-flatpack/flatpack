@@ -65,16 +65,23 @@ final readonly class FormController
             ], $showJsonResponse);
         }
 
+        $debugLog = FlatpackResponse::compositionDebugLog($entity . '/form.yaml');
+        $normalizedSchema = $this->formSchemaNormalizer->normalizedFormSchema($schema, $debugLog);
+        $values = $this->formSchemaNormalizer->formValuesFromModel($model, $normalizedSchema, $debugLog);
+
         return FlatpackResponse::inertia(
             'form',
-            $this->formPageProps(
+            array_merge($this->formPageProps(
                 $entity,
                 $form,
-                $schema,
+                $normalizedSchema,
                 'edit',
                 $record,
-                $this->formSchemaNormalizer->formValuesFromModel($model, $schema),
-            ),
+                $values,
+            ), [
+                'composition_debug_log' => $debugLog,
+                '_flatpack_skip_form_schema_normalize' => true,
+            ]),
             $showJsonResponse,
         );
     }

@@ -17,11 +17,18 @@ import type {
     FlatpackDataTableBulkAction,
     FlatpackDataTableFilter,
     FlatpackDataTableServerFiltersState,
+    FlatpackFormTableToolbarAction,
 } from '@/types/data-table';
 
 type DataTableToolbarProps = {
     id: string;
     table: TanStackTable<Record<string, unknown>>;
+    hasToolbarActions: boolean;
+    toolbarActions: FlatpackFormTableToolbarAction[];
+    onToolbarAction: (actionId: string) => void;
+    toolbarActionsDisabled: boolean;
+    /** Native tooltip when {@link toolbarActionsDisabled} is true. */
+    toolbarActionsDisabledTitle?: string;
     hasBulkActions: boolean;
     selectedRowCount: number;
     isAllRowsSelected: boolean;
@@ -44,6 +51,11 @@ type DataTableToolbarProps = {
 export function DataTableToolbar({
     id,
     table,
+    hasToolbarActions,
+    toolbarActions,
+    onToolbarAction,
+    toolbarActionsDisabled,
+    toolbarActionsDisabledTitle,
     hasBulkActions,
     selectedRowCount,
     isAllRowsSelected,
@@ -62,6 +74,9 @@ export function DataTableToolbar({
     onToggleMultiFilterValue,
     onSetDateFilter,
 }: DataTableToolbarProps) {
+    const toolbarDisabledHint =
+        toolbarActionsDisabledTitle ??
+        'Save the parent record before using these actions.';
     const [isConfirmBulkOpen, setIsConfirmBulkOpen] = useState(false);
     const [pendingActionId, setPendingActionId] = useState<string | null>(null);
     const pendingAction =
@@ -71,8 +86,50 @@ export function DataTableToolbar({
               null);
 
     return (
-        <div className="h-8 flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
+        <div className="flex min-h-8 flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-2">
+                {hasToolbarActions &&
+                    toolbarActions.map((action) => (
+                        <span
+                            key={action.id}
+                            title={
+                                toolbarActionsDisabled
+                                    ? toolbarDisabledHint
+                                    : undefined
+                            }
+                            className="inline-flex max-w-full"
+                        >
+                            <Button
+                                type="button"
+                                variant={
+                                    action.variant === 'destructive'
+                                        ? 'destructive'
+                                        : action.variant === 'default'
+                                          ? 'default'
+                                          : action.variant === 'secondary'
+                                            ? 'secondary'
+                                            : 'outline'
+                                }
+                                size="sm"
+                                disabled={toolbarActionsDisabled}
+                                onClick={() => onToolbarAction(action.id)}
+                            >
+                                {action.icon ? (
+                                    <LucideIconByName
+                                        name={action.icon}
+                                        data-icon="inline-start"
+                                    />
+                                ) : null}
+                                {action.label}
+                            </Button>
+                        </span>
+                    ))}
+                {hasToolbarActions && hasBulkActions ? (
+                    <span
+                        aria-hidden="true"
+                        className="mx-1 hidden h-6 w-px shrink-0 bg-border sm:inline-block"
+                    />
+                ) : null}
                 {hasBulkActions && (
                     <>
                         <DropdownMenu>

@@ -53,9 +53,17 @@ final class FlatpackResponse
      */
     private static function prepareInertiaData(string $view, array $data): array
     {
-        $log = self::compositionDebugLogForView($view, $data);
+        $externalLog = isset($data['composition_debug_log']) && $data['composition_debug_log'] instanceof CompositionDebugLog
+            ? $data['composition_debug_log']
+            : null;
+        unset($data['composition_debug_log']);
 
-        if ($view === 'form' && array_key_exists('schema', $data)) {
+        $skipFormSchemaNormalize = ($data['_flatpack_skip_form_schema_normalize'] ?? false) === true;
+        unset($data['_flatpack_skip_form_schema_normalize']);
+
+        $log = $externalLog ?? self::compositionDebugLogForView($view, $data);
+
+        if ($view === 'form' && array_key_exists('schema', $data) && ! $skipFormSchemaNormalize) {
             $raw = $data['schema'];
             $data['schema'] = app(FormSchemaNormalizer::class)->normalizedFormSchema(
                 is_array($raw) || $raw === null ? $raw : null,

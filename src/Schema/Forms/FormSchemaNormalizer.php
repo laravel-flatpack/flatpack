@@ -12,6 +12,7 @@ use Flatpack\Schema\Forms\Normalization\Pipes\WarnUnknownFormActionsNestedKeysPi
 use Flatpack\Support\CompositionDebugLog;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pipeline\Pipeline;
+use Throwable;
 
 /**
  * Prepares form YAML schema and field values for Inertia / JSON responses.
@@ -21,6 +22,7 @@ final readonly class FormSchemaNormalizer
 {
     public function __construct(
         private ?Pipeline $pipeline = null,
+        private ?FormRelationValuesHydrator $relationValuesHydrator = null,
     ) {}
 
     /**
@@ -52,7 +54,7 @@ final readonly class FormSchemaNormalizer
     /**
      * @param  array<string, mixed>|null  $schema
      */
-    public function formValuesFromModel(?Model $model, ?array $schema): array
+    public function formValuesFromModel(?Model $model, ?array $schema, ?CompositionDebugLog $debug = null): array
     {
         if (! $model instanceof Model || $schema === null) {
             return [];
@@ -62,6 +64,8 @@ final readonly class FormSchemaNormalizer
         if (! is_array($fields)) {
             return [];
         }
+
+        $this->eagerLoadRelationsForSchema($model, $fields, $debug);
 
         $values = [];
         foreach ($fields as $fieldId => $fieldDefinition) {
@@ -74,10 +78,59 @@ final readonly class FormSchemaNormalizer
                 continue;
             }
 
-            $values[$id] = $model->getAttribute($id);
+            if (FormFieldType::shouldDeferToRelationSync($fieldDefinition)) {
+                $values[$id] = $this->relationHydrator()->hydrate($model, $id, $fieldDefinition, $debug);
+            } else {
+                $values[$id] = $model->getAttribute($id);
+            }
         }
 
         return $values;
+    }
+
+    /**
+     * @param  array<string, mixed>  $fields
+     */
+    private function eagerLoadRelationsForSchema(Model $model, array $fields, ?CompositionDebugLog $debug): void
+    {
+        $names = [];
+        foreach ($fields as $fieldDefinition) {
+            if (! is_array($fieldDefinition)) {
+                continue;
+            }
+            if (! FormFieldType::shouldDeferToRelationSync($fieldDefinition)) {
+                continue;
+            }
+            $relation = isset($fieldDefinition['relation'])
+                ? trim((string) $fieldDefinition['relation'])
+                : '';
+            if ($relation !== '') {
+                $names[] = $relation;
+                foreach (FormRelationValuesHydrator::nestedRelationNamesForEagerLoad($fieldDefinition) as $nested) {
+                    $names[] = $relation . '.' . $nested;
+                }
+            }
+        }
+
+        $names = array_values(array_unique($names));
+        if ($names === []) {
+            return;
+        }
+
+        try {
+            $model->load($names);
+        } catch (Throwable $e) {
+            $debug?->add(sprintf(
+                'Form values: eager-loading relations [%s] failed: %s',
+                implode(', ', $names),
+                $e->getMessage(),
+            ));
+        }
+    }
+
+    private function relationHydrator(): FormRelationValuesHydrator
+    {
+        return $this->relationValuesHydrator ?? app(FormRelationValuesHydrator::class);
     }
 
     private function resolvePipeline(): Pipeline

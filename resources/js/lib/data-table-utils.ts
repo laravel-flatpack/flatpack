@@ -162,3 +162,20 @@ export function columnEditableInDrawer(col: FlatpackDataTableColumn): boolean {
     }
     return false;
 }
+
+/**
+ * Notifies the parent form ({@code onValueChange}) after the current React update completes.
+ * Calling parent setState synchronously inside a {@code setData} functional updater triggers
+ * "Cannot update FlatpackFormPage while rendering DataTable".
+ */
+export function deferNotifyParentFormValues(
+    onValueChange: ((value: unknown) => void) | undefined,
+    nextValues: unknown,
+): void {
+    if (onValueChange == null) {
+        return;
+    }
+    queueMicrotask(() => {
+        onValueChange(nextValues);
+    });
+}

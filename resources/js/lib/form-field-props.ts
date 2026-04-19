@@ -1,8 +1,14 @@
+import { normalizeFormTableBulkActionsInput } from '@/lib/form-table-bulk-actions';
+import { normalizeFormTableToolbarActionsInput } from '@/lib/form-table-toolbar-actions';
+import { listYamlColumnsToDataTableColumns } from '@/lib/list-schema';
 import type {
     FormFieldPropsMapper,
     FormFieldRenderContext,
 } from '@/types/form-field-render';
 import type { FormFieldProps, FormFieldType } from '@/types/form-fields';
+
+const RELATION_TABLE_TOOLBAR_DISABLED_TITLE =
+    'Save the parent record before using these actions.';
 
 function normalizedOptions(
     options: unknown,
@@ -99,6 +105,8 @@ function mapCombobox(props: FormFieldProps, ctx: FormFieldRenderContext) {
         singleDescription: p.helperText,
         multiDescription: p.helperText,
         onValueChange: ctx.onValueChange,
+        useRelationRowPayload: Boolean(p.relation && p.multiple),
+        relationValueKey: p.relation_value ?? 'id',
     };
 }
 
@@ -138,14 +146,60 @@ function mapTimePicker(props: FormFieldProps, ctx: FormFieldRenderContext) {
 }
 
 function mapTable(props: FormFieldProps, ctx: FormFieldRenderContext) {
-    const { type: _t, ...rest } = props as Extract<
-        FormFieldProps,
-        { type: 'table' }
-    >;
+    const raw = props as Extract<FormFieldProps, { type: 'table' }>;
+    const {
+        type: _t,
+        bulk_actions: _bulkSnake,
+        bulkActions: _bulkCamel,
+        actions: _actionsRaw,
+        toolbar_actions: _toolbarSnakeLegacy,
+        toolbarActions: _toolbarCamelLegacy,
+        columns: columnsRaw,
+        ...rest
+    } = raw as typeof raw &
+        Partial<{
+            bulk_actions: unknown;
+            bulkActions: unknown;
+            actions: unknown;
+            toolbar_actions: unknown;
+            toolbarActions: unknown;
+        }>;
+
+    const columns = listYamlColumnsToDataTableColumns(columnsRaw as unknown);
+    const bulkActions = normalizeFormTableBulkActionsInput(
+        raw as Record<string, unknown>,
+    );
+    const toolbarActions = normalizeFormTableToolbarActionsInput(
+        raw as Record<string, unknown>,
+    );
+    const relationName =
+        typeof raw.relation === 'string' ? raw.relation.trim() : '';
+    const relationBacked = relationName !== '';
+    const parentKey = ctx.parentRecordKey;
+    const parentPersisted =
+        parentKey !== undefined &&
+        parentKey !== null &&
+        String(parentKey).trim() !== '';
+    const toolbarActionsDisabled =
+        relationBacked &&
+        toolbarActions !== undefined &&
+        toolbarActions.length > 0 &&
+        !parentPersisted;
+
     return {
         ...rest,
+        ...(bulkActions !== undefined ? { bulkActions } : {}),
+        ...(toolbarActions !== undefined ? { toolbarActions } : {}),
+        ...(toolbarActionsDisabled
+            ? {
+                  toolbarActionsDisabled: true,
+                  toolbarActionsDisabledTitle:
+                      RELATION_TABLE_TOOLBAR_DISABLED_TITLE,
+              }
+            : {}),
+        columns,
         id: ctx.fieldId,
-        data: rest.data ?? [],
+        data: raw.data ?? [],
         onValueChange: ctx.onValueChange,
     };
 }

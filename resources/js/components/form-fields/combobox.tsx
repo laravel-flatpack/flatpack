@@ -6,6 +6,7 @@ import {
     useRef,
     useState,
 } from 'react';
+import { idsToRelationRows, relationRowsToIds } from '@/lib/relation-row-value';
 import {
     Combobox,
     ComboboxChip,
@@ -51,6 +52,8 @@ export const ComboboxField = ({
     remoteEndpoint,
     remoteFieldId,
     remotePerPage = 20,
+    useRelationRowPayload = false,
+    relationValueKey = 'id',
     onValueChange,
     invalid = false,
 }: {
@@ -68,6 +71,9 @@ export const ComboboxField = ({
     remoteEndpoint?: string;
     remoteFieldId?: string;
     remotePerPage?: number;
+    /** Multi + relation: submit {@link idsToRelationRows} instead of string[]. */
+    useRelationRowPayload?: boolean;
+    relationValueKey?: string;
     onValueChange?: (value: unknown) => void;
     invalid?: boolean;
 }) => {
@@ -158,20 +164,22 @@ export const ComboboxField = ({
 
     useEffect(() => {
         if (multiple) {
-            const next = Array.isArray(value)
-                ? value
-                      .filter(
-                          (item): item is string | number =>
-                              typeof item === 'string' ||
-                              typeof item === 'number',
-                      )
-                      .map((item) => String(item))
-                : [];
+            const next = useRelationRowPayload
+                ? relationRowsToIds(value, relationValueKey)
+                : Array.isArray(value)
+                  ? value
+                        .filter(
+                            (item): item is string | number =>
+                                typeof item === 'string' ||
+                                typeof item === 'number',
+                        )
+                        .map((item) => String(item))
+                  : [];
             setMultiValue(next);
         } else {
             setMultiValue([]);
         }
-    }, [multiple, value]);
+    }, [multiple, value, useRelationRowPayload, relationValueKey]);
 
     useEffect(() => {
         if (!remote || !remoteEndpoint) {
@@ -237,16 +245,28 @@ export const ComboboxField = ({
                         value={multiValue}
                         onValueChange={(v) => {
                             setMultiValue(v);
-                            onValueChange?.(v);
+                            if (useRelationRowPayload) {
+                                onValueChange?.(
+                                    idsToRelationRows(v, relationValueKey),
+                                );
+                            } else {
+                                onValueChange?.(v);
+                            }
                         }}
                     >
                         <ComboboxChips className="w-full">
                             <ComboboxValue>
-                                {multiValue.map((item) => (
-                                    <ComboboxChip key={item}>
-                                        {item}
-                                    </ComboboxChip>
-                                ))}
+                                {multiValue.map((item) => {
+                                    const chipLabel =
+                                        normalizedItems.find(
+                                            (o) => o.value === item,
+                                        )?.label ?? item;
+                                    return (
+                                        <ComboboxChip key={item}>
+                                            {chipLabel}
+                                        </ComboboxChip>
+                                    );
+                                })}
                             </ComboboxValue>
                             <ComboboxChipsInput
                                 id={id}

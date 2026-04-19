@@ -23,6 +23,8 @@ import {
     type VisibilityState,
 } from '@tanstack/react-table';
 import * as React from 'react';
+import { toast } from 'sonner';
+import { FlatpackConfirmDialog } from '@/components/flatpack/flatpack-confirm-dialog';
 import { DataTableBody } from '@/components/table/data-table-body';
 import { buildDataTableColumnDefs } from '@/components/table/data-table-column-defs';
 import {
@@ -34,13 +36,20 @@ import {
     DATA_TABLE_ROW_CLICK_IGNORE_SELECTOR,
 } from '@/components/table/data-table-constants';
 import { DataTableFooter } from '@/components/table/data-table-footer';
+import { DataTableRowDrawerPanel } from '@/components/table/data-table-row-drawer';
 import { DataTableToolbar } from '@/components/table/data-table-toolbar';
 import { useDataTableReorder } from '@/hooks/use-data-table-reorder';
 import { useDataTableServerState } from '@/hooks/use-data-table-server-state';
-import { stableRowId } from '@/lib/data-table-utils';
+import {
+    deferNotifyParentFormValues,
+    stableRowId,
+} from '@/lib/data-table-utils';
 import { DEFAULT_LIST_ROW_REORDER_COLUMN } from '@/lib/generated/composition-schema-keys';
 import { cn } from '@/lib/utils';
-import type { DataTableProps } from '@/types/data-table';
+import type {
+    DataTableProps,
+    DataTableRowActionPayload,
+} from '@/types/data-table';
 
 export { buildDataTableColumnDefs } from '@/components/table/data-table-column-defs';
 export type {
@@ -48,12 +57,23 @@ export type {
     FlatpackListServerPagination,
 } from '@/types/data-table';
 
+/** Embedded form relation tables use {@code remove} vs list {@code delete} — same client row-drop behavior. */
+function isInlineRelationRemovalAction(actionKey: string | undefined): boolean {
+    const a = actionKey?.toLowerCase();
+    return a === 'delete' || a === 'remove';
+}
+
 export function DataTable({
     id,
     columns: schemaColumns,
     data: initialData,
     dataRowKey = 'id',
     bulkActions = [],
+    toolbarActions = [],
+    toolbarActionsDisabled = false,
+    toolbarActionsDisabledTitle,
+    onToolbarAction,
+    rowDetailDrawer = false,
     reorderable: reorderableProp,
     onRowClick,
     onValueChange,
@@ -69,25 +89,13 @@ export function DataTable({
     serverSorting = { sort_by: null, sort_direction: null },
     onServerPaginationChange,
 }: DataTableProps) {
-    const handleRowClick = React.useCallback(
-        (
-            event: React.MouseEvent<HTMLTableRowElement>,
-            row: Record<string, unknown>,
-        ) => {
-            if (onRowClick == null) {
-                return;
-            }
-            const target = event.target;
-            if (!(target instanceof Element)) {
-                onRowClick(row);
-                return;
-            }
-            if (target.closest(DATA_TABLE_ROW_CLICK_IGNORE_SELECTOR)) {
-                return;
-            }
-            onRowClick(row);
+    const hasToolbarActions = toolbarActions.length > 0;
+
+    const handleToolbarActionClick = React.useCallback(
+        (actionId: string) => {
+            onToolbarAction?.(actionId);
         },
-        [onRowClick],
+        [onToolbarAction],
     );
 
     const [data, setData] = React.useState<Record<string, unknown>[]>(
@@ -109,6 +117,10 @@ export function DataTable({
         },
         [dataRowKey],
     );
+    const [detailDrawerOpen, setDetailDrawerOpen] = React.useState(false);
+    const [detailDrawerRowId, setDetailDrawerRowId] = React.useState<
+        string | null
+    >(null);
     const [isAllRowsSelected, setIsAllRowsSelected] = React.useState(false);
     React.useEffect(() => {
         if (!isAllRowsSelected) {
@@ -204,7 +216,7 @@ export function DataTable({
                 const nextRows = prev.map((r, i) =>
                     i === idx ? resolvedNextRow : r,
                 );
-                onValueChange?.(nextRows);
+                deferNotifyParentFormValues(onValueChange, nextRows);
                 return nextRows;
             });
             if (
@@ -236,7 +248,7 @@ export function DataTable({
                     const reverted = prev.map((r, i) =>
                         i === idx ? resolvedPreviousRow : r,
                     );
-                    onValueChange?.(reverted);
+                    deferNotifyParentFormValues(onValueChange, reverted);
                     return reverted;
                 });
             });
@@ -256,7 +268,7 @@ export function DataTable({
                 }
                 previousRow = prev[idx];
                 const nextRows = prev.map((r, i) => (i === idx ? nextRow : r));
-                onValueChange?.(nextRows);
+                deferNotifyParentFormValues(onValueChange, nextRows);
                 return nextRows;
             });
             if (onRowUpdate == null) {
@@ -285,12 +297,134 @@ export function DataTable({
                     const reverted = prev.map((r, i) =>
                         i === idx ? resolvedPreviousRow : r,
                     );
-                    onValueChange?.(reverted);
+                    deferNotifyParentFormValues(onValueChange, reverted);
                     return reverted;
                 });
             });
         },
         [getStableRowId, onRowUpdate, onValueChange],
+    );
+
+    const detailDrawerTitleColumn = React.useMemo(() => {
+        const cols = schemaColumns.filter((c) => c.type !== 'actions');
+        return cols[0] ?? schemaColumns[0] ?? null;
+    }, [schemaColumns]);
+
+    const detailDrawerRow = React.useMemo(() => {
+        if (!rowDetailDrawer || detailDrawerRowId == null) {
+            return null;
+        }
+        const idx = data.findIndex(
+            (r, i) => getStableRowId(r, i) === detailDrawerRowId,
+        );
+        return idx >= 0 ? data[idx] : null;
+    }, [rowDetailDrawer, detailDrawerRowId, data, getStableRowId]);
+
+    React.useEffect(() => {
+        if (detailDrawerOpen && detailDrawerRow == null) {
+            setDetailDrawerOpen(false);
+            setDetailDrawerRowId(null);
+        }
+    }, [detailDrawerOpen, detailDrawerRow]);
+
+    const handleRowClick = React.useCallback(
+        (
+            event: React.MouseEvent<HTMLTableRowElement>,
+            row: Record<string, unknown>,
+        ) => {
+            const target = event.target;
+            if (
+                target instanceof Element &&
+                target.closest(DATA_TABLE_ROW_CLICK_IGNORE_SELECTOR)
+            ) {
+                return;
+            }
+            if (rowDetailDrawer) {
+                const idx = data.indexOf(row);
+                const rowId =
+                    idx >= 0
+                        ? getStableRowId(row, idx)
+                        : getStableRowId(row, 0);
+                setDetailDrawerRowId(rowId);
+                setDetailDrawerOpen(true);
+                return;
+            }
+            if (onRowClick == null) {
+                return;
+            }
+            if (!(target instanceof Element)) {
+                onRowClick(row);
+                return;
+            }
+            onRowClick(row);
+        },
+        [rowDetailDrawer, data, getStableRowId, onRowClick],
+    );
+
+    const resolveEmbeddedRowRemoval = React.useCallback(
+        (payload: DataTableRowActionPayload) => {
+            setData((prev) => {
+                const keyVal = payload.row[dataRowKey];
+                let targetStable: string | null = null;
+                if (keyVal != null && keyVal !== '') {
+                    targetStable = String(keyVal);
+                } else {
+                    const idx = prev.indexOf(payload.row);
+                    if (idx !== -1) {
+                        targetStable = getStableRowId(prev[idx], idx);
+                    }
+                }
+                if (targetStable === null) {
+                    return prev;
+                }
+                const nextRows = prev.filter(
+                    (row, index) => getStableRowId(row, index) !== targetStable,
+                );
+                deferNotifyParentFormValues(onValueChange, nextRows);
+                return nextRows;
+            });
+        },
+        [dataRowKey, getStableRowId, onValueChange],
+    );
+
+    const [pendingEmbeddedRowConfirm, setPendingEmbeddedRowConfirm] =
+        React.useState<DataTableRowActionPayload | null>(null);
+
+    const applyEmbeddedDestructiveRowAction = React.useCallback(
+        (payload: DataTableRowActionPayload) => {
+            const a = payload.action.toLowerCase();
+            if (a !== 'delete' && a !== 'remove') {
+                return;
+            }
+            resolveEmbeddedRowRemoval(payload);
+            const msg = payload.button?.success_message;
+            if (typeof msg === 'string' && msg.trim() !== '') {
+                toast.success(msg.trim());
+            }
+        },
+        [resolveEmbeddedRowRemoval],
+    );
+
+    const effectiveOnRowAction = React.useCallback(
+        (payload: DataTableRowActionPayload) => {
+            if (onRowAction != null) {
+                void Promise.resolve(onRowAction(payload));
+                return;
+            }
+            if (onValueChange == null) {
+                return;
+            }
+            const a = payload.action.toLowerCase();
+            if (a !== 'delete' && a !== 'remove') {
+                return;
+            }
+            if (payload.button?.confirm === true) {
+                setPendingEmbeddedRowConfirm(payload);
+                return;
+            }
+            applyEmbeddedDestructiveRowAction(payload);
+        },
+        [onRowAction, onValueChange, applyEmbeddedDestructiveRowAction],
     );
 
     const columnDefs = React.useMemo(
@@ -300,7 +434,7 @@ export function DataTable({
                 reorderable: isReorderable,
                 onCellChange: handleCellChange,
                 onRowReplace: handleRowReplace,
-                onRowAction,
+                onRowAction: effectiveOnRowAction,
             }),
         [
             schemaColumns,
@@ -308,7 +442,7 @@ export function DataTable({
             isReorderable,
             handleCellChange,
             handleRowReplace,
-            onRowAction,
+            effectiveOnRowAction,
         ],
     );
 
@@ -433,9 +567,8 @@ export function DataTable({
                 return;
             }
 
-            const actionKey = bulkActions.find(
-                (bulkAction) => bulkAction.id === actionId,
-            )?.action;
+            const bulkConfig = bulkActions.find((b) => b.id === actionId);
+            const actionKey = bulkConfig?.action?.trim();
             if (!actionKey) {
                 return;
             }
@@ -458,7 +591,7 @@ export function DataTable({
 
                 if (actionKey === 'delete') {
                     setData(optimisticRows);
-                    onValueChange?.(optimisticRows);
+                    deferNotifyParentFormValues(onValueChange, optimisticRows);
                 }
                 handleDeselectAllRows();
 
@@ -483,15 +616,24 @@ export function DataTable({
                 }
             }
 
-            if (actionKey === 'delete') {
+            if (
+                onBulkAction == null &&
+                isInlineRelationRemovalAction(actionKey)
+            ) {
                 setData((prev) => {
                     const nextRows = prev.filter(
                         (row, index) =>
                             !selectedIds.has(getStableRowId(row, index)),
                     );
-                    onValueChange?.(nextRows);
+                    deferNotifyParentFormValues(onValueChange, nextRows);
                     return nextRows;
                 });
+                const bulkMsg = bulkConfig?.success_message;
+                if (typeof bulkMsg === 'string' && bulkMsg.trim() !== '') {
+                    queueMicrotask(() => {
+                        toast.success(bulkMsg.trim());
+                    });
+                }
             }
 
             handleDeselectAllRows();
@@ -529,7 +671,11 @@ export function DataTable({
         <DataTableBody
             table={table}
             isReorderable={isReorderable}
-            onRowClick={onRowClick ? handleRowClick : undefined}
+            onRowClick={
+                onRowClick != null || rowDetailDrawer
+                    ? handleRowClick
+                    : undefined
+            }
             emptyColSpan={columnDefs.length}
         />
     );
@@ -582,6 +728,11 @@ export function DataTable({
             <DataTableToolbar
                 id={id}
                 table={table}
+                hasToolbarActions={hasToolbarActions}
+                toolbarActions={toolbarActions}
+                onToolbarAction={handleToolbarActionClick}
+                toolbarActionsDisabled={toolbarActionsDisabled}
+                toolbarActionsDisabledTitle={toolbarActionsDisabledTitle}
                 hasBulkActions={hasBulkActions}
                 selectedRowCount={selectedRowCount}
                 isAllRowsSelected={isAllRowsSelected}
@@ -601,6 +752,47 @@ export function DataTable({
                 onSetDateFilter={setDateServerFilter}
             />
             {tableAndFooter}
+            {rowDetailDrawer &&
+            detailDrawerOpen &&
+            detailDrawerRow != null &&
+            detailDrawerTitleColumn != null &&
+            detailDrawerRowId != null ? (
+                <DataTableRowDrawerPanel
+                    open={detailDrawerOpen}
+                    onOpenChange={(open) => {
+                        setDetailDrawerOpen(open);
+                        if (!open) {
+                            setDetailDrawerRowId(null);
+                        }
+                    }}
+                    row={detailDrawerRow}
+                    rowId={detailDrawerRowId}
+                    schemaColumns={schemaColumns}
+                    titleColumn={detailDrawerTitleColumn}
+                    onRowReplace={handleRowReplace}
+                />
+            ) : null}
+            <FlatpackConfirmDialog
+                open={pendingEmbeddedRowConfirm !== null}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        setPendingEmbeddedRowConfirm(null);
+                    }
+                }}
+                title={pendingEmbeddedRowConfirm?.button?.label ?? 'Confirm'}
+                continueVariant={
+                    pendingEmbeddedRowConfirm?.button?.variant === 'destructive'
+                        ? 'destructive'
+                        : 'default'
+                }
+                onContinue={() => {
+                    const payload = pendingEmbeddedRowConfirm;
+                    setPendingEmbeddedRowConfirm(null);
+                    if (payload !== null) {
+                        applyEmbeddedDestructiveRowAction(payload);
+                    }
+                }}
+            />
         </div>
     );
 }

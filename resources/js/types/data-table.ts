@@ -44,6 +44,15 @@ export type FlatpackDataTableBulkAction = {
     success_redirect?: FlatpackSuccessRedirect;
 };
 
+/** Toolbar buttons above embedded form {@code type: table} fields (create / add); handlers ship later. */
+export type FlatpackFormTableToolbarAction = {
+    id: string;
+    label: string;
+    action: string;
+    variant?: FlatpackActionVariant;
+    icon?: string;
+};
+
 /** Normalized column display type ({@link LIST_COLUMN_YAML_TYPES} with {@code datetime} folded into {@code date}). */
 export type FlatpackDataTableColumnType = Exclude<
     typeof import('@/lib/generated/composition-schema-keys').LIST_COLUMN_YAML_TYPES[number],
@@ -147,7 +156,17 @@ export type DataTableProps = {
     data: Record<string, unknown>[];
     dataRowKey?: string;
     bulkActions?: FlatpackDataTableBulkAction[];
+    toolbarActions?: FlatpackFormTableToolbarAction[];
+    /** When true, toolbar buttons are disabled (e.g. parent record not persisted). */
+    toolbarActionsDisabled?: boolean;
+    toolbarActionsDisabledTitle?: string;
+    onToolbarAction?: (actionId: string) => void;
     reorderable?: boolean | string;
+    /**
+     * When true (embedded form tables), clicking a row opens the row detail drawer.
+     * Takes precedence over {@link onRowClick} for the same gesture.
+     */
+    rowDetailDrawer?: boolean;
     onRowClick?: (row: Record<string, unknown>) => void;
     onValueChange?: (value: unknown) => void;
     onBulkAction?: (

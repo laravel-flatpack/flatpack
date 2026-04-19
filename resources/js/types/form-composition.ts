@@ -5,9 +5,8 @@ import type {
 import type { FormFieldPreset } from '@/types/form-fields';
 import type {
     FlatpackListCompositionBulkActionYaml,
-    FlatpackListCompositionColumnActionButtonYaml,
     FlatpackListCompositionColumnOptionsYaml,
-    FlatpackListCompositionColumnYaml,
+    FlatpackListCompositionColumnsYaml,
 } from '@/types/list-composition';
 
 /**
@@ -42,6 +41,14 @@ export type FlatpackFormCompositionActionsYaml = Record<
 >;
 
 type FormCompositionFieldTableDataRowYaml = Record<string, unknown>;
+
+/** Toolbar buttons above an embedded {@code type: table} field (distinct from column-level actions). */
+export type FlatpackFormCompositionFieldTableActionYaml = {
+    label: string;
+    action: string;
+    icon?: string;
+    variant?: FormCompositionButtonVariantYaml;
+};
 
 export type FlatpackFormCompositionFieldTextYaml = {
     type: 'text';
@@ -92,6 +99,8 @@ export type FlatpackFormCompositionFieldComboboxYaml = {
     options?: FlatpackListCompositionColumnOptionsYaml;
     multiple?: boolean;
     relation?: string;
+    relation_name?: string;
+    relation_value?: string;
     remote?: boolean;
 };
 
@@ -105,6 +114,8 @@ export type FlatpackFormCompositionFieldRelationYaml = {
     rules?: FlatpackFormCompositionValidationRulesYaml;
     value?: unknown;
     relation: string;
+    relation_name?: string;
+    relation_value?: string;
     options?: FlatpackListCompositionColumnOptionsYaml;
     multiple?: boolean;
     remote?: boolean;
@@ -212,11 +223,24 @@ export type FlatpackFormCompositionFieldTableYaml = {
     required?: boolean;
     rules?: FlatpackFormCompositionValidationRulesYaml;
     value?: unknown;
-    columns: FlatpackListCompositionColumnYaml[];
+    columns: FlatpackListCompositionColumnsYaml;
     data?: FormCompositionFieldTableDataRowYaml[];
     bulkActions?: FlatpackListCompositionBulkActionYaml[];
-    actions?: FlatpackListCompositionColumnActionButtonYaml[];
+    actions?:
+        | Record<string, FlatpackFormCompositionFieldTableActionYaml>
+        | FlatpackFormCompositionFieldTableActionYaml[];
+    /** @deprecated Use {@link actions}. */
+    toolbar_actions?:
+        | Record<string, FlatpackFormCompositionFieldTableActionYaml>
+        | FlatpackFormCompositionFieldTableActionYaml[];
+    /** @deprecated Use {@link actions}. */
+    toolbarActions?:
+        | Record<string, FlatpackFormCompositionFieldTableActionYaml>
+        | FlatpackFormCompositionFieldTableActionYaml[];
     reorderable?: boolean | string;
+    relation?: string;
+    relation_value?: string;
+    limit?: number;
 };
 
 export type FlatpackFormCompositionFieldYaml =

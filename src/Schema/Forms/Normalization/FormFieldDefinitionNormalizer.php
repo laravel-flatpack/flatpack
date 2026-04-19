@@ -36,6 +36,29 @@ final class FormFieldDefinitionNormalizer
             $fieldDefinition['type'] = 'combobox';
             $fieldDefinition['options'] = [];
             $fieldDefinition['remote'] = true;
+        } elseif ($fieldDefinition['type'] === 'table') {
+            $relation = isset($fieldDefinition['relation'])
+                ? trim((string) $fieldDefinition['relation'])
+                : '';
+            if ($relation !== '') {
+                $columns = $fieldDefinition['columns'] ?? null;
+                if (! $this->relationTableColumnsAreNonEmpty($columns)) {
+                    $tableLabel = $this->fieldDisplayLabel($fieldDefinition, $yamlKey);
+                    $log?->add(sprintf(
+                        'Form field "%s": table with relation requires non-empty columns (field omitted).',
+                        $tableLabel,
+                    ));
+
+                    return null;
+                }
+
+                $relationValue = isset($fieldDefinition['relation_value'])
+                    ? trim((string) $fieldDefinition['relation_value'])
+                    : '';
+                if ($relationValue === '') {
+                    $fieldDefinition['relation_value'] = 'id';
+                }
+            }
         } elseif ($rawType === 'select' || $rawType === 'combobox') {
             $fieldDefinition['options'] = $this->normalizeFieldOptions(
                 $fieldDefinition['options'] ?? null,
@@ -187,5 +210,36 @@ final class FormFieldDefinitionNormalizer
         }
 
         return $out;
+    }
+
+    /**
+     * Accepts list.yaml-style columns: array of defs (each with {@code id}) or map keyed by column id.
+     */
+    private function relationTableColumnsAreNonEmpty(mixed $columns): bool
+    {
+        if (! is_array($columns) || $columns === []) {
+            return false;
+        }
+
+        if (array_is_list($columns)) {
+            foreach ($columns as $column) {
+                if (! is_array($column)) {
+                    continue;
+                }
+                if (trim((string) ($column['id'] ?? '')) !== '') {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        foreach ($columns as $key => $_def) {
+            if (trim((string) $key) !== '') {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

@@ -80,6 +80,10 @@ final class FormSchemaRuleBuilder
             $rules[] = 'nullable';
         }
 
+        if (FormFieldType::shouldDeferToRelationSync($fieldDefinition)) {
+            return array_merge($rules, ['array']);
+        }
+
         if (FormFieldType::isRelationField($fieldDefinition)) {
             $exists = $this->relationExistsRule($modelClass, $fieldDefinition);
             if ($exists !== null) {

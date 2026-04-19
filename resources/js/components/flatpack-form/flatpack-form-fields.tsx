@@ -49,6 +49,7 @@ export function FlatpackFormFields({
                         fieldId: id,
                         onValueChange: (nextValue: unknown) =>
                             setFieldValue(field, id, nextValue),
+                        parentRecordKey: record,
                     }),
                     ...componentValueProps(field, formValues[id]),
                     ...relationRemoteProps(field, id, entity),

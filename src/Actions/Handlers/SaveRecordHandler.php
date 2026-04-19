@@ -5,12 +5,18 @@ declare(strict_types=1);
 namespace Flatpack\Actions\Handlers;
 
 use Flatpack\Actions\FlatpackActionContext;
+use Flatpack\Actions\RelationFormSynchronizer;
+use Flatpack\Schema\Forms\FormFieldType;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\MassAssignmentException;
 use Illuminate\Database\Eloquent\Model;
 
 final class SaveRecordHandler extends FlatpackActionHandler
 {
+    public function __construct(
+        private readonly RelationFormSynchronizer $relationFormSynchronizer,
+    ) {}
+
     public function authorize(Authenticatable $user, string $modelClass, ?Model $model): bool
     {
         if ($this->modelExists($model)) {
@@ -59,6 +65,12 @@ final class SaveRecordHandler extends FlatpackActionHandler
             if (! isset($writableFields[$field])) {
                 continue;
             }
+
+            $fieldDefinition = $this->fieldDefinitionForSchemaField($context->schema, $field);
+            if ($fieldDefinition !== null && FormFieldType::shouldDeferToRelationSync($fieldDefinition)) {
+                continue;
+            }
+
             if (! $model->isFillable($field)) {
                 throw new MassAssignmentException(sprintf(
                     'Add [%s] to fillable property to allow mass assignment on [%s].',
@@ -69,14 +81,90 @@ final class SaveRecordHandler extends FlatpackActionHandler
             $filtered[$field] = $value;
         }
 
-        if ($filtered === []) {
+        $hasDeferredRelationPayload = $this->valuesHaveDeferredRelationFields($context->schema, $values);
+
+        if ($filtered === [] && ! $hasDeferredRelationPayload) {
             return $model;
         }
 
-        $model->fill($filtered);
-        $model->save();
+        if ($filtered !== []) {
+            $model->fill($filtered);
+            $model->save();
+        }
 
-        return $model->fresh();
+        $saved = $filtered !== [] ? ($model->fresh() ?? $model) : $model;
+
+        if (
+            $context->compositionType === 'form'
+            && $saved instanceof Model
+            && $saved->getKey() !== null
+        ) {
+            $this->relationFormSynchronizer->sync($saved, $context->schema, $values);
+        }
+
+        return $saved instanceof Model ? ($saved->fresh() ?? $saved) : $saved;
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $schema
+     * @param  array<string, mixed>  $values
+     */
+    private function valuesHaveDeferredRelationFields(?array $schema, array $values): bool
+    {
+        if ($schema === null) {
+            return false;
+        }
+
+        $fields = $schema['fields'] ?? null;
+        if (! is_array($fields)) {
+            return false;
+        }
+
+        foreach ($fields as $yamlKey => $fieldDefinition) {
+            if (! is_array($fieldDefinition)) {
+                continue;
+            }
+
+            $id = trim((string) ($fieldDefinition['id'] ?? $yamlKey));
+            if ($id === '' || ! FormFieldType::shouldDeferToRelationSync($fieldDefinition)) {
+                continue;
+            }
+
+            if (array_key_exists($id, $values)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $schema
+     * @return array<string, mixed>|null
+     */
+    private function fieldDefinitionForSchemaField(?array $schema, string $fieldId): ?array
+    {
+        if ($schema === null) {
+            return null;
+        }
+
+        $fields = $schema['fields'] ?? null;
+        if (! is_array($fields)) {
+            return null;
+        }
+
+        foreach ($fields as $yamlKey => $fieldDefinition) {
+            if (! is_array($fieldDefinition)) {
+                continue;
+            }
+
+            $id = trim((string) ($fieldDefinition['id'] ?? $yamlKey));
+            if ($id === $fieldId) {
+                return $fieldDefinition;
+            }
+        }
+
+        return null;
     }
 
     private function resolveModel(FlatpackActionContext $context): ?Model

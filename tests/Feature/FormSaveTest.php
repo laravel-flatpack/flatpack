@@ -3,7 +3,9 @@
 declare(strict_types=1);
 
 use Flatpack\Contracts\Authorization\FlatpackAuthorizer;
+use Flatpack\Tests\Models\Category;
 use Flatpack\Tests\Models\Post;
+use Flatpack\Tests\Models\PostComment;
 use Flatpack\Tests\Models\User;
 use Flatpack\Tests\Policies\DenyCreatePostPolicy;
 use Flatpack\Tests\Policies\DenyUpdatePostPolicy;
@@ -300,7 +302,7 @@ fields:
 YAML, function (): void {
         /** @var User $user */
         $user = User::factory()->createOne();
-        Flatpack\Tests\Models\Category::factory()->createOne([
+        Category::factory()->createOne([
             'name' => 'Guides',
         ]);
 
@@ -337,12 +339,12 @@ fields:
 YAML, function (): void {
         /** @var User $user */
         $user = User::factory()->createOne();
-        Flatpack\Tests\Models\Category::factory()->createMany([
+        Category::factory()->createMany([
             ['name' => 'Alpha'],
             ['name' => 'Beta'],
             ['name' => 'Gamma'],
         ]);
-        $selected = Flatpack\Tests\Models\Category::factory()->createOne([
+        $selected = Category::factory()->createOne([
             'name' => 'Zeta',
         ]);
 
@@ -655,5 +657,320 @@ YAML, function (): void {
             ])
             ->assertRedirect(route('flatpack.entities.create', ['entity' => 'posts']))
             ->assertSessionHasErrors('values.slug');
+    });
+});
+
+test('flatpack form edit hydrates BelongsToMany table field as RelationRow list', function () {
+    withTempFormSchema(<<<'YAML'
+name: Post
+model: Flatpack\Tests\Models\Post
+fields:
+  title:
+    type: text
+    label: Title
+  slug:
+    type: text
+    label: Slug
+  post_categories:
+    type: table
+    label: Categories
+    relation: categories
+    relation_value: id
+    limit: 20
+    columns:
+      - id: name
+        label: Name
+        type: text
+YAML, function (): void {
+        /** @var User $user */
+        $user = User::factory()->createOne();
+        $a = Category::factory()->createOne(['name' => 'Alpha', 'slug' => 'alpha']);
+        $b = Category::factory()->createOne(['name' => 'Beta', 'slug' => 'beta']);
+        $post = Post::factory()->createOne([
+            'title' => 'T',
+            'slug' => 't',
+        ]);
+        $post->categories()->sync([$a->getKey(), $b->getKey()]);
+
+        actingAs($user)
+            ->getJson(route('flatpack.entities.edit', [
+                'entity' => 'posts',
+                'record' => (string) $post->getKey(),
+                'json' => true,
+            ]))
+            ->assertOk()
+            ->assertJsonPath('values.post_categories.0.id', (string) $a->getKey())
+            ->assertJsonPath('values.post_categories.0.name', 'Alpha')
+            ->assertJsonPath('values.post_categories.1.id', (string) $b->getKey())
+            ->assertJsonPath('values.post_categories.1.name', 'Beta');
+    });
+});
+
+test('flatpack form edit hydrates BelongsToMany table field with list.yaml map-shaped columns', function () {
+    withTempFormSchema(<<<'YAML'
+name: Post
+model: Flatpack\Tests\Models\Post
+fields:
+  title:
+    type: text
+    label: Title
+  slug:
+    type: text
+    label: Slug
+  post_categories:
+    type: table
+    label: Categories
+    relation: categories
+    relation_value: id
+    limit: 20
+    columns:
+      name:
+        label: Name
+        type: text
+YAML, function (): void {
+        /** @var User $user */
+        $user = User::factory()->createOne();
+        $a = Category::factory()->createOne(['name' => 'Alpha', 'slug' => 'alpha']);
+        $b = Category::factory()->createOne(['name' => 'Beta', 'slug' => 'beta']);
+        $post = Post::factory()->createOne([
+            'title' => 'T',
+            'slug' => 't',
+        ]);
+        $post->categories()->sync([$a->getKey(), $b->getKey()]);
+
+        actingAs($user)
+            ->getJson(route('flatpack.entities.edit', [
+                'entity' => 'posts',
+                'record' => (string) $post->getKey(),
+                'json' => true,
+            ]))
+            ->assertOk()
+            ->assertJsonPath('values.post_categories.0.id', (string) $a->getKey())
+            ->assertJsonPath('values.post_categories.0.name', 'Alpha')
+            ->assertJsonPath('values.post_categories.1.id', (string) $b->getKey())
+            ->assertJsonPath('values.post_categories.1.name', 'Beta');
+    });
+});
+
+test('flatpack form save syncs BelongsToMany RelationRow payload from table field', function () {
+    withTempFormSchema(<<<'YAML'
+name: Post
+model: Flatpack\Tests\Models\Post
+fields:
+  title:
+    type: text
+    label: Title
+  slug:
+    type: text
+    label: Slug
+  post_categories:
+    type: table
+    label: Categories
+    relation: categories
+    relation_value: id
+    columns:
+      - id: name
+        label: Name
+        type: text
+YAML, function (): void {
+        /** @var User $user */
+        $user = User::factory()->createOne();
+        $keep = Category::factory()->createOne(['name' => 'Keep', 'slug' => 'keep']);
+        $post = Post::factory()->createOne([
+            'title' => 'T',
+            'slug' => 't',
+        ]);
+        $post->categories()->sync([$keep->getKey()]);
+
+        actingAs($user)
+            ->patch(route('flatpack.entities.save', [
+                'entity' => 'posts',
+                'record' => (string) $post->getKey(),
+            ]), [
+                'values' => [
+                    'title' => 'T',
+                    'slug' => 't',
+                    'post_categories' => [
+                        ['id' => (string) $keep->getKey(), 'name' => 'Keep'],
+                    ],
+                ],
+            ])
+            ->assertRedirect(route('flatpack.entities.edit', [
+                'entity' => 'posts',
+                'record' => (string) $post->getKey(),
+            ]));
+
+        expect($post->fresh()->categories->pluck('id')->all())->toBe([(int) $keep->getKey()]);
+    });
+});
+
+test('flatpack form edit hydrates MorphMany table field as RelationRow list', function () {
+    withTempFormSchema(<<<'YAML'
+name: Post
+model: Flatpack\Tests\Models\Post
+fields:
+  title:
+    type: text
+    label: Title
+  slug:
+    type: text
+    label: Slug
+  comments:
+    type: table
+    label: Comments
+    relation: comments
+    relation_value: id
+    limit: 20
+    columns:
+      content:
+        label: Content
+        type: text
+YAML, function (): void {
+        /** @var User $user */
+        $user = User::factory()->createOne();
+        $post = Post::factory()->createOne([
+            'title' => 'T',
+            'slug' => 't',
+        ]);
+        $c1 = PostComment::factory()->createOne([
+            'commentable_type' => Post::class,
+            'commentable_id' => $post->getKey(),
+            'content' => 'First',
+        ]);
+        $c2 = PostComment::factory()->createOne([
+            'commentable_type' => Post::class,
+            'commentable_id' => $post->getKey(),
+            'content' => 'Second',
+        ]);
+
+        actingAs($user)
+            ->getJson(route('flatpack.entities.edit', [
+                'entity' => 'posts',
+                'record' => (string) $post->getKey(),
+                'json' => true,
+            ]))
+            ->assertOk()
+            ->assertJsonPath('values.comments.0.id', (string) $c1->getKey())
+            ->assertJsonPath('values.comments.0.content', 'First')
+            ->assertJsonPath('values.comments.1.id', (string) $c2->getKey())
+            ->assertJsonPath('values.comments.1.content', 'Second');
+    });
+});
+
+test('flatpack form edit hydrates relation column nested payload for table rows', function () {
+    withTempFormSchema(<<<'YAML'
+name: Post
+model: Flatpack\Tests\Models\Post
+fields:
+  title:
+    type: text
+    label: Title
+  slug:
+    type: text
+    label: Slug
+  comments:
+    type: table
+    label: Comments
+    relation: comments
+    relation_value: id
+    columns:
+      content:
+        label: Content
+        type: text
+      user_id:
+        label: User
+        type: relation
+        relation: user
+        relation_name: name
+        relation_value: id
+YAML, function (): void {
+        /** @var User $panelUser */
+        $panelUser = User::factory()->createOne();
+        /** @var User $author */
+        $author = User::factory()->createOne(['name' => 'Ada Lovelace']);
+        $post = Post::factory()->createOne([
+            'title' => 'T',
+            'slug' => 't',
+        ]);
+        PostComment::factory()->createOne([
+            'commentable_type' => Post::class,
+            'commentable_id' => $post->getKey(),
+            'content' => 'Hello',
+            'user_id' => $author->getKey(),
+        ]);
+
+        actingAs($panelUser)
+            ->getJson(route('flatpack.entities.edit', [
+                'entity' => 'posts',
+                'record' => (string) $post->getKey(),
+                'json' => true,
+            ]))
+            ->assertOk()
+            ->assertJsonPath('values.comments.0.content', 'Hello')
+            ->assertJsonPath('values.comments.0.user_id', $author->getKey())
+            ->assertJsonPath('values.comments.0.user.id', (string) $author->getKey())
+            ->assertJsonPath('values.comments.0.user.name', 'Ada Lovelace');
+    });
+});
+
+test('flatpack form save syncs MorphMany RelationRow payload from table field', function () {
+    withTempFormSchema(<<<'YAML'
+name: Post
+model: Flatpack\Tests\Models\Post
+fields:
+  title:
+    type: text
+    label: Title
+  slug:
+    type: text
+    label: Slug
+  comments:
+    type: table
+    label: Comments
+    relation: comments
+    relation_value: id
+    columns:
+      content:
+        label: Content
+        type: text
+YAML, function (): void {
+        /** @var User $user */
+        $user = User::factory()->createOne();
+        $post = Post::factory()->createOne([
+            'title' => 'T',
+            'slug' => 't',
+        ]);
+        $keep = PostComment::factory()->createOne([
+            'commentable_type' => Post::class,
+            'commentable_id' => $post->getKey(),
+            'content' => 'Keep',
+        ]);
+        PostComment::factory()->createOne([
+            'commentable_type' => Post::class,
+            'commentable_id' => $post->getKey(),
+            'content' => 'Remove me',
+        ]);
+
+        actingAs($user)
+            ->patch(route('flatpack.entities.save', [
+                'entity' => 'posts',
+                'record' => (string) $post->getKey(),
+            ]), [
+                'values' => [
+                    'title' => 'T',
+                    'slug' => 't',
+                    'comments' => [
+                        ['id' => (string) $keep->getKey(), 'content' => 'Updated'],
+                    ],
+                ],
+            ])
+            ->assertRedirect(route('flatpack.entities.edit', [
+                'entity' => 'posts',
+                'record' => (string) $post->getKey(),
+            ]));
+
+        $comments = $post->fresh()->comments()->orderBy('id')->get();
+        expect($comments)->toHaveCount(1);
+        expect($comments->first()->content)->toBe('Updated');
     });
 });

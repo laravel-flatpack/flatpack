@@ -65,6 +65,19 @@ return [
     */
     'forms' => [
         'disable_actions_until_dirty' => false,
+
+        /*
+        |--------------------------------------------------------------------------
+        | Relation-backed table fields (`type: table` + `relation`)
+        |--------------------------------------------------------------------------
+        |
+        | Caps how many related rows are hydrated on edit to avoid huge payloads.
+        | Per-field YAML `limit` may further reduce the count (never exceed hard_max_rows).
+        |
+        */
+        'enforce_relation_table_limit' => env('FLATPACK_ENFORCE_RELATION_TABLE_LIMIT', true),
+        'relation_table_default_limit' => (int) env('FLATPACK_RELATION_TABLE_DEFAULT_LIMIT', 100),
+        'relation_table_hard_max_rows' => (int) env('FLATPACK_RELATION_TABLE_HARD_MAX', 500),
     ],
 
     /*
