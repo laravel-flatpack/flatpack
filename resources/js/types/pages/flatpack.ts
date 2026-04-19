@@ -7,6 +7,10 @@ import type {
     FlatpackListServerSorting,
     FlatpackSuccessRedirect,
 } from '@/types/data-table';
+import type { FlatpackFormCompositionSchema } from '@/types/form-composition';
+import type { FlatpackListCompositionSchema } from '@/types/list-composition';
+
+export type { FlatpackFormCompositionSchema, FlatpackListCompositionSchema };
 
 export type FlatpackListHeaderAction = {
     id: string;
@@ -34,7 +38,7 @@ export type FlatpackListPageProps = {
     model_key?: string;
     icon?: string;
     nav_order?: number;
-    schema?: Record<string, unknown> | null;
+    schema?: FlatpackListCompositionSchema | null;
     records?: Record<string, unknown>[];
     pagination?: FlatpackListServerPagination;
     search_term?: string;
@@ -54,7 +58,7 @@ export type FlatpackFormPageProps = {
     icon?: string;
     record: string | null;
     mode: 'create' | 'edit';
-    schema?: Record<string, unknown> | null;
+    schema?: FlatpackFormCompositionSchema | null;
     values?: Record<string, unknown>;
     form_actions?: FlatpackListHeaderAction[];
     /** Non-sensitive debug messages when composition YAML was sanitized (APP_DEBUG). */
