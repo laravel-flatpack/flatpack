@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -66,6 +67,11 @@ final class Post extends Model
     public function comments(): MorphMany
     {
         return $this->morphMany(PostComment::class, 'commentable');
+    }
+
+    public function meta(): HasOne
+    {
+        return $this->hasOne(PostMeta::class, 'post_id');
     }
 
     // public function tags(): BelongsToMany

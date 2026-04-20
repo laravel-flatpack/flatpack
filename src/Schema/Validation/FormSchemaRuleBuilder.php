@@ -84,7 +84,7 @@ final class FormSchemaRuleBuilder
             return array_merge($rules, ['array']);
         }
 
-        if (FormFieldType::isRelationBackedCombobox($fieldDefinition)) {
+        if (FormFieldType::isSingleRelationCombobox($fieldDefinition)) {
             $exists = $this->relationExistsRule($modelClass, $fieldDefinition);
             if ($exists !== null) {
                 $rules[] = $exists;

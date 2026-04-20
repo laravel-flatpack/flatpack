@@ -10,6 +10,21 @@ namespace Flatpack\Schema\Forms;
 final class FormFieldType
 {
     /**
+     * Any form field backed by an Eloquent relation (`relation` + supported type).
+     *
+     * @param  array<string, mixed>  $fieldDefinition
+     */
+    public static function isRelationBackedField(array $fieldDefinition): bool
+    {
+        return self::relationName($fieldDefinition) !== ''
+            && in_array(
+                self::normalizeYamlType(trim((string) ($fieldDefinition['type'] ?? ''))),
+                ['combobox', 'table'],
+                true,
+            );
+    }
+
+    /**
      * Maps YAML aliases to the canonical type string used by the UI and validators.
      */
     public static function normalizeYamlType(string $type): string
@@ -30,17 +45,19 @@ final class FormFieldType
      */
     public static function isRelationBackedCombobox(array $fieldDefinition): bool
     {
-        $type = self::normalizeYamlType(trim((string) ($fieldDefinition['type'] ?? '')));
+        return self::isRelationBackedField($fieldDefinition)
+            && self::normalizeYamlType(trim((string) ($fieldDefinition['type'] ?? ''))) === 'combobox';
+    }
 
-        if ($type !== 'combobox') {
-            return false;
-        }
-
-        $relation = isset($fieldDefinition['relation'])
-            ? trim((string) $fieldDefinition['relation'])
-            : '';
-
-        return $relation !== '';
+    /**
+     * Single-value relation combobox persisted on the parent model (BelongsTo FK semantics).
+     *
+     * @param  array<string, mixed>  $fieldDefinition
+     */
+    public static function isSingleRelationCombobox(array $fieldDefinition): bool
+    {
+        return self::isRelationBackedCombobox($fieldDefinition)
+            && ($fieldDefinition['multiple'] ?? false) !== true;
     }
 
     /**
@@ -50,15 +67,11 @@ final class FormFieldType
      */
     public static function shouldDeferToRelationSync(array $fieldDefinition): bool
     {
-        $type = self::normalizeYamlType(trim((string) ($fieldDefinition['type'] ?? '')));
-
-        $relation = isset($fieldDefinition['relation'])
-            ? trim((string) $fieldDefinition['relation'])
-            : '';
-
-        if ($relation === '') {
+        if (! self::isRelationBackedField($fieldDefinition)) {
             return false;
         }
+
+        $type = self::normalizeYamlType(trim((string) ($fieldDefinition['type'] ?? '')));
 
         if ($type === 'table') {
             return true;
@@ -78,16 +91,17 @@ final class FormFieldType
      */
     public static function isRelationBackedTable(array $fieldDefinition): bool
     {
-        $type = self::normalizeYamlType(trim((string) ($fieldDefinition['type'] ?? '')));
+        return self::isRelationBackedField($fieldDefinition)
+            && self::normalizeYamlType(trim((string) ($fieldDefinition['type'] ?? ''))) === 'table';
+    }
 
-        if ($type !== 'table') {
-            return false;
-        }
-
-        $relation = isset($fieldDefinition['relation'])
+    /**
+     * @param  array<string, mixed>  $fieldDefinition
+     */
+    private static function relationName(array $fieldDefinition): string
+    {
+        return isset($fieldDefinition['relation'])
             ? trim((string) $fieldDefinition['relation'])
             : '';
-
-        return $relation !== '';
     }
 }

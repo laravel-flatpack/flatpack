@@ -9,6 +9,7 @@ use Flatpack\Support\CompositionDebugLog;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\Relation;
 
@@ -124,6 +125,9 @@ final class FormRelationValuesHydrator
         if ($relation instanceof HasMany || $relation instanceof MorphMany) {
             return $this->hydrateRelatedCollection($model, $fieldId, $relationName, $fieldDefinition, $log);
         }
+        if ($relation instanceof HasOne) {
+            return $this->hydrateRelatedSingle($model, $fieldId, $relationName, $fieldDefinition, $log);
+        }
 
         $log?->add(sprintf(
             'Form field "%s": relation [%s] (%s) is not supported for hydration yet.',
@@ -207,14 +211,7 @@ final class FormRelationValuesHydrator
             }
             $n++;
 
-            $id = $related->getAttribute($valueKey);
-            $row = [
-                $valueKey => $id !== null ? (string) $id : '',
-            ];
-            if ($valueKey !== 'id' && $related->getKey() !== null) {
-                $row['id'] = (string) $related->getKey();
-            }
-
+            $row = $this->rowFromRelatedModel($related, $valueKey, $fieldDefinition);
             $pivot = $related->relationLoaded('pivot') ? $related->pivot : null;
             if ($pivot !== null && count($pivot->getAttributes()) > 0) {
                 $attrs = $pivot->getAttributes();
@@ -224,32 +221,89 @@ final class FormRelationValuesHydrator
                 }
             }
 
-            foreach (self::columnIdsFromDefinition($fieldDefinition) as $columnId) {
-                if ($columnId === $valueKey || $columnId === 'id') {
-                    continue;
-                }
-                $row[$columnId] = $related->getAttribute($columnId);
-            }
-
-            $labelKey = RelationFieldQuery::stringFromField(
-                $fieldDefinition,
-                'relation_name',
-                'relationName',
-            );
-            if (
-                $labelKey !== ''
-                && $labelKey !== $valueKey
-                && ! array_key_exists($labelKey, $row)
-            ) {
-                $row[$labelKey] = $related->getAttribute($labelKey);
-            }
-
             $this->hydrateNestedRelationColumnPayloads($related, $fieldDefinition, $row);
 
             $rows[] = $row;
         }
 
         return $rows;
+    }
+
+    /**
+     * @param  array<string, mixed>  $fieldDefinition
+     * @return list<array<string, mixed>>
+     */
+    private function hydrateRelatedSingle(
+        Model $model,
+        string $fieldId,
+        string $relationName,
+        array $fieldDefinition,
+        ?CompositionDebugLog $log,
+    ): array {
+        $valueKey = trim((string) ($fieldDefinition['relation_value'] ?? 'id'));
+        if ($valueKey === '') {
+            $valueKey = 'id';
+        }
+
+        $related = $model->getRelation($relationName);
+        if ($related === null) {
+            $log?->add(sprintf(
+                'Form field "%s": relation [%s] was not eager-loaded; loading now (avoid N+1 by declaring this relation in schema).',
+                $fieldId,
+                $relationName,
+            ));
+            $model->load($relationName);
+            $related = $model->getRelation($relationName);
+        }
+
+        if (! $related instanceof Model) {
+            return [];
+        }
+
+        $row = $this->rowFromRelatedModel($related, $valueKey, $fieldDefinition);
+        $this->hydrateNestedRelationColumnPayloads($related, $fieldDefinition, $row);
+
+        return [$row];
+    }
+
+    /**
+     * @param  array<string, mixed>  $fieldDefinition
+     * @return array<string, mixed>
+     */
+    private function rowFromRelatedModel(
+        Model $related,
+        string $valueKey,
+        array $fieldDefinition,
+    ): array {
+        $id = $related->getAttribute($valueKey);
+        $row = [
+            $valueKey => $id !== null ? (string) $id : '',
+        ];
+        if ($valueKey !== 'id' && $related->getKey() !== null) {
+            $row['id'] = (string) $related->getKey();
+        }
+
+        foreach (self::columnIdsFromDefinition($fieldDefinition) as $columnId) {
+            if ($columnId === $valueKey || $columnId === 'id') {
+                continue;
+            }
+            $row[$columnId] = $related->getAttribute($columnId);
+        }
+
+        $labelKey = RelationFieldQuery::stringFromField(
+            $fieldDefinition,
+            'relation_name',
+            'relationName',
+        );
+        if (
+            $labelKey !== ''
+            && $labelKey !== $valueKey
+            && ! array_key_exists($labelKey, $row)
+        ) {
+            $row[$labelKey] = $related->getAttribute($labelKey);
+        }
+
+        return $row;
     }
 
     /**

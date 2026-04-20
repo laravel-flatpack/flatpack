@@ -6,6 +6,7 @@ use Flatpack\Contracts\Authorization\FlatpackAuthorizer;
 use Flatpack\Tests\Models\Category;
 use Flatpack\Tests\Models\Post;
 use Flatpack\Tests\Models\PostComment;
+use Flatpack\Tests\Models\PostMeta;
 use Flatpack\Tests\Models\User;
 use Flatpack\Tests\Policies\DenyCreatePostPolicy;
 use Flatpack\Tests\Policies\DenyUpdatePostPolicy;
@@ -840,6 +841,50 @@ YAML, function (): void {
     });
 });
 
+test('flatpack form edit hydrates HasOne table field as single RelationRow list', function () {
+    withTempFormSchema(<<<'YAML'
+name: Post
+model: Flatpack\Tests\Models\Post
+fields:
+  title:
+    type: text
+    label: Title
+  slug:
+    type: text
+    label: Slug
+  post_meta:
+    type: table
+    label: Meta
+    relation: meta
+    relation_value: id
+    columns:
+      subtitle:
+        label: Subtitle
+        type: text
+YAML, function (): void {
+        /** @var User $user */
+        $user = User::factory()->createOne();
+        $post = Post::factory()->createOne([
+            'title' => 'T',
+            'slug' => 't',
+        ]);
+        $meta = PostMeta::query()->create([
+            'post_id' => $post->getKey(),
+            'subtitle' => 'SEO subtitle',
+        ]);
+
+        actingAs($user)
+            ->getJson(route('flatpack.entities.edit', [
+                'entity' => 'posts',
+                'record' => (string) $post->getKey(),
+                'json' => true,
+            ]))
+            ->assertOk()
+            ->assertJsonPath('values.post_meta.0.id', (string) $meta->getKey())
+            ->assertJsonPath('values.post_meta.0.subtitle', 'SEO subtitle');
+    });
+});
+
 test('flatpack form edit hydrates BelongsToMany table field with list.yaml map-shaped columns', function () {
     withTempFormSchema(<<<'YAML'
 name: Post
@@ -1106,5 +1151,77 @@ YAML, function (): void {
         $comments = $post->fresh()->comments()->orderBy('id')->get();
         expect($comments)->toHaveCount(1);
         expect($comments->first()->content)->toBe('Updated');
+    });
+});
+
+test('flatpack form save syncs HasOne RelationRow payload from table field', function () {
+    withTempFormSchema(<<<'YAML'
+name: Post
+model: Flatpack\Tests\Models\Post
+fields:
+  title:
+    type: text
+    label: Title
+  slug:
+    type: text
+    label: Slug
+  post_meta:
+    type: table
+    label: Meta
+    relation: meta
+    relation_value: id
+    columns:
+      subtitle:
+        label: Subtitle
+        type: text
+YAML, function (): void {
+        /** @var User $user */
+        $user = User::factory()->createOne();
+        $post = Post::factory()->createOne([
+            'title' => 'T',
+            'slug' => 't',
+        ]);
+        $meta = PostMeta::query()->create([
+            'post_id' => $post->getKey(),
+            'subtitle' => 'Old',
+        ]);
+
+        actingAs($user)
+            ->patch(route('flatpack.entities.save', [
+                'entity' => 'posts',
+                'record' => (string) $post->getKey(),
+            ]), [
+                'values' => [
+                    'title' => 'T',
+                    'slug' => 't',
+                    'post_meta' => [
+                        ['id' => (string) $meta->getKey(), 'subtitle' => 'Updated subtitle'],
+                    ],
+                ],
+            ])
+            ->assertRedirect(route('flatpack.entities.edit', [
+                'entity' => 'posts',
+                'record' => (string) $post->getKey(),
+            ]));
+
+        expect($post->fresh()->meta?->subtitle)->toBe('Updated subtitle');
+
+        actingAs($user)
+            ->patch(route('flatpack.entities.save', [
+                'entity' => 'posts',
+                'record' => (string) $post->getKey(),
+            ]), [
+                'values' => [
+                    'title' => 'T',
+                    'slug' => 't',
+                    'post_meta' => [],
+                ],
+            ])
+            ->assertRedirect(route('flatpack.entities.edit', [
+                'entity' => 'posts',
+                'record' => (string) $post->getKey(),
+            ]));
+
+        expect($post->fresh()->meta)->toBeNull();
     });
 });

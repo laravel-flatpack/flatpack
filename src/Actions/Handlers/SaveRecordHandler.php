@@ -75,7 +75,7 @@ final class SaveRecordHandler extends FlatpackActionHandler
             $targetField = $field;
             if (
                 $fieldDefinition !== null
-                && FormFieldType::isRelationBackedCombobox($fieldDefinition)
+                && FormFieldType::isSingleRelationCombobox($fieldDefinition)
                 && ! $model->isFillable($field)
             ) {
                 $mapped = $this->massAssignableFieldForSingleRelationCombobox(

@@ -81,7 +81,7 @@ final readonly class FormSchemaNormalizer
 
             if (FormFieldType::shouldDeferToRelationSync($fieldDefinition)) {
                 $values[$id] = $this->relationHydrator()->hydrate($model, $id, $fieldDefinition, $debug);
-            } elseif (FormFieldType::isRelationBackedCombobox($fieldDefinition)) {
+            } elseif (FormFieldType::isSingleRelationCombobox($fieldDefinition)) {
                 $values[$id] = $this->singleRelationComboboxValue($model, $id, $fieldDefinition, $debug);
             } else {
                 $values[$id] = $model->getAttribute($id);
@@ -101,7 +101,7 @@ final readonly class FormSchemaNormalizer
             if (! is_array($fieldDefinition)) {
                 continue;
             }
-            if (! FormFieldType::shouldDeferToRelationSync($fieldDefinition)) {
+            if (! FormFieldType::isRelationBackedField($fieldDefinition)) {
                 continue;
             }
             $relation = isset($fieldDefinition['relation'])

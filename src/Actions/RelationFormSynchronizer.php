@@ -9,6 +9,7 @@ use Flatpack\Schema\Forms\FormRelationValuesHydrator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 /**
@@ -64,6 +65,12 @@ final class RelationFormSynchronizer
 
             if ($relation instanceof HasMany || $relation instanceof MorphMany) {
                 $this->syncHasManyOrMorphMany($relation, $payload, $fieldDefinition);
+
+                continue;
+            }
+
+            if ($relation instanceof HasOne) {
+                $this->syncHasOne($relation, $payload, $fieldDefinition);
 
                 continue;
             }
@@ -172,6 +179,35 @@ final class RelationFormSynchronizer
     }
 
     /**
+     * Creates, updates, or deletes the child model for HasOne inline relation payloads.
+     *
+     * @param  array<string, mixed>  $fieldDefinition
+     */
+    private function syncHasOne(HasOne $relation, mixed $payload, array $fieldDefinition): void
+    {
+        $row = $this->rowFromSingleRelationPayload($payload);
+        $existing = $relation->first();
+
+        if ($row === null) {
+            if ($existing !== null) {
+                $existing->delete();
+            }
+
+            return;
+        }
+
+        $attrs = $this->attributesForHasManyChildRow($row, $fieldDefinition);
+        if ($existing !== null) {
+            $existing->fill($attrs);
+            $existing->save();
+
+            return;
+        }
+
+        $relation->create($attrs);
+    }
+
+    /**
      * @param  array<string, mixed>  $row
      * @param  array<string, mixed>  $fieldDefinition
      * @return array<string, mixed>
@@ -195,5 +231,26 @@ final class RelationFormSynchronizer
         }
 
         return $out;
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function rowFromSingleRelationPayload(mixed $payload): ?array
+    {
+        if (! is_array($payload)) {
+            return null;
+        }
+
+        if (array_is_list($payload)) {
+            if ($payload === []) {
+                return null;
+            }
+            $first = $payload[0];
+
+            return is_array($first) ? $first : null;
+        }
+
+        return $payload;
     }
 }
