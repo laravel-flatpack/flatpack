@@ -117,7 +117,11 @@ function mergeMultiSelectionIntoLabelMap(
 
     if (Array.isArray(selected)) {
         for (const entry of selected) {
-            if (entry !== null && typeof entry === 'object' && 'value' in entry) {
+            if (
+                entry !== null &&
+                typeof entry === 'object' &&
+                'value' in entry
+            ) {
                 const o = entry as ComboboxObjectItem;
                 const idStr = String(o.value).trim();
                 if (idStr === '') {
@@ -147,10 +151,7 @@ function mergeMultiSelectionIntoLabelMap(
                 const fromItems = normalizedItems.find(
                     (it) => String(it.value) === idStr,
                 )?.label;
-                if (
-                    typeof fromItems === 'string' &&
-                    fromItems.trim() !== ''
-                ) {
+                if (typeof fromItems === 'string' && fromItems.trim() !== '') {
                     next[idStr] = fromItems.trim();
                 }
             }
