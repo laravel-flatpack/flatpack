@@ -9,6 +9,7 @@ use Flatpack\Schema\Forms\Normalization\Pipes\LogUnknownFormRootKeysPipe;
 use Flatpack\Schema\Forms\Normalization\Pipes\NormalizeFormFieldDefinitionsPipe;
 use Flatpack\Schema\Forms\Normalization\Pipes\StripInvalidFormPresetsPipe;
 use Flatpack\Schema\Forms\Normalization\Pipes\WarnUnknownFormActionsNestedKeysPipe;
+use Flatpack\Schema\RelationFieldQuery;
 use Flatpack\Support\CompositionDebugLog;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pipeline\Pipeline;
@@ -80,6 +81,8 @@ final readonly class FormSchemaNormalizer
 
             if (FormFieldType::shouldDeferToRelationSync($fieldDefinition)) {
                 $values[$id] = $this->relationHydrator()->hydrate($model, $id, $fieldDefinition, $debug);
+            } elseif (FormFieldType::isRelationBackedCombobox($fieldDefinition)) {
+                $values[$id] = $this->singleRelationComboboxValue($model, $id, $fieldDefinition, $debug);
             } else {
                 $values[$id] = $model->getAttribute($id);
             }
@@ -126,6 +129,59 @@ final readonly class FormSchemaNormalizer
                 $e->getMessage(),
             ));
         }
+    }
+
+    /**
+     * @param  array<string, mixed>  $fieldDefinition
+     */
+    private function singleRelationComboboxValue(
+        Model $model,
+        string $fieldId,
+        array $fieldDefinition,
+        ?CompositionDebugLog $debug,
+    ): mixed {
+        $direct = $model->getAttribute($fieldId);
+        if (is_string($direct) || is_int($direct) || is_float($direct)) {
+            return (string) $direct;
+        }
+
+        $relation = isset($fieldDefinition['relation'])
+            ? trim((string) $fieldDefinition['relation'])
+            : '';
+        if ($relation === '' || ! method_exists($model, $relation)) {
+            return null;
+        }
+
+        $valueKey = RelationFieldQuery::stringFromField(
+            $fieldDefinition,
+            'relation_value',
+            'relationValue',
+        );
+        if ($valueKey === '') {
+            $valueKey = 'id';
+        }
+
+        try {
+            $model->loadMissing($relation);
+        } catch (Throwable $e) {
+            $debug?->add(sprintf(
+                'Form field "%s": failed loading relation [%s] for combobox hydration: %s',
+                $fieldId,
+                $relation,
+                $e->getMessage(),
+            ));
+
+            return null;
+        }
+
+        $related = $model->getRelation($relation);
+        if (! $related instanceof Model) {
+            return null;
+        }
+
+        $value = $valueKey === 'id' ? $related->getKey() : $related->getAttribute($valueKey);
+
+        return $value !== null ? (string) $value : null;
     }
 
     private function relationHydrator(): FormRelationValuesHydrator

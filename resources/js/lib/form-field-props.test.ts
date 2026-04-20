@@ -84,6 +84,21 @@ describe('mapFormFieldPropsToComponentProps', () => {
         expect(out.multiple).toBe(true);
     });
 
+    it('maps relation_label_key for multi relation combobox chips', () => {
+        const props: FormFieldProps = {
+            type: 'combobox',
+            label: 'Tags',
+            options: [],
+            multiple: true,
+            relation: 'tags',
+            relation_name: 'title',
+            relation_value: 'id',
+        };
+        const out = mapFormFieldPropsToComponentProps(props, context);
+        expect(out.relationLabelKey).toBe('title');
+        expect(out.useRelationRowPayload).toBe(true);
+    });
+
     it('maps date-picker emptyLabel from placeholder', () => {
         const props: FormFieldProps = {
             type: 'date-picker',

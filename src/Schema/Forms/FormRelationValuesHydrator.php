@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Flatpack\Schema\Forms;
 
+use Flatpack\Schema\RelationFieldQuery;
 use Flatpack\Support\CompositionDebugLog;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -228,6 +229,19 @@ final class FormRelationValuesHydrator
                     continue;
                 }
                 $row[$columnId] = $related->getAttribute($columnId);
+            }
+
+            $labelKey = RelationFieldQuery::stringFromField(
+                $fieldDefinition,
+                'relation_name',
+                'relationName',
+            );
+            if (
+                $labelKey !== ''
+                && $labelKey !== $valueKey
+                && ! array_key_exists($labelKey, $row)
+            ) {
+                $row[$labelKey] = $related->getAttribute($labelKey);
             }
 
             $this->hydrateNestedRelationColumnPayloads($related, $fieldDefinition, $row);

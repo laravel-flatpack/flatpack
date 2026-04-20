@@ -41,6 +41,50 @@ function dedupeItems(items: ComboboxObjectItem[]): ComboboxObjectItem[] {
  * Base UI multi-select passes selected entries as {@link ComboboxObjectItem} objects;
  * form state and chips expect string ids (values).
  */
+/** Seed chip labels from RelationRow[] (hydrated edit form) using {@code relation_name} when present. */
+function mergeRelationRowsIntoLabelRecord(
+    value: unknown,
+    relationValueKey: string,
+    relationLabelKey: string | undefined,
+    into: Record<string, string>,
+): void {
+    if (!Array.isArray(value)) {
+        return;
+    }
+    const labelAttr =
+        relationLabelKey != null && relationLabelKey.trim() !== ''
+            ? relationLabelKey.trim()
+            : 'name';
+
+    for (const row of value) {
+        if (row === null || typeof row !== 'object') {
+            continue;
+        }
+        const r = row as Record<string, unknown>;
+        const rawId = r[relationValueKey] ?? r.id;
+        if (rawId === null || rawId === undefined) {
+            continue;
+        }
+        const rowId = String(rawId).trim();
+        if (rowId === '') {
+            continue;
+        }
+
+        const preferred = r[labelAttr];
+        if (typeof preferred === 'string' && preferred.trim() !== '') {
+            into[rowId] = preferred.trim();
+            continue;
+        }
+
+        const fallback = (['name', 'title', 'label'] as const)
+            .map((k) => r[k])
+            .find((x): x is string => typeof x === 'string' && x.trim() !== '');
+        if (fallback !== undefined) {
+            into[rowId] = fallback.trim();
+        }
+    }
+}
+
 function comboboxMultipleSelectionToIds(selected: unknown): string[] {
     if (!Array.isArray(selected)) {
         return [];
@@ -63,6 +107,71 @@ function comboboxMultipleSelectionToIds(selected: unknown): string[] {
     return out;
 }
 
+function mergeMultiSelectionIntoLabelMap(
+    selected: unknown,
+    ids: readonly string[],
+    normalizedItems: readonly ComboboxObjectItem[],
+    prev: Record<string, string>,
+): Record<string, string> {
+    const next = { ...prev };
+
+    if (Array.isArray(selected)) {
+        for (const entry of selected) {
+            if (entry !== null && typeof entry === 'object' && 'value' in entry) {
+                const o = entry as ComboboxObjectItem;
+                const idStr = String(o.value).trim();
+                if (idStr === '') {
+                    continue;
+                }
+                const direct =
+                    typeof o.label === 'string' ? o.label.trim() : '';
+                const fromItems = normalizedItems.find(
+                    (it) => String(it.value) === idStr,
+                )?.label;
+                const resolved =
+                    direct !== ''
+                        ? direct
+                        : typeof fromItems === 'string'
+                          ? fromItems.trim()
+                          : '';
+                if (resolved !== '') {
+                    next[idStr] = resolved;
+                }
+                continue;
+            }
+            if (typeof entry === 'string' || typeof entry === 'number') {
+                const idStr = String(entry).trim();
+                if (idStr === '') {
+                    continue;
+                }
+                const fromItems = normalizedItems.find(
+                    (it) => String(it.value) === idStr,
+                )?.label;
+                if (
+                    typeof fromItems === 'string' &&
+                    fromItems.trim() !== ''
+                ) {
+                    next[idStr] = fromItems.trim();
+                }
+            }
+        }
+    }
+
+    for (const sid of ids) {
+        if (next[sid] !== undefined && next[sid].trim() !== '') {
+            continue;
+        }
+        const hit = normalizedItems.find(
+            (it) => String(it.value) === sid,
+        )?.label;
+        if (typeof hit === 'string' && hit.trim() !== '') {
+            next[sid] = hit.trim();
+        }
+    }
+
+    return next;
+}
+
 export const ComboboxField = ({
     id,
     label,
@@ -79,6 +188,8 @@ export const ComboboxField = ({
     remotePerPage = 20,
     useRelationRowPayload = false,
     relationValueKey = 'id',
+    /** Related model attribute for labels (YAML {@code relation_name}); hydrates chip text from RelationRow[]. */
+    relationLabelKey,
     onValueChange,
     invalid = false,
 }: {
@@ -98,10 +209,15 @@ export const ComboboxField = ({
     /** Multi + relation: submit {@link idsToRelationRows} instead of string[]. */
     useRelationRowPayload?: boolean;
     relationValueKey?: string;
+    relationLabelKey?: string;
     onValueChange?: (value: unknown) => void;
     invalid?: boolean;
 }) => {
     const [multiValue, setMultiValue] = useState<string[]>([]);
+    /** Stable value→label map; remote search replaces {@link normalizedItems} often, so chips cannot rely on it alone. */
+    const [labelByValue, setLabelByValue] = useState<Record<string, string>>(
+        {},
+    );
     const [query, setQuery] = useState('');
     const [remoteItems, setRemoteItems] = useState<ComboboxObjectItem[]>([]);
     const [remoteLoading, setRemoteLoading] = useState(false);
@@ -225,6 +341,41 @@ export const ComboboxField = ({
         return () => window.clearTimeout(timer);
     }, [loadRemotePage, query, remote, remoteEndpoint]);
 
+    useEffect(() => {
+        setLabelByValue((prev) => {
+            const next = { ...prev };
+            for (const o of normalizedItems) {
+                const k = String(o.value).trim();
+                if (k !== '') {
+                    next[k] = o.label;
+                }
+            }
+            return next;
+        });
+    }, [normalizedItems]);
+
+    useEffect(() => {
+        if (!multiple || !useRelationRowPayload) {
+            return;
+        }
+        setLabelByValue((prev) => {
+            const next = { ...prev };
+            mergeRelationRowsIntoLabelRecord(
+                value,
+                relationValueKey,
+                relationLabelKey,
+                next,
+            );
+            return next;
+        });
+    }, [
+        multiple,
+        useRelationRowPayload,
+        value,
+        relationValueKey,
+        relationLabelKey,
+    ]);
+
     const singleValue = useMemo(() => {
         if (
             (typeof value !== 'string' && typeof value !== 'number') ||
@@ -279,6 +430,14 @@ export const ComboboxField = ({
                             const ids = [
                                 ...new Set(comboboxMultipleSelectionToIds(v)),
                             ];
+                            setLabelByValue((prev) =>
+                                mergeMultiSelectionIntoLabelMap(
+                                    v,
+                                    ids,
+                                    normalizedItems,
+                                    prev,
+                                ),
+                            );
                             setMultiValue(ids);
                             if (useRelationRowPayload) {
                                 onValueChange?.(
@@ -294,9 +453,11 @@ export const ComboboxField = ({
                                 {multiValue.map((item) => {
                                     const id = String(item);
                                     const chipLabel =
+                                        labelByValue[id] ??
                                         normalizedItems.find(
                                             (o) => String(o.value) === id,
-                                        )?.label ?? id;
+                                        )?.label ??
+                                        id;
                                     return (
                                         <ComboboxChip key={id}>
                                             {chipLabel}

@@ -106,6 +106,7 @@ function mapCombobox(props: FormFieldProps, ctx: FormFieldRenderContext) {
         onValueChange: ctx.onValueChange,
         useRelationRowPayload: Boolean(p.relation && p.multiple),
         relationValueKey: p.relation_value ?? 'id',
+        relationLabelKey: p.relation_name,
     };
 }
 

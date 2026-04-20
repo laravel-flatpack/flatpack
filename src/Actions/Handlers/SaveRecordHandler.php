@@ -10,6 +10,7 @@ use Flatpack\Schema\Forms\FormFieldType;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\MassAssignmentException;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 final class SaveRecordHandler extends FlatpackActionHandler
 {
@@ -71,14 +72,30 @@ final class SaveRecordHandler extends FlatpackActionHandler
                 continue;
             }
 
-            if (! $model->isFillable($field)) {
+            $targetField = $field;
+            if (
+                $fieldDefinition !== null
+                && FormFieldType::isRelationBackedCombobox($fieldDefinition)
+                && ! $model->isFillable($field)
+            ) {
+                $mapped = $this->massAssignableFieldForSingleRelationCombobox(
+                    $model,
+                    $fieldDefinition,
+                    $field,
+                );
+                if ($mapped !== null) {
+                    $targetField = $mapped;
+                }
+            }
+
+            if (! $model->isFillable($targetField)) {
                 throw new MassAssignmentException(sprintf(
                     'Add [%s] to fillable property to allow mass assignment on [%s].',
-                    $field,
+                    $targetField,
                     $model::class,
                 ));
             }
-            $filtered[$field] = $value;
+            $filtered[$targetField] = $value;
         }
 
         $hasDeferredRelationPayload = $this->valuesHaveDeferredRelationFields($context->schema, $values);
@@ -183,6 +200,34 @@ final class SaveRecordHandler extends FlatpackActionHandler
 
         /** @var class-string<Model> $modelClass */
         return new $modelClass();
+    }
+
+    /**
+     * @param  array<string, mixed>  $fieldDefinition
+     */
+    private function massAssignableFieldForSingleRelationCombobox(
+        Model $model,
+        array $fieldDefinition,
+        string $fallback,
+    ): ?string {
+        $relationName = isset($fieldDefinition['relation'])
+            ? trim((string) $fieldDefinition['relation'])
+            : '';
+        if ($relationName === '' || ! method_exists($model, $relationName)) {
+            return null;
+        }
+
+        $relation = $model->{$relationName}();
+        if (! $relation instanceof BelongsTo) {
+            return null;
+        }
+
+        $foreignKey = trim($relation->getForeignKeyName());
+        if ($foreignKey === '' || $foreignKey === $fallback) {
+            return null;
+        }
+
+        return $foreignKey;
     }
 
     /**

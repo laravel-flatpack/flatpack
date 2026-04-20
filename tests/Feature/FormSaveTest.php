@@ -601,6 +601,93 @@ YAML, function (): void {
     });
 });
 
+test('flatpack form edit hydrates single relation combobox when field key equals relation name', function () {
+    withTempFormSchema(<<<'YAML'
+name: Post
+model: Flatpack\Tests\Models\Post
+fields:
+  title:
+    type: text
+    label: Title
+  slug:
+    type: text
+    label: Slug
+  category:
+    type: combobox
+    label: Category
+    relation: category
+    relation_name: name
+    relation_value: id
+YAML, function (): void {
+        /** @var User $user */
+        $user = User::factory()->createOne();
+        $category = Category::factory()->createOne([
+            'name' => 'Guides',
+            'slug' => 'guides',
+        ]);
+        $post = Post::factory()->createOne([
+            'title' => 'Hydrated title',
+            'slug' => 'hydrated-title',
+            'category_id' => $category->getKey(),
+        ]);
+
+        actingAs($user)
+            ->getJson(route('flatpack.entities.edit', [
+                'entity' => 'posts',
+                'record' => (string) $post->getKey(),
+                'json' => true,
+            ]))
+            ->assertOk()
+            ->assertJsonPath('values.category', (string) $category->getKey());
+    });
+});
+
+test('flatpack form save maps single relation combobox field key to belongsTo foreign key', function () {
+    withTempFormSchema(<<<'YAML'
+name: Post
+model: Flatpack\Tests\Models\Post
+fields:
+  title:
+    type: text
+    label: Title
+  slug:
+    type: text
+    label: Slug
+  category:
+    type: combobox
+    label: Category
+    relation: category
+    relation_name: name
+    relation_value: id
+YAML, function (): void {
+        /** @var User $user */
+        $user = User::factory()->createOne();
+        $first = Category::factory()->createOne(['name' => 'Alpha', 'slug' => 'alpha']);
+        $next = Category::factory()->createOne(['name' => 'Beta', 'slug' => 'beta']);
+        $post = Post::factory()->createOne([
+            'title' => 'Original',
+            'slug' => 'original',
+            'category_id' => $first->getKey(),
+        ]);
+
+        actingAs($user)
+            ->patch(route('flatpack.entities.save', [
+                'entity' => 'posts',
+                'record' => (string) $post->getKey(),
+            ]), [
+                'values' => [
+                    'category' => (string) $next->getKey(),
+                ],
+            ])
+            ->assertRedirect(route('flatpack.entities.edit', [
+                'entity' => 'posts',
+                'record' => (string) $post->getKey(),
+            ]));
+
+        expect($post->fresh()?->category_id)->toBe($next->getKey());
+    });
+});
+
 test('flatpack form store merges yaml rules passthrough', function () {
     withTempFormSchema(<<<'YAML'
 name: Post
@@ -703,6 +790,53 @@ YAML, function (): void {
             ->assertJsonPath('values.post_categories.0.name', 'Alpha')
             ->assertJsonPath('values.post_categories.1.id', (string) $b->getKey())
             ->assertJsonPath('values.post_categories.1.name', 'Beta');
+    });
+});
+
+test('flatpack form edit hydrates relation_name on multi combobox RelationRows without columns', function () {
+    withTempFormSchema(<<<'YAML'
+name: Post
+model: Flatpack\Tests\Models\Post
+fields:
+  title:
+    type: text
+    label: Title
+  slug:
+    type: text
+    label: Slug
+  categories:
+    type: combobox
+    multiple: true
+    label: Categories
+    relation: categories
+    relation_name: name
+    relation_value: id
+YAML, function (): void {
+        /** @var User $user */
+        $user = User::factory()->createOne();
+        $a = Category::factory()->createOne(['name' => 'Alpha', 'slug' => 'alpha']);
+        $b = Category::factory()->createOne(['name' => 'Beta', 'slug' => 'beta']);
+        $post = Post::factory()->createOne([
+            'title' => 'T',
+            'slug' => 't',
+        ]);
+        $post->categories()->sync([$a->getKey(), $b->getKey()]);
+
+        $response = actingAs($user)
+            ->getJson(route('flatpack.entities.edit', [
+                'entity' => 'posts',
+                'record' => (string) $post->getKey(),
+                'json' => true,
+            ]))
+            ->assertOk();
+
+        $names = collect($response->json('values.categories'))
+            ->pluck('name')
+            ->sort()
+            ->values()
+            ->all();
+
+        expect($names)->toBe(['Alpha', 'Beta']);
     });
 });
 
