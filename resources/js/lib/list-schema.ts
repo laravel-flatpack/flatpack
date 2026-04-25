@@ -253,18 +253,14 @@ function normalizeActionVariant(raw: unknown): FlatpackActionVariant {
     return 'outline';
 }
 
-/** Normalizes list column row actions from YAML/PHP (array or associative map) to a button list. */
+/** Normalizes list column row actions from YAML into a button list. */
 export function normalizeColumnActions(
     raw: unknown,
 ): FlatpackDataTableActionButton[] {
-    let items: unknown[];
-    if (Array.isArray(raw)) {
-        items = raw;
-    } else if (raw != null && typeof raw === 'object') {
-        items = Object.values(raw as Record<string, unknown>);
-    } else {
+    if (!Array.isArray(raw)) {
         return [];
     }
+    const items = raw;
     const normalized = items.map((action) => {
         if (action == null || typeof action !== 'object') {
             return null;
@@ -316,6 +312,7 @@ type FilterOverride = {
     type?: FlatpackDataTableFilterType;
     multiple?: boolean;
     mode?: FlatpackDataTableFilterDateMode;
+    options?: FlatpackDataTableColumnOption[];
 };
 
 function normalizeFilterOverrides(raw: unknown): FilterOverride {
@@ -340,7 +337,10 @@ function normalizeFilterOverrides(raw: unknown): FilterOverride {
         typeof rec.mode === 'string' && filterDateModesSet.has(rec.mode)
             ? (rec.mode as FlatpackDataTableFilterDateMode)
             : undefined;
-    return { label, placeholder, type, multiple, mode };
+    const options = Object.hasOwn(rec, 'options')
+        ? normalizeColumnOptions(rec.options)
+        : undefined;
+    return { label, placeholder, type, multiple, mode, options };
 }
 
 export function listYamlFiltersToDataTableFilters(
@@ -365,7 +365,8 @@ export function listYamlFiltersToDataTableFilters(
         const resolvedType = overrides.type ?? column.type;
 
         if (resolvedType === 'select') {
-            const options = normalizeColumnOptions(column.options);
+            const options =
+                overrides.options ?? normalizeColumnOptions(column.options);
             if (options.length === 0) {
                 continue;
             }

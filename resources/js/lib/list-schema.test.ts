@@ -107,7 +107,7 @@ describe('listYamlColumnsToDataTableColumns', () => {
         expect(actions?.length).toBe(1);
     });
 
-    it('normalizes associative (object) column actions from JSON/PHP', () => {
+    it('ignores non-array column actions payloads', () => {
         const cols = listYamlColumnsToDataTableColumns([
             {
                 id: 'actions',
@@ -116,20 +116,12 @@ describe('listYamlColumnsToDataTableColumns', () => {
                 actions: {
                     edit: {
                         label: 'Edit',
-                        icon: 'edit',
                         action: 'edit',
                     },
-                    delete: {
-                        label: 'Delete',
-                        icon: 'delete',
-                        action: 'delete',
-                    },
-                },
+                } as unknown,
             },
         ]);
-        const actions = cols[0]?.actions;
-        expect(actions).toHaveLength(2);
-        expect(actions?.map((a) => a.action)).toEqual(['edit', 'delete']);
+        expect(cols[0]?.actions).toBeUndefined();
     });
 
     it('preserves confirm and success_message on column actions', () => {
@@ -212,5 +204,39 @@ describe('listYamlFiltersToDataTableFilters', () => {
 
     it('returns empty when filters config is not an object', () => {
         expect(listYamlFiltersToDataTableFilters(columns, null)).toEqual([]);
+    });
+
+    it('uses filter-level select options when provided', () => {
+        const filters = listYamlFiltersToDataTableFilters(columns, {
+            status: {
+                type: 'select',
+                options: [
+                    { value: 'draft', label: 'Draft' },
+                    { value: 'live', label: 'Live' },
+                ],
+            },
+        });
+
+        expect(filters[0]).toMatchObject({
+            id: 'status',
+            options: [
+                { value: 'draft', label: 'Draft' },
+                { value: 'live', label: 'Live' },
+            ],
+        });
+    });
+
+    it('falls back to column options when filter-level options are omitted', () => {
+        const filters = listYamlFiltersToDataTableFilters(columns, {
+            status: { type: 'select' },
+        });
+
+        expect(filters[0]).toMatchObject({
+            id: 'status',
+            options: [
+                { value: 'a', label: 'Active' },
+                { value: 'b', label: 'Archived' },
+            ],
+        });
     });
 });

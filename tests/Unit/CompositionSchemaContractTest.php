@@ -206,6 +206,45 @@ describe('list composition schema (resources/schema/list.json)', function () {
         expect($errors)->toBeEmpty();
     });
 
+    it('accepts filter select without options', function () {
+        $errors = CompositionSchemaAsserter::validateList([
+            'columns' => [
+                [
+                    'id' => 'status',
+                    'type' => 'select',
+                    'label' => 'Status',
+                    'options' => [
+                        ['value' => 'draft', 'label' => 'Draft'],
+                    ],
+                ],
+            ],
+            'filters' => [
+                'status' => [
+                    'type' => 'select',
+                ],
+            ],
+        ]);
+
+        expect($errors)->toBeEmpty();
+    });
+
+    it('rejects column actions when actions is not an array', function () {
+        $errors = CompositionSchemaAsserter::validateList([
+            'columns' => [
+                [
+                    'id' => 'actions',
+                    'type' => 'actions',
+                    'label' => 'Actions',
+                    'actions' => [
+                        'edit' => ['label' => 'Edit', 'action' => 'edit'],
+                    ],
+                ],
+            ],
+        ]);
+
+        expect($errors)->not->toBeEmpty();
+    });
+
     it('accepts row_click_edit false, true, or a column name string', function () {
         $minimalColumns = [
             [

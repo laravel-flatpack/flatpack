@@ -479,13 +479,16 @@
         },
         "filterSelect": {
             "type": "object",
-            "required": ["type", "options"],
+            "required": ["type"],
             "properties": {
                 "type": { "const": "select" },
                 "label": { "type": "string" },
                 "placeholder": { "type": "string" },
                 "multiple": { "type": "boolean" },
-                "options": { "$ref": "#/$defs/columnOptions" }
+                "options": {
+                    "$ref": "#/$defs/columnOptions",
+                    "description": "Optional filter-level options. When provided, these override column options."
+                }
             },
             "additionalProperties": false
         },
