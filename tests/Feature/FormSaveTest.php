@@ -365,7 +365,43 @@ YAML, function (): void {
     });
 });
 
+test('embedded table relation column returns user options for the child model', function (): void {
+    withTempFormSchema(<<<'YAML'
+name: Post
+model: Flatpack\Tests\Models\Post
+fields:
+  comments:
+    type: table
+    label: Comments
+    relation: comments
+    columns:
+      user_id:
+        type: relation
+        label: User
+        relation: user
+        relation_name: name
+        relation_value: id
+YAML, function (): void {
+        /** @var User $user */
+        $user = User::factory()->createOne();
+        User::factory()->createOne(['name' => 'Picker One']);
+        User::factory()->createOne(['name' => 'Picker Two']);
+
+        actingAs($user)
+            ->getJson(route('flatpack.entities.embedded-table-relation-options', [
+                'entity' => 'posts',
+                'table_field' => 'comments',
+                'column_id' => 'user_id',
+                'per_page' => 10,
+            ]))
+            ->assertOk()
+            ->assertJsonPath('meta.per_page', 10);
+    });
+});
+
 test('flatpack entity form save reports mass assignment failures as validation errors', function () {
+    config(['flatpack.log_form_save_failures' => true]);
+
     withTempFormSchema(<<<'YAML'
 name: Post
 model: Flatpack\Tests\Models\Post
@@ -393,7 +429,11 @@ YAML, function (): void {
                 ],
             ])
             ->assertRedirect(route('flatpack.entities.create', ['entity' => 'posts']))
-            ->assertSessionHasErrors('flatpack');
+            ->assertSessionHasErrors([
+                'flatpack',
+                'flatpack_exception',
+                'flatpack_exception_message',
+            ]);
 
         expect(
             Post::query()->where('slug', 'should-fail')->exists(),

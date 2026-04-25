@@ -4,6 +4,11 @@ import type { FormEvent } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useFormFieldPresets } from '@/hooks/use-form-field-presets';
+import {
+    isFlatpackFormSaveDebugEnabled,
+    logFlatpackFormSaveError,
+    summarizeFormValuesForDebug,
+} from '@/lib/flatpack-form-debug';
 import { loadField } from '@/lib/form';
 import { firstErrorMessage } from '@/lib/form-errors';
 import { serializeFieldValue } from '@/lib/form-page-field-values';
@@ -138,6 +143,23 @@ export function useFlatpackForm({
         if (Object.keys(validationErrors).length > 0) {
             form.clearErrors();
             form.setError(validationErrors);
+            const submitUrl =
+                mode === 'create'
+                    ? route('flatpack.entities.store', { entity })
+                    : route('flatpack.entities.save', {
+                          entity,
+                          record: record ?? '',
+                      });
+            logFlatpackFormSaveError({
+                phase: 'client_validation',
+                entity,
+                record: record ?? null,
+                mode,
+                formActionId: pendingSaveActionIdRef.current,
+                submitUrl,
+                errors: validationErrors,
+                values: form.data.values as Record<string, unknown>,
+            });
             toast.error(
                 firstErrorMessage(validationErrors) ?? 'Please review errors',
             );
@@ -155,6 +177,22 @@ export function useFlatpackForm({
         form.clearErrors();
 
         const submittedActionId = pendingSaveActionIdRef.current;
+
+        if (isFlatpackFormSaveDebugEnabled()) {
+            console.log(
+                '[FLATPACK] form save: about to request (client payload summary)',
+                {
+                    entity,
+                    record,
+                    mode,
+                    form_action_id: submittedActionId,
+                    submitUrl,
+                    values: summarizeFormValuesForDebug(
+                        form.data.values as Record<string, unknown>,
+                    ),
+                },
+            );
+        }
 
         form.transform((data) => ({
             ...data,
@@ -182,6 +220,16 @@ export function useFlatpackForm({
                 }
             },
             onError: (errors: Record<string, unknown>) => {
+                logFlatpackFormSaveError({
+                    phase: 'inertia_on_error',
+                    entity,
+                    record: record ?? null,
+                    mode,
+                    formActionId: submittedActionId,
+                    submitUrl,
+                    errors,
+                    values: form.data.values as Record<string, unknown>,
+                });
                 toast.error(firstErrorMessage(errors) ?? 'Form save failed');
             },
         };
@@ -229,6 +277,17 @@ export function useFlatpackForm({
                             }
                         },
                         onError: (errors) => {
+                            if (isFlatpackFormSaveDebugEnabled()) {
+                                logFlatpackFormSaveError({
+                                    phase: 'named_action_error',
+                                    entity,
+                                    record: record ?? null,
+                                    mode: 'edit',
+                                    errors: errors as Record<string, unknown>,
+                                    values: formRef.current.data
+                                        .values as Record<string, unknown>,
+                                });
+                            }
                             const message =
                                 firstErrorMessage(errors) ??
                                 'Form action failed';

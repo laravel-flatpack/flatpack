@@ -308,4 +308,36 @@ describe('DataTable toolbar create flow', () => {
             expect(onValueChange).toHaveBeenNthCalledWith(2, []);
         });
     });
+
+    it('opens row drawer from row action edit when rowDetailDrawer is set', async () => {
+        const user = userEvent.setup();
+
+        render(
+            <DataTable
+                id="edit-from-menu"
+                columns={[
+                    { id: 'name', label: 'Name', type: 'text', editable: true },
+                    {
+                        id: 'actions',
+                        label: 'Actions',
+                        type: 'actions',
+                        actions: [
+                            { label: 'Edit', action: 'edit', icon: 'edit' },
+                        ],
+                    },
+                ]}
+                data={[{ id: 1, name: 'Row 1' }]}
+                rowDetailDrawer
+            />,
+        );
+
+        await user.click(
+            screen.getByRole('button', { name: 'Open row actions' }),
+        );
+        await user.click(screen.getByRole('menuitem', { name: 'Edit' }));
+
+        expect(
+            screen.getByRole('button', { name: 'Save changes' }),
+        ).toBeInTheDocument();
+    });
 });

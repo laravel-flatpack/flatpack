@@ -20,6 +20,16 @@ type ListCompositionColumnSharedYaml = {
     detailDrawer?: boolean;
     invisible?: boolean;
     truncate?: number;
+    /** Full row-drawer edit field override for embedded form tables. */
+    edit_form_field?: {
+        type: string;
+        [key: string]: unknown;
+    };
+    /** CamelCase alias of {@link edit_form_field}. */
+    editFormField?: {
+        type: string;
+        [key: string]: unknown;
+    };
 };
 
 type ListCompositionColumnOptionYaml = {

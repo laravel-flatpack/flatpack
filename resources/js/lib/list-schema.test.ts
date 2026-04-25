@@ -37,6 +37,9 @@ describe('listYamlColumnsToDataTableColumns', () => {
                 relation: 'users',
                 relation_name: 'name',
                 relation_value: 'id',
+                edit_form_field: {
+                    type: 'select',
+                },
             },
         ]);
         expect(cols[0]).toMatchObject({
@@ -44,6 +47,25 @@ describe('listYamlColumnsToDataTableColumns', () => {
             relation: 'users',
             relationName: 'name',
             relationValue: 'id',
+            editFormField: { type: 'select' },
+        });
+    });
+
+    it('maps column editFormField override from camelCase', () => {
+        const cols = listYamlColumnsToDataTableColumns([
+            {
+                id: 'content',
+                type: 'text',
+                label: 'Content',
+                editFormField: {
+                    type: 'textarea',
+                    placeholder: 'Write here',
+                },
+            },
+        ]);
+        expect(cols[0]?.editFormField).toEqual({
+            type: 'textarea',
+            placeholder: 'Write here',
         });
     });
 

@@ -46,4 +46,35 @@ describe('DataTableRowDrawerPanel', () => {
         );
         expect(screen.getByText('Attach body slot')).toBeInTheDocument();
     });
+
+    it('renders relation column through generic field pipeline', () => {
+        const onRowReplace = vi.fn();
+        const onOpenChange = vi.fn();
+        const relationColumns: FlatpackDataTableColumn[] = [
+            titleColumn,
+            {
+                id: 'user_id',
+                label: 'User',
+                type: 'relation',
+                relation: 'user',
+                relationName: 'name',
+                relationValue: 'id',
+                options: [{ value: '1', label: 'Ada' }],
+            },
+        ];
+        render(
+            <DataTableRowDrawerPanel
+                open
+                onOpenChange={onOpenChange}
+                row={{ name: 'Post', user_id: '' }}
+                rowId="__new__:1"
+                schemaColumns={relationColumns}
+                titleColumn={titleColumn}
+                onRowReplace={onRowReplace}
+            />,
+        );
+        expect(
+            screen.queryByText(/Set options in the column/i),
+        ).not.toBeInTheDocument();
+    });
 });

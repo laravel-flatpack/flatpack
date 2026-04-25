@@ -2,6 +2,7 @@ import type {
     FlatpackDataTableBulkAction,
     FlatpackDataTableColumn,
     FlatpackDataTableSelectOptionStatus,
+    FlatpackTableRelationType,
 } from '@/types/data-table';
 import type { FlatpackListCompositionColumnsYaml } from '@/types/list-composition';
 
@@ -58,6 +59,8 @@ type ComboboxFieldProps = FormFieldBase &
         relation_name?: string;
         relation_value?: string;
         remote?: boolean;
+        /** Single-mode: emit `{ value, label }` instead of plain id string. */
+        emitObject?: boolean;
     };
 type DatePickerFieldProps = FormFieldBase & WithPlaceholder;
 type DateRangePickerFieldProps = FormFieldBase & WithPlaceholder;
@@ -103,6 +106,11 @@ type TableFieldProps = FormFieldBase & {
     relation_value?: string;
     limit?: number;
     /**
+     * Eloquent relation class, usually from PHP when `model` is set on the form (see
+     * `FormEmbeddedTableRelationTypeResolver`). May be set in YAML to override.
+     */
+    table_relation_type?: FlatpackTableRelationType;
+    /**
      * When false, row clicks do not open the detail drawer; toolbar `create` still
      * opens the draft drawer for new rows.
      */
@@ -126,3 +134,5 @@ export type FormFieldProps =
     | ({ type: 'table' } & TableFieldProps);
 
 export type FormFieldType = FormFieldProps['type'];
+
+export type DataTableDrawerFormFieldType = FormFieldProps['type'];

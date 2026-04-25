@@ -5,6 +5,7 @@ import type {
     FlatpackDataTableBulkAction,
     FlatpackDataTableColumn,
     FlatpackFormTableToolbarAction,
+    FlatpackTableRelationType,
 } from '@/types/data-table';
 import { Field, FieldContent, FieldDescription, FieldTitle } from '../ui/field';
 
@@ -24,6 +25,9 @@ export const TableField = ({
     reorderable,
     onValueChange,
     renderRowDrawerAttachBody,
+    tableRelationType,
+    flatpackEntity,
+    flatpackTableFieldId,
 }: {
     id: string;
     label: string;
@@ -44,6 +48,9 @@ export const TableField = ({
     renderRowDrawerAttachBody?: (
         ctx: DataTableRowDrawerAttachBodyRenderContext,
     ) => ReactNode;
+    tableRelationType?: FlatpackTableRelationType;
+    flatpackEntity?: string;
+    flatpackTableFieldId?: string;
 }) => {
     const labelId = `${id}-label`;
     return (
@@ -64,6 +71,9 @@ export const TableField = ({
                     openDetailDrawerOnRowClick={openDetailDrawerOnRowClick}
                     onValueChange={onValueChange}
                     renderRowDrawerAttachBody={renderRowDrawerAttachBody}
+                    tableRelationType={tableRelationType}
+                    flatpackEntity={flatpackEntity}
+                    flatpackTableFieldId={flatpackTableFieldId}
                 />
                 {helperText ? (
                     <FieldDescription>{helperText}</FieldDescription>

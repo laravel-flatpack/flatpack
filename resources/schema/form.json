@@ -498,7 +498,7 @@
                 "rules": { "$ref": "#/$defs/validationRules" },
                 "value": {},
                 "columns": {
-                    "description": "Same shapes as list.yaml columns: array of column definitions, or map of columnId -> definition.",
+                    "description": "Same shapes as list.yaml columns: array of column definitions, or map of columnId -> definition. Embedded table columns may set `edit_form_field` (full form-field shape) to override row-drawer rendering.",
                     "oneOf": [
                         {
                             "type": "array",
@@ -560,6 +560,18 @@
                     "type": "integer",
                     "minimum": 1,
                     "description": "Max related rows to hydrate (capped also by config flatpack.forms)."
+                },
+                "table_relation_type": {
+                    "type": "string",
+                    "enum": [
+                        "belongs_to_many",
+                        "has_many",
+                        "morph_many",
+                        "morph_to_many",
+                        "has_one",
+                        "unknown"
+                    ],
+                    "description": "Eloquent relation class for this table field, usually derived from the parent form model. Authors may set this in YAML to override auto-detection."
                 }
             },
             "additionalProperties": false

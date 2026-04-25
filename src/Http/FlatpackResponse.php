@@ -65,9 +65,13 @@ final class FlatpackResponse
 
         if ($view === 'form' && array_key_exists('schema', $data) && ! $skipFormSchemaNormalize) {
             $raw = $data['schema'];
+            $model = $data['model'] ?? null;
+            $formModelClass = is_string($model) && $model !== '' ? $model : null;
             $data['schema'] = app(FormSchemaNormalizer::class)->normalizedFormSchema(
                 is_array($raw) || $raw === null ? $raw : null,
                 $log,
+                $formModelClass,
+                null,
             );
         } elseif (in_array($view, ['list', 'dashboard'], true) && array_key_exists('schema', $data)) {
             $raw = $data['schema'];

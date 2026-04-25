@@ -3,6 +3,7 @@ import {
     isEmbeddedTableAddToolbarAction,
     isEmbeddedTableBelongsToManyAttachToolbarAction,
     isEmbeddedTableCreateDraftToolbarAction,
+    isEmbeddedTableEditRowAction,
 } from '@/lib/data-table-action-semantics';
 
 describe('embedded table toolbar action semantics', () => {
@@ -32,5 +33,13 @@ describe('embedded table toolbar action semantics', () => {
         expect(isEmbeddedTableBelongsToManyAttachToolbarAction('create')).toBe(
             false,
         );
+    });
+
+    it('treats edit and open as row drawer openers', () => {
+        expect(isEmbeddedTableEditRowAction('edit')).toBe(true);
+        expect(isEmbeddedTableEditRowAction('EDIT')).toBe(true);
+        expect(isEmbeddedTableEditRowAction('open')).toBe(true);
+        expect(isEmbeddedTableEditRowAction('remove')).toBe(false);
+        expect(isEmbeddedTableEditRowAction(undefined)).toBe(false);
     });
 });

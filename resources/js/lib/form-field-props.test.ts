@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { EMBEDDED_RELATION_DEFAULT_ACTIONS_COLUMN_ID } from '@/lib/embedded-relation-table-defaults';
 import {
     mapFormFieldPropsToComponentProps,
     RELATION_TABLE_TOOLBAR_DISABLED_TITLE,
@@ -494,5 +495,91 @@ describe('mapFormFieldPropsToComponentProps', () => {
             fieldId: 'field-1',
             actionId: 'export',
         });
+    });
+
+    it('injects default relation toolbar, bulk, and row actions column when keys are omitted', () => {
+        const props: FormFieldProps = {
+            type: 'table',
+            label: 'Comments',
+            relation: 'comments',
+            table_relation_type: 'has_many',
+            columns: [{ id: 'content', label: 'Content', type: 'text' }],
+            data: [],
+        };
+        const out = mapFormFieldPropsToComponentProps(props, {
+            ...context,
+            parentRecordKey: '1',
+        });
+        expect(out.toolbarActions).toEqual([
+            {
+                id: 'create',
+                label: 'Create',
+                action: 'create',
+                variant: 'default',
+            },
+        ]);
+        expect(out.bulkActions).toEqual([
+            {
+                id: 'delete',
+                label: 'Delete selected',
+                action: 'delete',
+                variant: 'destructive',
+                confirm: true,
+            },
+        ]);
+        const cols = out.columns as FlatpackDataTableColumn[];
+        const actionsCol = cols.find(
+            (c) => c.id === EMBEDDED_RELATION_DEFAULT_ACTIONS_COLUMN_ID,
+        );
+        expect(actionsCol?.type).toBe('actions');
+        expect(actionsCol?.actions?.map((a) => a.action)).toEqual([
+            'edit',
+            'remove',
+        ]);
+    });
+
+    it('injects create and attach for belongs_to_many', () => {
+        const props: FormFieldProps = {
+            type: 'table',
+            label: 'Tags',
+            relation: 'tags',
+            table_relation_type: 'belongs_to_many',
+            columns: [{ id: 'name', label: 'Name', type: 'text' }],
+            data: [],
+        };
+        const out = mapFormFieldPropsToComponentProps(props, {
+            ...context,
+            parentRecordKey: '1',
+        });
+        expect(out.toolbarActions).toEqual([
+            {
+                id: 'create',
+                label: 'Create',
+                action: 'create',
+                variant: 'default',
+            },
+            {
+                id: 'attach',
+                label: 'Attach',
+                action: 'attach',
+                variant: 'outline',
+            },
+        ]);
+    });
+
+    it('does not inject default toolbar when actions key is present (even if empty)', () => {
+        const props = {
+            type: 'table',
+            label: 'T',
+            relation: 'lines',
+            columns: [{ id: 'x', label: 'X', type: 'text' }],
+            actions: [] as unknown[],
+            data: [],
+        } as FormFieldProps;
+        const out = mapFormFieldPropsToComponentProps(props, {
+            ...context,
+            parentRecordKey: '1',
+        });
+        expect(out.toolbarActions).toBeUndefined();
     });
 });

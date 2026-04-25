@@ -7,6 +7,8 @@ import type { FormFieldProps } from '@/types/form-fields';
 export type FormFieldRenderContext = {
     /** Stable DOM id / field key (e.g. schema field name or catalog entry id). */
     fieldId: string;
+    /** Current Flatpack entity slug (form page); used for embedded table relation option APIs. */
+    entity?: string;
     onValueChange: (value: unknown) => void;
     /**
      * Parent form record key when editing (persisted id). Used for relation-backed

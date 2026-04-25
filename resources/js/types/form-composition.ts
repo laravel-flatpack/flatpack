@@ -1,6 +1,7 @@
 import type {
     FlatpackActionVariant,
     FlatpackSuccessRedirect,
+    FlatpackTableRelationType,
 } from '@/types/data-table';
 import type { FormFieldPreset } from '@/types/form-fields';
 import type {
@@ -228,6 +229,11 @@ export type FlatpackFormCompositionFieldTableYaml = {
     relation?: string;
     relation_value?: string;
     limit?: number;
+    /**
+     * Eloquent relation class; usually from PHP. May be set in YAML to override
+     * `FormEmbeddedTableRelationTypeResolver`.
+     */
+    table_relation_type?: FlatpackTableRelationType;
     /** When false, row clicks do not open the detail drawer (`create` toolbar draft flow unchanged). */
     row_detail_drawer?: boolean;
 };

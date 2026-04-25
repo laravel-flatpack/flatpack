@@ -1,40 +1,9 @@
-import type { ComponentType, LazyExoticComponent } from 'react';
-import { Suspense } from 'react';
-import { FieldLoading } from '@/components/field-loading';
 import { useFlatpackEmbeddedTableToolbarAction } from '@/components/flatpack-form/flatpack-embedded-table-toolbar';
-import { FieldError } from '@/components/ui/field';
-import { mapFormFieldPropsToComponentProps } from '@/lib/form-field-props';
-import {
-    componentValueProps,
-    relationRemoteProps,
-} from '@/lib/form-page-field-values';
-import { type FormFieldEntry, fieldErrorMessages } from '@/lib/form-schema';
+import { SchemaFieldsRenderer } from '@/components/form-fields/schema-fields-renderer';
+import { fieldErrorMessages } from '@/lib/form-schema';
 import { fieldIsRequired } from '@/lib/form-validation';
-import type { FormFieldProps } from '@/types/form-fields';
-
-type LazyFormField = LazyExoticComponent<
-    ComponentType<Record<string, unknown>>
->;
-
-type FlatpackFormFieldsProps = {
-    entity: string;
-    mode: 'create' | 'edit';
-    record: string | null;
-    fields: FormFieldEntry[];
-    fieldComponents: Record<string, LazyFormField>;
-    fieldErrors: Record<string, unknown>;
-    formValues: Record<string, unknown>;
-    setFieldValue: (
-        field: FormFieldProps,
-        fieldId: string,
-        nextValue: unknown,
-    ) => void;
-    /** Overrides context for custom embedded table toolbar (non draft-drawer) actions. */
-    onEmbeddedTableToolbarAction?: (args: {
-        fieldId: string;
-        actionId: string;
-    }) => void;
-};
+import type { FlatpackFormFieldsProps } from '@/types/flatpack-form-fields';
+import type { SchemaFieldRenderEntry } from '@/types/schema-fields-renderer';
 
 export function FlatpackFormFields({
     entity,
@@ -52,39 +21,26 @@ export function FlatpackFormFields({
     const onEmbeddedTableToolbarAction =
         onEmbeddedTableToolbarActionProp ??
         onEmbeddedTableToolbarActionFromContext;
+    const entries: SchemaFieldRenderEntry[] = fields.map(({ id, field }) => ({
+        id,
+        field,
+        value: formValues[id],
+        onValueChange: (nextValue: unknown) =>
+            setFieldValue(field, id, nextValue),
+        required: fieldIsRequired(field),
+        invalid: fieldErrorMessages(fieldErrors, id).length > 0,
+        errors: fieldErrorMessages(fieldErrors, id),
+    }));
 
     return (
-        <>
-            {fields.map(({ id, field }) => {
-                const FieldComponent = fieldComponents[id];
-                const componentProps = {
-                    ...mapFormFieldPropsToComponentProps(field, {
-                        fieldId: id,
-                        onValueChange: (nextValue: unknown) =>
-                            setFieldValue(field, id, nextValue),
-                        parentRecordKey: record,
-                        onEmbeddedTableToolbarAction,
-                    }),
-                    ...componentValueProps(field, formValues[id]),
-                    ...relationRemoteProps(field, id, entity),
-                    required: fieldIsRequired(field),
-                    invalid: fieldErrorMessages(fieldErrors, id).length > 0,
-                };
-
-                return (
-                    <div
-                        key={`${id}:${mode}:${record ?? 'new'}`}
-                        className="space-y-2"
-                    >
-                        <Suspense fallback={<FieldLoading {...field} />}>
-                            <FieldComponent {...componentProps} />
-                        </Suspense>
-                        <FieldError
-                            errors={fieldErrorMessages(fieldErrors, id)}
-                        />
-                    </div>
-                );
-            })}
-        </>
+        <SchemaFieldsRenderer
+            entries={entries}
+            entity={entity}
+            parentRecordKey={record}
+            modeKey={`${mode}:${record ?? 'new'}`}
+            onEmbeddedTableToolbarAction={onEmbeddedTableToolbarAction}
+            fieldComponents={fieldComponents}
+            showErrors
+        />
     );
 }

@@ -1,6 +1,7 @@
 import { normalizeColumnTruncate } from '@/lib/data-table-utils';
 import {
     BUTTON_VARIANT_UI_VALUES,
+    FORM_FIELD_TYPES_CANONICAL,
     LIST_COLUMN_YAML_TYPES,
     LIST_FILTER_DATE_MODES,
     LIST_FILTER_TYPES,
@@ -11,6 +12,8 @@ import type {
     FlatpackDataTableActionButton,
     FlatpackDataTableColumn,
     FlatpackDataTableColumnOption,
+    FlatpackDataTableEditFormField,
+    FlatpackDataTableEditFormFieldType,
     FlatpackDataTableFilter,
     FlatpackDataTableFilterDateMode,
     FlatpackDataTableFilterType,
@@ -56,6 +59,26 @@ function normalizeColumnType(
     return r as NonNullable<FlatpackDataTableColumn['type']>;
 }
 
+function normalizeColumnEditFormField(
+    raw: unknown,
+): FlatpackDataTableEditFormField | undefined {
+    if (raw == null || typeof raw !== 'object') {
+        return undefined;
+    }
+    const rec = raw as Record<string, unknown>;
+    const type = typeof rec.type === 'string' ? rec.type.trim() : '';
+    if (
+        type === '' ||
+        !(FORM_FIELD_TYPES_CANONICAL as readonly string[]).includes(type)
+    ) {
+        return undefined;
+    }
+    return {
+        ...rec,
+        type: type as FlatpackDataTableEditFormFieldType,
+    };
+}
+
 function pickRelationColumnFields(
     col: Record<string, unknown>,
 ): Pick<
@@ -99,6 +122,8 @@ export function listYamlColumnsToDataTableColumns(
                 const {
                     type: rawType,
                     truncate: rawTruncate,
+                    edit_form_field: rawEditFormFieldSnake,
+                    editFormField: rawEditFormFieldCamel,
                     actions: rawActions,
                     relation_name: _rn,
                     relation_value: _rv,
@@ -110,6 +135,9 @@ export function listYamlColumnsToDataTableColumns(
                 const id = String(col.id ?? '');
                 const type = normalizeColumnType(rawType);
                 const truncate = normalizeColumnTruncate(rawTruncate);
+                const editFormField = normalizeColumnEditFormField(
+                    rawEditFormFieldSnake ?? rawEditFormFieldCamel,
+                );
                 const rel = pickRelationColumnFields(
                     col as Record<string, unknown>,
                 );
@@ -119,6 +147,7 @@ export function listYamlColumnsToDataTableColumns(
                     id,
                     ...(type !== undefined ? { type } : {}),
                     ...(truncate !== undefined ? { truncate } : {}),
+                    ...(editFormField !== undefined ? { editFormField } : {}),
                     ...(rel !== null ? rel : {}),
                     ...(actions.length > 0 ? { actions } : {}),
                 } as FlatpackDataTableColumn;
@@ -139,6 +168,8 @@ export function listYamlColumnsToDataTableColumns(
             const {
                 type: rawType,
                 truncate: rawTruncate,
+                edit_form_field: rawEditFormFieldSnake,
+                editFormField: rawEditFormFieldCamel,
                 actions: rawActions,
                 relation_name: _rn,
                 relation_value: _rv,
@@ -150,6 +181,9 @@ export function listYamlColumnsToDataTableColumns(
             const id = String(col.id ?? key);
             const type = normalizeColumnType(rawType);
             const truncate = normalizeColumnTruncate(rawTruncate);
+            const editFormField = normalizeColumnEditFormField(
+                rawEditFormFieldSnake ?? rawEditFormFieldCamel,
+            );
             const rel = pickRelationColumnFields(
                 col as Record<string, unknown>,
             );
@@ -159,6 +193,7 @@ export function listYamlColumnsToDataTableColumns(
                 id,
                 ...(type !== undefined ? { type } : {}),
                 ...(truncate !== undefined ? { truncate } : {}),
+                ...(editFormField !== undefined ? { editFormField } : {}),
                 ...(rel !== null ? rel : {}),
                 ...(actions.length > 0 ? { actions } : {}),
             } as FlatpackDataTableColumn;

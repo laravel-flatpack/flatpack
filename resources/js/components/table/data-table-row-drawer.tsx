@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { SchemaFieldsRenderer } from '@/components/form-fields/schema-fields-renderer';
 import { Button } from '@/components/ui/button';
 import {
     Drawer,
@@ -9,114 +10,130 @@ import {
     DrawerHeader,
     DrawerTitle,
 } from '@/components/ui/drawer';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
 import { useIsMobile } from '@/hooks/use-mobile';
-import {
-    columnEditableInDrawer,
-    dateInputSegment,
-    formatCellValue,
-    mergeCommittedDate,
-} from '@/lib/data-table-utils';
+import { mapDataTableColumnToDrawerField } from '@/lib/data-table-row-drawer-field-mapper';
+import { formatCellValue, mergeCommittedDate } from '@/lib/data-table-utils';
+import { route } from '@/lib/route';
 import type {
     DataTableRowDrawerAttachBodyRenderContext,
     DataTableRowDrawerBodyVariant,
     FlatpackDataTableColumn,
 } from '@/types/data-table';
+import type { SchemaFieldRenderEntry } from '@/types/schema-fields-renderer';
 
 function DrawerRowField({
     col,
     value,
     onChange,
+    patchDraft,
+    flatpackEntity,
+    flatpackTableFieldId,
 }: {
     col: FlatpackDataTableColumn;
     value: unknown;
     onChange: (next: unknown) => void;
-}) {
+    /** Merge multiple keys in one update (e.g. relation FK + nested `row[relation]` for display). */
+    patchDraft: (patch: Record<string, unknown>) => void;
+    flatpackEntity?: string;
+    flatpackTableFieldId?: string;
+}): SchemaFieldRenderEntry | null {
+    const mapped = mapDataTableColumnToDrawerField(col);
+    if (mapped?.kind !== 'form') {
+        return null;
+    }
     const fieldId = `drawer-field-${col.id}`;
+    const baseEntry: SchemaFieldRenderEntry = {
+        id: fieldId,
+        field: mapped.field,
+        value,
+        serializeValue: (field, nextValue, currentValue) => {
+            if (field.type === 'date-picker') {
+                const nextDate =
+                    typeof nextValue === 'object' &&
+                    nextValue instanceof Date &&
+                    !Number.isNaN(nextValue.getTime())
+                        ? `${nextValue.getFullYear()}-${String(nextValue.getMonth() + 1).padStart(2, '0')}-${String(nextValue.getDate()).padStart(2, '0')}`
+                        : '';
+                return mergeCommittedDate(nextDate, currentValue);
+            }
+            return nextValue;
+        },
+        onValueChange: (nextSerializedValue: unknown) =>
+            onChange(nextSerializedValue),
+    };
 
     if (
-        (col.type === 'select' ||
-            (col.type === 'badge' && col.options?.length)) &&
-        col.options?.length
+        mapped.field.type === 'combobox' &&
+        col.type === 'relation' &&
+        col.relation &&
+        col.relationName &&
+        col.relationValue
     ) {
-        const str = value == null ? '' : String(value);
-        const validOption = col.options.some((o) => o.value === str);
-        return (
-            <div className="flex flex-col gap-2">
-                <Label htmlFor={fieldId}>{col.label}</Label>
-                <Select
-                    value={str !== '' && validOption ? str : undefined}
-                    onValueChange={(v) => onChange(v)}
-                >
-                    <SelectTrigger id={fieldId} className="w-full">
-                        <SelectValue placeholder="Choose…" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectGroup>
-                            {col.options.map((o) => (
-                                <SelectItem key={o.value} value={o.value}>
-                                    {o.label}
-                                </SelectItem>
-                            ))}
-                        </SelectGroup>
-                    </SelectContent>
-                </Select>
-            </div>
-        );
+        const relationKey = col.relation;
+        const relationValueKey = col.relationValue;
+        const relationNameKey = col.relationName;
+        const e = flatpackEntity?.trim() ?? '';
+        const tf = flatpackTableFieldId?.trim() ?? '';
+        const extraComponentProps: Record<string, unknown> = {
+            remote: true,
+            remoteEndpoint:
+                e !== ''
+                    ? route(
+                          'flatpack.entities.embedded-table-relation-options',
+                          {
+                              entity: e,
+                          },
+                      )
+                    : undefined,
+            remoteFieldParamKey: null,
+            remoteSearchParamKey: 'q',
+            remoteBaseParams:
+                tf !== ''
+                    ? {
+                          table_field: tf,
+                          column_id: col.id,
+                      }
+                    : undefined,
+        };
+        return {
+            ...baseEntry,
+            extraComponentProps,
+            onValueChange: (nextSerializedValue: unknown) => {
+                if (
+                    nextSerializedValue !== null &&
+                    typeof nextSerializedValue === 'object' &&
+                    'value' in
+                        (nextSerializedValue as Record<string, unknown>) &&
+                    'label' in (nextSerializedValue as Record<string, unknown>)
+                ) {
+                    const v = String(
+                        (nextSerializedValue as Record<string, unknown>).value,
+                    );
+                    const label = String(
+                        (nextSerializedValue as Record<string, unknown>).label,
+                    );
+                    patchDraft({
+                        [col.id]: v,
+                        [relationKey]: {
+                            [relationValueKey]: v,
+                            [relationNameKey]: label,
+                        },
+                    });
+                    return;
+                }
+                if (nextSerializedValue == null || nextSerializedValue === '') {
+                    patchDraft({
+                        [col.id]: '',
+                        [relationKey]: null,
+                    });
+                    return;
+                }
+                onChange(nextSerializedValue);
+            },
+        };
     }
 
-    if (col.type === 'date') {
-        const day = dateInputSegment(value);
-        return (
-            <div className="flex flex-col gap-2">
-                <Label htmlFor={fieldId}>{col.label}</Label>
-                <Input
-                    id={fieldId}
-                    type="date"
-                    className="w-full tabular-nums"
-                    value={day}
-                    onChange={(e) =>
-                        onChange(mergeCommittedDate(e.target.value, value))
-                    }
-                />
-            </div>
-        );
-    }
-
-    if (columnEditableInDrawer(col)) {
-        const text = formatCellValue(value);
-        return (
-            <div className="flex flex-col gap-2">
-                <Label htmlFor={fieldId}>{col.label}</Label>
-                <Input
-                    id={fieldId}
-                    className="w-full"
-                    value={text}
-                    onChange={(e) => onChange(e.target.value)}
-                />
-            </div>
-        );
-    }
-
-    return (
-        <div className="flex flex-col gap-1">
-            <span className="text-xs font-medium text-muted-foreground">
-                {col.label}
-            </span>
-            <span className="text-foreground">
-                {formatCellValue(value) || '—'}
-            </span>
-        </div>
-    );
+    return baseEntry;
 }
 
 export type DataTableRowDrawerPanelProps = {
@@ -139,6 +156,8 @@ export type DataTableRowDrawerPanelProps = {
     renderAttachBody?: (
         ctx: DataTableRowDrawerAttachBodyRenderContext,
     ) => React.ReactNode;
+    flatpackEntity?: string;
+    flatpackTableFieldId?: string;
 };
 
 /**
@@ -156,6 +175,8 @@ export function DataTableRowDrawerPanel({
     onRowReplace,
     bodyVariant = 'rowFields',
     renderAttachBody,
+    flatpackEntity,
+    flatpackTableFieldId,
 }: DataTableRowDrawerPanelProps) {
     const isMobile = useIsMobile();
     const [draft, setDraft] = React.useState<Record<string, unknown>>(row);
@@ -199,7 +220,23 @@ export function DataTableRowDrawerPanel({
         setDraft((d) => ({ ...d, [columnId]: next }));
     }, []);
 
+    const patchDraft = React.useCallback((patch: Record<string, unknown>) => {
+        setDraft((d) => ({ ...d, ...patch }));
+    }, []);
+
     const formColumns = schemaColumns.filter((c) => c.type !== 'actions');
+    const drawerEntries = formColumns
+        .map((c) =>
+            DrawerRowField({
+                col: c,
+                value: draft[c.id],
+                onChange: (v) => setField(c.id, v),
+                patchDraft,
+                flatpackEntity,
+                flatpackTableFieldId,
+            }),
+        )
+        .filter((entry): entry is SchemaFieldRenderEntry => entry !== null);
     const attachContext: DataTableRowDrawerAttachBodyRenderContext = {
         rowId,
         draft,
@@ -223,10 +260,7 @@ export function DataTableRowDrawerPanel({
             {trigger}
             <DrawerContent>
                 <DrawerHeader className="gap-1">
-                    <DrawerTitle>
-                        {formatCellValue(draft[titleColumn.id]) ||
-                            titleColumn.label}
-                    </DrawerTitle>
+                    <DrawerTitle>{titleColumn.label}</DrawerTitle>
                     <DrawerDescription>
                         {bodyVariant === 'attachExisting'
                             ? 'Add or link the row, then save.'
@@ -238,16 +272,34 @@ export function DataTableRowDrawerPanel({
                         ref={firstFieldsRegionRef}
                         className="flex flex-col gap-4"
                     >
-                        {showAttachSlot
-                            ? renderAttachBody(attachContext)
-                            : formColumns.map((c) => (
-                                  <DrawerRowField
-                                      key={c.id}
-                                      col={c}
-                                      value={draft[c.id]}
-                                      onChange={(v) => setField(c.id, v)}
-                                  />
-                              ))}
+                        {showAttachSlot ? (
+                            renderAttachBody(attachContext)
+                        ) : (
+                            <>
+                                <SchemaFieldsRenderer entries={drawerEntries} />
+                                {formColumns
+                                    .filter(
+                                        (c) =>
+                                            mapDataTableColumnToDrawerField(
+                                                c,
+                                            ) == null,
+                                    )
+                                    .map((c) => (
+                                        <div
+                                            key={`read-${c.id}`}
+                                            className="flex flex-col gap-1"
+                                        >
+                                            <span className="text-xs font-medium text-muted-foreground">
+                                                {c.label}
+                                            </span>
+                                            <span className="text-foreground">
+                                                {formatCellValue(draft[c.id]) ||
+                                                    '—'}
+                                            </span>
+                                        </div>
+                                    ))}
+                            </>
+                        )}
                     </div>
                 </div>
                 <DrawerFooter>

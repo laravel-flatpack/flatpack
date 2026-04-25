@@ -39,4 +39,50 @@ final class FormSchemaFields
 
         return null;
     }
+
+    /**
+     * @param  array<string, mixed>  $tableFieldDefinition
+     *                                                      A `type: table` field definition with a {@code columns} block.
+     * @return array<string, mixed>|null
+     */
+    public static function embeddedTableColumnById(
+        array $tableFieldDefinition,
+        string $columnId,
+    ): ?array {
+        $columns = $tableFieldDefinition['columns'] ?? null;
+        if (! is_array($columns)) {
+            return null;
+        }
+
+        $columnId = trim($columnId);
+        if ($columnId === '') {
+            return null;
+        }
+
+        if (array_is_list($columns)) {
+            foreach ($columns as $c) {
+                if (! is_array($c)) {
+                    continue;
+                }
+                $id = trim((string) ($c['id'] ?? ''));
+                if ($id === $columnId) {
+                    return $c;
+                }
+            }
+
+            return null;
+        }
+
+        foreach ($columns as $key => $c) {
+            if (! is_array($c)) {
+                continue;
+            }
+            $id = trim((string) ($c['id'] ?? (is_string($key) ? $key : '')));
+            if ($id === $columnId) {
+                return $c;
+            }
+        }
+
+        return null;
+    }
 }

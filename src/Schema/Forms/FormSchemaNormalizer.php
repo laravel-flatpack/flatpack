@@ -24,14 +24,19 @@ final readonly class FormSchemaNormalizer
     public function __construct(
         private ?Pipeline $pipeline = null,
         private ?FormRelationValuesHydrator $relationValuesHydrator = null,
+        private ?FormEmbeddedTableRelationTypeResolver $tableRelationTypeResolver = null,
     ) {}
 
     /**
      * @param  array<string, mixed>|null  $schema
      * @return array<string, mixed>|null
      */
-    public function normalizedFormSchema(?array $schema, ?CompositionDebugLog $debug = null): ?array
-    {
+    public function normalizedFormSchema(
+        ?array $schema,
+        ?CompositionDebugLog $debug = null,
+        ?string $formModelClass = null,
+        ?Model $formModel = null,
+    ): ?array {
         if ($schema === null) {
             return null;
         }
@@ -48,6 +53,19 @@ final readonly class FormSchemaNormalizer
                 StripInvalidFormPresetsPipe::class,
             ])
             ->thenReturn();
+
+        if ($formModelClass !== null) {
+            $resolver = $this->tableRelationTypeResolver ?? new FormEmbeddedTableRelationTypeResolver;
+            $enriched = $resolver->enrichFormSchema(
+                $out->schema,
+                $formModelClass,
+                $formModel,
+                $out->log,
+            );
+            if ($enriched !== null) {
+                $out->schema = $enriched;
+            }
+        }
 
         return $out->schema;
     }

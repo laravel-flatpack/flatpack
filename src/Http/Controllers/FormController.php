@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Inertia\Response;
 use Throwable;
@@ -66,7 +67,13 @@ final readonly class FormController
         }
 
         $debugLog = FlatpackResponse::compositionDebugLog($entity . '/form.yaml');
-        $normalizedSchema = $this->formSchemaNormalizer->normalizedFormSchema($schema, $debugLog);
+        $formModel = (string) ($form->model ?? '');
+        $normalizedSchema = $this->formSchemaNormalizer->normalizedFormSchema(
+            $schema,
+            $debugLog,
+            $formModel !== '' ? $formModel : null,
+            $model,
+        );
         $values = $this->formSchemaNormalizer->formValuesFromModel($model, $normalizedSchema, $debugLog);
 
         return FlatpackResponse::inertia(
@@ -128,6 +135,16 @@ final readonly class FormController
         } catch (Throwable $exception) {
             if ($exception instanceof AuthorizationException) {
                 throw $exception;
+            }
+
+            if (config('app.debug') || (bool) config('flatpack.log_form_save_failures', false)) {
+                Log::warning('Flatpack form save failed (see ActionRuntime::toUserFacingValidationException for user message)', [
+                    'entity' => $entity,
+                    'record' => $record,
+                    'form_action_id' => $request->input('form_action_id'),
+                    'exception' => $exception::class,
+                    'message' => $exception->getMessage(),
+                ]);
             }
 
             throw $this->actions->toUserFacingValidationException($exception);

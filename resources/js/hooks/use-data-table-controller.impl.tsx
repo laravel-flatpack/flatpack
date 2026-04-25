@@ -54,10 +54,12 @@ import { useDataTableRelationshipFlow } from '@/hooks/use-data-table-relationshi
 import { useDataTableReorder } from '@/hooks/use-data-table-reorder';
 import { useDataTableRowReplaceFlow } from '@/hooks/use-data-table-row-replace-flow';
 import { useDataTableServerState } from '@/hooks/use-data-table-server-state';
+import { isEmbeddedTableEditRowAction } from '@/lib/data-table-action-semantics';
 import { stableRowId } from '@/lib/data-table-utils';
 import { DEFAULT_LIST_ROW_REORDER_COLUMN } from '@/lib/generated/composition-schema-keys';
 import type {
     DataTableProps,
+    DataTableRowActionPayload,
     DataTableRowDrawerBodyVariant,
     FlatpackDataTableBulkAction,
     FlatpackDataTableColumn,
@@ -351,7 +353,7 @@ export function useDataTableController(
         } as const;
     }, [sorting]);
     const {
-        handleRowAction,
+        handleRowAction: handleRelationshipRowAction,
         handleBulkAction: handleRelationshipBulkAction,
         pendingEmbeddedRowConfirm,
         dismissPendingRowActionConfirm,
@@ -377,6 +379,34 @@ export function useDataTableController(
         serverFilterState,
         serverSortingForBulkAction,
     });
+
+    const handleRowAction = React.useCallback(
+        (payload: DataTableRowActionPayload) => {
+            if (
+                onRowAction == null &&
+                rowDetailDrawer &&
+                isEmbeddedTableEditRowAction(payload.action)
+            ) {
+                const row = payload.row;
+                const idx = data.indexOf(row);
+                const rowId =
+                    idx >= 0
+                        ? getStableRowId(row, idx)
+                        : getStableRowId(row, 0);
+                openDetailDrawerForRow(rowId);
+                return;
+            }
+            handleRelationshipRowAction(payload);
+        },
+        [
+            onRowAction,
+            rowDetailDrawer,
+            data,
+            getStableRowId,
+            openDetailDrawerForRow,
+            handleRelationshipRowAction,
+        ],
+    );
 
     const columnDefs = React.useMemo(
         () =>

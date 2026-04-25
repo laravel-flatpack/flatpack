@@ -36,6 +36,7 @@ export const TextField = ({
     const input = (
         <Input
             id={id}
+            name={`${id}-input`}
             type="text"
             placeholder={placeholder}
             defaultValue={value === undefined ? defaultValue : undefined}
@@ -47,6 +48,10 @@ export const TextField = ({
             onChange={(e) => onValueChange?.(e.target.value)}
             onBlur={onBlur}
             onKeyDown={onKeyDown}
+            autoComplete="new-password"
+            autoCorrect="off"
+            autoCapitalize="none"
+            spellCheck={false}
         />
     );
 

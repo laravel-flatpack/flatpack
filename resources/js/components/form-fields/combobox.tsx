@@ -186,11 +186,15 @@ export const ComboboxField = ({
     remote = false,
     remoteEndpoint,
     remoteFieldId,
+    remoteFieldParamKey = 'field',
+    remoteSearchParamKey = 'q',
+    remoteBaseParams,
     remotePerPage = 20,
     useRelationRowPayload = false,
     relationValueKey = 'id',
     /** Related model attribute for labels (YAML {@code relation_name}); hydrates chip text from RelationRow[]. */
     relationLabelKey,
+    emitObject = false,
     onValueChange,
     invalid = false,
 }: {
@@ -206,11 +210,15 @@ export const ComboboxField = ({
     remote?: boolean;
     remoteEndpoint?: string;
     remoteFieldId?: string;
+    remoteFieldParamKey?: string | null;
+    remoteSearchParamKey?: string;
+    remoteBaseParams?: Record<string, string>;
     remotePerPage?: number;
     /** Multi + relation: submit {@link idsToRelationRows} instead of string[]. */
     useRelationRowPayload?: boolean;
     relationValueKey?: string;
     relationLabelKey?: string;
+    emitObject?: boolean;
     onValueChange?: (value: unknown) => void;
     invalid?: boolean;
 }) => {
@@ -257,11 +265,14 @@ export const ComboboxField = ({
             }
 
             const params = new URLSearchParams({
-                field: remoteFieldId ?? id,
+                ...(remoteBaseParams ?? {}),
                 page: String(page),
                 per_page: String(remotePerPage),
-                q: currentQuery,
+                [remoteSearchParamKey]: currentQuery,
             });
+            if (remoteFieldParamKey != null && remoteFieldParamKey !== '') {
+                params.set(remoteFieldParamKey, remoteFieldId ?? id);
+            }
             if (selectedValue !== '') {
                 params.set('selected', selectedValue);
             }
@@ -306,6 +317,9 @@ export const ComboboxField = ({
             remote,
             remoteEndpoint,
             remoteFieldId,
+            remoteFieldParamKey,
+            remoteSearchParamKey,
+            remoteBaseParams,
             remotePerPage,
             selectedValue,
         ],
@@ -512,6 +526,13 @@ export const ComboboxField = ({
                     items={normalizedItems}
                     value={singleValue}
                     onValueChange={(v) => {
+                        if (emitObject && v != null) {
+                            onValueChange?.({
+                                value: String(v.value),
+                                label: String(v.label),
+                            });
+                            return;
+                        }
                         onValueChange?.(v?.value ?? null);
                     }}
                 >

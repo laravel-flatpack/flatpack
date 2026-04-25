@@ -66,6 +66,18 @@ export type FlatpackDataTableColumnType = Exclude<
     'datetime'
 >;
 
+/**
+ * Optional full edit field override for embedded table row drawers (`edit_form_field` in YAML).
+ * Uses form field type names; `table` is accepted in schema but intentionally omitted at drawer runtime.
+ */
+export type FlatpackDataTableEditFormFieldType =
+    typeof import('@/lib/generated/composition-schema-keys').FORM_FIELD_TYPES_CANONICAL[number];
+
+export type FlatpackDataTableEditFormField = {
+    type: FlatpackDataTableEditFormFieldType;
+    [key: string]: unknown;
+};
+
 export type FlatpackDataTableColumn = {
     id: string;
     label: string;
@@ -83,6 +95,7 @@ export type FlatpackDataTableColumn = {
     detailDrawer?: boolean;
     invisible?: boolean;
     truncate?: number;
+    editFormField?: FlatpackDataTableEditFormField;
 };
 
 export type FlatpackDataTableFilterDateMode =
@@ -272,6 +285,18 @@ export type UseDataTableCellUpdateFlowResult = {
     handleCellChange: (rowId: string, columnId: string, next: unknown) => void;
 };
 
+/**
+ * Eloquent relation class behind an embedded `type: table` `relation` (from PHP
+ * `FormEmbeddedTableRelationTypeResolver`: instanceof + reflection on the form model).
+ */
+export type FlatpackTableRelationType =
+    | 'belongs_to_many'
+    | 'has_many'
+    | 'morph_many'
+    | 'morph_to_many'
+    | 'has_one'
+    | 'unknown';
+
 export type DataTableProps = {
     id: string;
     columns: FlatpackDataTableColumn[];
@@ -328,4 +353,16 @@ export type DataTableProps = {
     renderRowDrawerAttachBody?: (
         ctx: DataTableRowDrawerAttachBodyRenderContext,
     ) => ReactNode;
+    /**
+     * When the table is relation-backed, the server may set this from the parent model’s
+     * Eloquent relation (see `table_relation_type` in `form.json`). Omitted for non-relation tables.
+     */
+    tableRelationType?: FlatpackTableRelationType;
+    /**
+     * When set (embedded `type: table` on a form page), `type: relation` columns in the row
+     * drawer load options from `GET .../embedded-table-relation-options`.
+     */
+    flatpackEntity?: string;
+    /** Form field id for this table (same as the field key in `form.yaml`). */
+    flatpackTableFieldId?: string;
 };

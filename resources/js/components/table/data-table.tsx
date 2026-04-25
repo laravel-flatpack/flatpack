@@ -17,10 +17,17 @@ export type {
     DataTableRowDrawerAttachBodyRenderContext,
     DataTableRowDrawerBodyVariant,
     FlatpackListServerPagination,
+    FlatpackTableRelationType,
 } from '@/types/data-table';
 
 export function DataTable(props: DataTableProps) {
-    const { className, ...tableProps } = props;
+    const {
+        className,
+        tableRelationType,
+        flatpackEntity,
+        flatpackTableFieldId,
+        ...tableProps
+    } = props;
     const c = useDataTableController(tableProps);
 
     return (
@@ -28,6 +35,11 @@ export function DataTable(props: DataTableProps) {
             className={cn('flex w-full flex-col gap-4', className)}
             role="region"
             aria-labelledby={c.tableLabelId}
+            {...(tableRelationType !== undefined
+                ? {
+                      'data-flatpack-table-relation-type': tableRelationType,
+                  }
+                : {})}
         >
             <span id={c.tableLabelId} className="sr-only">
                 {DATA_TABLE_LABEL}
@@ -74,6 +86,8 @@ export function DataTable(props: DataTableProps) {
                     onRowReplace={c.handleRowReplace}
                     bodyVariant={c.detailDrawerBodyVariant}
                     renderAttachBody={c.renderRowDrawerAttachBody}
+                    flatpackEntity={flatpackEntity}
+                    flatpackTableFieldId={flatpackTableFieldId}
                 />
             ) : null}
             <FlatpackConfirmDialog

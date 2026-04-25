@@ -223,3 +223,68 @@ it('records wrong-type preset removal in debug log', function (): void {
     expect($log->all())->toHaveCount(1);
     expect($log->all()[0])->toContain('only text and textarea');
 });
+
+it('enriches relation table fields with table_relation_type from the form model (HasMany)', function (): void {
+    $normalizer = new FormSchemaNormalizer;
+    $schema = $normalizer->normalizedFormSchema([
+        'fields' => [
+            'lines' => [
+                'type' => 'table',
+                'label' => 'Lines',
+                'relation' => 'posts',
+                'columns' => [['id' => 'title', 'label' => 'Title', 'type' => 'text']],
+            ],
+        ],
+    ], null, Flatpack\Tests\Models\Category::class);
+
+    expect($schema['fields']['lines']['table_relation_type'])->toBe('has_many');
+});
+
+it('enriches BelongsToMany table fields (instanceof on new model)', function (): void {
+    $normalizer = new FormSchemaNormalizer;
+    $schema = $normalizer->normalizedFormSchema([
+        'fields' => [
+            'tags' => [
+                'type' => 'table',
+                'label' => 'Tags',
+                'relation' => 'categories',
+                'columns' => [['id' => 'name', 'label' => 'Name', 'type' => 'text']],
+            ],
+        ],
+    ], null, Flatpack\Tests\Models\Post::class);
+
+    expect($schema['fields']['tags']['table_relation_type'])->toBe('belongs_to_many');
+});
+
+it('enriches MorphMany with reflection on return type', function (): void {
+    $normalizer = new FormSchemaNormalizer;
+    $schema = $normalizer->normalizedFormSchema([
+        'fields' => [
+            'c' => [
+                'type' => 'table',
+                'label' => 'C',
+                'relation' => 'comments',
+                'columns' => [['id' => 'id', 'label' => 'ID', 'type' => 'text']],
+            ],
+        ],
+    ], null, Flatpack\Tests\Models\Post::class);
+
+    expect($schema['fields']['c']['table_relation_type'])->toBe('morph_many');
+});
+
+it('keeps author-set table_relation_type when non-empty', function (): void {
+    $normalizer = new FormSchemaNormalizer;
+    $schema = $normalizer->normalizedFormSchema([
+        'fields' => [
+            'lines' => [
+                'type' => 'table',
+                'label' => 'Lines',
+                'relation' => 'posts',
+                'table_relation_type' => 'unknown',
+                'columns' => [['id' => 'title', 'label' => 'Title', 'type' => 'text']],
+            ],
+        ],
+    ], null, Flatpack\Tests\Models\Category::class);
+
+    expect($schema['fields']['lines']['table_relation_type'])->toBe('unknown');
+});

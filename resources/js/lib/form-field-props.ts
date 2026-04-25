@@ -1,6 +1,14 @@
+import {
+    EMBEDDED_RELATION_DEFAULT_ACTIONS_COLUMN_ID,
+    getDefaultRelationBulkActions,
+    getDefaultRelationRowActions,
+    getDefaultRelationToolbarActions,
+    parseTableRelationType,
+} from '@/lib/embedded-relation-table-defaults';
 import { normalizeFormTableBulkActionsInput } from '@/lib/form-table-bulk-actions';
 import { normalizeFormTableToolbarActionsInput } from '@/lib/form-table-toolbar-actions';
 import { listYamlColumnsToDataTableColumns } from '@/lib/list-schema';
+import type { FlatpackDataTableColumn } from '@/types/data-table';
 import type {
     FormFieldPropsMapper,
     FormFieldRenderContext,
@@ -119,6 +127,7 @@ function mapCombobox(props: FormFieldProps, ctx: FormFieldRenderContext) {
         useRelationRowPayload: Boolean(p.relation && p.multiple),
         relationValueKey: p.relation_value ?? 'id',
         relationLabelKey: p.relation_name,
+        emitObject: p.emitObject === true,
     };
 }
 
@@ -157,6 +166,23 @@ function mapTimePicker(props: FormFieldProps, ctx: FormFieldRenderContext) {
     };
 }
 
+function hasEmbeddedTableToolbarKeySource(
+    raw: Record<string, unknown>,
+): boolean {
+    return (
+        Object.hasOwn(raw, 'actions') ||
+        Object.hasOwn(raw, 'toolbar') ||
+        Object.hasOwn(raw, 'toolbar_actions') ||
+        Object.hasOwn(raw, 'toolbarActions')
+    );
+}
+
+function hasEmbeddedTableBulkKeySource(raw: Record<string, unknown>): boolean {
+    return (
+        Object.hasOwn(raw, 'bulk_actions') || Object.hasOwn(raw, 'bulkActions')
+    );
+}
+
 function mapTable(props: FormFieldProps, ctx: FormFieldRenderContext) {
     const raw = props as Extract<FormFieldProps, { type: 'table' }>;
     const {
@@ -170,20 +196,51 @@ function mapTable(props: FormFieldProps, ctx: FormFieldRenderContext) {
         columns: columnsRaw,
         row_detail_drawer: _rowDetailDrawerSnake,
         openDetailDrawerOnRowClick: _openDetailDrawerOnRowClickCamel,
+        table_relation_type: _tableRelationType,
         ...rest
     } = raw;
 
-    const columns = listYamlColumnsToDataTableColumns(columnsRaw as unknown);
-    const bulkActions = normalizeFormTableBulkActionsInput(
-        raw as Record<string, unknown>,
-    );
-    const toolbarActions = normalizeFormTableToolbarActionsInput(
-        raw.actions,
-        raw.toolbar ?? raw.toolbar_actions ?? raw.toolbarActions,
-    );
+    const rawObj = raw as Record<string, unknown>;
+    const tableRelationType = parseTableRelationType(_tableRelationType);
     const relationName =
         typeof raw.relation === 'string' ? raw.relation.trim() : '';
     const relationBacked = relationName !== '';
+
+    let columns: FlatpackDataTableColumn[] = listYamlColumnsToDataTableColumns(
+        columnsRaw as unknown,
+    );
+
+    let bulkActions = normalizeFormTableBulkActionsInput(rawObj);
+    if (
+        relationBacked &&
+        !hasEmbeddedTableBulkKeySource(rawObj) &&
+        bulkActions === undefined
+    ) {
+        bulkActions = getDefaultRelationBulkActions(tableRelationType);
+    }
+    let toolbarActions = normalizeFormTableToolbarActionsInput(
+        raw.actions,
+        raw.toolbar ?? raw.toolbar_actions ?? raw.toolbarActions,
+    );
+    if (
+        relationBacked &&
+        !hasEmbeddedTableToolbarKeySource(rawObj) &&
+        toolbarActions === undefined
+    ) {
+        toolbarActions = getDefaultRelationToolbarActions(tableRelationType);
+    }
+
+    if (relationBacked && !columns.some((c) => c.type === 'actions')) {
+        columns = [
+            ...columns,
+            {
+                id: EMBEDDED_RELATION_DEFAULT_ACTIONS_COLUMN_ID,
+                label: 'Actions',
+                type: 'actions',
+                actions: getDefaultRelationRowActions(tableRelationType),
+            },
+        ];
+    }
     const parentKey = ctx.parentRecordKey;
     const parentPersisted =
         parentKey !== undefined &&
@@ -210,6 +267,10 @@ function mapTable(props: FormFieldProps, ctx: FormFieldRenderContext) {
             : {}),
         columns,
         id: ctx.fieldId,
+        flatpackTableFieldId: ctx.fieldId,
+        ...(ctx.entity != null && String(ctx.entity).trim() !== ''
+            ? { flatpackEntity: ctx.entity }
+            : {}),
         data: raw.data ?? [],
         onValueChange: ctx.onValueChange,
         onToolbarAction:
@@ -222,6 +283,7 @@ function mapTable(props: FormFieldProps, ctx: FormFieldRenderContext) {
                 : undefined,
         rowDetailDrawer: true,
         openDetailDrawerOnRowClick: resolveOpenDetailDrawerOnRowClick(raw),
+        ...(tableRelationType !== undefined ? { tableRelationType } : {}),
     };
 }
 

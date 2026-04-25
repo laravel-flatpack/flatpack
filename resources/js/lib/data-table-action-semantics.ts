@@ -10,6 +10,9 @@ const EMBEDDED_TABLE_DRAFT_ROW_TOOLBAR_ACTIONS = new Set(['create', 'add']);
 
 const BTM_ATTACH_TOOLBAR_ACTIONS = new Set(['attach']);
 
+/** Row `action` values that open the row detail drawer (embedded form tables, no `onRowAction`). */
+const EMBEDDED_TABLE_EDIT_ROW_ACTIONS = new Set(['edit', 'open']);
+
 const DESTRUCTIVE_ACTIONS = new Set(['delete', 'remove', 'destroy']);
 const DESTRUCTIVE_ICONS = new Set(['delete', 'trash', 'remove']);
 
@@ -43,6 +46,16 @@ export function isEmbeddedTableAddToolbarAction(
     action: string | undefined,
 ): boolean {
     return normalized(action) === 'add';
+}
+
+/** Row action `edit` / `open`: open the row drawer for the same row (embedded tables). */
+export function isEmbeddedTableEditRowAction(
+    action: string | undefined,
+): boolean {
+    return (
+        action != null &&
+        EMBEDDED_TABLE_EDIT_ROW_ACTIONS.has(normalized(action))
+    );
 }
 
 export function isDestructiveActionKey(actionKey: string | undefined): boolean {

@@ -150,9 +150,17 @@ final readonly class ActionRuntime
                 : $message;
         }
 
-        return ValidationException::withMessages([
+        $messages = [
             'flatpack' => $message,
-        ]);
+        ];
+        if (config('app.debug') || (bool) config('flatpack.log_form_save_failures', false)) {
+            $messages['flatpack_exception'] = $exception::class;
+            $messages['flatpack_exception_message'] = $exception->getMessage() !== ''
+                ? $exception->getMessage()
+                : '(no message; see server log for stack trace)';
+        }
+
+        return ValidationException::withMessages($messages);
     }
 
     private function invalidModelClassMessage(): string

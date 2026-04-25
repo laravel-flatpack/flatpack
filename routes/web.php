@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Flatpack\Http\Controllers\DashboardController;
+use Flatpack\Http\Controllers\EmbeddedTableColumnRelationOptionsController;
 use Flatpack\Http\Controllers\EntityActionController;
 use Flatpack\Http\Controllers\FormController;
 use Flatpack\Http\Controllers\ListController;
@@ -50,6 +51,8 @@ Route::middleware(['auth:' . config('flatpack.guard', 'web'), EnsureFlatpackAcce
 
     /** Returns paginated relation options for remote combobox fields. */
     Route::get('{entity}/relation-options', RelationOptionsController::class)->name('entities.relation-options');
+    /** Returns paginated options for a `type: relation` column inside an embedded `type: table` field. */
+    Route::get('{entity}/embedded-table-relation-options', EmbeddedTableColumnRelationOptionsController::class)->name('entities.embedded-table-relation-options');
 
     /** Renders the entity list page with schema-driven records. */
     Route::get('{entity}', [ListController::class, 'index'])->name('entities.index');
