@@ -1,7 +1,5 @@
-import {
-    type Table,
-} from '@tanstack/react-table';
 import type { DragEndEvent } from '@dnd-kit/core';
+import type { Table } from '@tanstack/react-table';
 import * as React from 'react';
 import { DataTableBody } from '@/components/table/data-table-body';
 import { DataTableFooter } from '@/components/table/data-table-footer';

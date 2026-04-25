@@ -62,7 +62,10 @@ function canonicalDateSegment(value: unknown): string | null {
     return match ? match[1] : trimmed;
 }
 
-function canonicalInitialFieldValue(field: FormFieldProps, value: unknown): unknown {
+function canonicalInitialFieldValue(
+    field: FormFieldProps,
+    value: unknown,
+): unknown {
     if (field.type === 'date-picker') {
         const date = canonicalDateSegment(value);
         return date ?? value;

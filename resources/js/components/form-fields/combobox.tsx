@@ -298,7 +298,9 @@ export const ComboboxField = ({
                     { signal: abortController.signal },
                 );
                 if (!response.ok) {
-                    setRemoteError(`Failed to load options (${response.status})`);
+                    setRemoteError(
+                        `Failed to load options (${response.status})`,
+                    );
                     setRemoteHasMore(false);
                     return;
                 }
@@ -541,7 +543,9 @@ export const ComboboxField = ({
                             ) : null}
                             <ComboboxEmpty>
                                 {remoteError ??
-                                    (remoteLoading ? 'Loading...' : 'No matches')}
+                                    (remoteLoading
+                                        ? 'Loading...'
+                                        : 'No matches')}
                             </ComboboxEmpty>
                         </ComboboxContent>
                     </Combobox>

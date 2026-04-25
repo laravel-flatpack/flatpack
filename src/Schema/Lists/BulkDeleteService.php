@@ -9,10 +9,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use InvalidArgumentException;
 
-final class BulkDeleteService
+final readonly class BulkDeleteService
 {
     public function __construct(
-        private readonly FlatpackAuthorizer $authorizer,
+        private FlatpackAuthorizer $authorizer,
     ) {}
 
     /**
