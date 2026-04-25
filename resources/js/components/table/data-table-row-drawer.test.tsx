@@ -4,10 +4,12 @@ import { DataTableRowDrawerPanel } from '@/components/table/data-table-row-drawe
 import type { FlatpackDataTableColumn } from '@/types/data-table';
 
 describe('DataTableRowDrawerPanel', () => {
-    const columns: FlatpackDataTableColumn[] = [
-        { id: 'name', label: 'Name', type: 'text' },
-    ];
-    const titleColumn = columns[0]!;
+    const titleColumn: FlatpackDataTableColumn = {
+        id: 'name',
+        label: 'Name',
+        type: 'text',
+    };
+    const columns: FlatpackDataTableColumn[] = [titleColumn];
 
     afterEach(() => {
         cleanup();

@@ -1,7 +1,6 @@
 /**
  * Data table layout shell. Table behavior and invariants: `useDataTableController`.
  */
-import * as React from 'react';
 import { FlatpackConfirmDialog } from '@/components/flatpack/flatpack-confirm-dialog';
 import { DATA_TABLE_LABEL } from '@/components/table/data-table-constants';
 import { DataTableRowDrawerPanel } from '@/components/table/data-table-row-drawer';
