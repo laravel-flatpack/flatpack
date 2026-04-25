@@ -21,8 +21,11 @@ import type {
 } from '@/types/data-table';
 import type { SchemaFieldRenderEntry } from '@/types/schema-fields-renderer';
 
+type DrawerMapped = ReturnType<typeof mapDataTableColumnToDrawerField>;
+
 function DrawerRowField({
     col,
+    mapped,
     value,
     onChange,
     patchDraft,
@@ -30,6 +33,7 @@ function DrawerRowField({
     flatpackTableFieldId,
 }: {
     col: FlatpackDataTableColumn;
+    mapped: DrawerMapped;
     value: unknown;
     onChange: (next: unknown) => void;
     /** Merge multiple keys in one update (e.g. relation FK + nested `row[relation]` for display). */
@@ -37,7 +41,6 @@ function DrawerRowField({
     flatpackEntity?: string;
     flatpackTableFieldId?: string;
 }): SchemaFieldRenderEntry | null {
-    const mapped = mapDataTableColumnToDrawerField(col);
     if (mapped?.kind !== 'form') {
         return null;
     }
@@ -224,19 +227,53 @@ export function DataTableRowDrawerPanel({
         setDraft((d) => ({ ...d, ...patch }));
     }, []);
 
-    const formColumns = schemaColumns.filter((c) => c.type !== 'actions');
-    const drawerEntries = formColumns
-        .map((c) =>
-            DrawerRowField({
-                col: c,
-                value: draft[c.id],
-                onChange: (v) => setField(c.id, v),
-                patchDraft,
-                flatpackEntity,
-                flatpackTableFieldId,
-            }),
-        )
-        .filter((entry): entry is SchemaFieldRenderEntry => entry !== null);
+    const formColumns = React.useMemo(
+        () => schemaColumns.filter((c) => c.type !== 'actions'),
+        [schemaColumns],
+    );
+    const mappedColumns = React.useMemo(
+        () =>
+            formColumns.map((column) => ({
+                column,
+                mapped: mapDataTableColumnToDrawerField(column),
+            })),
+        [formColumns],
+    );
+    const drawerEntries = React.useMemo(
+        () =>
+            mappedColumns
+                .map(({ column, mapped }) =>
+                    mapped?.kind === 'form'
+                        ? DrawerRowField({
+                              col: column,
+                              mapped,
+                              value: draft[column.id],
+                              onChange: (v) => setField(column.id, v),
+                              patchDraft,
+                              flatpackEntity,
+                              flatpackTableFieldId,
+                          })
+                        : null,
+                )
+                .filter(
+                    (entry): entry is SchemaFieldRenderEntry => entry !== null,
+                ),
+        [
+            mappedColumns,
+            draft,
+            setField,
+            patchDraft,
+            flatpackEntity,
+            flatpackTableFieldId,
+        ],
+    );
+    const readOnlyColumns = React.useMemo(
+        () =>
+            mappedColumns
+                .filter(({ mapped }) => mapped == null)
+                .map(({ column }) => column),
+        [mappedColumns],
+    );
     const attachContext: DataTableRowDrawerAttachBodyRenderContext = {
         rowId,
         draft,
@@ -277,27 +314,20 @@ export function DataTableRowDrawerPanel({
                         ) : (
                             <>
                                 <SchemaFieldsRenderer entries={drawerEntries} />
-                                {formColumns
-                                    .filter(
-                                        (c) =>
-                                            mapDataTableColumnToDrawerField(
-                                                c,
-                                            ) == null,
-                                    )
-                                    .map((c) => (
-                                        <div
-                                            key={`read-${c.id}`}
-                                            className="flex flex-col gap-1"
-                                        >
-                                            <span className="text-xs font-medium text-muted-foreground">
-                                                {c.label}
-                                            </span>
-                                            <span className="text-foreground">
-                                                {formatCellValue(draft[c.id]) ||
-                                                    '—'}
-                                            </span>
-                                        </div>
-                                    ))}
+                                {readOnlyColumns.map((c) => (
+                                    <div
+                                        key={`read-${c.id}`}
+                                        className="flex flex-col gap-1"
+                                    >
+                                        <span className="text-xs font-medium text-muted-foreground">
+                                            {c.label}
+                                        </span>
+                                        <span className="text-foreground">
+                                            {formatCellValue(draft[c.id]) ||
+                                                '—'}
+                                        </span>
+                                    </div>
+                                ))}
                             </>
                         )}
                     </div>

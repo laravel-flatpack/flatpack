@@ -18,6 +18,17 @@ import type { FormFieldProps, FormFieldType } from '@/types/form-fields';
 export const RELATION_TABLE_TOOLBAR_DISABLED_TITLE =
     'Save the parent record before using these actions.' as const;
 
+type NormalizedTableConfig = {
+    columns: FlatpackDataTableColumn[];
+    bulkActions: ReturnType<typeof normalizeFormTableBulkActionsInput>;
+    toolbarActions: ReturnType<typeof normalizeFormTableToolbarActionsInput>;
+};
+
+const normalizedTableConfigBySource = new WeakMap<
+    Record<string, unknown>,
+    NormalizedTableConfig
+>();
+
 function resolveOpenDetailDrawerOnRowClick(
     raw: Extract<FormFieldProps, { type: 'table' }>,
 ): boolean {
@@ -205,42 +216,48 @@ function mapTable(props: FormFieldProps, ctx: FormFieldRenderContext) {
     const relationName =
         typeof raw.relation === 'string' ? raw.relation.trim() : '';
     const relationBacked = relationName !== '';
+    let normalizedTableConfig = normalizedTableConfigBySource.get(rawObj);
+    if (normalizedTableConfig == null) {
+        let columns: FlatpackDataTableColumn[] =
+            listYamlColumnsToDataTableColumns(columnsRaw as unknown);
 
-    let columns: FlatpackDataTableColumn[] = listYamlColumnsToDataTableColumns(
-        columnsRaw as unknown,
-    );
+        let bulkActions = normalizeFormTableBulkActionsInput(rawObj);
+        if (
+            relationBacked &&
+            !hasEmbeddedTableBulkKeySource(rawObj) &&
+            bulkActions === undefined
+        ) {
+            bulkActions = getDefaultRelationBulkActions(tableRelationType);
+        }
+        let toolbarActions = normalizeFormTableToolbarActionsInput(
+            raw.actions,
+            raw.toolbar ?? raw.toolbar_actions ?? raw.toolbarActions,
+        );
+        if (
+            relationBacked &&
+            !hasEmbeddedTableToolbarKeySource(rawObj) &&
+            toolbarActions === undefined
+        ) {
+            toolbarActions =
+                getDefaultRelationToolbarActions(tableRelationType);
+        }
 
-    let bulkActions = normalizeFormTableBulkActionsInput(rawObj);
-    if (
-        relationBacked &&
-        !hasEmbeddedTableBulkKeySource(rawObj) &&
-        bulkActions === undefined
-    ) {
-        bulkActions = getDefaultRelationBulkActions(tableRelationType);
-    }
-    let toolbarActions = normalizeFormTableToolbarActionsInput(
-        raw.actions,
-        raw.toolbar ?? raw.toolbar_actions ?? raw.toolbarActions,
-    );
-    if (
-        relationBacked &&
-        !hasEmbeddedTableToolbarKeySource(rawObj) &&
-        toolbarActions === undefined
-    ) {
-        toolbarActions = getDefaultRelationToolbarActions(tableRelationType);
+        if (relationBacked && !columns.some((c) => c.type === 'actions')) {
+            columns = [
+                ...columns,
+                {
+                    id: EMBEDDED_RELATION_DEFAULT_ACTIONS_COLUMN_ID,
+                    label: 'Actions',
+                    type: 'actions',
+                    actions: getDefaultRelationRowActions(tableRelationType),
+                },
+            ];
+        }
+        normalizedTableConfig = { columns, bulkActions, toolbarActions };
+        normalizedTableConfigBySource.set(rawObj, normalizedTableConfig);
     }
 
-    if (relationBacked && !columns.some((c) => c.type === 'actions')) {
-        columns = [
-            ...columns,
-            {
-                id: EMBEDDED_RELATION_DEFAULT_ACTIONS_COLUMN_ID,
-                label: 'Actions',
-                type: 'actions',
-                actions: getDefaultRelationRowActions(tableRelationType),
-            },
-        ];
-    }
+    const { columns, bulkActions, toolbarActions } = normalizedTableConfig;
     const parentKey = ctx.parentRecordKey;
     const parentPersisted =
         parentKey !== undefined &&
