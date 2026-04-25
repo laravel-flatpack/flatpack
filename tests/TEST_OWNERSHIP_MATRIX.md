@@ -4,10 +4,12 @@ Use one canonical test layer per behavior to avoid duplicated assertions.
 
 ## Ownership Rules
 
-- `Schema shape / key validity`: `tests/Unit/CompositionSchemaContractTest.php`
-- `Parser/runtime coercion`: `resources/js/lib/*.test.ts`
-- `HTTP endpoint semantics`: `tests/Feature/*`
-- `UI interaction behavior`: `resources/js/components/**/*.test.tsx`
+| Behavior family             | Canonical test location                        |
+| --------------------------- | ---------------------------------------------- |
+| Schema shape / key validity | `tests/Unit/CompositionSchemaContractTest.php` |
+| HTTP endpoint semantics     | `tests/Feature/*`                              |
+| Parser / runtime coercion   | `resources/js/lib/*.test.ts`                   |
+| UI interaction behavior     | `resources/js/components/**/*.test.tsx`        |
 
 ## Avoid Duplication
 
@@ -21,3 +23,4 @@ Use one canonical test layer per behavior to avoid duplicated assertions.
 - List parser normalization: `resources/js/lib/list-schema.test.ts`
 - Drawer mapper coercion: `resources/js/lib/data-table-row-drawer-field-mapper.test.ts`
 - Relation options endpoint semantics: `tests/Feature/FormSaveTest.php`
+- Bulk action redirect metadata contract: `tests/Feature/ListRecordsTest.php`
