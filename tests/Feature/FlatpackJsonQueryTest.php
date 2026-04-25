@@ -142,7 +142,7 @@ YAML);
     }
 });
 
-test('flatpack entity edit missing record json preserves error context props', function () {
+test('flatpack entity edit missing record with empty fields returns form payload', function () {
     $tempPath = sys_get_temp_dir() . '/flatpack-json-edit-missing-' . uniqid('', true);
 
     try {
@@ -165,7 +165,8 @@ YAML);
             ]))
             ->assertOk()
             ->assertJsonPath('entity', 'posts')
-            ->assertJsonPath('entityName', 'post')
+            ->assertJsonPath('schema.name', 'Post')
+            ->assertJsonPath('schema.fields', [])
             ->assertJsonPath('composition_debug', []);
     } finally {
         File::deleteDirectory($tempPath);

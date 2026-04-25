@@ -53,43 +53,54 @@ final readonly class FormController
     public function edit(Request $request, string $entity, string $record): Response|JsonResponse
     {
         $showJsonResponse = $request->boolean('json');
-        $schema = $this->entityComposition->formSchema($entity);
         $form = $this->entityComposition->formFor($entity);
+        $schema = $this->entityComposition->formSchema($entity);
+
+        if (! $this->hasRenderableFields($schema)) {
+            return FlatpackResponse::inertia(
+                'form',
+                $this->formPageProps($entity, $form, $schema, 'edit', $record, []),
+                $showJsonResponse,
+            );
+        }
         $model = $this->actions->resolveOptionalRecordModel(
             (string) ($form->model ?? ''),
             $record,
         );
 
-        if (is_null($model)) {
+        if (! $model instanceof Model) {
             return FlatpackResponse::inertia('errors/record-not-found', [
                 'entity' => $entity,
                 'entityName' => mb_strtolower($form->name ?? $entity),
             ], $showJsonResponse);
         }
 
-        $debugLog = FlatpackResponse::compositionDebugLog($entity . '/form.yaml');
         $formModel = (string) ($form->model ?? '');
-        $normalizedSchema = $this->formSchemaNormalizer->normalizedFormSchema(
+        $normalization = $this->formSchemaNormalizer->normalizeForFormPage(
             $schema,
-            $debugLog,
+            $entity . '/form.yaml',
             $formModel !== '' ? $formModel : null,
             $model,
         );
-        $values = $this->formSchemaNormalizer->formValuesFromModel($model, $normalizedSchema, $debugLog);
+        $values = $this->formSchemaNormalizer->formValuesFromModel(
+            $model,
+            $normalization->schema,
+            $normalization->debugLog,
+        );
 
         return FlatpackResponse::inertia(
             'form',
             $this->formPageProps(
                 $entity,
                 $form,
-                $normalizedSchema,
+                $normalization->schema,
                 'edit',
                 $record,
                 $values,
             ),
             $showJsonResponse,
             new FlatpackResponseOptions(
-                compositionDebugLog: $debugLog,
+                compositionDebugLog: $normalization->debugLog,
                 skipFormSchemaNormalize: true,
             ),
         );
@@ -202,4 +213,21 @@ final readonly class FormController
             'form_actions' => HeaderActions::fromSchema($schema),
         ];
     }
+
+    /**
+     * @param  array<string, mixed>|null  $schema
+     */
+    private function hasRenderableFields(?array $schema): bool
+    {
+        if ($schema === null || ! array_key_exists('fields', $schema)) {
+            return false;
+        }
+        $fields = $schema['fields'];
+        if (! is_array($fields)) {
+            return false;
+        }
+
+        return count($fields) > 0;
+    }
+
 }

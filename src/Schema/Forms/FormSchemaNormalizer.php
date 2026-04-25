@@ -73,6 +73,29 @@ final readonly class FormSchemaNormalizer
     /**
      * @param  array<string, mixed>|null  $schema
      */
+    public function normalizeForFormPage(
+        ?array $schema,
+        string $debugContext,
+        ?string $formModelClass = null,
+        ?Model $formModel = null,
+    ): FormSchemaNormalizationResult {
+        $debugLog = config('app.debug') ? new CompositionDebugLog($debugContext) : null;
+        $normalized = $this->normalizedFormSchema(
+            schema: $schema,
+            debug: $debugLog,
+            formModelClass: $formModelClass,
+            formModel: $formModel,
+        );
+
+        return new FormSchemaNormalizationResult(
+            schema: $normalized,
+            debugLog: $debugLog,
+        );
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $schema
+     */
     public function formValuesFromModel(?Model $model, ?array $schema, ?CompositionDebugLog $debug = null): array
     {
         if (! $model instanceof Model || $schema === null) {
