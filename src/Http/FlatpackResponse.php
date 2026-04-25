@@ -36,8 +36,9 @@ final class FlatpackResponse
         string $view,
         array $data = [],
         bool $json = false,
+        ?FlatpackResponseOptions $options = null,
     ): Response|JsonResponse {
-        $data = self::prepareInertiaData($view, $data);
+        $data = self::prepareInertiaData($view, $data, $options);
 
         if ($json) {
             return response()->json($data);
@@ -50,17 +51,15 @@ final class FlatpackResponse
      * @param  array<string, mixed>  $data
      * @return array<string, mixed>
      */
-    private static function prepareInertiaData(string $view, array $data): array
-    {
-        $externalLog = isset($data['composition_debug_log']) && $data['composition_debug_log'] instanceof CompositionDebugLog
-            ? $data['composition_debug_log']
-            : null;
-        unset($data['composition_debug_log']);
-
-        $skipFormSchemaNormalize = ($data['_flatpack_skip_form_schema_normalize'] ?? false) === true;
-        unset($data['_flatpack_skip_form_schema_normalize']);
-
-        $log = $externalLog ?? self::compositionDebugLogForView($view, $data);
+    private static function prepareInertiaData(
+        string $view,
+        array $data,
+        ?FlatpackResponseOptions $options = null,
+    ): array {
+        $log = $options !== null
+            ? $options->compositionDebugLog
+            : self::compositionDebugLogForView($view, $data);
+        $skipFormSchemaNormalize = $options?->skipFormSchemaNormalize === true;
 
         if ($view === 'form' && array_key_exists('schema', $data) && ! $skipFormSchemaNormalize) {
             $raw = $data['schema'];

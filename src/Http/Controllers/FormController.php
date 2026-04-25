@@ -8,6 +8,7 @@ use Flatpack\Actions\FlatpackActionContext;
 use Flatpack\Composition\EntityComposition;
 use Flatpack\Composition\FormComposition;
 use Flatpack\Http\FlatpackResponse;
+use Flatpack\Http\FlatpackResponseOptions;
 use Flatpack\Http\Requests\FormSubmitRequest;
 use Flatpack\Schema\Forms\FormSchemaNormalizer;
 use Flatpack\Schema\HeaderActions;
@@ -79,18 +80,19 @@ final readonly class FormController
 
         return FlatpackResponse::inertia(
             'form',
-            array_merge($this->formPageProps(
+            $this->formPageProps(
                 $entity,
                 $form,
                 $normalizedSchema,
                 'edit',
                 $record,
                 $values,
-            ), [
-                'composition_debug_log' => $debugLog,
-                '_flatpack_skip_form_schema_normalize' => true,
-            ]),
+            ),
             $showJsonResponse,
+            new FlatpackResponseOptions(
+                compositionDebugLog: $debugLog,
+                skipFormSchemaNormalize: true,
+            ),
         );
     }
 

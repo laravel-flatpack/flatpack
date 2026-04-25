@@ -6,6 +6,7 @@ namespace Flatpack\Http\Controllers;
 
 use Flatpack\Composition\EntityComposition;
 use Flatpack\Http\Requests\EmbeddedTableColumnRelationOptionsRequest;
+use Flatpack\Http\Response\FlatpackErrorPayload;
 use Flatpack\Http\Response\RelationOptionsPayload;
 use Flatpack\Schema\Forms\FormSchemaFields;
 use Illuminate\Database\Eloquent\Model;
@@ -27,34 +28,34 @@ final readonly class EmbeddedTableColumnRelationOptionsController
 
         $tableField = FormSchemaFields::fieldDefinitionById($schema, $tableFieldId);
         if ($tableField === null) {
-            return $this->notFound('Flatpack table field is not configured.');
+            return FlatpackErrorPayload::notFound('Flatpack table field is not configured.');
         }
         if (trim((string) ($tableField['type'] ?? '')) !== 'table') {
-            return $this->notFound('Flatpack field is not a table.');
+            return FlatpackErrorPayload::notFound('Flatpack field is not a table.');
         }
 
         $column = FormSchemaFields::embeddedTableColumnById($tableField, $columnId);
         if ($column === null) {
-            return $this->notFound('Flatpack table column is not configured.');
+            return FlatpackErrorPayload::notFound('Flatpack table column is not configured.');
         }
         if (trim((string) ($column['type'] ?? '')) !== 'relation') {
-            return $this->notFound('Flatpack table column is not a relation column.');
+            return FlatpackErrorPayload::notFound('Flatpack table column is not a relation column.');
         }
 
         $parentClass = (string) ($form->model ?? '');
         if ($parentClass === '' || ! class_exists($parentClass) || ! is_subclass_of($parentClass, Model::class)) {
-            return $this->notFound('Flatpack form model is not configured.');
+            return FlatpackErrorPayload::notFound('Flatpack form model is not configured.');
         }
 
         $tableRelation = trim((string) ($tableField['relation'] ?? ''));
         if ($tableRelation === '' || ! method_exists($parentClass, $tableRelation)) {
-            return $this->notFound('Flatpack table relation is not available on the form model.');
+            return FlatpackErrorPayload::notFound('Flatpack table relation is not available on the form model.');
         }
 
         $parent = new $parentClass;
         $rel = $parent->{$tableRelation}();
         if (! $rel instanceof Relation) {
-            return $this->notFound('Flatpack table relation is not an Eloquent relation.');
+            return FlatpackErrorPayload::notFound('Flatpack table relation is not an Eloquent relation.');
         }
 
         $related = $rel->getRelated();
@@ -68,15 +69,5 @@ final readonly class EmbeddedTableColumnRelationOptionsController
             $fieldDef,
             $request,
         ));
-    }
-
-    private function notFound(string $message): JsonResponse
-    {
-        return response()->json([
-            'error' => [
-                'code' => 'not_found',
-                'message' => $message,
-            ],
-        ], 404);
     }
 }
