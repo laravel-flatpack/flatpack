@@ -302,6 +302,13 @@ export function useDataTableController(
         const cols = schemaColumns.filter((c) => c.type !== 'actions');
         return cols[0] ?? schemaColumns[0] ?? null;
     }, [schemaColumns]);
+    const resolveRowIdFromReference = React.useCallback(
+        (row: Record<string, unknown>) => {
+            const idx = data.indexOf(row);
+            return idx >= 0 ? getStableRowId(row, idx) : getStableRowId(row, 0);
+        },
+        [data, getStableRowId],
+    );
 
     const handleRowClick = React.useCallback(
         (
@@ -316,12 +323,7 @@ export function useDataTableController(
                 return;
             }
             if (rowDetailDrawer && openDetailDrawerOnRowClick) {
-                const idx = data.indexOf(row);
-                const rowId =
-                    idx >= 0
-                        ? getStableRowId(row, idx)
-                        : getStableRowId(row, 0);
-                openDetailDrawerForRow(rowId);
+                openDetailDrawerForRow(resolveRowIdFromReference(row));
                 return;
             }
             if (onRowClick == null) {
@@ -336,8 +338,7 @@ export function useDataTableController(
         [
             rowDetailDrawer,
             openDetailDrawerOnRowClick,
-            data,
-            getStableRowId,
+            resolveRowIdFromReference,
             openDetailDrawerForRow,
             onRowClick,
         ],
@@ -387,13 +388,7 @@ export function useDataTableController(
                 rowDetailDrawer &&
                 isEmbeddedTableEditRowAction(payload.action)
             ) {
-                const row = payload.row;
-                const idx = data.indexOf(row);
-                const rowId =
-                    idx >= 0
-                        ? getStableRowId(row, idx)
-                        : getStableRowId(row, 0);
-                openDetailDrawerForRow(rowId);
+                openDetailDrawerForRow(resolveRowIdFromReference(payload.row));
                 return;
             }
             handleRelationshipRowAction(payload);
@@ -401,8 +396,7 @@ export function useDataTableController(
         [
             onRowAction,
             rowDetailDrawer,
-            data,
-            getStableRowId,
+            resolveRowIdFromReference,
             openDetailDrawerForRow,
             handleRelationshipRowAction,
         ],

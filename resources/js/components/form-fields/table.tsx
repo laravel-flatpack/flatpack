@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { DataTable } from '@/components/table/data-table';
 import type {
+    DataTableRow,
     DataTableRowDrawerAttachBodyRenderContext,
     FlatpackDataTableBulkAction,
     FlatpackDataTableColumn,
@@ -8,6 +9,31 @@ import type {
     FlatpackTableRelationType,
 } from '@/types/data-table';
 import { Field, FieldContent, FieldDescription, FieldTitle } from '../ui/field';
+
+export type TableFieldProps = {
+    id: string;
+    label: string;
+    helperText?: string;
+    columns: FlatpackDataTableColumn[];
+    data: DataTableRow[];
+    bulkActions?: FlatpackDataTableBulkAction[];
+    toolbarActions?: FlatpackFormTableToolbarAction[];
+    toolbarActionsDisabled?: boolean;
+    toolbarActionsDisabledTitle?: string;
+    onToolbarAction?: (actionId: string) => void;
+    /** Enables the row detail drawer (toolbar `create` draft flow and optional row-click open). */
+    rowDetailDrawer?: boolean;
+    /** When false while `rowDetailDrawer` is true, row clicks do not open the drawer. */
+    openDetailDrawerOnRowClick?: boolean;
+    reorderable?: boolean | string;
+    onValueChange?: (value: unknown) => void;
+    renderRowDrawerAttachBody?: (
+        ctx: DataTableRowDrawerAttachBodyRenderContext,
+    ) => ReactNode;
+    tableRelationType?: FlatpackTableRelationType;
+    flatpackEntity?: string;
+    flatpackTableFieldId?: string;
+};
 
 export const TableField = ({
     id,
@@ -28,30 +54,7 @@ export const TableField = ({
     tableRelationType,
     flatpackEntity,
     flatpackTableFieldId,
-}: {
-    id: string;
-    label: string;
-    helperText?: string;
-    columns: FlatpackDataTableColumn[];
-    data: Record<string, unknown>[];
-    bulkActions?: FlatpackDataTableBulkAction[];
-    toolbarActions?: FlatpackFormTableToolbarAction[];
-    toolbarActionsDisabled?: boolean;
-    toolbarActionsDisabledTitle?: string;
-    onToolbarAction?: (actionId: string) => void;
-    /** Enables the row detail drawer (toolbar `create` draft flow and optional row-click open). */
-    rowDetailDrawer?: boolean;
-    /** When false while `rowDetailDrawer` is true, row clicks do not open the drawer. */
-    openDetailDrawerOnRowClick?: boolean;
-    reorderable?: boolean | string;
-    onValueChange?: (value: unknown) => void;
-    renderRowDrawerAttachBody?: (
-        ctx: DataTableRowDrawerAttachBodyRenderContext,
-    ) => ReactNode;
-    tableRelationType?: FlatpackTableRelationType;
-    flatpackEntity?: string;
-    flatpackTableFieldId?: string;
-}) => {
+}: TableFieldProps) => {
     const labelId = `${id}-label`;
     return (
         <Field>
