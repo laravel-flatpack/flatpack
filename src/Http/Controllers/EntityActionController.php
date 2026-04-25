@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Flatpack\Http\Controllers;
 
+use Flatpack\Actions\EntityActionExecutor;
 use Flatpack\Actions\FlatpackActionContext;
 use Flatpack\Actions\FlatpackBulkActionContext;
 use Flatpack\Composition\EntityComposition;
@@ -14,15 +15,14 @@ use Flatpack\Support\ActionRuntime;
 use Flatpack\Support\Exceptions\ActionRuntimeException;
 use Flatpack\Support\SuccessRedirect;
 use Flatpack\Support\SuccessRedirectSchema;
-use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\RedirectResponse;
-use Throwable;
 
 final readonly class EntityActionController
 {
     public function __construct(
         private EntityComposition $entityComposition,
         private ActionRuntime $actions,
+        private EntityActionExecutor $executor,
     ) {}
 
     public function bulkAction(BulkActionRequest $request, string $entity): RedirectResponse
@@ -83,23 +83,17 @@ final readonly class EntityActionController
             abort($exception->statusCode(), $exception->getMessage());
         }
         $this->actions->ensureRecordActionAuthorized($handler, $user, $listModelClass, null);
-        try {
-            $result = $handler->handle(new FlatpackActionContext(
-                request: $request,
-                entity: $entity,
-                actionName: $action,
-                modelClass: $listModelClass,
-                record: null,
-                compositionType: 'list',
-                composition: $schema ?? [],
-                schema: $schema,
-                model: null,
-            ));
-        } catch (AuthorizationException $exception) {
-            throw $exception;
-        } catch (Throwable $exception) {
-            throw $this->actions->toUserFacingValidationException($exception);
-        }
+        $result = $this->executor->execute(fn () => $handler->handle(new FlatpackActionContext(
+            request: $request,
+            entity: $entity,
+            actionName: $action,
+            modelClass: $listModelClass,
+            record: null,
+            compositionType: 'list',
+            composition: $schema ?? [],
+            schema: $schema,
+            model: null,
+        )));
 
         if ($result instanceof RedirectResponse) {
             return $result->setStatusCode(303);
@@ -140,23 +134,17 @@ final readonly class EntityActionController
             abort($exception->statusCode(), $exception->getMessage());
         }
         $this->actions->ensureRecordActionAuthorized($handler, $user, $listModelClass, $model);
-        try {
-            $result = $handler->handle(new FlatpackActionContext(
-                request: $request,
-                entity: $entity,
-                actionName: $action,
-                modelClass: $listModelClass,
-                record: $record,
-                compositionType: 'list',
-                composition: $schema ?? [],
-                schema: $schema,
-                model: $model,
-            ));
-        } catch (AuthorizationException $exception) {
-            throw $exception;
-        } catch (Throwable $exception) {
-            throw $this->actions->toUserFacingValidationException($exception);
-        }
+        $result = $this->executor->execute(fn () => $handler->handle(new FlatpackActionContext(
+            request: $request,
+            entity: $entity,
+            actionName: $action,
+            modelClass: $listModelClass,
+            record: $record,
+            compositionType: 'list',
+            composition: $schema ?? [],
+            schema: $schema,
+            model: $model,
+        )));
 
         if ($result instanceof RedirectResponse) {
             return $result->setStatusCode(303);
@@ -193,23 +181,17 @@ final readonly class EntityActionController
         }
 
         $this->actions->ensureRecordActionAuthorized($handler, $user, $listModelClass, $model);
-        try {
-            $handler->handle(new FlatpackActionContext(
-                request: $request,
-                entity: $entity,
-                actionName: 'save',
-                modelClass: $listModelClass,
-                record: $record,
-                compositionType: 'list',
-                composition: $schema ?? [],
-                schema: $schema,
-                model: $model,
-            ));
-        } catch (AuthorizationException $exception) {
-            throw $exception;
-        } catch (Throwable $exception) {
-            throw $this->actions->toUserFacingValidationException($exception);
-        }
+        $this->executor->execute(fn () => $handler->handle(new FlatpackActionContext(
+            request: $request,
+            entity: $entity,
+            actionName: 'save',
+            modelClass: $listModelClass,
+            record: $record,
+            compositionType: 'list',
+            composition: $schema ?? [],
+            schema: $schema,
+            model: $model,
+        )));
 
         return back(303)->with('flatpack', [
             'save' => true,
