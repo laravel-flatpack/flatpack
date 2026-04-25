@@ -114,4 +114,38 @@ describe('useDataTableRowReplaceFlow', () => {
             { id: '1', name: 'Old' },
         ]);
     });
+
+    it('removes optimistic appended row when onRowUpdate fails', async () => {
+        const onValueChange = vi.fn();
+        const onRowUpdate = vi.fn(async () => {
+            throw new Error('failed');
+        });
+        const { result } = renderHook(() =>
+            useRowReplaceHarness({
+                onValueChange,
+                onRowUpdate,
+            }),
+        );
+
+        act(() => {
+            result.current.handleRowReplace('__new__:123', {
+                id: '2',
+                name: 'New row',
+            });
+        });
+        await waitFor(() => {
+            expect(result.current.data).toEqual([{ id: '1', name: 'Old' }]);
+        });
+        expect(onRowUpdate).toHaveBeenCalledWith({
+            rowId: '__new__:123',
+            row: { id: '2', name: 'New row' },
+        });
+        expect(onValueChange).toHaveBeenNthCalledWith(1, [
+            { id: '1', name: 'Old' },
+            { id: '2', name: 'New row' },
+        ]);
+        expect(onValueChange).toHaveBeenNthCalledWith(2, [
+            { id: '1', name: 'Old' },
+        ]);
+    });
 });

@@ -32,6 +32,7 @@ function buildFieldComponentProps(
     };
 
     return {
+        ...(entry.extraComponentProps ?? {}),
         ...mapFormFieldPropsToComponentProps(field, {
             fieldId: id,
             entity: args.entity,
@@ -45,7 +46,6 @@ function buildFieldComponentProps(
             : {}),
         ...(entry.required === true ? { required: true } : {}),
         ...(entry.invalid === true ? { invalid: true } : {}),
-        ...(entry.extraComponentProps ?? {}),
     };
 }
 

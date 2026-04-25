@@ -18,6 +18,7 @@ export function useDataTableRowReplaceFlow({
     const handleRowReplace = React.useCallback(
         (rowId: string, nextRow: Record<string, unknown>) => {
             let previousRow: Record<string, unknown> | null = null;
+            let appendedRowStableId: string | null = null;
             setData((prev) => {
                 const idx = prev.findIndex(
                     (row, index) => getStableRowId(row, index) === rowId,
@@ -36,6 +37,7 @@ export function useDataTableRowReplaceFlow({
                 }
 
                 const nextRows = [...prev, nextRow];
+                appendedRowStableId = getStableRowId(nextRow, nextRows.length - 1);
                 deferNotifyParentFormValues(onValueChange, nextRows);
                 return nextRows;
             });
@@ -52,6 +54,21 @@ export function useDataTableRowReplaceFlow({
                 }),
             ).catch(() => {
                 if (previousRow == null) {
+                    if (appendedRowStableId == null) {
+                        return;
+                    }
+                    setData((prev) => {
+                        const idx = prev.findIndex(
+                            (row, index) =>
+                                getStableRowId(row, index) === appendedRowStableId,
+                        );
+                        if (idx === -1) {
+                            return prev;
+                        }
+                        const reverted = prev.filter((_, index) => index !== idx);
+                        deferNotifyParentFormValues(onValueChange, reverted);
+                        return reverted;
+                    });
                     return;
                 }
                 setData((prev) => {
