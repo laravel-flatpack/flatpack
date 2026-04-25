@@ -123,7 +123,9 @@ export type FlatpackDataTableServerFiltersState = Record<
 
 export type DataTableRow = Record<string, unknown>;
 
-export type DataTableRowActionPayload<TRow extends DataTableRow = DataTableRow> = {
+export type DataTableRowActionPayload<
+    TRow extends DataTableRow = DataTableRow,
+> = {
     action: string;
     row: TRow;
     /** Present for `type: actions` column buttons (schema-driven confirm / toast). */
@@ -137,7 +139,9 @@ export type BuildDataTableColumnDefsOptions<
     reorderable?: boolean;
     onCellChange?: (rowId: string, columnId: string, value: unknown) => void;
     onRowReplace?: (rowId: string, nextRow: TRow) => void;
-    onRowAction?: (payload: DataTableRowActionPayload<TRow>) => void | Promise<void>;
+    onRowAction?: (
+        payload: DataTableRowActionPayload<TRow>,
+    ) => void | Promise<void>;
 };
 
 export type DataTableCellUpdatePayload<
@@ -333,11 +337,15 @@ export type DataTableProps<TRow extends DataTableRow = DataTableRow> = {
     onBulkAction?: (
         payload: DataTableBulkDeletePayload,
     ) => void | Promise<void>;
-    onRowAction?: (payload: DataTableRowActionPayload<TRow>) => void | Promise<void>;
+    onRowAction?: (
+        payload: DataTableRowActionPayload<TRow>,
+    ) => void | Promise<void>;
     onCellUpdate?: (
         payload: DataTableCellUpdatePayload<TRow>,
     ) => void | Promise<void>;
-    onRowUpdate?: (payload: DataTableRowUpdatePayload<TRow>) => void | Promise<void>;
+    onRowUpdate?: (
+        payload: DataTableRowUpdatePayload<TRow>,
+    ) => void | Promise<void>;
     className?: string;
     toolbarStart?: ReactNode;
     toolbarAfterColumns?: ReactNode;

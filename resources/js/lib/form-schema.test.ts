@@ -105,6 +105,25 @@ describe('buildInitialValues', () => {
             multi: [],
         });
     });
+
+    it('normalizes date-picker initial values to YYYY-MM-DD', () => {
+        const fields = normalizeFields({
+            fields: {
+                published_at: {
+                    id: 'published_at',
+                    type: 'date-picker',
+                },
+            },
+        });
+
+        expect(
+            buildInitialValues(fields, {
+                published_at: '2026-04-25 14:30:00',
+            }),
+        ).toEqual({
+            published_at: '2026-04-25',
+        });
+    });
 });
 
 describe('fieldErrorMessages', () => {

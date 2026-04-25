@@ -21,9 +21,9 @@ function parseLocalDate(value: unknown): Date | undefined {
         return undefined;
     }
 
-    const dateOnly = /^(\d{4})-(\d{2})-(\d{2})$/.exec(trimmed);
-    if (dateOnly) {
-        const [, year, month, day] = dateOnly;
+    const datePrefix = /^(\d{4})-(\d{2})-(\d{2})(?:[ T].*)?$/.exec(trimmed);
+    if (datePrefix) {
+        const [, year, month, day] = datePrefix;
         return new Date(Number(year), Number(month) - 1, Number(day));
     }
 

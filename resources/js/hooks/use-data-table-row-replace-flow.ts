@@ -37,7 +37,10 @@ export function useDataTableRowReplaceFlow({
                 }
 
                 const nextRows = [...prev, nextRow];
-                appendedRowStableId = getStableRowId(nextRow, nextRows.length - 1);
+                appendedRowStableId = getStableRowId(
+                    nextRow,
+                    nextRows.length - 1,
+                );
                 deferNotifyParentFormValues(onValueChange, nextRows);
                 return nextRows;
             });
@@ -60,12 +63,15 @@ export function useDataTableRowReplaceFlow({
                     setData((prev) => {
                         const idx = prev.findIndex(
                             (row, index) =>
-                                getStableRowId(row, index) === appendedRowStableId,
+                                getStableRowId(row, index) ===
+                                appendedRowStableId,
                         );
                         if (idx === -1) {
                             return prev;
                         }
-                        const reverted = prev.filter((_, index) => index !== idx);
+                        const reverted = prev.filter(
+                            (_, index) => index !== idx,
+                        );
                         deferNotifyParentFormValues(onValueChange, reverted);
                         return reverted;
                     });

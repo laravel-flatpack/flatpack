@@ -21,8 +21,8 @@ final class EmbeddedTableColumnRelationOptionsRequest extends FormRequest
         return [
             'table_field' => ['required', 'string', 'max:255'],
             'column_id' => ['required', 'string', 'max:255'],
-            'q' => ['sometimes', 'string'],
-            'selected' => ['sometimes', 'string'],
+            'q' => ['sometimes', 'nullable', 'string'],
+            'selected' => ['sometimes', 'nullable', 'string'],
             'page' => ['sometimes', 'integer', 'min:1'],
             'per_page' => ['sometimes', 'integer', 'min:1', 'max:50'],
         ];

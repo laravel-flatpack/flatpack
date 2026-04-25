@@ -215,6 +215,12 @@ vi.mock('@/lib/form', () => ({
                                     props.onValueChange?.(true);
                                     return;
                                 }
+                                if (type === 'date-picker') {
+                                    props.onValueChange?.(
+                                        new Date(2026, 3, 25),
+                                    );
+                                    return;
+                                }
                                 props.onValueChange?.(`changed-${props.id}`);
                             }}
                         >
@@ -345,6 +351,70 @@ describe('FlatpackFormPage', () => {
             '/flatpack/posts',
             {
                 values: { title: 'changed-title' },
+                form_action_id: 'save',
+            },
+            expect.objectContaining({
+                preserveScroll: true,
+                onSuccess: expect.any(Function),
+                onError: expect.any(Function),
+            }),
+        );
+    });
+
+    it('submits date-picker values as YYYY-MM-DD', async () => {
+        const user = userEvent.setup();
+
+        renderFlatpackFormPage(
+            <FlatpackFormPage
+                entity="posts"
+                name="Posts"
+                record={null}
+                mode="create"
+                schema={{
+                    fields: {
+                        title: {
+                            type: 'text',
+                            label: 'Title',
+                            placeholder: 'Title',
+                        },
+                        published_at: {
+                            type: 'date-picker',
+                            label: 'Published At',
+                            placeholder: 'Pick a date',
+                        },
+                    },
+                }}
+                values={{}}
+                form_actions={[
+                    {
+                        id: 'save',
+                        label: 'Save',
+                        action: 'save',
+                        variant: 'default',
+                    },
+                ]}
+            />,
+        );
+
+        await user.click(
+            await screen.findByRole('button', { name: 'update-title' }),
+        );
+        await user.click(
+            screen.getByRole('button', { name: 'update-published_at' }),
+        );
+        await user.click(screen.getByRole('button', { name: 'Save' }));
+
+        await waitFor(() => {
+            expect(hoisted.post).toHaveBeenCalledTimes(1);
+        });
+
+        expect(hoisted.post).toHaveBeenCalledWith(
+            '/flatpack/posts',
+            {
+                values: {
+                    title: 'changed-title',
+                    published_at: '2026-04-25',
+                },
                 form_action_id: 'save',
             },
             expect.objectContaining({
@@ -683,6 +753,51 @@ describe('FlatpackFormPage', () => {
             expect(hoisted.toastSuccess).toHaveBeenCalledWith(
                 'Post saved successfully',
             );
+        });
+    });
+
+    it('enables disable_until_dirty save after date-picker value changes', async () => {
+        const user = userEvent.setup();
+
+        renderFlatpackFormPage(
+            <FlatpackFormPage
+                entity="posts"
+                name="Posts"
+                record={null}
+                mode="create"
+                schema={{
+                    fields: {
+                        published_at: {
+                            type: 'date-picker',
+                            label: 'Published At',
+                            placeholder: 'Select a date',
+                        },
+                    },
+                }}
+                values={{}}
+                form_actions={[
+                    {
+                        id: 'save',
+                        label: 'Save',
+                        action: 'save',
+                        variant: 'default',
+                        disable_until_dirty: true,
+                    },
+                ]}
+            />,
+        );
+
+        const saveButton = await screen.findByRole('button', { name: 'Save' });
+        expect(saveButton).toBeDisabled();
+
+        await user.click(
+            await screen.findByRole('button', {
+                name: 'update-published_at',
+            }),
+        );
+
+        await waitFor(() => {
+            expect(screen.getByRole('button', { name: 'Save' })).toBeEnabled();
         });
     });
 

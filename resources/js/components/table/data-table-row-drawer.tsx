@@ -31,6 +31,7 @@ function DrawerRowField({
     patchDraft,
     flatpackEntity,
     flatpackTableFieldId,
+    portalContainer,
 }: {
     col: FlatpackDataTableColumn;
     mapped: DrawerMapped;
@@ -40,6 +41,7 @@ function DrawerRowField({
     patchDraft: (patch: Record<string, unknown>) => void;
     flatpackEntity?: string;
     flatpackTableFieldId?: string;
+    portalContainer?: HTMLElement | null;
 }): SchemaFieldRenderEntry | null {
     if (mapped?.kind !== 'form') {
         return null;
@@ -79,6 +81,7 @@ function DrawerRowField({
         const tf = flatpackTableFieldId?.trim() ?? '';
         const extraComponentProps: Record<string, unknown> = {
             remote: true,
+            portalContainer,
             remoteEndpoint:
                 e !== ''
                     ? route(
@@ -183,6 +186,8 @@ export function DataTableRowDrawerPanel({
 }: DataTableRowDrawerPanelProps) {
     const isMobile = useIsMobile();
     const [draft, setDraft] = React.useState<Record<string, unknown>>(row);
+    const [portalContainer, setPortalContainer] =
+        React.useState<HTMLElement | null>(null);
     const firstFieldsRegionRef = React.useRef<HTMLDivElement>(null);
 
     React.useLayoutEffect(() => {
@@ -252,6 +257,7 @@ export function DataTableRowDrawerPanel({
                               patchDraft,
                               flatpackEntity,
                               flatpackTableFieldId,
+                              portalContainer,
                           })
                         : null,
                 )
@@ -265,6 +271,7 @@ export function DataTableRowDrawerPanel({
             patchDraft,
             flatpackEntity,
             flatpackTableFieldId,
+            portalContainer,
         ],
     );
     const readOnlyColumns = React.useMemo(
@@ -295,7 +302,7 @@ export function DataTableRowDrawerPanel({
             open={open}
         >
             {trigger}
-            <DrawerContent>
+            <DrawerContent ref={setPortalContainer}>
                 <DrawerHeader className="gap-1">
                     <DrawerTitle>{titleColumn.label}</DrawerTitle>
                     <DrawerDescription>

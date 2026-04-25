@@ -170,7 +170,11 @@ function isValidEditFormFieldShape(
     }
 
     if (type === 'select' || type === 'combobox') {
-        if ('options' in rec && rec.options != null && !Array.isArray(rec.options)) {
+        if (
+            'options' in rec &&
+            rec.options != null &&
+            !Array.isArray(rec.options)
+        ) {
             return false;
         }
     }
@@ -185,7 +189,11 @@ function isValidEditFormFieldShape(
         if ('emitObject' in rec && typeof rec.emitObject !== 'boolean') {
             return false;
         }
-        if ('relation' in rec && rec.relation != null && typeof rec.relation !== 'string') {
+        if (
+            'relation' in rec &&
+            rec.relation != null &&
+            typeof rec.relation !== 'string'
+        ) {
             return false;
         }
         if (

@@ -11,7 +11,6 @@ import {
 } from '@/lib/flatpack-form-debug';
 import { loadField } from '@/lib/form';
 import { firstErrorMessage } from '@/lib/form-errors';
-import { serializeFieldValue } from '@/lib/form-page-field-values';
 import {
     buildInitialValues,
     fieldErrorMessages,
@@ -122,7 +121,7 @@ export function useFlatpackForm({
             const nextValues = mergeFieldChange(
                 field,
                 fieldId,
-                serializeFieldValue(field, nextValue),
+                nextValue,
                 form.data.values as Record<string, unknown>,
             );
 

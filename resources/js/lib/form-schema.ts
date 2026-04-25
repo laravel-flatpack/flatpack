@@ -41,6 +41,35 @@ function defaultValueForField(field: FormFieldProps): unknown {
     }
 }
 
+function canonicalDateSegment(value: unknown): string | null {
+    if (value instanceof Date) {
+        if (Number.isNaN(value.getTime())) {
+            return null;
+        }
+        const year = value.getFullYear();
+        const month = String(value.getMonth() + 1).padStart(2, '0');
+        const day = String(value.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+    if (typeof value !== 'string') {
+        return null;
+    }
+    const trimmed = value.trim();
+    if (trimmed === '') {
+        return '';
+    }
+    const match = /^(\d{4}-\d{2}-\d{2})/.exec(trimmed);
+    return match ? match[1] : trimmed;
+}
+
+function canonicalInitialFieldValue(field: FormFieldProps, value: unknown): unknown {
+    if (field.type === 'date-picker') {
+        const date = canonicalDateSegment(value);
+        return date ?? value;
+    }
+    return value;
+}
+
 export function normalizeFields(
     schema?: Record<string, unknown> | null,
 ): FormFieldEntry[] {
@@ -83,13 +112,13 @@ export function buildInitialValues(
 
     for (const { id, field } of fields) {
         if (Object.hasOwn(values, id)) {
-            nextValues[id] = values[id];
+            nextValues[id] = canonicalInitialFieldValue(field, values[id]);
             continue;
         }
 
         const defaultValue = defaultValueForField(field);
         if (defaultValue !== undefined) {
-            nextValues[id] = defaultValue;
+            nextValues[id] = canonicalInitialFieldValue(field, defaultValue);
         }
     }
 

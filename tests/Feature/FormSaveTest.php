@@ -417,6 +417,37 @@ YAML, function (): void {
     });
 });
 
+test('flatpack relation options endpoint accepts empty search query values', function () {
+    withTempFormSchema(<<<'YAML'
+name: Post
+model: Flatpack\Tests\Models\Post
+fields:
+  category_id:
+    type: combobox
+    label: Category
+    relation: category
+    relation_name: name
+    relation_value: id
+YAML, function (): void {
+        /** @var User $user */
+        $user = User::factory()->createOne();
+        $category = Category::factory()->createOne([
+            'name' => 'General',
+        ]);
+
+        actingAs($user)
+            ->getJson(route('flatpack.entities.relation-options', [
+                'entity' => 'posts',
+                'field' => 'category_id',
+                'q' => '',
+                'selected' => (string) $category->getKey(),
+            ]))
+            ->assertOk()
+            ->assertJsonPath('data.0.value', (string) $category->getKey())
+            ->assertJsonPath('data.0.label', 'General');
+    });
+});
+
 test('flatpack relation options endpoint returns stable 404 envelope when field is unknown', function () {
     withTempFormSchema(<<<'YAML'
 name: Post
@@ -503,6 +534,43 @@ YAML, function (): void {
             ]))
             ->assertStatus(422)
             ->assertJsonValidationErrors(['table_field', 'column_id']);
+    });
+});
+
+test('embedded table relation options endpoint accepts empty search query values', function (): void {
+    withTempFormSchema(<<<'YAML'
+name: Post
+model: Flatpack\Tests\Models\Post
+fields:
+  comments:
+    type: table
+    label: Comments
+    relation: comments
+    columns:
+      user_id:
+        type: relation
+        label: User
+        relation: user
+        relation_name: name
+        relation_value: id
+YAML, function (): void {
+        /** @var User $user */
+        $user = User::factory()->createOne();
+        $selectedUser = User::factory()->createOne([
+            'name' => 'Search Empty',
+        ]);
+
+        actingAs($user)
+            ->getJson(route('flatpack.entities.embedded-table-relation-options', [
+                'entity' => 'posts',
+                'table_field' => 'comments',
+                'column_id' => 'user_id',
+                'q' => '',
+                'selected' => (string) $selectedUser->getKey(),
+            ]))
+            ->assertOk()
+            ->assertJsonPath('data.0.value', (string) $selectedUser->getKey())
+            ->assertJsonPath('data.0.label', 'Search Empty');
     });
 });
 

@@ -87,6 +87,17 @@ describe('componentValueProps', () => {
         expect(d?.getDate()).toBe(20);
     });
 
+    it('parses date-picker from datetime-like string using local date segment', () => {
+        const d = componentValueProps(
+            { type: 'date-picker', label: 'D' },
+            '2026-04-25 14:30:00',
+        ).value as Date | undefined;
+        expect(d).toBeInstanceOf(Date);
+        expect(d?.getFullYear()).toBe(2026);
+        expect(d?.getMonth()).toBe(3);
+        expect(d?.getDate()).toBe(25);
+    });
+
     it('parses date-range from serialized object', () => {
         const v = componentValueProps(
             { type: 'date-range-picker', label: 'R' },

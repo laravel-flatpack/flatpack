@@ -195,6 +195,7 @@ export const ComboboxField = ({
     /** Related model attribute for labels (YAML {@code relation_name}); hydrates chip text from RelationRow[]. */
     relationLabelKey,
     emitObject = false,
+    portalContainer,
     onValueChange,
     invalid = false,
 }: {
@@ -219,6 +220,7 @@ export const ComboboxField = ({
     relationValueKey?: string;
     relationLabelKey?: string;
     emitObject?: boolean;
+    portalContainer?: HTMLElement | null;
     onValueChange?: (value: unknown) => void;
     invalid?: boolean;
 }) => {
@@ -268,13 +270,17 @@ export const ComboboxField = ({
                 ...(remoteBaseParams ?? {}),
                 page: String(page),
                 per_page: String(remotePerPage),
-                [remoteSearchParamKey]: currentQuery,
             });
+            const trimmedQuery = currentQuery.trim();
+            if (trimmedQuery !== '') {
+                params.set(remoteSearchParamKey, trimmedQuery);
+            }
             if (remoteFieldParamKey != null && remoteFieldParamKey !== '') {
                 params.set(remoteFieldParamKey, remoteFieldId ?? id);
             }
-            if (selectedValue !== '') {
-                params.set('selected', selectedValue);
+            const trimmedSelectedValue = selectedValue.trim();
+            if (trimmedSelectedValue !== '') {
+                params.set('selected', trimmedSelectedValue);
             }
 
             const requestId = requestIdRef.current + 1;
@@ -490,7 +496,7 @@ export const ComboboxField = ({
                                 }}
                             />
                         </ComboboxChips>
-                        <ComboboxContent>
+                        <ComboboxContent portalContainer={portalContainer}>
                             <ComboboxList
                                 onScroll={remote ? handleListScroll : undefined}
                             >
@@ -548,7 +554,7 @@ export const ComboboxField = ({
                             setQuery(event.currentTarget.value);
                         }}
                     />
-                    <ComboboxContent>
+                    <ComboboxContent portalContainer={portalContainer}>
                         <ComboboxList
                             onScroll={remote ? handleListScroll : undefined}
                         >
