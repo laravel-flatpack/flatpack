@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Flatpack\Http\Controllers;
 
 use Flatpack\Composition\EntityComposition;
+use Flatpack\Http\Requests\EmbeddedTableColumnRelationOptionsRequest;
 use Flatpack\Http\Response\RelationOptionsPayload;
 use Flatpack\Schema\Forms\FormSchemaFields;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 final readonly class EmbeddedTableColumnRelationOptionsController
 {
@@ -18,46 +18,43 @@ final readonly class EmbeddedTableColumnRelationOptionsController
         private EntityComposition $entityComposition,
     ) {}
 
-    public function __invoke(Request $request, string $entity): JsonResponse
+    public function __invoke(EmbeddedTableColumnRelationOptionsRequest $request, string $entity): JsonResponse
     {
         $form = $this->entityComposition->formFor($entity);
         $schema = $this->entityComposition->formSchema($entity);
-        $tableFieldId = trim((string) $request->query('table_field', ''));
-        $columnId = trim((string) $request->query('column_id', ''));
-        if ($tableFieldId === '' || $columnId === '') {
-            abort(404, 'Flatpack embedded table field or column is missing.');
-        }
+        $tableFieldId = trim((string) $request->validated('table_field'));
+        $columnId = trim((string) $request->validated('column_id'));
 
         $tableField = FormSchemaFields::fieldDefinitionById($schema, $tableFieldId);
         if ($tableField === null) {
-            abort(404, 'Flatpack table field is not configured.');
+            return $this->notFound('Flatpack table field is not configured.');
         }
         if (trim((string) ($tableField['type'] ?? '')) !== 'table') {
-            abort(404, 'Flatpack field is not a table.');
+            return $this->notFound('Flatpack field is not a table.');
         }
 
         $column = FormSchemaFields::embeddedTableColumnById($tableField, $columnId);
         if ($column === null) {
-            abort(404, 'Flatpack table column is not configured.');
+            return $this->notFound('Flatpack table column is not configured.');
         }
         if (trim((string) ($column['type'] ?? '')) !== 'relation') {
-            abort(404, 'Flatpack table column is not a relation column.');
+            return $this->notFound('Flatpack table column is not a relation column.');
         }
 
         $parentClass = (string) ($form->model ?? '');
         if ($parentClass === '' || ! class_exists($parentClass) || ! is_subclass_of($parentClass, Model::class)) {
-            abort(404, 'Flatpack form model is not configured.');
+            return $this->notFound('Flatpack form model is not configured.');
         }
 
         $tableRelation = trim((string) ($tableField['relation'] ?? ''));
         if ($tableRelation === '' || ! method_exists($parentClass, $tableRelation)) {
-            abort(404, 'Flatpack table relation is not available on the form model.');
+            return $this->notFound('Flatpack table relation is not available on the form model.');
         }
 
         $parent = new $parentClass;
         $rel = $parent->{$tableRelation}();
         if (! $rel instanceof Relation) {
-            abort(404, 'Flatpack table relation is not an Eloquent relation.');
+            return $this->notFound('Flatpack table relation is not an Eloquent relation.');
         }
 
         $related = $rel->getRelated();
@@ -71,5 +68,15 @@ final readonly class EmbeddedTableColumnRelationOptionsController
             $fieldDef,
             $request,
         ));
+    }
+
+    private function notFound(string $message): JsonResponse
+    {
+        return response()->json([
+            'error' => [
+                'code' => 'not_found',
+                'message' => $message,
+            ],
+        ], 404);
     }
 }

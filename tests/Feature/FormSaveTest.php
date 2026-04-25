@@ -164,6 +164,34 @@ YAML, function (): void {
     });
 });
 
+test('flatpack form save returns 404 when save action handler is not configured', function () {
+    withTempFormSchema(<<<'YAML'
+name: Post
+model: Flatpack\Tests\Models\Post
+fields:
+  title:
+    type: text
+    label: Title
+YAML, function (): void {
+        config()->set('flatpack.actions', [
+            'create' => Flatpack\Actions\Handlers\CreateRecordHandler::class,
+            'edit' => Flatpack\Actions\Handlers\EditRecordHandler::class,
+            'delete' => Flatpack\Actions\Handlers\DeleteRecordHandler::class,
+        ]);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        actingAs($user)
+            ->post(route('flatpack.entities.store', ['entity' => 'posts']), [
+                'values' => [
+                    'title' => 'Ignored',
+                ],
+            ])
+            ->assertNotFound();
+    });
+});
+
 test('flatpack entity edit form save updates a record and redirects back to edit', function () {
     withTempFormSchema(<<<'YAML'
 name: Post
@@ -365,6 +393,56 @@ YAML, function (): void {
     });
 });
 
+test('flatpack relation options endpoint validates required field query param', function () {
+    withTempFormSchema(<<<'YAML'
+name: Post
+model: Flatpack\Tests\Models\Post
+fields:
+  category_id:
+    type: combobox
+    label: Category
+    relation: category
+    relation_name: name
+    relation_value: id
+YAML, function (): void {
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        actingAs($user)
+            ->getJson(route('flatpack.entities.relation-options', [
+                'entity' => 'posts',
+            ]))
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['field']);
+    });
+});
+
+test('flatpack relation options endpoint returns stable 404 envelope when field is unknown', function () {
+    withTempFormSchema(<<<'YAML'
+name: Post
+model: Flatpack\Tests\Models\Post
+fields:
+  category_id:
+    type: combobox
+    label: Category
+    relation: category
+    relation_name: name
+    relation_value: id
+YAML, function (): void {
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        actingAs($user)
+            ->getJson(route('flatpack.entities.relation-options', [
+                'entity' => 'posts',
+                'field' => 'missing_field',
+            ]))
+            ->assertNotFound()
+            ->assertJsonPath('error.code', 'not_found')
+            ->assertJsonPath('error.message', 'Flatpack relation field is not configured.');
+    });
+});
+
 test('embedded table relation column returns user options for the child model', function (): void {
     withTempFormSchema(<<<'YAML'
 name: Post
@@ -396,6 +474,67 @@ YAML, function (): void {
             ]))
             ->assertOk()
             ->assertJsonPath('meta.per_page', 10);
+    });
+});
+
+test('embedded table relation options endpoint validates required query params', function (): void {
+    withTempFormSchema(<<<'YAML'
+name: Post
+model: Flatpack\Tests\Models\Post
+fields:
+  comments:
+    type: table
+    label: Comments
+    relation: comments
+    columns:
+      user_id:
+        type: relation
+        label: User
+        relation: user
+        relation_name: name
+        relation_value: id
+YAML, function (): void {
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        actingAs($user)
+            ->getJson(route('flatpack.entities.embedded-table-relation-options', [
+                'entity' => 'posts',
+            ]))
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['table_field', 'column_id']);
+    });
+});
+
+test('embedded table relation options endpoint returns stable 404 envelope when column is unknown', function (): void {
+    withTempFormSchema(<<<'YAML'
+name: Post
+model: Flatpack\Tests\Models\Post
+fields:
+  comments:
+    type: table
+    label: Comments
+    relation: comments
+    columns:
+      user_id:
+        type: relation
+        label: User
+        relation: user
+        relation_name: name
+        relation_value: id
+YAML, function (): void {
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        actingAs($user)
+            ->getJson(route('flatpack.entities.embedded-table-relation-options', [
+                'entity' => 'posts',
+                'table_field' => 'comments',
+                'column_id' => 'missing',
+            ]))
+            ->assertNotFound()
+            ->assertJsonPath('error.code', 'not_found')
+            ->assertJsonPath('error.message', 'Flatpack table column is not configured.');
     });
 });
 

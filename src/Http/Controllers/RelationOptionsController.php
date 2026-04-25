@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Flatpack\Http\Controllers;
 
 use Flatpack\Composition\EntityComposition;
+use Flatpack\Http\Requests\RelationOptionsRequest;
 use Flatpack\Http\Response\RelationOptionsPayload;
 use Flatpack\Schema\Forms\FormFieldType;
 use Flatpack\Schema\Forms\FormSchemaFields;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 final readonly class RelationOptionsController
 {
@@ -17,18 +17,15 @@ final readonly class RelationOptionsController
         private EntityComposition $entityComposition,
     ) {}
 
-    public function __invoke(Request $request, string $entity): JsonResponse
+    public function __invoke(RelationOptionsRequest $request, string $entity): JsonResponse
     {
         $form = $this->entityComposition->formFor($entity);
         $schema = $this->entityComposition->formSchema($entity);
-        $fieldId = trim((string) $request->query('field', ''));
-        if ($fieldId === '') {
-            abort(404, 'Flatpack relation field is missing.');
-        }
+        $fieldId = trim((string) $request->validated('field'));
 
         $fieldDefinition = $this->relationFieldDefinition($schema, $fieldId);
         if ($fieldDefinition === null) {
-            abort(404, 'Flatpack relation field is not configured.');
+            return $this->notFound('Flatpack relation field is not configured.');
         }
 
         return response()->json(RelationOptionsPayload::forModelField(
@@ -50,5 +47,15 @@ final readonly class RelationOptionsController
         }
 
         return $fieldDefinition;
+    }
+
+    private function notFound(string $message): JsonResponse
+    {
+        return response()->json([
+            'error' => [
+                'code' => 'not_found',
+                'message' => $message,
+            ],
+        ], 404);
     }
 }
