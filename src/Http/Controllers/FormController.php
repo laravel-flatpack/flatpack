@@ -12,6 +12,7 @@ use Flatpack\Http\Requests\FormSubmitRequest;
 use Flatpack\Schema\Forms\FormSchemaNormalizer;
 use Flatpack\Schema\HeaderActions;
 use Flatpack\Support\ActionRuntime;
+use Flatpack\Support\Exceptions\ActionRuntimeException;
 use Flatpack\Support\SuccessRedirect;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
@@ -109,10 +110,14 @@ final readonly class FormController
         $form = $this->entityComposition->formFor($entity);
         $schema = $this->entityComposition->formSchema($entity);
         $modelClass = (string) ($form->model ?? '');
-        $model = $record !== null
-            ? $this->actions->resolveRecordModel($modelClass, $record, 'form')
-            : null;
-        $handler = $this->actions->resolveRecordActionHandler('save');
+        try {
+            $model = $record !== null
+                ? $this->actions->resolveRecordModel($modelClass, $record, 'form')
+                : null;
+            $handler = $this->actions->resolveRecordActionHandler('save');
+        } catch (ActionRuntimeException $exception) {
+            abort($exception->statusCode(), $exception->getMessage());
+        }
         $user = $request->user();
         if ($user === null) {
             abort(403);

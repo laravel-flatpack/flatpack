@@ -11,6 +11,7 @@ use Flatpack\Http\Requests\BulkActionRequest;
 use Flatpack\Http\Requests\ListActionRequest;
 use Flatpack\Http\Requests\ListRecordUpdateRequest;
 use Flatpack\Support\ActionRuntime;
+use Flatpack\Support\Exceptions\ActionRuntimeException;
 use Flatpack\Support\SuccessRedirect;
 use Flatpack\Support\SuccessRedirectSchema;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -38,7 +39,11 @@ final readonly class EntityActionController
             abort(403);
         }
 
-        $handler = $this->actions->resolveBulkActionHandler($action);
+        try {
+            $handler = $this->actions->resolveBulkActionHandler($action);
+        } catch (ActionRuntimeException $exception) {
+            abort($exception->statusCode(), $exception->getMessage());
+        }
         $this->actions->ensureBulkActionAuthorized($handler, $user, trim((string) ($list->model ?? '')));
         $result = $handler->handle(FlatpackBulkActionContext::fromRequest(
             request: $request,
@@ -72,7 +77,11 @@ final readonly class EntityActionController
         }
 
         [$listModelClass, $schema] = $this->listModelAndSchema($entity);
-        $handler = $this->actions->resolveRecordActionHandler($action);
+        try {
+            $handler = $this->actions->resolveRecordActionHandler($action);
+        } catch (ActionRuntimeException $exception) {
+            abort($exception->statusCode(), $exception->getMessage());
+        }
         $this->actions->ensureRecordActionAuthorized($handler, $user, $listModelClass, null);
         try {
             $result = $handler->handle(new FlatpackActionContext(
@@ -124,8 +133,12 @@ final readonly class EntityActionController
         }
 
         [$listModelClass, $schema] = $this->listModelAndSchema($entity);
-        $model = $this->actions->resolveRecordModel($listModelClass, $record, 'list');
-        $handler = $this->actions->resolveRecordActionHandler($action);
+        try {
+            $model = $this->actions->resolveRecordModel($listModelClass, $record, 'list');
+            $handler = $this->actions->resolveRecordActionHandler($action);
+        } catch (ActionRuntimeException $exception) {
+            abort($exception->statusCode(), $exception->getMessage());
+        }
         $this->actions->ensureRecordActionAuthorized($handler, $user, $listModelClass, $model);
         try {
             $result = $handler->handle(new FlatpackActionContext(
@@ -168,8 +181,12 @@ final readonly class EntityActionController
         string $record,
     ): RedirectResponse {
         [$listModelClass, $schema] = $this->listModelAndSchema($entity);
-        $model = $this->actions->resolveRecordModel($listModelClass, $record, 'list');
-        $handler = $this->actions->resolveRecordActionHandler('save');
+        try {
+            $model = $this->actions->resolveRecordModel($listModelClass, $record, 'list');
+            $handler = $this->actions->resolveRecordActionHandler('save');
+        } catch (ActionRuntimeException $exception) {
+            abort($exception->statusCode(), $exception->getMessage());
+        }
         $user = $request->user();
         if ($user === null) {
             abort(403);

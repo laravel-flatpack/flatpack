@@ -7,6 +7,7 @@ namespace Flatpack\Support;
 use Flatpack\Actions\ActionModelClassResolver;
 use Flatpack\Contracts\Actions\FlatpackAction;
 use Flatpack\Contracts\Actions\FlatpackBulkAction;
+use Flatpack\Support\Exceptions\ActionRuntimeException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\MassAssignmentException;
@@ -25,12 +26,15 @@ final readonly class ActionRuntime
     {
         $handlerClass = config("flatpack.actions.{$action}");
         if (! is_string($handlerClass) || $handlerClass === '') {
-            abort(404, sprintf('Flatpack action "%s" is not configured. Add it to config/flatpack.php under "actions".', $action));
+            throw new ActionRuntimeException(
+                404,
+                sprintf('Flatpack action "%s" is not configured. Add it to config/flatpack.php under "actions".', $action),
+            );
         }
 
         $handler = app()->make($handlerClass);
         if (! $handler instanceof FlatpackAction) {
-            abort(500, 'Flatpack action handler must implement FlatpackAction.');
+            throw new ActionRuntimeException(500, 'Flatpack action handler must implement FlatpackAction.');
         }
 
         return $handler;
@@ -40,12 +44,15 @@ final readonly class ActionRuntime
     {
         $handlerClass = config("flatpack.bulk_actions.{$action}");
         if (! is_string($handlerClass) || $handlerClass === '') {
-            abort(404, sprintf('Flatpack bulk action "%s" is not configured. Add it to config/flatpack.php under "bulk_actions".', $action));
+            throw new ActionRuntimeException(
+                404,
+                sprintf('Flatpack bulk action "%s" is not configured. Add it to config/flatpack.php under "bulk_actions".', $action),
+            );
         }
 
         $handler = app()->make($handlerClass);
         if (! $handler instanceof FlatpackBulkAction) {
-            abort(500, 'Flatpack bulk action handler must implement FlatpackBulkAction.');
+            throw new ActionRuntimeException(500, 'Flatpack bulk action handler must implement FlatpackBulkAction.');
         }
 
         return $handler;
@@ -92,10 +99,10 @@ final readonly class ActionRuntime
         string $context = 'record',
     ): Model {
         if ($modelClass === '' || ! class_exists($modelClass)) {
-            abort(404, sprintf('Flatpack %s model is not configured.', $context));
+            throw new ActionRuntimeException(404, sprintf('Flatpack %s model is not configured.', $context));
         }
         if (! is_subclass_of($modelClass, Model::class)) {
-            abort(404, sprintf('Flatpack %s model class is invalid.', $context));
+            throw new ActionRuntimeException(404, sprintf('Flatpack %s model class is invalid.', $context));
         }
 
         /** @var class-string<Model> $modelClass */
