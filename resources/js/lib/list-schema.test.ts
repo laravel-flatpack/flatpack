@@ -51,6 +51,25 @@ describe('listYamlColumnsToDataTableColumns', () => {
         });
     });
 
+    it('maps relation camelCase keys as compatibility aliases', () => {
+        const cols = listYamlColumnsToDataTableColumns([
+            {
+                id: 'owner',
+                type: 'relation',
+                label: 'Owner',
+                relation: 'users',
+                relationName: 'name',
+                relationValue: 'id',
+            },
+        ]);
+        expect(cols[0]).toMatchObject({
+            id: 'owner',
+            relation: 'users',
+            relationName: 'name',
+            relationValue: 'id',
+        });
+    });
+
     it('maps column editFormField override from camelCase', () => {
         const cols = listYamlColumnsToDataTableColumns([
             {
@@ -67,6 +86,20 @@ describe('listYamlColumnsToDataTableColumns', () => {
             type: 'textarea',
             placeholder: 'Write here',
         });
+    });
+
+    it('ignores malformed edit_form_field payloads without type', () => {
+        const cols = listYamlColumnsToDataTableColumns([
+            {
+                id: 'content',
+                type: 'text',
+                label: 'Content',
+                edit_form_field: {
+                    placeholder: 'Write here',
+                },
+            },
+        ]);
+        expect(cols[0]?.editFormField).toBeUndefined();
     });
 
     it('drops relation metadata when incomplete', () => {

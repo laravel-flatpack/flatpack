@@ -145,6 +145,8 @@ final class CompositionSchemaKeys
     public const array LIST_COLUMN_DEFINITION_PROPERTY_KEYS = [
         'actions',
         'detailDrawer',
+        'editFormField',
+        'edit_form_field',
         'editable',
         'format',
         'id',

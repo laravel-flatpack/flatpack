@@ -504,16 +504,14 @@
                             "type": "array",
                             "minItems": 1,
                             "items": {
-                                "type": "object",
-                                "additionalProperties": true
+                                "$ref": "#/$defs/embeddedTableColumnDefinition"
                             }
                         },
                         {
                             "type": "object",
                             "minProperties": 1,
                             "additionalProperties": {
-                                "type": "object",
-                                "additionalProperties": true
+                                "$ref": "#/$defs/embeddedTableColumnDefinition"
                             }
                         }
                     ]
@@ -573,6 +571,66 @@
                     ],
                     "description": "Eloquent relation class for this table field, usually derived from the parent form model. Authors may set this in YAML to override auto-detection."
                 }
+            },
+            "additionalProperties": false
+        },
+        "embeddedTableColumnEditFormFieldDefinition": {
+            "type": "object",
+            "required": ["type"],
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "text",
+                        "textarea",
+                        "select",
+                        "combobox",
+                        "date-picker",
+                        "date-range-picker",
+                        "time-picker",
+                        "checkbox",
+                        "switch",
+                        "rich-text",
+                        "block-editor",
+                        "table"
+                    ]
+                }
+            },
+            "additionalProperties": true
+        },
+        "embeddedTableColumnDefinition": {
+            "type": "object",
+            "required": ["label"],
+            "properties": {
+                "id": { "type": "string" },
+                "type": {
+                    "type": "string",
+                    "enum": ["text", "select", "date", "datetime", "actions", "badge", "status", "relation"]
+                },
+                "label": { "type": "string", "minLength": 1 },
+                "options": { "$ref": "#/$defs/selectOptions" },
+                "actions": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": { "$ref": "#/$defs/fieldTableActionEntry" }
+                },
+                "relation": { "type": "string", "minLength": 1 },
+                "relation_name": { "type": "string", "minLength": 1 },
+                "relation_value": { "type": "string", "minLength": 1 },
+                "relationName": { "type": "string", "minLength": 1 },
+                "relationValue": { "type": "string", "minLength": 1 },
+                "format": { "type": "string" },
+                "timezone": { "type": "string" },
+                "sortable": { "type": "boolean" },
+                "searchable": { "type": "boolean" },
+                "editable": { "type": "boolean" },
+                "required": { "type": "boolean" },
+                "rules": { "$ref": "#/$defs/validationRules" },
+                "detailDrawer": { "type": "boolean" },
+                "invisible": { "type": "boolean" },
+                "truncate": { "type": "integer", "minimum": 1 },
+                "edit_form_field": { "$ref": "#/$defs/embeddedTableColumnEditFormFieldDefinition" },
+                "editFormField": { "$ref": "#/$defs/embeddedTableColumnEditFormFieldDefinition" }
             },
             "additionalProperties": false
         }

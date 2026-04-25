@@ -122,6 +122,8 @@ export const LIST_COLUMN_ACTION_BUTTON_ENTRY_KEYS = [
 export const LIST_COLUMN_DEFINITION_PROPERTY_KEYS = [
     'actions',
     'detailDrawer',
+    'editFormField',
+    'edit_form_field',
     'editable',
     'format',
     'id',

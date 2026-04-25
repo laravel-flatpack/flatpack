@@ -118,40 +118,7 @@ export function listYamlColumnsToDataTableColumns(
                 (c): c is Record<string, unknown> =>
                     c !== null && typeof c === 'object',
             )
-            .map((col) => {
-                const {
-                    type: rawType,
-                    truncate: rawTruncate,
-                    edit_form_field: rawEditFormFieldSnake,
-                    editFormField: rawEditFormFieldCamel,
-                    actions: rawActions,
-                    relation_name: _rn,
-                    relation_value: _rv,
-                    relationName: _rnc,
-                    relationValue: _rvc,
-                    relation: _r,
-                    ...rest
-                } = col;
-                const id = String(col.id ?? '');
-                const type = normalizeColumnType(rawType);
-                const truncate = normalizeColumnTruncate(rawTruncate);
-                const editFormField = normalizeColumnEditFormField(
-                    rawEditFormFieldSnake ?? rawEditFormFieldCamel,
-                );
-                const rel = pickRelationColumnFields(
-                    col as Record<string, unknown>,
-                );
-                const actions = normalizeColumnActions(rawActions);
-                return {
-                    ...rest,
-                    id,
-                    ...(type !== undefined ? { type } : {}),
-                    ...(truncate !== undefined ? { truncate } : {}),
-                    ...(editFormField !== undefined ? { editFormField } : {}),
-                    ...(rel !== null ? rel : {}),
-                    ...(actions.length > 0 ? { actions } : {}),
-                } as FlatpackDataTableColumn;
-            })
+            .map((col) => normalizeColumnRecord(col, ''))
             .filter((c) => c.id);
     }
 
@@ -160,45 +127,52 @@ export function listYamlColumnsToDataTableColumns(
     }
 
     return Object.entries(columns as Record<string, unknown>)
-        .map(([key, raw]) => {
-            const col =
+        .map(([key, raw]) =>
+            normalizeColumnRecord(
                 raw !== null && typeof raw === 'object'
                     ? (raw as Record<string, unknown>)
-                    : {};
-            const {
-                type: rawType,
-                truncate: rawTruncate,
-                edit_form_field: rawEditFormFieldSnake,
-                editFormField: rawEditFormFieldCamel,
-                actions: rawActions,
-                relation_name: _rn,
-                relation_value: _rv,
-                relationName: _rnc,
-                relationValue: _rvc,
-                relation: _r,
-                ...rest
-            } = col;
-            const id = String(col.id ?? key);
-            const type = normalizeColumnType(rawType);
-            const truncate = normalizeColumnTruncate(rawTruncate);
-            const editFormField = normalizeColumnEditFormField(
-                rawEditFormFieldSnake ?? rawEditFormFieldCamel,
-            );
-            const rel = pickRelationColumnFields(
-                col as Record<string, unknown>,
-            );
-            const actions = normalizeColumnActions(rawActions);
-            return {
-                ...rest,
-                id,
-                ...(type !== undefined ? { type } : {}),
-                ...(truncate !== undefined ? { truncate } : {}),
-                ...(editFormField !== undefined ? { editFormField } : {}),
-                ...(rel !== null ? rel : {}),
-                ...(actions.length > 0 ? { actions } : {}),
-            } as FlatpackDataTableColumn;
-        })
+                    : {},
+                key,
+            ),
+        )
         .filter((c) => c.id);
+}
+
+function normalizeColumnRecord(
+    col: Record<string, unknown>,
+    fallbackId: string,
+): FlatpackDataTableColumn {
+    const {
+        type: rawType,
+        truncate: rawTruncate,
+        edit_form_field: rawEditFormFieldSnake,
+        editFormField: rawEditFormFieldCamel,
+        actions: rawActions,
+        relation_name: _rn,
+        relation_value: _rv,
+        relationName: _rnc,
+        relationValue: _rvc,
+        relation: _r,
+        ...rest
+    } = col;
+    const id = String(col.id ?? fallbackId);
+    const type = normalizeColumnType(rawType);
+    const truncate = normalizeColumnTruncate(rawTruncate);
+    const editFormField = normalizeColumnEditFormField(
+        rawEditFormFieldSnake ?? rawEditFormFieldCamel,
+    );
+    const rel = pickRelationColumnFields(col);
+    const actions = normalizeColumnActions(rawActions);
+
+    return {
+        ...rest,
+        id,
+        ...(type !== undefined ? { type } : {}),
+        ...(truncate !== undefined ? { truncate } : {}),
+        ...(editFormField !== undefined ? { editFormField } : {}),
+        ...(rel !== null ? rel : {}),
+        ...(actions.length > 0 ? { actions } : {}),
+    } as FlatpackDataTableColumn;
 }
 
 function normalizeColumnOptions(raw: unknown): FlatpackDataTableColumnOption[] {

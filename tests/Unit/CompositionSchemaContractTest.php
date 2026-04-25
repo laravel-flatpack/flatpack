@@ -147,6 +147,23 @@ describe('list composition schema (resources/schema/list.json)', function () {
         expect($errors)->toBeEmpty();
     });
 
+    it('accepts relation columns with camelCase relation keys as read alias', function () {
+        $errors = CompositionSchemaAsserter::validateList([
+            'columns' => [
+                [
+                    'id' => 'author',
+                    'type' => 'relation',
+                    'label' => 'Author',
+                    'relation' => 'author',
+                    'relationName' => 'name',
+                    'relationValue' => 'id',
+                ],
+            ],
+        ]);
+
+        expect($errors)->toBeEmpty();
+    });
+
     it('rejects a select column without options', function () {
         $errors = CompositionSchemaAsserter::validateList([
             'columns' => [
@@ -237,6 +254,64 @@ describe('list composition schema (resources/schema/list.json)', function () {
                     'label' => 'Actions',
                     'actions' => [
                         'edit' => ['label' => 'Edit', 'action' => 'edit'],
+                    ],
+                ],
+            ],
+        ]);
+
+        expect($errors)->not->toBeEmpty();
+    });
+
+    it('accepts edit_form_field on list columns', function () {
+        $errors = CompositionSchemaAsserter::validateList([
+            'columns' => [
+                [
+                    'id' => 'title',
+                    'type' => 'text',
+                    'label' => 'Title',
+                    'edit_form_field' => [
+                        'type' => 'textarea',
+                        'placeholder' => 'Write...',
+                    ],
+                ],
+            ],
+        ]);
+
+        expect($errors)->toBeEmpty();
+    });
+
+    it('rejects edit_form_field without type on list columns', function () {
+        $errors = CompositionSchemaAsserter::validateList([
+            'columns' => [
+                [
+                    'id' => 'title',
+                    'type' => 'text',
+                    'label' => 'Title',
+                    'edit_form_field' => [
+                        'placeholder' => 'Write...',
+                    ],
+                ],
+            ],
+        ]);
+
+        expect($errors)->not->toBeEmpty();
+    });
+
+    it('rejects malformed embedded table column edit_form_field', function () {
+        $errors = CompositionSchemaAsserter::validateForm([
+            'fields' => [
+                'items' => [
+                    'type' => 'table',
+                    'label' => 'Items',
+                    'columns' => [
+                        [
+                            'id' => 'name',
+                            'label' => 'Name',
+                            'type' => 'text',
+                            'edit_form_field' => [
+                                'placeholder' => 'Missing type',
+                            ],
+                        ],
                     ],
                 ],
             ],
