@@ -121,31 +121,39 @@ export type FlatpackDataTableServerFiltersState = Record<
     FlatpackDataTableServerFilterValue
 >;
 
-export type DataTableRowActionPayload = {
+export type DataTableRow = Record<string, unknown>;
+
+export type DataTableRowActionPayload<TRow extends DataTableRow = DataTableRow> = {
     action: string;
-    row: Record<string, unknown>;
+    row: TRow;
     /** Present for `type: actions` column buttons (schema-driven confirm / toast). */
     button?: FlatpackDataTableActionButton;
 };
 
-export type BuildDataTableColumnDefsOptions = {
+export type BuildDataTableColumnDefsOptions<
+    TRow extends DataTableRow = DataTableRow,
+> = {
     hasBulkActions?: boolean;
     reorderable?: boolean;
     onCellChange?: (rowId: string, columnId: string, value: unknown) => void;
-    onRowReplace?: (rowId: string, nextRow: Record<string, unknown>) => void;
-    onRowAction?: (payload: DataTableRowActionPayload) => void | Promise<void>;
+    onRowReplace?: (rowId: string, nextRow: TRow) => void;
+    onRowAction?: (payload: DataTableRowActionPayload<TRow>) => void | Promise<void>;
 };
 
-export type DataTableCellUpdatePayload = {
+export type DataTableCellUpdatePayload<
+    TRow extends DataTableRow = DataTableRow,
+> = {
     rowId: string;
-    row: Record<string, unknown>;
+    row: TRow;
     columnId: string;
     value: unknown;
 };
 
-export type DataTableRowUpdatePayload = {
+export type DataTableRowUpdatePayload<
+    TRow extends DataTableRow = DataTableRow,
+> = {
     rowId: string;
-    row: Record<string, unknown>;
+    row: TRow;
 };
 
 export type FlatpackListServerPagination = {
@@ -175,10 +183,10 @@ export type UseDataTableCreateRowFlowOptions = {
     toolbarActions: FlatpackFormTableToolbarAction[];
     schemaColumns: FlatpackDataTableColumn[];
     rowIdentity: {
-        getStableRowId: (row: Record<string, unknown>, index: number) => string;
+        getStableRowId: (row: DataTableRow, index: number) => string;
     };
     mutations: {
-        data: Record<string, unknown>[];
+        data: DataTableRow[];
         onToolbarAction?: (actionId: string) => void;
     };
 };
@@ -192,8 +200,8 @@ export type DataTableRowDrawerBodyVariant = 'rowFields' | 'attachExisting';
 export type DataTableRowDrawerAttachBodyRenderContext = {
     rowId: string;
     /** Mutable draft for the row (sync to parent on Save via `onRowReplace`). */
-    draft: Record<string, unknown>;
-    setDraft: Dispatch<SetStateAction<Record<string, unknown>>>;
+    draft: DataTableRow;
+    setDraft: Dispatch<SetStateAction<DataTableRow>>;
     schemaColumns: FlatpackDataTableColumn[];
     titleColumn: FlatpackDataTableColumn;
     bodyVariant: DataTableRowDrawerBodyVariant;
@@ -204,7 +212,7 @@ export type UseDataTableCreateRowFlowResult = {
     newRowIdPrefix: '__new__';
     detailDrawerOpen: boolean;
     detailDrawerRowId: string | null;
-    detailDrawerRow: Record<string, unknown> | null;
+    detailDrawerRow: DataTableRow | null;
     /** `attachExisting` when the toolbar `action` is the BTM `attach` keyword. */
     detailDrawerBodyVariant: DataTableRowDrawerBodyVariant;
     openDetailDrawerForRow: (rowId: string) => void;
@@ -217,11 +225,11 @@ export type UseDataTableCreateRowFlowResult = {
 export type UseDataTableRelationshipFlowOptions = {
     rowIdentity: {
         dataRowKey: string;
-        getStableRowId: (row: Record<string, unknown>, index: number) => string;
+        getStableRowId: (row: DataTableRow, index: number) => string;
     };
     mutations: {
-        data: Record<string, unknown>[];
-        setData: Dispatch<SetStateAction<Record<string, unknown>[]>>;
+        data: DataTableRow[];
+        setData: Dispatch<SetStateAction<DataTableRow[]>>;
         onValueChange?: (value: unknown) => void;
     };
     onRowAction?: (payload: DataTableRowActionPayload) => void | Promise<void>;
@@ -251,11 +259,11 @@ export type UseDataTableRelationshipFlowResult = {
 
 export type UseDataTableRowReplaceFlowOptions = {
     rowIdentity: {
-        getStableRowId: (row: Record<string, unknown>, index: number) => string;
+        getStableRowId: (row: DataTableRow, index: number) => string;
         newRowIdPrefix: string;
     };
     mutations: {
-        setData: Dispatch<SetStateAction<Record<string, unknown>[]>>;
+        setData: Dispatch<SetStateAction<DataTableRow[]>>;
         onValueChange?: (value: unknown) => void;
         onRowUpdate?: (
             payload: DataTableRowUpdatePayload,
@@ -265,15 +273,15 @@ export type UseDataTableRowReplaceFlowOptions = {
 };
 
 export type UseDataTableRowReplaceFlowResult = {
-    handleRowReplace: (rowId: string, nextRow: Record<string, unknown>) => void;
+    handleRowReplace: (rowId: string, nextRow: DataTableRow) => void;
 };
 
 export type UseDataTableCellUpdateFlowOptions = {
     rowIdentity: {
-        getStableRowId: (row: Record<string, unknown>, index: number) => string;
+        getStableRowId: (row: DataTableRow, index: number) => string;
     };
     mutations: {
-        setData: Dispatch<SetStateAction<Record<string, unknown>[]>>;
+        setData: Dispatch<SetStateAction<DataTableRow[]>>;
         onValueChange?: (value: unknown) => void;
         onCellUpdate?: (
             payload: DataTableCellUpdatePayload,
@@ -297,10 +305,10 @@ export type FlatpackTableRelationType =
     | 'has_one'
     | 'unknown';
 
-export type DataTableProps = {
+export type DataTableProps<TRow extends DataTableRow = DataTableRow> = {
     id: string;
     columns: FlatpackDataTableColumn[];
-    data: Record<string, unknown>[];
+    data: TRow[];
     dataRowKey?: string;
     bulkActions?: FlatpackDataTableBulkAction[];
     toolbarActions?: FlatpackFormTableToolbarAction[];
@@ -320,16 +328,16 @@ export type DataTableProps = {
      * (e.g. `row_detail_drawer: false` on embedded `type: table` fields).
      */
     openDetailDrawerOnRowClick?: boolean;
-    onRowClick?: (row: Record<string, unknown>) => void;
+    onRowClick?: (row: TRow) => void;
     onValueChange?: (value: unknown) => void;
     onBulkAction?: (
         payload: DataTableBulkDeletePayload,
     ) => void | Promise<void>;
-    onRowAction?: (payload: DataTableRowActionPayload) => void | Promise<void>;
+    onRowAction?: (payload: DataTableRowActionPayload<TRow>) => void | Promise<void>;
     onCellUpdate?: (
-        payload: DataTableCellUpdatePayload,
+        payload: DataTableCellUpdatePayload<TRow>,
     ) => void | Promise<void>;
-    onRowUpdate?: (payload: DataTableRowUpdatePayload) => void | Promise<void>;
+    onRowUpdate?: (payload: DataTableRowUpdatePayload<TRow>) => void | Promise<void>;
     className?: string;
     toolbarStart?: ReactNode;
     toolbarAfterColumns?: ReactNode;

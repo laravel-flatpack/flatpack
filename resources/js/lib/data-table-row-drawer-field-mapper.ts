@@ -145,7 +145,66 @@ function coerceEditFormField(
     if (type == null || type === 'table') {
         return null;
     }
-    return rec as Exclude<FormFieldProps, { type: 'table' }>;
+    if (!isValidEditFormFieldShape(type, rec)) {
+        return null;
+    }
+    return {
+        ...rec,
+        type,
+    } as Exclude<FormFieldProps, { type: 'table' }>;
+}
+
+function isValidEditFormFieldShape(
+    type: Exclude<FormFieldProps['type'], 'table'>,
+    rec: Record<string, unknown>,
+): boolean {
+    if ('label' in rec && rec.label != null && typeof rec.label !== 'string') {
+        return false;
+    }
+    if (
+        'placeholder' in rec &&
+        rec.placeholder != null &&
+        typeof rec.placeholder !== 'string'
+    ) {
+        return false;
+    }
+
+    if (type === 'select' || type === 'combobox') {
+        if ('options' in rec && rec.options != null && !Array.isArray(rec.options)) {
+            return false;
+        }
+    }
+
+    if (type === 'combobox') {
+        if ('multiple' in rec && typeof rec.multiple !== 'boolean') {
+            return false;
+        }
+        if ('remote' in rec && typeof rec.remote !== 'boolean') {
+            return false;
+        }
+        if ('emitObject' in rec && typeof rec.emitObject !== 'boolean') {
+            return false;
+        }
+        if ('relation' in rec && rec.relation != null && typeof rec.relation !== 'string') {
+            return false;
+        }
+        if (
+            'relation_name' in rec &&
+            rec.relation_name != null &&
+            typeof rec.relation_name !== 'string'
+        ) {
+            return false;
+        }
+        if (
+            'relation_value' in rec &&
+            rec.relation_value != null &&
+            typeof rec.relation_value !== 'string'
+        ) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 function overrideFieldWithColumnDefaults(

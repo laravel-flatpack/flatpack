@@ -144,4 +144,26 @@ describe('mapDataTableColumnToDrawerField', () => {
             },
         });
     });
+
+    it('ignores malformed edit_form_field override payloads', () => {
+        const col: FlatpackDataTableColumn = {
+            id: 'status',
+            label: 'Status',
+            type: 'text',
+            editFormField: {
+                type: 'select',
+                // Invalid override shape: options must be an array when present.
+                options: 'bad' as unknown as never,
+            },
+        };
+        expect(mapDataTableColumnToDrawerField(col)).toEqual({
+            kind: 'form',
+            field: {
+                type: 'select',
+                label: 'Status',
+                placeholder: 'Choose...',
+                options: [],
+            },
+        });
+    });
 });
