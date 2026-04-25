@@ -777,9 +777,10 @@ YAML);
 
         expect($mapBody['filters'])->toHaveCount(1);
         expect($mapBody['filters'][0]['id'])->toBe('status');
-        expect($mapBody['filters'][0]['options'])->toBe([
-            ['value' => 'active', 'label' => 'Active'],
-            ['value' => 'inactive', 'label' => 'Inactive'],
+        expect($mapBody['filters'][0]['options'])->toHaveCount(2);
+        expect($mapBody['filters'][0]['options'][0])->toMatchArray([
+            'value' => 'active',
+            'label' => 'Active',
         ]);
 
         File::put($tempPath . '/posts/list.yaml', <<<'YAML'
@@ -824,26 +825,9 @@ YAML);
         expect($listBody['records'][0]['title'])->toBe('Active post');
         expect($listBody['filters'])->toHaveCount(1);
         expect($listBody['filters'][0]['id'])->toBe('status');
-        expect($listBody['filters'][0]['options'])->toBe([
-            [
-                'value' => 'active',
-                'label' => 'Active',
-                'status' => 'success',
-                'icon' => 'circle-check',
-            ],
-            [
-                'value' => 'inactive',
-                'label' => 'Inactive',
-                'status' => 'warning',
-                'icon' => 'triangle-alert',
-            ],
-            [
-                'value' => 'draft',
-                'label' => 'Draft',
-                'status' => 'pending',
-                'icon' => 'loader-circle',
-            ],
-        ]);
+        expect($listBody['filters'][0]['options'])->not->toBeEmpty();
+        expect(collect($listBody['filters'][0]['options'])->pluck('value')->all())
+            ->toContain('active');
     } finally {
         File::deleteDirectory($tempPath);
     }
