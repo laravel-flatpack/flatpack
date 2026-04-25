@@ -1,0 +1,609 @@
+/**
+ * Data table orchestration: TanStack state, sub-hooks, and row/drawer invariants.
+ *
+ * Sub-hook responsibilities:
+ * - {@link useDataTableCreateRowFlow} — toolbar `create` / `add` / `attach` draft path, `onToolbarAction` delegation, drawer open/close
+ * - {@link useDataTableCellUpdateFlow} — inline cell edits, rollback
+ * - {@link useDataTableRowReplaceFlow} — drawer save / new row commit, `deferNotifyParentFormValues` for `onValueChange`
+ * - {@link useDataTableRelationshipFlow} — row/bulk relationship actions, destructive confirm
+ * - {@link useDataTableReorder} — drag order
+ * - {@link useDataTableServerState} — pagination, filters, sorting, search when `serverPagination` is set
+ *
+ * Invariants (embedded form / list tables):
+ * - Draft toolbar open does not call `onValueChange`; parent sees updates on save/row replace (`deferNotifyParentFormValues` in cell/row-replace paths).
+ * - Create/add/attach `action` keys: see `data-table-action-semantics` and `useDataTableCreateRowFlow`.
+ * - Do not key toolbar behavior by button `id`, only by each button’s `action` string in `useDataTableCreateRowFlow`.
+ */
+import {
+    closestCenter,
+    DndContext,
+    KeyboardSensor,
+    MouseSensor,
+    TouchSensor,
+    useSensor,
+    useSensors,
+} from '@dnd-kit/core';
+import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
+import {
+    type Column,
+    type ColumnFiltersState,
+    functionalUpdate,
+    getCoreRowModel,
+    getFacetedRowModel,
+    getFacetedUniqueValues,
+    getFilteredRowModel,
+    getPaginationRowModel,
+    getSortedRowModel,
+    type RowSelectionState,
+    type Table,
+    useReactTable,
+    type VisibilityState,
+} from '@tanstack/react-table';
+import * as React from 'react';
+import { DataTableBody } from '@/components/table/data-table-body';
+import { buildDataTableColumnDefs } from '@/components/table/data-table-column-defs';
+import {
+    leafColumnIdsInSchemaOrder,
+    visibilityFromSchema,
+} from '@/components/table/data-table-column-visibility';
+import { DATA_TABLE_ROW_CLICK_IGNORE_SELECTOR } from '@/components/table/data-table-constants';
+import { DataTableFooter } from '@/components/table/data-table-footer';
+import { useDataTableCellUpdateFlow } from '@/hooks/use-data-table-cell-update-flow';
+import { useDataTableCreateRowFlow } from '@/hooks/use-data-table-create-row-flow';
+import { useDataTableRelationshipFlow } from '@/hooks/use-data-table-relationship-flow';
+import { useDataTableReorder } from '@/hooks/use-data-table-reorder';
+import { useDataTableRowReplaceFlow } from '@/hooks/use-data-table-row-replace-flow';
+import { useDataTableServerState } from '@/hooks/use-data-table-server-state';
+import { stableRowId } from '@/lib/data-table-utils';
+import { DEFAULT_LIST_ROW_REORDER_COLUMN } from '@/lib/generated/composition-schema-keys';
+import type {
+    DataTableProps,
+    DataTableRowDrawerBodyVariant,
+    FlatpackDataTableBulkAction,
+    FlatpackDataTableColumn,
+    FlatpackDataTableFilter,
+    FlatpackFormTableToolbarAction,
+} from '@/types/data-table';
+
+/**
+ * Return value of {@link useDataTableController} for `DataTable` (toolbar, `tableAndFooter`, row drawer, confirm).
+ */
+export type DataTableController = {
+    id: string;
+    table: Table<Record<string, unknown>>;
+    hasToolbarActions: boolean;
+    toolbarActions: FlatpackFormTableToolbarAction[];
+    handleToolbarActionClick: (actionId: string) => void;
+    toolbarActionsDisabled: boolean;
+    toolbarActionsDisabledTitle: string | undefined;
+    hasBulkActions: boolean;
+    selectedRowCount: number;
+    isAllRowsSelected: boolean;
+    totalRowCount: number;
+    handleSelectAllRows: () => void;
+    handleDeselectAllRows: () => void;
+    bulkActions: FlatpackDataTableBulkAction[];
+    handleBulkActionClick: (actionId: string) => void;
+    hasSearchableColumns: boolean;
+    hasFilters: boolean;
+    globalFilter: string;
+    setGlobalFilter: (v: string) => void;
+    serverFilters: FlatpackDataTableFilter[];
+    serverFilterState: ReturnType<
+        typeof useDataTableServerState
+    >['serverFilterState'];
+    setSingleServerFilter: ReturnType<
+        typeof useDataTableServerState
+    >['setSingleServerFilter'];
+    toggleMultiServerFilterValue: ReturnType<
+        typeof useDataTableServerState
+    >['toggleMultiServerFilterValue'];
+    setDateServerFilter: ReturnType<
+        typeof useDataTableServerState
+    >['setDateServerFilter'];
+    tableAndFooter: React.ReactNode;
+    rowDetailDrawer: boolean;
+    detailDrawerOpen: boolean;
+    detailDrawerRow: Record<string, unknown> | null;
+    detailDrawerRowId: string | null;
+    detailDrawerTitleColumn: FlatpackDataTableColumn | null;
+    schemaColumns: DataTableProps['columns'];
+    handleDetailDrawerOpenChange: (open: boolean) => void;
+    handleRowReplace: (rowId: string, next: Record<string, unknown>) => void;
+    pendingEmbeddedRowConfirm: ReturnType<
+        typeof useDataTableRelationshipFlow
+    >['pendingEmbeddedRowConfirm'];
+    dismissPendingRowActionConfirm: () => void;
+    confirmPendingRowAction: () => void;
+    tableLabelId: string;
+    /** BelongsToMany `attach` toolbar: `attachExisting` vs default column field list. */
+    detailDrawerBodyVariant: DataTableRowDrawerBodyVariant;
+    /** Optional BTM “pick existing” slot when `detailDrawerBodyVariant` is `attachExisting`. */
+    renderRowDrawerAttachBody: DataTableProps['renderRowDrawerAttachBody'];
+};
+
+export function useDataTableController(
+    props: DataTableProps,
+): DataTableController {
+    const {
+        id,
+        columns: schemaColumns,
+        data: initialData,
+        dataRowKey = 'id',
+        bulkActions = [],
+        toolbarActions = [],
+        toolbarActionsDisabled = false,
+        toolbarActionsDisabledTitle,
+        onToolbarAction,
+        rowDetailDrawer = false,
+        openDetailDrawerOnRowClick: openDetailDrawerOnRowClickProp = true,
+        reorderable: reorderableProp,
+        onRowClick,
+        onValueChange,
+        onBulkAction,
+        onRowAction,
+        onCellUpdate,
+        onRowUpdate,
+        serverPagination,
+        serverSearch,
+        serverFilters = [],
+        serverFilterValues = {},
+        serverSorting = { sort_by: null, sort_direction: null },
+        onServerPaginationChange,
+        renderRowDrawerAttachBody,
+    } = props;
+
+    const openDetailDrawerOnRowClick =
+        rowDetailDrawer && openDetailDrawerOnRowClickProp;
+    const hasToolbarActions = toolbarActions.length > 0;
+
+    const [data, setData] = React.useState<Record<string, unknown>[]>(
+        () => initialData,
+    );
+    React.useLayoutEffect(() => {
+        setData(initialData);
+    }, [initialData]);
+    const [rowSelection, setRowSelection] = React.useState<RowSelectionState>(
+        {},
+    );
+    const getStableRowId = React.useCallback(
+        (row: Record<string, unknown>, index: number): string => {
+            const keyValue = row[dataRowKey];
+            if (keyValue !== undefined && keyValue !== null) {
+                return String(keyValue);
+            }
+            return stableRowId(row, index);
+        },
+        [dataRowKey],
+    );
+    const {
+        newRowIdPrefix,
+        detailDrawerOpen,
+        detailDrawerRowId,
+        detailDrawerRow,
+        detailDrawerBodyVariant,
+        openDetailDrawerForRow,
+        handleDetailDrawerOpenChange,
+        clearCreateDraftRow,
+        handleToolbarActionClick,
+    } = useDataTableCreateRowFlow({
+        rowDetailDrawer,
+        toolbarActions,
+        schemaColumns,
+        rowIdentity: {
+            getStableRowId,
+        },
+        mutations: {
+            data,
+            onToolbarAction,
+        },
+    });
+    const [isAllRowsSelected, setIsAllRowsSelected] = React.useState(false);
+    React.useEffect(() => {
+        if (!isAllRowsSelected) {
+            return;
+        }
+        setRowSelection((prev) => {
+            const next = { ...prev };
+            for (const [index, row] of data.entries()) {
+                next[getStableRowId(row, index)] = true;
+            }
+            return next;
+        });
+    }, [data, getStableRowId, isAllRowsSelected]);
+    const hasBulkActions = bulkActions.length > 0;
+    const reorderKey =
+        reorderableProp === true
+            ? DEFAULT_LIST_ROW_REORDER_COLUMN
+            : typeof reorderableProp === 'string'
+              ? reorderableProp
+              : null;
+    const isReorderable = reorderKey !== null;
+    const hasSearchableColumns = React.useMemo(
+        () => schemaColumns.some((col) => col.searchable === true),
+        [schemaColumns],
+    );
+    const hasFilters = React.useMemo(
+        () => serverFilters.length > 0,
+        [serverFilters],
+    );
+    const [columnVisibility, setColumnVisibility] =
+        React.useState<VisibilityState>(() =>
+            visibilityFromSchema(schemaColumns),
+        );
+    const schemaLeafOrder = React.useMemo(
+        () =>
+            leafColumnIdsInSchemaOrder(
+                schemaColumns,
+                hasBulkActions,
+                isReorderable,
+            ),
+        [schemaColumns, hasBulkActions, isReorderable],
+    );
+    const [columnOrder, setColumnOrder] = React.useState<string[]>(() =>
+        leafColumnIdsInSchemaOrder(
+            schemaColumns,
+            hasBulkActions,
+            isReorderable,
+        ),
+    );
+    React.useLayoutEffect(() => {
+        setColumnOrder(schemaLeafOrder);
+    }, [schemaLeafOrder]);
+    const [columnFilters, setColumnFilters] =
+        React.useState<ColumnFiltersState>([]);
+    const {
+        globalFilter,
+        setGlobalFilter,
+        serverFilterState,
+        sorting,
+        setSorting,
+        paginationState,
+        handlePaginationChange,
+        handleSortingChange,
+        setSingleServerFilter,
+        toggleMultiServerFilterValue,
+        setDateServerFilter,
+    } = useDataTableServerState({
+        serverPagination,
+        serverSearch,
+        serverFilterValues,
+        serverSorting,
+        onServerPaginationChange,
+    });
+
+    const { handleCellChange } = useDataTableCellUpdateFlow({
+        rowIdentity: {
+            getStableRowId,
+        },
+        mutations: {
+            setData,
+            onValueChange,
+            onCellUpdate,
+        },
+    });
+
+    const { handleRowReplace } = useDataTableRowReplaceFlow({
+        rowIdentity: {
+            getStableRowId,
+            newRowIdPrefix,
+        },
+        mutations: {
+            setData,
+            onValueChange,
+            onRowUpdate,
+        },
+        clearCreateDraftRow,
+    });
+
+    const detailDrawerTitleColumn = React.useMemo(() => {
+        const cols = schemaColumns.filter((c) => c.type !== 'actions');
+        return cols[0] ?? schemaColumns[0] ?? null;
+    }, [schemaColumns]);
+
+    const handleRowClick = React.useCallback(
+        (
+            event: React.MouseEvent<HTMLTableRowElement>,
+            row: Record<string, unknown>,
+        ) => {
+            const target = event.target;
+            if (
+                target instanceof Element &&
+                target.closest(DATA_TABLE_ROW_CLICK_IGNORE_SELECTOR)
+            ) {
+                return;
+            }
+            if (rowDetailDrawer && openDetailDrawerOnRowClick) {
+                const idx = data.indexOf(row);
+                const rowId =
+                    idx >= 0
+                        ? getStableRowId(row, idx)
+                        : getStableRowId(row, 0);
+                openDetailDrawerForRow(rowId);
+                return;
+            }
+            if (onRowClick == null) {
+                return;
+            }
+            if (!(target instanceof Element)) {
+                onRowClick(row);
+                return;
+            }
+            onRowClick(row);
+        },
+        [
+            rowDetailDrawer,
+            openDetailDrawerOnRowClick,
+            data,
+            getStableRowId,
+            openDetailDrawerForRow,
+            onRowClick,
+        ],
+    );
+    const serverSortingForBulkAction = React.useMemo(() => {
+        const first = sorting[0];
+        if (!first) {
+            return { sort_by: null, sort_direction: null } as const;
+        }
+        return {
+            sort_by: first.id,
+            sort_direction: first.desc ? 'desc' : 'asc',
+        } as const;
+    }, [sorting]);
+    const {
+        handleRowAction,
+        handleBulkAction: handleRelationshipBulkAction,
+        pendingEmbeddedRowConfirm,
+        dismissPendingRowActionConfirm,
+        confirmPendingRowAction,
+    } = useDataTableRelationshipFlow({
+        rowIdentity: {
+            dataRowKey,
+            getStableRowId,
+        },
+        mutations: {
+            data,
+            setData,
+            onValueChange,
+        },
+        onRowAction,
+        onBulkAction,
+        bulkActions,
+        rowSelection,
+        setRowSelection,
+        isAllRowsSelected,
+        setIsAllRowsSelected,
+        globalFilter,
+        serverFilterState,
+        serverSortingForBulkAction,
+    });
+
+    const columnDefs = React.useMemo(
+        () =>
+            buildDataTableColumnDefs(schemaColumns, {
+                hasBulkActions,
+                reorderable: isReorderable,
+                onCellChange: handleCellChange,
+                onRowReplace: handleRowReplace,
+                onRowAction: handleRowAction,
+            }),
+        [
+            schemaColumns,
+            hasBulkActions,
+            isReorderable,
+            handleCellChange,
+            handleRowReplace,
+            handleRowAction,
+        ],
+    );
+
+    const getColumnCanGlobalFilter = React.useCallback(
+        (column: Column<Record<string, unknown>, unknown>) => {
+            const col = schemaColumns.find((c) => c.id === column.id);
+            return col?.searchable === true;
+        },
+        [schemaColumns],
+    );
+
+    const dndSensors = useSensors(
+        useSensor(MouseSensor, {}),
+        useSensor(TouchSensor, {}),
+        useSensor(KeyboardSensor, {}),
+    );
+    const dndId = React.useId();
+    const handleRowSelectionChange = React.useCallback(
+        (updater: React.SetStateAction<RowSelectionState>) => {
+            setRowSelection((prev) => {
+                const next = functionalUpdate(updater, prev);
+                if (
+                    isAllRowsSelected &&
+                    Object.keys(next).length < data.length
+                ) {
+                    setIsAllRowsSelected(false);
+                }
+                return next;
+            });
+        },
+        [data.length, isAllRowsSelected],
+    );
+
+    const table = useReactTable({
+        data,
+        columns: columnDefs,
+        state: {
+            sorting,
+            columnVisibility,
+            columnOrder,
+            rowSelection,
+            columnFilters,
+            globalFilter,
+            pagination: paginationState,
+        },
+        getRowId: (row, index) => getStableRowId(row, index),
+        enableRowSelection: hasBulkActions,
+        onRowSelectionChange: handleRowSelectionChange,
+        onSortingChange: handleSortingChange,
+        onColumnFiltersChange: setColumnFilters,
+        onGlobalFilterChange: setGlobalFilter,
+        onColumnVisibilityChange: setColumnVisibility,
+        onColumnOrderChange: setColumnOrder,
+        onPaginationChange: handlePaginationChange,
+        manualPagination: serverPagination != null,
+        manualFiltering: serverPagination != null,
+        manualSorting: serverPagination != null,
+        pageCount:
+            serverPagination != null ? serverPagination.last_page : undefined,
+        rowCount: serverPagination != null ? serverPagination.total : undefined,
+        globalFilterFn: 'includesString',
+        getColumnCanGlobalFilter,
+        getCoreRowModel: getCoreRowModel(),
+        getFilteredRowModel: getFilteredRowModel(),
+        getSortedRowModel: getSortedRowModel(),
+        ...(serverPagination == null
+            ? { getPaginationRowModel: getPaginationRowModel() }
+            : {}),
+        getFacetedRowModel: getFacetedRowModel(),
+        getFacetedUniqueValues: getFacetedUniqueValues(),
+    });
+
+    const { handleDragEnd } = useDataTableReorder({
+        data,
+        table,
+        reorderKey,
+        onValueChange,
+        onReorderApplied: setData,
+        onReorderCompleted: () => setSorting([]),
+    });
+
+    const tableLabelId = `${id}-table-label`;
+    const handleSelectAllRows = React.useCallback(() => {
+        if (serverPagination == null) {
+            table.toggleAllRowsSelected(true);
+            return;
+        }
+        setIsAllRowsSelected(true);
+        setRowSelection((prev) => {
+            const next = { ...prev };
+            for (const [index, row] of data.entries()) {
+                next[getStableRowId(row, index)] = true;
+            }
+            return next;
+        });
+    }, [data, getStableRowId, serverPagination, table]);
+    const handleDeselectAllRows = React.useCallback(() => {
+        setIsAllRowsSelected(false);
+        setRowSelection({});
+        table.toggleAllRowsSelected(false);
+    }, [table]);
+    const handleBulkActionClick = React.useCallback(
+        (actionId: string) =>
+            handleRelationshipBulkAction(actionId, handleDeselectAllRows),
+        [handleDeselectAllRows, handleRelationshipBulkAction],
+    );
+    const paginationStateCurrent = table.getState().pagination;
+    const selectedRowCount = isAllRowsSelected
+        ? (serverPagination?.total ?? table.getFilteredRowModel().rows.length)
+        : Object.keys(rowSelection).length;
+    const totalRowCount =
+        serverPagination?.total ?? table.getFilteredRowModel().rows.length;
+
+    const rowCountLabel = serverPagination
+        ? serverPagination.total === 0
+            ? '0 row(s).'
+            : serverPagination.from != null && serverPagination.to != null
+              ? `${serverPagination.from}–${serverPagination.to} of ${serverPagination.total} row(s).`
+              : `${serverPagination.total} row(s).`
+        : `${table.getFilteredRowModel().rows.length} row(s).`;
+
+    const tableBody = (
+        <DataTableBody
+            table={table}
+            isReorderable={isReorderable}
+            onRowClick={
+                onRowClick != null ||
+                (rowDetailDrawer && openDetailDrawerOnRowClick)
+                    ? handleRowClick
+                    : undefined
+            }
+            emptyColSpan={columnDefs.length}
+        />
+    );
+
+    const tableAndFooter = (
+        <>
+            <div className="overflow-hidden rounded-lg border">
+                {isReorderable ? (
+                    <DndContext
+                        id={dndId}
+                        collisionDetection={closestCenter}
+                        modifiers={[restrictToVerticalAxis]}
+                        onDragEnd={handleDragEnd}
+                        sensors={dndSensors}
+                    >
+                        {tableBody}
+                    </DndContext>
+                ) : (
+                    tableBody
+                )}
+            </div>
+            <DataTableFooter
+                id={id}
+                rowCountLabel={rowCountLabel}
+                pageSize={paginationStateCurrent.pageSize}
+                pageIndex={paginationStateCurrent.pageIndex}
+                pageCount={table.getPageCount()}
+                canPreviousPage={table.getCanPreviousPage()}
+                canNextPage={table.getCanNextPage()}
+                onPageSizeChange={(value) => {
+                    table.setPageSize(Number(value));
+                }}
+                onFirstPage={() => table.setPageIndex(0)}
+                onPreviousPage={() => table.previousPage()}
+                onNextPage={() => table.nextPage()}
+                onLastPage={() => table.setPageIndex(table.getPageCount() - 1)}
+            />
+        </>
+    );
+
+    return {
+        id,
+        table,
+        hasToolbarActions,
+        toolbarActions,
+        handleToolbarActionClick,
+        toolbarActionsDisabled,
+        toolbarActionsDisabledTitle,
+        hasBulkActions,
+        selectedRowCount,
+        isAllRowsSelected,
+        totalRowCount,
+        handleSelectAllRows,
+        handleDeselectAllRows,
+        bulkActions,
+        handleBulkActionClick,
+        hasSearchableColumns,
+        hasFilters,
+        globalFilter,
+        setGlobalFilter,
+        serverFilters,
+        serverFilterState,
+        setSingleServerFilter,
+        toggleMultiServerFilterValue,
+        setDateServerFilter,
+        tableAndFooter,
+        rowDetailDrawer,
+        detailDrawerOpen,
+        detailDrawerRow,
+        detailDrawerRowId,
+        detailDrawerTitleColumn,
+        schemaColumns,
+        handleDetailDrawerOpenChange,
+        handleRowReplace,
+        pendingEmbeddedRowConfirm,
+        dismissPendingRowActionConfirm,
+        confirmPendingRowAction,
+        tableLabelId,
+        detailDrawerBodyVariant,
+        renderRowDrawerAttachBody,
+    };
+}

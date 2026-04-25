@@ -25,13 +25,15 @@ function normalizeToolbarButtonVariant(raw: unknown): FlatpackActionVariant {
 }
 
 /**
- * Accepts {@code actions} (preferred), legacy {@code toolbar_actions} / {@code toolbarActions},
- * array or map keyed by action id, for embedded form {@code type: table} fields (Create / Add, etc.).
+ * Normalizes embedded table toolbar definitions. Precedence: {@code actions}, else
+ * {@code toolbar} (second argument — the mapper may pass {@code toolbar} or legacy
+ * {@code toolbar_actions} / {@code toolbarActions} in that order).
  */
 export function normalizeFormTableToolbarActionsInput(
-    field: Record<string, unknown>,
+    actions: unknown,
+    toolbar?: unknown,
 ): FlatpackFormTableToolbarAction[] | undefined {
-    const raw = field.actions ?? field.toolbar_actions ?? field.toolbarActions;
+    const raw = actions ?? toolbar;
     if (raw == null) {
         return undefined;
     }

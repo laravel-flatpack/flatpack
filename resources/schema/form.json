@@ -445,7 +445,11 @@
             "properties": {
                 "id": { "type": "string" },
                 "label": { "type": "string", "minLength": 1 },
-                "action": { "type": "string", "minLength": 1 },
+                "action": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Built-in: `create` and `add` open a blank draft row in the row detail drawer (same UX path). Other values are custom and use host onToolbarAction when wired."
+                },
                 "icon": { "type": "string" },
                 "variant": {
                     "type": "string",
@@ -517,13 +521,30 @@
                 "data": { "type": "array" },
                 "bulkActions": { "type": "array" },
                 "actions": {
-                    "$ref": "#/$defs/fieldTableActions"
+                    "$ref": "#/$defs/fieldTableActions",
+                    "description": "Toolbar buttons. If both `actions` and `toolbar` are set, `actions` is used."
+                },
+                "toolbar": {
+                    "$ref": "#/$defs/fieldTableActions",
+                    "description": "Alias for `actions` (same shape). Ignored when `actions` is present."
+                },
+                "toolbar_actions": {
+                    "$ref": "#/$defs/fieldTableActions",
+                    "description": "Legacy list-style key; same shape as `actions`. Used only when `actions` and `toolbar` are absent."
+                },
+                "toolbarActions": {
+                    "$ref": "#/$defs/fieldTableActions",
+                    "description": "Legacy camelCase key; same shape as `actions`. Lowest precedence among toolbar sources."
                 },
                 "reorderable": {
                     "oneOf": [
                         { "type": "boolean" },
                         { "type": "string" }
                     ]
+                },
+                "row_detail_drawer": {
+                    "type": "boolean",
+                    "description": "When false, clicking a data row does not open the row detail drawer; toolbar `create` still uses the drawer for new rows (`add`/other may share that drawer when wired)."
                 },
                 "relation": {
                     "type": "string",

@@ -1,5 +1,7 @@
+import type { ReactNode } from 'react';
 import { DataTable } from '@/components/table/data-table';
 import type {
+    DataTableRowDrawerAttachBodyRenderContext,
     FlatpackDataTableBulkAction,
     FlatpackDataTableColumn,
     FlatpackFormTableToolbarAction,
@@ -17,8 +19,11 @@ export const TableField = ({
     toolbarActionsDisabled,
     toolbarActionsDisabledTitle,
     onToolbarAction,
+    rowDetailDrawer = true,
+    openDetailDrawerOnRowClick = true,
     reorderable,
     onValueChange,
+    renderRowDrawerAttachBody,
 }: {
     id: string;
     label: string;
@@ -30,8 +35,15 @@ export const TableField = ({
     toolbarActionsDisabled?: boolean;
     toolbarActionsDisabledTitle?: string;
     onToolbarAction?: (actionId: string) => void;
+    /** Enables the row detail drawer (toolbar `create` draft flow and optional row-click open). */
+    rowDetailDrawer?: boolean;
+    /** When false while `rowDetailDrawer` is true, row clicks do not open the drawer. */
+    openDetailDrawerOnRowClick?: boolean;
     reorderable?: boolean | string;
     onValueChange?: (value: unknown) => void;
+    renderRowDrawerAttachBody?: (
+        ctx: DataTableRowDrawerAttachBodyRenderContext,
+    ) => ReactNode;
 }) => {
     const labelId = `${id}-label`;
     return (
@@ -48,8 +60,10 @@ export const TableField = ({
                     toolbarActionsDisabledTitle={toolbarActionsDisabledTitle}
                     onToolbarAction={onToolbarAction}
                     reorderable={reorderable}
-                    rowDetailDrawer
+                    rowDetailDrawer={rowDetailDrawer}
+                    openDetailDrawerOnRowClick={openDetailDrawerOnRowClick}
                     onValueChange={onValueChange}
+                    renderRowDrawerAttachBody={renderRowDrawerAttachBody}
                 />
                 {helperText ? (
                     <FieldDescription>{helperText}</FieldDescription>

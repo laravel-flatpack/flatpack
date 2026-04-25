@@ -1,6 +1,7 @@
 import type { ComponentType, LazyExoticComponent } from 'react';
 import { Suspense } from 'react';
 import { FieldLoading } from '@/components/field-loading';
+import { useFlatpackEmbeddedTableToolbarAction } from '@/components/flatpack-form/flatpack-embedded-table-toolbar';
 import { FieldError } from '@/components/ui/field';
 import { mapFormFieldPropsToComponentProps } from '@/lib/form-field-props';
 import {
@@ -28,6 +29,11 @@ type FlatpackFormFieldsProps = {
         fieldId: string,
         nextValue: unknown,
     ) => void;
+    /** Overrides context for custom embedded table toolbar (non draft-drawer) actions. */
+    onEmbeddedTableToolbarAction?: (args: {
+        fieldId: string;
+        actionId: string;
+    }) => void;
 };
 
 export function FlatpackFormFields({
@@ -39,7 +45,14 @@ export function FlatpackFormFields({
     fieldErrors,
     formValues,
     setFieldValue,
+    onEmbeddedTableToolbarAction: onEmbeddedTableToolbarActionProp,
 }: FlatpackFormFieldsProps) {
+    const onEmbeddedTableToolbarActionFromContext =
+        useFlatpackEmbeddedTableToolbarAction();
+    const onEmbeddedTableToolbarAction =
+        onEmbeddedTableToolbarActionProp ??
+        onEmbeddedTableToolbarActionFromContext;
+
     return (
         <>
             {fields.map(({ id, field }) => {
@@ -50,6 +63,7 @@ export function FlatpackFormFields({
                         onValueChange: (nextValue: unknown) =>
                             setFieldValue(field, id, nextValue),
                         parentRecordKey: record,
+                        onEmbeddedTableToolbarAction,
                     }),
                     ...componentValueProps(field, formValues[id]),
                     ...relationRemoteProps(field, id, entity),

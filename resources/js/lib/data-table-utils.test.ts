@@ -293,8 +293,15 @@ describe('columnEditableInDrawer', () => {
         expect(columnEditableInDrawer(base({ type: 'date' }))).toBe(true);
     });
 
-    it('returns false for plain text column without editable', () => {
-        expect(columnEditableInDrawer(base({}))).toBe(false);
+    it('returns true for plain text column without explicit editable (drawer default)', () => {
+        expect(columnEditableInDrawer(base({ type: 'text' }))).toBe(true);
+        expect(columnEditableInDrawer(base({}))).toBe(true);
+    });
+
+    it('returns false for text column when editable is false', () => {
+        expect(
+            columnEditableInDrawer(base({ type: 'text', editable: false })),
+        ).toBe(false);
     });
 
     it('returns false for relation columns', () => {

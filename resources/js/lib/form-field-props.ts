@@ -7,8 +7,20 @@ import type {
 } from '@/types/form-field-render';
 import type { FormFieldProps, FormFieldType } from '@/types/form-fields';
 
-const RELATION_TABLE_TOOLBAR_DISABLED_TITLE =
-    'Save the parent record before using these actions.';
+export const RELATION_TABLE_TOOLBAR_DISABLED_TITLE =
+    'Save the parent record before using these actions.' as const;
+
+function resolveOpenDetailDrawerOnRowClick(
+    raw: Extract<FormFieldProps, { type: 'table' }>,
+): boolean {
+    if (typeof raw.openDetailDrawerOnRowClick === 'boolean') {
+        return raw.openDetailDrawerOnRowClick;
+    }
+    if (typeof raw.row_detail_drawer === 'boolean') {
+        return raw.row_detail_drawer;
+    }
+    return true;
+}
 
 function normalizedOptions(
     options: unknown,
@@ -152,25 +164,22 @@ function mapTable(props: FormFieldProps, ctx: FormFieldRenderContext) {
         bulk_actions: _bulkSnake,
         bulkActions: _bulkCamel,
         actions: _actionsRaw,
-        toolbar_actions: _toolbarSnakeLegacy,
-        toolbarActions: _toolbarCamelLegacy,
+        toolbar: _toolbarRaw,
+        toolbar_actions: _stripToolbarSnake,
+        toolbarActions: _stripToolbarCamel,
         columns: columnsRaw,
+        row_detail_drawer: _rowDetailDrawerSnake,
+        openDetailDrawerOnRowClick: _openDetailDrawerOnRowClickCamel,
         ...rest
-    } = raw as typeof raw &
-        Partial<{
-            bulk_actions: unknown;
-            bulkActions: unknown;
-            actions: unknown;
-            toolbar_actions: unknown;
-            toolbarActions: unknown;
-        }>;
+    } = raw;
 
     const columns = listYamlColumnsToDataTableColumns(columnsRaw as unknown);
     const bulkActions = normalizeFormTableBulkActionsInput(
         raw as Record<string, unknown>,
     );
     const toolbarActions = normalizeFormTableToolbarActionsInput(
-        raw as Record<string, unknown>,
+        raw.actions,
+        raw.toolbar ?? raw.toolbar_actions ?? raw.toolbarActions,
     );
     const relationName =
         typeof raw.relation === 'string' ? raw.relation.trim() : '';
@@ -185,6 +194,8 @@ function mapTable(props: FormFieldProps, ctx: FormFieldRenderContext) {
         toolbarActions !== undefined &&
         toolbarActions.length > 0 &&
         !parentPersisted;
+
+    const onEmbeddedTableToolbarAction = ctx.onEmbeddedTableToolbarAction;
 
     return {
         ...rest,
@@ -201,6 +212,16 @@ function mapTable(props: FormFieldProps, ctx: FormFieldRenderContext) {
         id: ctx.fieldId,
         data: raw.data ?? [],
         onValueChange: ctx.onValueChange,
+        onToolbarAction:
+            onEmbeddedTableToolbarAction != null
+                ? (actionId: string) =>
+                      onEmbeddedTableToolbarAction({
+                          fieldId: ctx.fieldId,
+                          actionId,
+                      })
+                : undefined,
+        rowDetailDrawer: true,
+        openDetailDrawerOnRowClick: resolveOpenDetailDrawerOnRowClick(raw),
     };
 }
 

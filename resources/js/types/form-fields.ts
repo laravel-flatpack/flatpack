@@ -91,15 +91,24 @@ type TableFieldProps = FormFieldBase & {
     bulkActions?: FlatpackDataTableBulkAction[];
     /** Toolbar buttons (Create / Add, …); YAML key {@code actions} (map or array). Normalized to DataTable props. */
     actions?: unknown;
-    /** @deprecated Use {@link actions} (same shape). Accepted for backwards compatibility. */
+    /** Same shape as {@link actions}; used when {@code actions} is omitted. If both are set, {@code actions} wins. */
+    toolbar?: unknown;
+    /** @deprecated Prefer {@link actions} or {@link toolbar}. Loaded when both are absent. */
     toolbar_actions?: unknown;
-    /** @deprecated Use {@link actions}. */
+    /** @deprecated Prefer {@link actions} or {@link toolbar}. Lowest precedence. */
     toolbarActions?: unknown;
     reorderable?: boolean | string;
     /** Relation-backed table: hydrate + sync as RelationRow[] */
     relation?: string;
     relation_value?: string;
     limit?: number;
+    /**
+     * When false, row clicks do not open the detail drawer; toolbar `create` still
+     * opens the draft drawer for new rows.
+     */
+    row_detail_drawer?: boolean;
+    /** CamelCase alias of {@link row_detail_drawer}. */
+    openDetailDrawerOnRowClick?: boolean;
 };
 
 export type FormFieldProps =

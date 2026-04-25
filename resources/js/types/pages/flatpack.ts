@@ -51,6 +51,10 @@ export type FlatpackListPageProps = {
     composition_debug?: string[];
 };
 
+/**
+ * Inertia form page props (server). Custom embedded `type: table` toolbar actions are wired
+ * client-side via `FlatpackFormFields` or `FlatpackEmbeddedTableToolbarProvider` (see `resources/js/components/flatpack-form/`).
+ */
 export type FlatpackFormPageProps = {
     entity: string;
     name?: string;

@@ -148,6 +148,9 @@ export function columnEditableInDrawer(col: FlatpackDataTableColumn): boolean {
     if (col.type === 'actions' || col.type === 'relation') {
         return false;
     }
+    if (col.editable === false) {
+        return false;
+    }
     if (col.editable === true) {
         return true;
     }
@@ -158,6 +161,10 @@ export function columnEditableInDrawer(col: FlatpackDataTableColumn): boolean {
         return true;
     }
     if (col.type === 'date') {
+        return true;
+    }
+    // Row drawer is for editing: plain text columns are editable unless opted out above.
+    if (col.type === undefined || col.type === 'text') {
         return true;
     }
     return false;

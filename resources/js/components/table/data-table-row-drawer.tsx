@@ -26,7 +26,11 @@ import {
     formatCellValue,
     mergeCommittedDate,
 } from '@/lib/data-table-utils';
-import type { FlatpackDataTableColumn } from '@/types/data-table';
+import type {
+    DataTableRowDrawerAttachBodyRenderContext,
+    DataTableRowDrawerBodyVariant,
+    FlatpackDataTableColumn,
+} from '@/types/data-table';
 
 function DrawerRowField({
     col,
@@ -125,10 +129,21 @@ export type DataTableRowDrawerPanelProps = {
     schemaColumns: FlatpackDataTableColumn[];
     titleColumn: FlatpackDataTableColumn;
     onRowReplace: (rowId: string, nextRow: Record<string, unknown>) => void;
+    /** `attachExisting` when toolbar `action: attach` opened the draft; else row click / create/add. */
+    bodyVariant?: DataTableRowDrawerBodyVariant;
+    /**
+     * Renders the main area when `bodyVariant` is `attachExisting` and this is set; otherwise
+     * default column fields. Draft save still goes through `onRowReplace` (see `useDataTableRowReplaceFlow` for
+     * `onValueChange` timing). BTM row shape: `RelationFormSynchronizer::syncBelongsToMany`.
+     */
+    renderAttachBody?: (
+        ctx: DataTableRowDrawerAttachBodyRenderContext,
+    ) => React.ReactNode;
 };
 
 /**
- * Controlled drawer shell + fields for editing a single row (list detail column or embedded form table row click).
+ * Controlled drawer shell + row fields (or optional BelongsToMany attach slot). Draft open does not
+ * notify the parent `onValueChange` until save — see `useDataTableCreateRowFlow` and `useDataTableRowReplaceFlow`.
  */
 export function DataTableRowDrawerPanel({
     open,
@@ -139,9 +154,12 @@ export function DataTableRowDrawerPanel({
     schemaColumns,
     titleColumn,
     onRowReplace,
+    bodyVariant = 'rowFields',
+    renderAttachBody,
 }: DataTableRowDrawerPanelProps) {
     const isMobile = useIsMobile();
     const [draft, setDraft] = React.useState<Record<string, unknown>>(row);
+    const firstFieldsRegionRef = React.useRef<HTMLDivElement>(null);
 
     React.useLayoutEffect(() => {
         if (open) {
@@ -149,11 +167,52 @@ export function DataTableRowDrawerPanel({
         }
     }, [open, row]);
 
+    React.useLayoutEffect(() => {
+        if (!open) {
+            return;
+        }
+        // Move focus off the page before the next frame so the layer that sets
+        // aria-hidden on <main> does not see a focused descendant (browser warning).
+        const active = document.activeElement;
+        if (
+            active instanceof HTMLElement &&
+            active.closest('[data-slot="drawer-content"]') == null
+        ) {
+            active.blur();
+        }
+        const id = window.setTimeout(() => {
+            const root = firstFieldsRegionRef.current;
+            if (root == null) {
+                return;
+            }
+            const el = root.querySelector<HTMLElement>(
+                'input:not([type="hidden"]):not([disabled]), textarea:not([disabled]), [role="combobox"]:not([aria-disabled="true"])',
+            );
+            el?.focus({ preventScroll: true });
+        }, 0);
+        return () => {
+            window.clearTimeout(id);
+        };
+    }, [open]);
+
     const setField = React.useCallback((columnId: string, next: unknown) => {
         setDraft((d) => ({ ...d, [columnId]: next }));
     }, []);
 
     const formColumns = schemaColumns.filter((c) => c.type !== 'actions');
+    const attachContext: DataTableRowDrawerAttachBodyRenderContext = {
+        rowId,
+        draft,
+        setDraft,
+        schemaColumns,
+        titleColumn,
+        bodyVariant,
+        onRequestClose: () => {
+            onOpenChange(false);
+        },
+    };
+    const showAttachSlot =
+        bodyVariant === 'attachExisting' && renderAttachBody != null;
 
     return (
         <Drawer
@@ -169,19 +228,26 @@ export function DataTableRowDrawerPanel({
                             titleColumn.label}
                     </DrawerTitle>
                     <DrawerDescription>
-                        Edit row fields and save your changes.
+                        {bodyVariant === 'attachExisting'
+                            ? 'Add or link the row, then save.'
+                            : 'Edit row fields and save your changes.'}
                     </DrawerDescription>
                 </DrawerHeader>
                 <div className="flex flex-col gap-4 overflow-y-auto px-4 pb-2 text-sm">
-                    <div className="flex flex-col gap-4">
-                        {formColumns.map((c) => (
-                            <DrawerRowField
-                                key={c.id}
-                                col={c}
-                                value={draft[c.id]}
-                                onChange={(v) => setField(c.id, v)}
-                            />
-                        ))}
+                    <div
+                        ref={firstFieldsRegionRef}
+                        className="flex flex-col gap-4"
+                    >
+                        {showAttachSlot
+                            ? renderAttachBody(attachContext)
+                            : formColumns.map((c) => (
+                                  <DrawerRowField
+                                      key={c.id}
+                                      col={c}
+                                      value={draft[c.id]}
+                                      onChange={(v) => setField(c.id, v)}
+                                  />
+                              ))}
                     </div>
                 </div>
                 <DrawerFooter>

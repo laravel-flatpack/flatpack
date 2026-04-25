@@ -212,11 +212,15 @@ export type FlatpackFormCompositionFieldTableYaml = {
     actions?:
         | Record<string, FlatpackFormCompositionFieldTableActionYaml>
         | FlatpackFormCompositionFieldTableActionYaml[];
-    /** @deprecated Use {@link actions}. */
+    /** Same shape as {@link actions}; used when {@code actions} is omitted. */
+    toolbar?:
+        | Record<string, FlatpackFormCompositionFieldTableActionYaml>
+        | FlatpackFormCompositionFieldTableActionYaml[];
+    /** @deprecated Prefer {@link actions} or {@link toolbar}. */
     toolbar_actions?:
         | Record<string, FlatpackFormCompositionFieldTableActionYaml>
         | FlatpackFormCompositionFieldTableActionYaml[];
-    /** @deprecated Use {@link actions}. */
+    /** @deprecated Prefer {@link actions} or {@link toolbar}. */
     toolbarActions?:
         | Record<string, FlatpackFormCompositionFieldTableActionYaml>
         | FlatpackFormCompositionFieldTableActionYaml[];
@@ -224,6 +228,8 @@ export type FlatpackFormCompositionFieldTableYaml = {
     relation?: string;
     relation_value?: string;
     limit?: number;
+    /** When false, row clicks do not open the detail drawer (`create` toolbar draft flow unchanged). */
+    row_detail_drawer?: boolean;
 };
 
 export type FlatpackFormCompositionFieldYaml =

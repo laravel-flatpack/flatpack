@@ -16,6 +16,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { isDestructiveActionButton } from '@/lib/data-table-action-semantics';
 import { interpolateRowPlaceholders } from '@/lib/data-table-utils';
 import { cn } from '@/lib/utils';
 import type {
@@ -40,20 +41,6 @@ function iconForAction(iconOrKey?: string): LucideIcon | null {
     return null;
 }
 
-function actionIsDestructive(
-    actionSlug: string,
-    cfg: FlatpackDataTableActionButton,
-): boolean {
-    const a = cfg.action?.toLowerCase();
-    return (
-        actionSlug.toLowerCase() === 'delete' ||
-        cfg.icon?.toLowerCase() === 'delete' ||
-        a === 'delete' ||
-        a === 'destroy' ||
-        a === 'remove'
-    );
-}
-
 function stableRowActionKey(cfg: FlatpackDataTableActionButton): string {
     return [
         cfg.action ?? '',
@@ -72,7 +59,7 @@ function partitionRowActions(actions: FlatpackDataTableActionButton[]): {
     const destructive: FlatpackDataTableActionButton[] = [];
     for (const cfg of actions) {
         const slug = cfg.action ?? cfg.label;
-        if (actionIsDestructive(slug, cfg)) {
+        if (isDestructiveActionButton(slug, cfg)) {
             destructive.push(cfg);
         } else {
             primary.push(cfg);

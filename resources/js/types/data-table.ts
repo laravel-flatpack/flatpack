@@ -1,4 +1,5 @@
-import type { ReactNode } from 'react';
+import type { RowSelectionState } from '@tanstack/react-table';
+import type { Dispatch, ReactNode, SetStateAction } from 'react';
 
 /** Allowed values for YAML {@code success_redirect} on Flatpack actions (server-driven redirects). */
 export type FlatpackSuccessRedirect =
@@ -44,7 +45,13 @@ export type FlatpackDataTableBulkAction = {
     success_redirect?: FlatpackSuccessRedirect;
 };
 
-/** Toolbar buttons above embedded form {@code type: table} fields (create / add); handlers ship later. */
+/**
+ * Toolbar buttons above embedded form {@code type: table} fields.
+ * {@code action: "create"} or {@code action: "add"} opens the same blank draft in the row drawer
+ * (new row UX without requiring host {@code onToolbarAction}).
+ * {@code action: "attach"} opens the same draft with `attachExisting` body variant for optional
+ * `DataTable` `renderRowDrawerAttachBody` (BelongsToMany attach-by-id).
+ */
 export type FlatpackFormTableToolbarAction = {
     id: string;
     label: string;
@@ -150,6 +157,121 @@ export type DataTableBulkDeletePayload = {
     sorting: FlatpackListServerSorting;
 };
 
+export type UseDataTableCreateRowFlowOptions = {
+    rowDetailDrawer: boolean;
+    toolbarActions: FlatpackFormTableToolbarAction[];
+    schemaColumns: FlatpackDataTableColumn[];
+    rowIdentity: {
+        getStableRowId: (row: Record<string, unknown>, index: number) => string;
+    };
+    mutations: {
+        data: Record<string, unknown>[];
+        onToolbarAction?: (actionId: string) => void;
+    };
+};
+
+/**
+ * Row drawer main area: default column fields, or BelongsToMany attach slot when
+ * `attachExisting` and `renderRowDrawerAttachBody` is set on `DataTable`.
+ */
+export type DataTableRowDrawerBodyVariant = 'rowFields' | 'attachExisting';
+
+export type DataTableRowDrawerAttachBodyRenderContext = {
+    rowId: string;
+    /** Mutable draft for the row (sync to parent on Save via `onRowReplace`). */
+    draft: Record<string, unknown>;
+    setDraft: Dispatch<SetStateAction<Record<string, unknown>>>;
+    schemaColumns: FlatpackDataTableColumn[];
+    titleColumn: FlatpackDataTableColumn;
+    bodyVariant: DataTableRowDrawerBodyVariant;
+    onRequestClose: () => void;
+};
+
+export type UseDataTableCreateRowFlowResult = {
+    newRowIdPrefix: '__new__';
+    detailDrawerOpen: boolean;
+    detailDrawerRowId: string | null;
+    detailDrawerRow: Record<string, unknown> | null;
+    /** `attachExisting` when the toolbar `action` is the BTM `attach` keyword. */
+    detailDrawerBodyVariant: DataTableRowDrawerBodyVariant;
+    openDetailDrawerForRow: (rowId: string) => void;
+    handleDetailDrawerOpenChange: (open: boolean) => void;
+    clearCreateDraftRow: () => void;
+    resetDetailDrawer: () => void;
+    handleToolbarActionClick: (actionId: string) => void;
+};
+
+export type UseDataTableRelationshipFlowOptions = {
+    rowIdentity: {
+        dataRowKey: string;
+        getStableRowId: (row: Record<string, unknown>, index: number) => string;
+    };
+    mutations: {
+        data: Record<string, unknown>[];
+        setData: Dispatch<SetStateAction<Record<string, unknown>[]>>;
+        onValueChange?: (value: unknown) => void;
+    };
+    onRowAction?: (payload: DataTableRowActionPayload) => void | Promise<void>;
+    onBulkAction?: (
+        payload: DataTableBulkDeletePayload,
+    ) => void | Promise<void>;
+    bulkActions: FlatpackDataTableBulkAction[];
+    rowSelection: RowSelectionState;
+    setRowSelection: Dispatch<SetStateAction<RowSelectionState>>;
+    isAllRowsSelected: boolean;
+    setIsAllRowsSelected: Dispatch<SetStateAction<boolean>>;
+    globalFilter: string;
+    serverFilterState: FlatpackDataTableServerFiltersState;
+    serverSortingForBulkAction: FlatpackListServerSorting;
+};
+
+export type UseDataTableRelationshipFlowResult = {
+    handleRowAction: (payload: DataTableRowActionPayload) => void;
+    handleBulkAction: (
+        actionId: string,
+        handleDeselectAllRows: () => void,
+    ) => Promise<void>;
+    pendingEmbeddedRowConfirm: DataTableRowActionPayload | null;
+    dismissPendingRowActionConfirm: () => void;
+    confirmPendingRowAction: () => void;
+};
+
+export type UseDataTableRowReplaceFlowOptions = {
+    rowIdentity: {
+        getStableRowId: (row: Record<string, unknown>, index: number) => string;
+        newRowIdPrefix: string;
+    };
+    mutations: {
+        setData: Dispatch<SetStateAction<Record<string, unknown>[]>>;
+        onValueChange?: (value: unknown) => void;
+        onRowUpdate?: (
+            payload: DataTableRowUpdatePayload,
+        ) => void | Promise<void>;
+    };
+    clearCreateDraftRow: () => void;
+};
+
+export type UseDataTableRowReplaceFlowResult = {
+    handleRowReplace: (rowId: string, nextRow: Record<string, unknown>) => void;
+};
+
+export type UseDataTableCellUpdateFlowOptions = {
+    rowIdentity: {
+        getStableRowId: (row: Record<string, unknown>, index: number) => string;
+    };
+    mutations: {
+        setData: Dispatch<SetStateAction<Record<string, unknown>[]>>;
+        onValueChange?: (value: unknown) => void;
+        onCellUpdate?: (
+            payload: DataTableCellUpdatePayload,
+        ) => void | Promise<void>;
+    };
+};
+
+export type UseDataTableCellUpdateFlowResult = {
+    handleCellChange: (rowId: string, columnId: string, next: unknown) => void;
+};
+
 export type DataTableProps = {
     id: string;
     columns: FlatpackDataTableColumn[];
@@ -163,10 +285,16 @@ export type DataTableProps = {
     onToolbarAction?: (actionId: string) => void;
     reorderable?: boolean | string;
     /**
-     * When true (embedded form tables), clicking a row opens the row detail drawer.
-     * Takes precedence over {@link onRowClick} for the same gesture.
+     * When true, the row detail drawer is available (toolbar `create` draft flow, and
+     * optionally opening a row from a click — see {@link openDetailDrawerOnRowClick}).
      */
     rowDetailDrawer?: boolean;
+    /**
+     * When true (default), a row click opens the detail drawer if {@link rowDetailDrawer}
+     * is true. Set false to keep inline editing but disable drawer-on-row-click
+     * (e.g. `row_detail_drawer: false` on embedded `type: table` fields).
+     */
+    openDetailDrawerOnRowClick?: boolean;
     onRowClick?: (row: Record<string, unknown>) => void;
     onValueChange?: (value: unknown) => void;
     onBulkAction?: (
@@ -192,4 +320,12 @@ export type DataTableProps = {
         filters?: FlatpackDataTableServerFiltersState,
         sorting?: FlatpackListServerSorting,
     ) => void;
+    /**
+     * When the row drawer is in `attachExisting` mode (toolbar `action: attach`), render
+     * the BelongsToMany “pick existing” UI here. Omitted: default column field list (same as `create`/`add`).
+     * Saved `draft` should include `relation_value` and optional `pivot` for server BTM sync.
+     */
+    renderRowDrawerAttachBody?: (
+        ctx: DataTableRowDrawerAttachBodyRenderContext,
+    ) => ReactNode;
 };

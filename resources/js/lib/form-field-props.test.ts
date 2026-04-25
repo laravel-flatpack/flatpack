@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
-import { mapFormFieldPropsToComponentProps } from '@/lib/form-field-props';
+import {
+    mapFormFieldPropsToComponentProps,
+    RELATION_TABLE_TOOLBAR_DISABLED_TITLE,
+} from '@/lib/form-field-props';
 import type {
     FlatpackDataTableColumn,
     FlatpackFormTableToolbarAction,
@@ -334,12 +337,12 @@ describe('mapFormFieldPropsToComponentProps', () => {
         expect(out.toolbarActionsDisabled).toBeUndefined();
     });
 
-    it('still normalizes deprecated toolbar_actions when actions is omitted', () => {
+    it('normalizes toolbar key when actions is omitted', () => {
         const props: FormFieldProps = {
             type: 'table',
-            label: 'Legacy',
+            label: 'Lines',
             columns: [{ id: 'name', label: 'Name' }],
-            toolbar_actions: {
+            toolbar: {
                 create: {
                     label: 'Create',
                     action: 'create',
@@ -353,10 +356,143 @@ describe('mapFormFieldPropsToComponentProps', () => {
             ...context,
             parentRecordKey: null,
         });
+        expect(
+            (out.toolbarActions as FlatpackFormTableToolbarAction[] | undefined)
+                ?.length,
+        ).toBe(1);
+        expect(
+            (out.toolbarActions as FlatpackFormTableToolbarAction[])[0]?.id,
+        ).toBe('create');
+        expect(out.toolbarActionsDisabled).toBe(true);
+        expect(out.toolbarActionsDisabledTitle).toBe(
+            RELATION_TABLE_TOOLBAR_DISABLED_TITLE,
+        );
+    });
+
+    it('normalizes legacy toolbar_actions when actions and toolbar are omitted', () => {
+        const props: FormFieldProps = {
+            type: 'table',
+            label: 'Lines',
+            columns: [{ id: 'name', label: 'Name' }],
+            toolbar_actions: {
+                create: {
+                    label: 'Create',
+                    action: 'create',
+                    icon: 'plus',
+                },
+                add: {
+                    label: 'Add',
+                    action: 'add',
+                    icon: 'plus',
+                },
+            },
+            relation: 'lines',
+            data: [],
+        };
+        const out = mapFormFieldPropsToComponentProps(props, {
+            ...context,
+            parentRecordKey: null,
+        });
+        const toolbarActions = out.toolbarActions as
+            | FlatpackFormTableToolbarAction[]
+            | undefined;
+        expect(toolbarActions?.length).toBe(2);
+        expect(toolbarActions?.map((a) => a.id).sort()).toEqual([
+            'add',
+            'create',
+        ]);
+        expect(out.toolbarActionsDisabled).toBe(true);
+    });
+
+    it('prefers actions over toolbar when both are set', () => {
+        const props: FormFieldProps = {
+            type: 'table',
+            label: 'Lines',
+            columns: [{ id: 'name', label: 'Name' }],
+            actions: {
+                primary: {
+                    label: 'From actions',
+                    action: 'create',
+                    icon: 'plus',
+                },
+            },
+            toolbar: {
+                ignored: {
+                    label: 'From toolbar',
+                    action: 'create',
+                    icon: 'plus',
+                },
+            },
+            data: [],
+        };
+        const out = mapFormFieldPropsToComponentProps(props, context);
         const toolbarActions = out.toolbarActions as
             | FlatpackFormTableToolbarAction[]
             | undefined;
         expect(toolbarActions?.length).toBe(1);
-        expect(toolbarActions?.[0]?.id).toBe('create');
+        expect(toolbarActions?.[0]?.id).toBe('primary');
+        expect(toolbarActions?.[0]?.label).toBe('From actions');
+    });
+
+    it('defaults openDetailDrawerOnRowClick to true for table fields', () => {
+        const props: FormFieldProps = {
+            type: 'table',
+            label: 'T',
+            columns: [{ id: 'name', label: 'Name' }],
+            data: [],
+        };
+        const out = mapFormFieldPropsToComponentProps(props, context);
+        expect(out.rowDetailDrawer).toBe(true);
+        expect(out.openDetailDrawerOnRowClick).toBe(true);
+    });
+
+    it('maps row_detail_drawer false to openDetailDrawerOnRowClick false', () => {
+        const props: FormFieldProps = {
+            type: 'table',
+            label: 'T',
+            columns: [{ id: 'name', label: 'Name' }],
+            data: [],
+            row_detail_drawer: false,
+        };
+        const out = mapFormFieldPropsToComponentProps(props, context);
+        expect(out.rowDetailDrawer).toBe(true);
+        expect(out.openDetailDrawerOnRowClick).toBe(false);
+    });
+
+    it('prefers openDetailDrawerOnRowClick over row_detail_drawer when both are set', () => {
+        const props: FormFieldProps = {
+            type: 'table',
+            label: 'T',
+            columns: [{ id: 'name', label: 'Name' }],
+            data: [],
+            row_detail_drawer: false,
+            openDetailDrawerOnRowClick: true,
+        };
+        const out = mapFormFieldPropsToComponentProps(props, context);
+        expect(out.openDetailDrawerOnRowClick).toBe(true);
+    });
+
+    it('wires onEmbeddedTableToolbarAction to onToolbarAction for table fields', () => {
+        const onEmbeddedTableToolbarAction = vi.fn();
+        const props: FormFieldProps = {
+            type: 'table',
+            label: 'T',
+            columns: [{ id: 'name', label: 'Name' }],
+            data: [],
+            actions: { export: { label: 'Export', action: 'export' } },
+        };
+        const out = mapFormFieldPropsToComponentProps(props, {
+            ...context,
+            onEmbeddedTableToolbarAction,
+        });
+        const onToolbarAction = out.onToolbarAction as
+            | ((id: string) => void)
+            | undefined;
+        expect(typeof onToolbarAction).toBe('function');
+        onToolbarAction?.('export');
+        expect(onEmbeddedTableToolbarAction).toHaveBeenCalledWith({
+            fieldId: 'field-1',
+            actionId: 'export',
+        });
     });
 });

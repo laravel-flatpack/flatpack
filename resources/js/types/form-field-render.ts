@@ -13,6 +13,14 @@ export type FormFieldRenderContext = {
      * embedded tables: toolbar actions stay disabled until the parent exists.
      */
     parentRecordKey?: string | null;
+    /**
+     * Custom embedded `type: table` toolbar button ids (non-create/add draft flow).
+     * Set via `FlatpackFormFields` prop or `FlatpackEmbeddedTableToolbarProvider`.
+     */
+    onEmbeddedTableToolbarAction?: (args: {
+        fieldId: string;
+        actionId: string;
+    }) => void;
 };
 
 export type FormFieldPropsMapper = (
