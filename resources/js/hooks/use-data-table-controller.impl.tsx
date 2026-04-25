@@ -15,16 +15,6 @@
  * - Do not key toolbar behavior by button `id`, only by each button’s `action` string in `useDataTableCreateRowFlow`.
  */
 import {
-    closestCenter,
-    DndContext,
-    KeyboardSensor,
-    MouseSensor,
-    TouchSensor,
-    useSensor,
-    useSensors,
-} from '@dnd-kit/core';
-import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
-import {
     type Column,
     type ColumnFiltersState,
     functionalUpdate,
@@ -66,6 +56,12 @@ import type {
     FlatpackDataTableFilter,
     FlatpackFormTableToolbarAction,
 } from '@/types/data-table';
+
+const LazyDataTableDndWrapper = React.lazy(() =>
+    import('@/components/table/data-table-dnd-wrapper').then((module) => ({
+        default: module.DataTableDndWrapper,
+    })),
+);
 
 /**
  * Return value of {@link useDataTableController} for `DataTable` (toolbar, `tableAndFooter`, row drawer, confirm).
@@ -429,12 +425,6 @@ export function useDataTableController(
         [schemaColumns],
     );
 
-    const dndSensors = useSensors(
-        useSensor(MouseSensor, {}),
-        useSensor(TouchSensor, {}),
-        useSensor(KeyboardSensor, {}),
-    );
-    const dndId = React.useId();
     const handleRowSelectionChange = React.useCallback(
         (updater: React.SetStateAction<RowSelectionState>) => {
             setRowSelection((prev) => {
@@ -557,15 +547,11 @@ export function useDataTableController(
         <>
             <div className="overflow-hidden rounded-lg border">
                 {isReorderable ? (
-                    <DndContext
-                        id={dndId}
-                        collisionDetection={closestCenter}
-                        modifiers={[restrictToVerticalAxis]}
-                        onDragEnd={handleDragEnd}
-                        sensors={dndSensors}
-                    >
-                        {tableBody}
-                    </DndContext>
+                    <React.Suspense fallback={tableBody}>
+                        <LazyDataTableDndWrapper onDragEnd={handleDragEnd}>
+                            {tableBody}
+                        </LazyDataTableDndWrapper>
+                    </React.Suspense>
                 ) : (
                     tableBody
                 )}
