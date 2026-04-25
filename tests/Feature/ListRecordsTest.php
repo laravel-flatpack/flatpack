@@ -6,6 +6,7 @@ use Flatpack\Tests\Models\Post;
 use Flatpack\Tests\Models\User;
 use Flatpack\Tests\Policies\DenyDeletePostPolicy;
 use Flatpack\Tests\Policies\DenyUpdatePostPolicy;
+use Flatpack\Tests\Policies\SelectiveDeletePostPolicy;
 use Flatpack\Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
@@ -928,6 +929,41 @@ YAML);
     }
 });
 
+test('flatpack bulk action denies when model policy is missing by default', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-list-bulk-delete-no-policy-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\PostBySlug
+columns:
+  slug:
+    label: Slug
+YAML);
+        config()->set('flatpack.path', $tempPath);
+
+        Post::factory()->create(['slug' => 'one', 'title' => 'Keep me']);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        actingAs($user)
+            ->from(route('flatpack.entities.index', ['entity' => 'posts']))
+            ->post(route('flatpack.entities.bulk-action', [
+                'entity' => 'posts',
+            ]), [
+                'action' => 'delete',
+                'selection' => ['one'],
+            ])
+            ->assertForbidden();
+
+        expect(Post::query()->where('slug', 'one')->exists())->toBeTrue();
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
 test('flatpack entity list JSON only exposes configured bulk actions', function () {
     $tempPath = sys_get_temp_dir() . '/flatpack-list-bulk-actions-' . uniqid('', true);
 
@@ -1030,6 +1066,46 @@ YAML);
         expect(Post::query()->where('title', 'Delete active alpha')->exists())->toBeFalse();
         expect(Post::query()->where('title', 'Delete active beta')->exists())->toBeTrue();
         expect(Post::query()->where('title', 'Keep inactive alpha')->exists())->toBeTrue();
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
+test('flatpack bulk delete only deletes rows authorized by policy', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-list-bulk-delete-policy-scope-' . uniqid('', true);
+
+    try {
+        Gate::policy(Post::class, SelectiveDeletePostPolicy::class);
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+columns:
+  id:
+    label: ID
+  title:
+    label: Title
+YAML);
+        config()->set('flatpack.path', $tempPath);
+
+        $allowed = Post::factory()->create(['title' => 'delete me']);
+        $denied = Post::factory()->create(['title' => 'protected row']);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        actingAs($user)
+            ->from(route('flatpack.entities.index', ['entity' => 'posts']))
+            ->post(route('flatpack.entities.bulk-action', [
+                'entity' => 'posts',
+            ]), [
+                'action' => 'delete',
+                'selection' => [(string) $allowed->getKey(), (string) $denied->getKey()],
+            ])
+            ->assertStatus(303);
+
+        expect(Post::query()->whereKey($allowed->getKey())->exists())->toBeFalse();
+        expect(Post::query()->whereKey($denied->getKey())->exists())->toBeTrue();
     } finally {
         File::deleteDirectory($tempPath);
     }

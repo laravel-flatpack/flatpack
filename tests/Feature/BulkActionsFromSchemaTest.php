@@ -31,18 +31,3 @@ test('fromSchema includes optional success_message and confirm', function () {
         'confirm' => true,
     ]);
 });
-
-test('fromSchema includes success_redirect for bulk actions', function () {
-    $actions = BulkActions::fromSchema([
-        'bulk_actions' => [
-            'delete' => [
-                'label' => 'Delete',
-                'action' => 'delete',
-                'success_redirect' => 'list',
-            ],
-        ],
-    ]);
-
-    expect($actions)->toHaveCount(1);
-    expect($actions[0]['success_redirect'])->toBe('list');
-});

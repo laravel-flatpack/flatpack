@@ -79,6 +79,8 @@
         "rector": "rector --dry-run",
         "schema:keys": "php vendor/bin/testbench flatpack:generate-composition-schema-keys --check",
         "schema:keys:generate": "php vendor/bin/testbench flatpack:generate-composition-schema-keys",
+        "schema:contract:strict": "pest tests/Unit/CompositionSchemaContractTest.php",
+        "schema:ci:strict": "composer run schema:keys && composer run schema:contract:strict && pest tests/Unit/CompositionSchemaTypeScriptKeysGeneratorTest.php",
         "test": "pest",
         "check": "composer run lint && composer run rector && composer run phpstan && composer run test"
     }

@@ -607,8 +607,6 @@ YAML, function (): void {
 });
 
 test('flatpack entity form save reports mass assignment failures as validation errors', function () {
-    config(['flatpack.log_form_save_failures' => true]);
-
     withTempFormSchema(<<<'YAML'
 name: Post
 model: Flatpack\Tests\Models\Post
@@ -636,11 +634,7 @@ YAML, function (): void {
                 ],
             ])
             ->assertRedirect(route('flatpack.entities.create', ['entity' => 'posts']))
-            ->assertSessionHasErrors([
-                'flatpack',
-                'flatpack_exception',
-                'flatpack_exception_message',
-            ]);
+            ->assertSessionHasErrors(['flatpack']);
 
         expect(
             Post::query()->where('slug', 'should-fail')->exists(),

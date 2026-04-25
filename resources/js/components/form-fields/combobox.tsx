@@ -232,10 +232,12 @@ export const ComboboxField = ({
     const [query, setQuery] = useState('');
     const [remoteItems, setRemoteItems] = useState<ComboboxObjectItem[]>([]);
     const [remoteLoading, setRemoteLoading] = useState(false);
+    const [remoteError, setRemoteError] = useState<string | null>(null);
     const [remotePage, setRemotePage] = useState(1);
     const [remoteHasMore, setRemoteHasMore] = useState(false);
     const requestIdRef = useRef(0);
     const isFetchingNextPageRef = useRef(false);
+    const remoteAbortControllerRef = useRef<AbortController | null>(null);
     const labelId = `${id}-label`;
     const normalizedItems = useMemo(
         () => (remote ? remoteItems : items),
@@ -285,12 +287,19 @@ export const ComboboxField = ({
 
             const requestId = requestIdRef.current + 1;
             requestIdRef.current = requestId;
+            remoteAbortControllerRef.current?.abort();
+            const abortController = new AbortController();
+            remoteAbortControllerRef.current = abortController;
             setRemoteLoading(true);
+            setRemoteError(null);
             try {
                 const response = await fetch(
                     `${remoteEndpoint}?${params.toString()}`,
+                    { signal: abortController.signal },
                 );
                 if (!response.ok) {
+                    setRemoteError(`Failed to load options (${response.status})`);
+                    setRemoteHasMore(false);
                     return;
                 }
 
@@ -311,9 +320,21 @@ export const ComboboxField = ({
                 );
                 setRemoteHasMore(payload.meta?.has_more === true);
                 setRemotePage(payload.meta?.page ?? page);
+            } catch (error) {
+                if (
+                    error instanceof DOMException &&
+                    error.name === 'AbortError'
+                ) {
+                    return;
+                }
+                setRemoteError('Failed to load options');
+                setRemoteHasMore(false);
             } finally {
                 if (append) {
                     isFetchingNextPageRef.current = false;
+                }
+                if (remoteAbortControllerRef.current === abortController) {
+                    remoteAbortControllerRef.current = null;
                 }
                 setRemoteLoading(false);
             }
@@ -330,6 +351,13 @@ export const ComboboxField = ({
             selectedValue,
         ],
     );
+
+    useEffect(() => {
+        return () => {
+            remoteAbortControllerRef.current?.abort();
+            remoteAbortControllerRef.current = null;
+        };
+    }, []);
 
     useEffect(() => {
         if (multiple) {
@@ -512,7 +540,8 @@ export const ComboboxField = ({
                                 </div>
                             ) : null}
                             <ComboboxEmpty>
-                                {remoteLoading ? 'Loading...' : 'No matches'}
+                                {remoteError ??
+                                    (remoteLoading ? 'Loading...' : 'No matches')}
                             </ComboboxEmpty>
                         </ComboboxContent>
                     </Combobox>
@@ -570,7 +599,8 @@ export const ComboboxField = ({
                             </div>
                         ) : null}
                         <ComboboxEmpty>
-                            {remoteLoading ? 'Loading...' : 'No matches'}
+                            {remoteError ??
+                                (remoteLoading ? 'Loading...' : 'No matches')}
                         </ComboboxEmpty>
                     </ComboboxContent>
                 </Combobox>

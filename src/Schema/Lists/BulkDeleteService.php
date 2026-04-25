@@ -4,11 +4,17 @@ declare(strict_types=1);
 
 namespace Flatpack\Schema\Lists;
 
+use Flatpack\Contracts\Authorization\FlatpackAuthorizer;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 use InvalidArgumentException;
 
-final readonly class BulkDeleteService
+final class BulkDeleteService
 {
+    public function __construct(
+        private readonly FlatpackAuthorizer $authorizer,
+    ) {}
+
     /**
      * @param  class-string<Model>  $modelClass
      * @param  'all'|list<string|int>  $records
@@ -31,7 +37,7 @@ final readonly class BulkDeleteService
 
         /** @var class-string<Model> $modelClass */
         $model = new $modelClass();
-        $query = $model->newQuery();
+        $baseQuery = $model->newQuery();
         $keyName = $model->getKeyName();
         $selectAll = $records === 'all';
 
@@ -39,7 +45,7 @@ final readonly class BulkDeleteService
             $searchTerm = trim($search);
             if ($searchTerm !== '') {
                 SearchApplier::apply(
-                    $query,
+                    $baseQuery,
                     SchemaInspector::searchableColumnDefinitions($schema),
                     $searchTerm,
                 );
@@ -51,7 +57,7 @@ final readonly class BulkDeleteService
                 $filters,
             );
             FilterProcessor::applyToQuery(
-                $query,
+                $baseQuery,
                 $filterDefinitions,
                 $normalizedFilters,
             );
@@ -63,9 +69,27 @@ final readonly class BulkDeleteService
             if ($ids === []) {
                 return 0;
             }
-            $query->whereIn($keyName, $ids);
+            $baseQuery->whereIn($keyName, $ids);
         }
 
-        return $query->delete();
+        $user = Auth::user();
+        if ($user === null) {
+            return 0;
+        }
+
+        $authorizedIds = [];
+        foreach ($baseQuery->get() as $record) {
+            if (! $record instanceof Model) {
+                continue;
+            }
+            if ($this->authorizer->allows($user, 'delete', $modelClass, $record)) {
+                $authorizedIds[] = (string) $record->getKey();
+            }
+        }
+        if ($authorizedIds === []) {
+            return 0;
+        }
+
+        return $modelClass::query()->whereIn($keyName, $authorizedIds)->delete();
     }
 }

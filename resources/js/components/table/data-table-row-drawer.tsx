@@ -12,8 +12,12 @@ import {
 } from '@/components/ui/drawer';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { mapDataTableColumnToDrawerField } from '@/lib/data-table-row-drawer-field-mapper';
+import {
+    applyRelationComboboxDraftPatch,
+    isRelationComboboxDrawerField,
+    relationComboboxExtraProps,
+} from '@/lib/data-table-row-drawer-relation-field';
 import { formatCellValue, mergeCommittedDate } from '@/lib/data-table-utils';
-import { route } from '@/lib/route';
 import type {
     DataTableRowDrawerAttachBodyRenderContext,
     DataTableRowDrawerBodyVariant,
@@ -67,71 +71,24 @@ function DrawerRowField({
             onChange(nextSerializedValue),
     };
 
-    if (
-        mapped.field.type === 'combobox' &&
-        col.type === 'relation' &&
-        col.relation &&
-        col.relationName &&
-        col.relationValue
-    ) {
-        const relationKey = col.relation;
-        const relationValueKey = col.relationValue;
-        const relationNameKey = col.relationName;
-        const e = flatpackEntity?.trim() ?? '';
-        const tf = flatpackTableFieldId?.trim() ?? '';
-        const extraComponentProps: Record<string, unknown> = {
-            remote: true,
+    if (isRelationComboboxDrawerField(col, mapped.field.type)) {
+        const extraComponentProps = relationComboboxExtraProps(
+            col,
+            flatpackEntity,
+            flatpackTableFieldId,
             portalContainer,
-            remoteEndpoint:
-                e !== ''
-                    ? route(
-                          'flatpack.entities.embedded-table-relation-options',
-                          {
-                              entity: e,
-                          },
-                      )
-                    : undefined,
-            remoteFieldParamKey: null,
-            remoteSearchParamKey: 'q',
-            remoteBaseParams:
-                tf !== ''
-                    ? {
-                          table_field: tf,
-                          column_id: col.id,
-                      }
-                    : undefined,
-        };
+        );
         return {
             ...baseEntry,
             extraComponentProps,
             onValueChange: (nextSerializedValue: unknown) => {
                 if (
-                    nextSerializedValue !== null &&
-                    typeof nextSerializedValue === 'object' &&
-                    'value' in
-                        (nextSerializedValue as Record<string, unknown>) &&
-                    'label' in (nextSerializedValue as Record<string, unknown>)
+                    applyRelationComboboxDraftPatch(
+                        col,
+                        nextSerializedValue,
+                        patchDraft,
+                    )
                 ) {
-                    const v = String(
-                        (nextSerializedValue as Record<string, unknown>).value,
-                    );
-                    const label = String(
-                        (nextSerializedValue as Record<string, unknown>).label,
-                    );
-                    patchDraft({
-                        [col.id]: v,
-                        [relationKey]: {
-                            [relationValueKey]: v,
-                            [relationNameKey]: label,
-                        },
-                    });
-                    return;
-                }
-                if (nextSerializedValue == null || nextSerializedValue === '') {
-                    patchDraft({
-                        [col.id]: '',
-                        [relationKey]: null,
-                    });
                     return;
                 }
                 onChange(nextSerializedValue);

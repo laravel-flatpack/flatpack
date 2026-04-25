@@ -10,10 +10,7 @@ import type { FormFieldProps } from '@/types/form-fields';
 
 type UseFormFieldPresetsOptions = {
     fields: FormFieldEntry[];
-    /**
-     * Stable JSON string of initial form values (same source as form reset baseline).
-     */
-    baselineSignature: string;
+    baselineValues: Record<string, unknown>;
 };
 
 /**
@@ -22,7 +19,7 @@ type UseFormFieldPresetsOptions = {
  */
 export function useFormFieldPresets({
     fields,
-    baselineSignature,
+    baselineValues,
 }: UseFormFieldPresetsOptions) {
     const fieldsById = useMemo(
         () => new Map(fields.map(({ id, field }) => [id, field])),
@@ -39,15 +36,11 @@ export function useFormFieldPresets({
 
     useEffect(() => {
         userTouchedDestRef.current.clear();
-        const initialValues = JSON.parse(baselineSignature) as Record<
-            string,
-            unknown
-        >;
         initialBlockedDestRef.current = buildInitialPresetBlockedIds(
             fields,
-            initialValues,
+            baselineValues,
         );
-    }, [baselineSignature, fields]);
+    }, [baselineValues, fields]);
 
     const mergeFieldChange = useCallback(
         (

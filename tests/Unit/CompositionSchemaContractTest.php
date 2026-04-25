@@ -271,7 +271,6 @@ describe('list composition schema (resources/schema/list.json)', function () {
                     'label' => 'Title',
                     'edit_form_field' => [
                         'type' => 'textarea',
-                        'placeholder' => 'Write...',
                     ],
                 ],
             ],
@@ -343,5 +342,63 @@ describe('list composition schema (resources/schema/list.json)', function () {
             'row_click_edit' => 'uuid',
             'columns' => $minimalColumns,
         ]))->toBeEmpty();
+    });
+
+    it('rejects unknown top-level list keys', function () {
+        $errors = CompositionSchemaAsserter::validateList([
+            'columns' => [
+                [
+                    'id' => 'title',
+                    'type' => 'text',
+                    'label' => 'Title',
+                ],
+            ],
+            'unknown_top_level_key' => true,
+        ]);
+
+        expect($errors)->not->toBeEmpty();
+    });
+
+    it('rejects unknown nested list keys', function () {
+        $errors = CompositionSchemaAsserter::validateList([
+            'columns' => [
+                [
+                    'id' => 'title',
+                    'type' => 'text',
+                    'label' => 'Title',
+                    'unknown_nested_key' => 'x',
+                ],
+            ],
+        ]);
+
+        expect($errors)->not->toBeEmpty();
+    });
+
+    it('rejects unknown top-level form keys', function () {
+        $errors = CompositionSchemaAsserter::validateForm([
+            'fields' => [
+                'title' => [
+                    'type' => 'text',
+                    'label' => 'Title',
+                ],
+            ],
+            'unknown_top_level_key' => true,
+        ]);
+
+        expect($errors)->not->toBeEmpty();
+    });
+
+    it('rejects unknown nested form keys', function () {
+        $errors = CompositionSchemaAsserter::validateForm([
+            'fields' => [
+                'title' => [
+                    'type' => 'text',
+                    'label' => 'Title',
+                    'unknown_nested_key' => true,
+                ],
+            ],
+        ]);
+
+        expect($errors)->not->toBeEmpty();
     });
 });

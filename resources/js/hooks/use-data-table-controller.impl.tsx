@@ -30,14 +30,13 @@ import {
     type VisibilityState,
 } from '@tanstack/react-table';
 import * as React from 'react';
-import { DataTableBody } from '@/components/table/data-table-body';
+import { DataTableBodyWithFooter } from '@/components/table/data-table-body-with-footer';
 import { buildDataTableColumnDefs } from '@/components/table/data-table-column-defs';
 import {
     leafColumnIdsInSchemaOrder,
     visibilityFromSchema,
 } from '@/components/table/data-table-column-visibility';
 import { DATA_TABLE_ROW_CLICK_IGNORE_SELECTOR } from '@/components/table/data-table-constants';
-import { DataTableFooter } from '@/components/table/data-table-footer';
 import { useDataTableCellUpdateFlow } from '@/hooks/use-data-table-cell-update-flow';
 import { useDataTableCreateRowFlow } from '@/hooks/use-data-table-create-row-flow';
 import { useDataTableRelationshipFlow } from '@/hooks/use-data-table-relationship-flow';
@@ -56,12 +55,6 @@ import type {
     FlatpackDataTableFilter,
     FlatpackFormTableToolbarAction,
 } from '@/types/data-table';
-
-const LazyDataTableDndWrapper = React.lazy(() =>
-    import('@/components/table/data-table-dnd-wrapper').then((module) => ({
-        default: module.DataTableDndWrapper,
-    })),
-);
 
 /**
  * Return value of {@link useDataTableController} for `DataTable` (toolbar, `tableAndFooter`, row drawer, confirm).
@@ -514,7 +507,6 @@ export function useDataTableController(
             handleRelationshipBulkAction(actionId, handleDeselectAllRows),
         [handleDeselectAllRows, handleRelationshipBulkAction],
     );
-    const paginationStateCurrent = table.getState().pagination;
     const selectedRowCount = isAllRowsSelected
         ? (serverPagination?.total ?? table.getFilteredRowModel().rows.length)
         : Object.keys(rowSelection).length;
@@ -529,8 +521,9 @@ export function useDataTableController(
               : `${serverPagination.total} row(s).`
         : `${table.getFilteredRowModel().rows.length} row(s).`;
 
-    const tableBody = (
-        <DataTableBody
+    const tableAndFooter = (
+        <DataTableBodyWithFooter
+            id={id}
             table={table}
             isReorderable={isReorderable}
             onRowClick={
@@ -540,39 +533,9 @@ export function useDataTableController(
                     : undefined
             }
             emptyColSpan={columnDefs.length}
+            rowCountLabel={rowCountLabel}
+            onDragEnd={handleDragEnd}
         />
-    );
-
-    const tableAndFooter = (
-        <>
-            <div className="overflow-hidden rounded-lg border">
-                {isReorderable ? (
-                    <React.Suspense fallback={tableBody}>
-                        <LazyDataTableDndWrapper onDragEnd={handleDragEnd}>
-                            {tableBody}
-                        </LazyDataTableDndWrapper>
-                    </React.Suspense>
-                ) : (
-                    tableBody
-                )}
-            </div>
-            <DataTableFooter
-                id={id}
-                rowCountLabel={rowCountLabel}
-                pageSize={paginationStateCurrent.pageSize}
-                pageIndex={paginationStateCurrent.pageIndex}
-                pageCount={table.getPageCount()}
-                canPreviousPage={table.getCanPreviousPage()}
-                canNextPage={table.getCanNextPage()}
-                onPageSizeChange={(value) => {
-                    table.setPageSize(Number(value));
-                }}
-                onFirstPage={() => table.setPageIndex(0)}
-                onPreviousPage={() => table.previousPage()}
-                onNextPage={() => table.nextPage()}
-                onLastPage={() => table.setPageIndex(table.getPageCount() - 1)}
-            />
-        </>
     );
 
     return {

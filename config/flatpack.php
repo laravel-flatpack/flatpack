@@ -124,6 +124,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Authorization defaults
+    |--------------------------------------------------------------------------
+    |
+    | Policy lookup is fail-closed by default. If a model has no policy class,
+    | Flatpack denies mutating actions unless explicitly overridden below.
+    |
+    */
+    'authorization' => [
+        'allow_when_policy_missing' => env('FLATPACK_ALLOW_WHEN_POLICY_MISSING', false),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Login route configuration
     |--------------------------------------------------------------------------
     |
@@ -293,18 +306,4 @@ return [
     */
     'enable_demo' => env('FLATPACK_ENABLE_DEMO', false),
 
-    /*
-    |--------------------------------------------------------------------------
-    | Log form save failures
-    |--------------------------------------------------------------------------
-    |
-    | When true, failed form PATCH/POST to save (after authorization) logs the
-    | exception class and message with entity/record to the default log channel.
-    | The same flag also adds flatpack_exception* keys to the Inertia 422 bag so
-    | the browser can show the real error without reading laravel.log.
-    | For console helpers when not in Vite dev, set
-    | localStorage.setItem('flatpack_debug_form_save', '1') and refresh.
-    |
-    */
-    'log_form_save_failures' => env('FLATPACK_LOG_FORM_SAVE_FAILURES', false),
 ];

@@ -36,7 +36,8 @@ final class PolicyAwareAuthorizer implements FlatpackAuthorizer
         $target = $model ?? new $modelClass;
 
         if (Gate::getPolicyFor($target) === null) {
-            return true;
+            return (bool) config('flatpack.authorization.allow_when_policy_missing', false)
+                && $this->canAccessPanel($user);
         }
 
         return Gate::forUser($user)->check($ability, $target);

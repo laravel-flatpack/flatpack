@@ -4,11 +4,6 @@ import type { FormEvent } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useFormFieldPresets } from '@/hooks/use-form-field-presets';
-import {
-    isFlatpackFormSaveDebugEnabled,
-    logFlatpackFormSaveError,
-    summarizeFormValuesForDebug,
-} from '@/lib/flatpack-form-debug';
 import { loadField } from '@/lib/form';
 import { firstErrorMessage } from '@/lib/form-errors';
 import {
@@ -45,19 +40,16 @@ export function useFlatpackForm({
             ) as Record<string, ReturnType<typeof loadField>>,
         [fields],
     );
-    const baselineSignature = useMemo(
-        () => JSON.stringify(buildInitialValues(fields, values)),
+    const baselineValues = useMemo(
+        () => buildInitialValues(fields, values),
         [fields, values],
     );
 
     const initialFormData = useMemo(
         () => ({
-            values: JSON.parse(baselineSignature) as Record<
-                string,
-                FormDataConvertible
-            >,
+            values: baselineValues as Record<string, FormDataConvertible>,
         }),
-        [baselineSignature],
+        [baselineValues],
     );
 
     // @ts-expect-error Inertia generic recursion over dynamic record values.
@@ -99,21 +91,17 @@ export function useFlatpackForm({
         useState<FlatpackFormPendingConfirm | null>(null);
 
     useEffect(() => {
-        const nextValues = JSON.parse(baselineSignature) as Record<
-            string,
-            FormDataConvertible
-        >;
         const f = formRef.current;
         f.setDefaults({
-            values: nextValues,
+            values: baselineValues as Record<string, FormDataConvertible>,
         });
         f.reset();
         f.clearErrors();
-    }, [baselineSignature]);
+    }, [baselineValues]);
 
     const { mergeFieldChange } = useFormFieldPresets({
         fields,
-        baselineSignature,
+        baselineValues,
     });
 
     const setFieldValue = useCallback(
@@ -149,16 +137,6 @@ export function useFlatpackForm({
                           entity,
                           record: record ?? '',
                       });
-            logFlatpackFormSaveError({
-                phase: 'client_validation',
-                entity,
-                record: record ?? null,
-                mode,
-                formActionId: pendingSaveActionIdRef.current,
-                submitUrl,
-                errors: validationErrors,
-                values: form.data.values as Record<string, unknown>,
-            });
             toast.error(
                 firstErrorMessage(validationErrors) ?? 'Please review errors',
             );
@@ -176,22 +154,6 @@ export function useFlatpackForm({
         form.clearErrors();
 
         const submittedActionId = pendingSaveActionIdRef.current;
-
-        if (isFlatpackFormSaveDebugEnabled()) {
-            console.log(
-                '[FLATPACK] form save: about to request (client payload summary)',
-                {
-                    entity,
-                    record,
-                    mode,
-                    form_action_id: submittedActionId,
-                    submitUrl,
-                    values: summarizeFormValuesForDebug(
-                        form.data.values as Record<string, unknown>,
-                    ),
-                },
-            );
-        }
 
         form.transform((data) => ({
             ...data,
@@ -219,16 +181,6 @@ export function useFlatpackForm({
                 }
             },
             onError: (errors: Record<string, unknown>) => {
-                logFlatpackFormSaveError({
-                    phase: 'inertia_on_error',
-                    entity,
-                    record: record ?? null,
-                    mode,
-                    formActionId: submittedActionId,
-                    submitUrl,
-                    errors,
-                    values: form.data.values as Record<string, unknown>,
-                });
                 toast.error(firstErrorMessage(errors) ?? 'Form save failed');
             },
         };
@@ -276,17 +228,6 @@ export function useFlatpackForm({
                             }
                         },
                         onError: (errors) => {
-                            if (isFlatpackFormSaveDebugEnabled()) {
-                                logFlatpackFormSaveError({
-                                    phase: 'named_action_error',
-                                    entity,
-                                    record: record ?? null,
-                                    mode: 'edit',
-                                    errors: errors as Record<string, unknown>,
-                                    values: formRef.current.data
-                                        .values as Record<string, unknown>,
-                                });
-                            }
                             const message =
                                 firstErrorMessage(errors) ??
                                 'Form action failed';

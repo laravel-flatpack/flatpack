@@ -160,7 +160,7 @@ final readonly class ActionRuntime
         $messages = [
             'flatpack' => $message,
         ];
-        if (config('app.debug') || (bool) config('flatpack.log_form_save_failures', false)) {
+        if (config('app.debug')) {
             $messages['flatpack_exception'] = $exception::class;
             $messages['flatpack_exception_message'] = $exception->getMessage() !== ''
                 ? $exception->getMessage()
