@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Flatpack\Http;
 
-use Flatpack\Http\Resources\FlatpackSchema;
 use Flatpack\Schema\Forms\FormSchemaNormalizer;
 use Flatpack\Schema\Lists\ListSchemaNormalizer;
 use Flatpack\Support\CompositionDebugLog;
@@ -41,7 +40,7 @@ final class FlatpackResponse
         $data = self::prepareInertiaData($view, $data);
 
         if ($json) {
-            return response()->json(FlatpackSchema::make($data));
+            return response()->json($data);
         }
 
         return Inertia::render($view, $data);

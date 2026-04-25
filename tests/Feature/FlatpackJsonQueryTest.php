@@ -21,7 +21,10 @@ test('flatpack dashboard returns minimal JSON resource when json query is true a
         ->assertOk()
         ->json();
 
-    expect($payload)->toBe(['composition_debug' => []]);
+    expect($payload)->toBe([
+        'schema' => null,
+        'composition_debug' => [],
+    ]);
 });
 
 test('flatpack dashboard returns JSON schema when json query is true and dashboard list yaml exists', function () {
@@ -134,6 +137,36 @@ YAML);
             ]))
             ->assertOk()
             ->assertJsonPath('schema.name', 'Post');
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
+test('flatpack entity edit missing record json preserves error context props', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-json-edit-missing-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/form.yaml', <<<'YAML'
+name: Post
+model: Flatpack\Tests\Models\Post
+fields: []
+YAML);
+        config()->set('flatpack.path', $tempPath);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        actingAs($user)
+            ->getJson(route('flatpack.entities.edit', [
+                'entity' => 'posts',
+                'record' => '999999',
+                'json' => true,
+            ]))
+            ->assertOk()
+            ->assertJsonPath('entity', 'posts')
+            ->assertJsonPath('entityName', 'post')
+            ->assertJsonPath('composition_debug', []);
     } finally {
         File::deleteDirectory($tempPath);
     }

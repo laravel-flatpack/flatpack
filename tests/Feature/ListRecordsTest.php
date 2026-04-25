@@ -41,7 +41,7 @@ YAML);
             ->assertOk()
             ->json();
 
-        $body = $payload['data'] ?? $payload;
+        $body = $payload;
         expect($body['records'])->toBeArray();
         expect($body['records'][0]['title'])->toBe('Listed post');
         expect($body['pagination']['total'])->toBe(1);
@@ -74,7 +74,7 @@ YAML);
             ->assertOk()
             ->json();
 
-        $body = $payload['data'] ?? $payload;
+        $body = $payload;
         expect($body['model_key'])->toBe('slug');
     } finally {
         File::deleteDirectory($tempPath);
@@ -123,7 +123,7 @@ YAML);
             ->assertOk()
             ->json();
 
-        $body = $payload['data'] ?? $payload;
+        $body = $payload;
         expect($body['list_actions'])->toEqual([
             [
                 'id' => 'create',
@@ -182,7 +182,7 @@ YAML);
             ->assertOk()
             ->json();
 
-        $body = $payload['data'] ?? $payload;
+        $body = $payload;
         expect($body['records'])->toHaveCount(1);
         expect($body['records'][0]['title'])->toBe('Beta target');
         expect($body['pagination']['total'])->toBe(1);
@@ -516,7 +516,7 @@ YAML);
             ->assertOk()
             ->json();
 
-        $body = $payload['data'] ?? $payload;
+        $body = $payload;
         expect($body['records'])->toHaveCount(1);
         expect($body['records'][0]['title'])->toBe('Draft post');
         expect($body['filter_values']['status'])->toBe('draft');
@@ -570,7 +570,7 @@ YAML);
             ->assertOk()
             ->json();
 
-        $body = $payload['data'] ?? $payload;
+        $body = $payload;
         expect($body['records'])->toHaveCount(2);
         expect(collect($body['records'])->pluck('status')->all())
             ->toContain('draft')
@@ -627,7 +627,7 @@ YAML);
             ]))
             ->assertOk()
             ->json();
-        $fromBody = $fromPayload['data'] ?? $fromPayload;
+        $fromBody = $fromPayload;
         expect($fromBody['records'])->toHaveCount(1);
         expect($fromBody['records'][0]['title'])->toBe('Newer post');
         expect($fromBody['filters'][0]['label'])->toBe('Filter by published at');
@@ -657,7 +657,7 @@ YAML);
             ]))
             ->assertOk()
             ->json();
-        $exactBody = $exactPayload['data'] ?? $exactPayload;
+        $exactBody = $exactPayload;
         expect($exactBody['records'])->toHaveCount(1);
         expect($exactBody['records'][0]['title'])->toBe('Older post');
     } finally {
@@ -707,7 +707,7 @@ YAML);
             ->assertOk()
             ->json();
 
-        $body = $payload['data'] ?? $payload;
+        $body = $payload;
         expect($body['records'])->toHaveCount(1);
         expect($body['records'][0]['title'])->toBe('Newer post');
         expect($body['filters'])->toHaveCount(1);
@@ -769,7 +769,7 @@ YAML);
             ->assertOk()
             ->json();
 
-        $mapBody = $payload['data'] ?? $payload;
+        $mapBody = $payload;
         expect($mapBody['records'])->toHaveCount(2);
         expect(collect($mapBody['records'])->pluck('title')->all())
             ->toContain('Active post')
@@ -819,7 +819,7 @@ YAML);
             ->assertOk()
             ->json();
 
-        $listBody = $listPayload['data'] ?? $listPayload;
+        $listBody = $listPayload;
         expect($listBody['records'])->toHaveCount(1);
         expect($listBody['records'][0]['title'])->toBe('Active post');
         expect($listBody['filters'])->toHaveCount(1);
@@ -890,7 +890,7 @@ YAML);
             ->assertOk()
             ->json();
 
-        $body = $payload['data'] ?? $payload;
+        $body = $payload;
         expect($body['records'])->toHaveCount(2);
         expect($body['records'][0]['title'])->toBe('Older post');
         expect($body['records'][1]['title'])->toBe('Newer post');
@@ -980,7 +980,7 @@ YAML);
             ->assertOk()
             ->json();
 
-        $body = $payload['data'] ?? $payload;
+        $body = $payload;
         expect($body['bulk_actions'])->toEqual([
             [
                 'id' => 'delete',
