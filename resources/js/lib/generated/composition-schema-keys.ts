@@ -79,7 +79,7 @@ export const FORM_FIELD_TYPES_CANONICAL = [
 export const HEADER_ACTION_ENTRY_KEYS = [
     'action',
     'confirm',
-    'disable_until_dirty',
+    'enabled_if',
     'href',
     'icon',
     'label',
@@ -88,6 +88,7 @@ export const HEADER_ACTION_ENTRY_KEYS = [
     'success_message',
     'success_redirect',
     'variant',
+    'visible_if',
 ] as const;
 
 /**
@@ -96,11 +97,13 @@ export const HEADER_ACTION_ENTRY_KEYS = [
 export const LIST_BULK_ACTION_ENTRY_KEYS = [
     'action',
     'confirm',
+    'enabled_if',
     'icon',
     'label',
     'success_message',
     'success_redirect',
     'variant',
+    'visible_if',
 ] as const;
 
 /**

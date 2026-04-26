@@ -31,3 +31,51 @@ test('fromSchema includes optional success_message and confirm', function () {
         'confirm' => true,
     ]);
 });
+
+test('fromSchema includes normalized enabled_if for bulk actions', function () {
+    $actions = BulkActions::fromSchema([
+        'bulk_actions' => [
+            'archive' => [
+                'label' => 'Archive',
+                'action' => 'delete',
+                'enabled_if' => [
+                    'all' => [
+                        ['list.selection.min' => 1],
+                        ['list.filters_applied' => false],
+                    ],
+                    'message' => 'Select at least one row.',
+                ],
+            ],
+        ],
+    ]);
+
+    expect($actions[0]['enabled_if'] ?? null)->toMatchArray([
+        'all' => [
+            ['list.selection.min' => 1],
+            ['list.filters_applied' => false],
+        ],
+        'message' => 'Select at least one row.',
+    ]);
+});
+
+test('fromSchema includes normalized visible_if for bulk actions', function () {
+    $actions = BulkActions::fromSchema([
+        'bulk_actions' => [
+            'archive' => [
+                'label' => 'Archive',
+                'action' => 'delete',
+                'visible_if' => [
+                    'any' => [
+                        ['list.search_present' => true],
+                    ],
+                ],
+            ],
+        ],
+    ]);
+
+    expect($actions[0]['visible_if'] ?? null)->toMatchArray([
+        'any' => [
+            ['list.search_present' => true],
+        ],
+    ]);
+});

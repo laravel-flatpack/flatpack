@@ -60,12 +60,8 @@ return [
     | Form configuration
     |--------------------------------------------------------------------------
     |
-    | Disable header actions until the form is dirty.
-    |
     */
     'forms' => [
-        'disable_actions_until_dirty' => false,
-
         /*
         |--------------------------------------------------------------------------
         | Relation-backed table fields (`type: table` + `relation`)

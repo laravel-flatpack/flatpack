@@ -6,8 +6,9 @@ import {
     flatpackActionVariant,
 } from '@/components/flatpack/flatpack-action-button-content';
 import {
-    FlatpackActionDirtyTooltip,
-    flatpackActionDisabledByDirty,
+    FlatpackActionInactiveTooltip,
+    flatpackActionEnabledState,
+    flatpackActionVisibilityState,
 } from '@/components/flatpack/flatpack-action-dirty-guard';
 import { Button } from '@/components/ui/button';
 import { useFlatpackActionShortcuts } from '@/hooks/use-flatpack-action-shortcuts';
@@ -22,8 +23,8 @@ type FlatpackFormActionsProps = {
     formActions: FlatpackListHeaderAction[];
     formId: string;
     formProcessing: boolean;
-    /** When false and an action has disable_until_dirty, that action stays disabled. Defaults to true (e.g. list pages). */
     formIsDirty?: boolean;
+    formMode: 'create' | 'edit';
     fieldsLength: number;
     /** Sets which YAML row / handler name is sent on the next {@code POST …/submit}. */
     onFormSubmitIntent: (action: FlatpackListSubmitAction) => void;
@@ -36,6 +37,7 @@ export function FlatpackFormActions({
     formId,
     formProcessing,
     formIsDirty = true,
+    formMode,
     fieldsLength,
     onFormSubmitIntent,
     onFormSubmitConfirmClick,
@@ -79,6 +81,7 @@ export function FlatpackFormActions({
                     formId={formId}
                     fieldsLength={fieldsLength}
                     formIsDirty={formIsDirty ?? true}
+                    formMode={formMode}
                     formProcessing={formProcessing}
                     isMacPlatform={isMacPlatform}
                     shortcut={
@@ -101,6 +104,7 @@ type FlatpackFormActionProps = {
     formId: string;
     formProcessing: boolean;
     formIsDirty: boolean;
+    formMode: 'create' | 'edit';
     fieldsLength: number;
     isMacPlatform: boolean;
     shortcut?: ParsedFlatpackShortcut;
@@ -115,6 +119,7 @@ function FlatpackFormAction({
     formId,
     fieldsLength,
     formIsDirty,
+    formMode,
     formProcessing,
     isMacPlatform,
     shortcut,
@@ -127,17 +132,27 @@ function FlatpackFormAction({
     const iconClass = flatpackActionIconButtonClass(action);
     const actionClassName = cn(iconClass, 'h-8 px-3 text-sm sm:h-10 sm:px-4');
     const bodyProps = { action, isMacPlatform, shortcut, variant };
+    const visibilityState = flatpackActionVisibilityState(action, {
+        formIsDirty,
+        formMode,
+    });
+    if (!visibilityState.visible) {
+        return null;
+    }
 
     if ('href' in action) {
-        const disabledByDirty = flatpackActionDisabledByDirty(
-            action,
+        const inactiveState = flatpackActionEnabledState(action, {
             formIsDirty,
-        );
-        const disabled = formProcessing || disabledByDirty;
-        const showDirtyTooltip = disabledByDirty && !formProcessing;
+            formMode,
+        });
+        const disabled = formProcessing || inactiveState.inactive;
+        const showInactiveTooltip = inactiveState.inactive && !formProcessing;
 
         return (
-            <FlatpackActionDirtyTooltip show={showDirtyTooltip}>
+            <FlatpackActionInactiveTooltip
+                show={showInactiveTooltip}
+                message={inactiveState.message}
+            >
                 {disabled ? (
                     <Button
                         type="button"
@@ -168,7 +183,7 @@ function FlatpackFormAction({
                         </Link>
                     </Button>
                 )}
-            </FlatpackActionDirtyTooltip>
+            </FlatpackActionInactiveTooltip>
         );
     }
 
@@ -177,13 +192,20 @@ function FlatpackFormAction({
     }
 
     const submitRow = action;
-    const disabledByDirty = flatpackActionDisabledByDirty(action, formIsDirty);
-    const disabled = formProcessing || fieldsLength === 0 || disabledByDirty;
-    const showDirtyTooltip =
-        disabledByDirty && !formProcessing && fieldsLength > 0;
+    const inactiveState = flatpackActionEnabledState(action, {
+        formIsDirty,
+        formMode,
+    });
+    const disabled =
+        formProcessing || fieldsLength === 0 || inactiveState.inactive;
+    const showInactiveTooltip =
+        inactiveState.inactive && !formProcessing && fieldsLength > 0;
 
     return (
-        <FlatpackActionDirtyTooltip show={showDirtyTooltip}>
+        <FlatpackActionInactiveTooltip
+            show={showInactiveTooltip}
+            message={inactiveState.message}
+        >
             <Button
                 type={action.confirm ? 'button' : 'submit'}
                 form={action.confirm ? undefined : formId}
@@ -213,6 +235,6 @@ function FlatpackFormAction({
                     hideLabelOnMobileWhenIcon
                 />
             </Button>
-        </FlatpackActionDirtyTooltip>
+        </FlatpackActionInactiveTooltip>
     );
 }

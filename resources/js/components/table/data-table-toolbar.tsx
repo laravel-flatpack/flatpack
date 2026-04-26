@@ -1,6 +1,10 @@
 import type { Table as TanStackTable } from '@tanstack/react-table';
 import { ChevronDownIcon } from 'lucide-react';
 import { useState } from 'react';
+import {
+    flatpackActionEnabledState,
+    flatpackActionVisibilityState,
+} from '@/components/flatpack/flatpack-action-dirty-guard';
 import { FlatpackConfirmDialog } from '@/components/flatpack/flatpack-confirm-dialog';
 import { LucideIconByName } from '@/components/icons';
 import { DataTableColumnsVisibilityDropdown } from '@/components/table/data-table-columns-visibility-dropdown';
@@ -84,6 +88,23 @@ export function DataTableToolbar({
             ? null
             : (bulkActions.find((action) => action.id === pendingActionId) ??
               null);
+    const bulkActionStates = bulkActions
+        .map((action) => {
+            const context = {
+                listSelectionCount: selectedRowCount,
+                listSearchTerm: globalFilter,
+                listFilterState: serverFilterState,
+            };
+            return {
+                action,
+                visible: flatpackActionVisibilityState(action, context),
+                inactive: flatpackActionEnabledState(action, context),
+            };
+        })
+        .filter(({ visible }) => visible.visible);
+    const hasEnabledBulkAction = bulkActionStates.some(
+        ({ inactive }) => !inactive.inactive,
+    );
 
     return (
         <div className="flex min-h-8 flex-wrap items-center justify-between gap-3">
@@ -137,7 +158,10 @@ export function DataTableToolbar({
                                 <Button
                                     variant="outline"
                                     size="sm"
-                                    disabled={selectedRowCount === 0}
+                                    disabled={
+                                        selectedRowCount === 0 ||
+                                        !hasEnabledBulkAction
+                                    }
                                 >
                                     Bulk Actions
                                     <ChevronDownIcon data-icon="inline-end" />
@@ -148,31 +172,40 @@ export function DataTableToolbar({
                                 align="start"
                                 className="duration-0 data-open:animate-none data-closed:animate-none data-open:fade-in-0 data-open:zoom-in-100 data-closed:fade-out-0 data-closed:zoom-out-100"
                             >
-                                {bulkActions.map((action) => (
-                                    <DropdownMenuItem
-                                        key={action.id}
-                                        variant={
-                                            action.variant === 'destructive'
-                                                ? 'destructive'
-                                                : 'default'
-                                        }
-                                        onSelect={() => {
-                                            if (action.confirm === true) {
-                                                setPendingActionId(action.id);
-                                                setIsConfirmBulkOpen(true);
-                                                return;
+                                {bulkActionStates.map(
+                                    ({ action, inactive }) => (
+                                        <DropdownMenuItem
+                                            key={action.id}
+                                            disabled={inactive.inactive}
+                                            title={inactive.message}
+                                            variant={
+                                                action.variant === 'destructive'
+                                                    ? 'destructive'
+                                                    : 'default'
                                             }
-                                            onBulkAction(action.id);
-                                        }}
-                                    >
-                                        {action.icon ? (
-                                            <LucideIconByName
-                                                name={action.icon}
-                                            />
-                                        ) : null}
-                                        {action.label}
-                                    </DropdownMenuItem>
-                                ))}
+                                            onSelect={() => {
+                                                if (inactive.inactive) {
+                                                    return;
+                                                }
+                                                if (action.confirm === true) {
+                                                    setPendingActionId(
+                                                        action.id,
+                                                    );
+                                                    setIsConfirmBulkOpen(true);
+                                                    return;
+                                                }
+                                                onBulkAction(action.id);
+                                            }}
+                                        >
+                                            {action.icon ? (
+                                                <LucideIconByName
+                                                    name={action.icon}
+                                                />
+                                            ) : null}
+                                            {action.label}
+                                        </DropdownMenuItem>
+                                    ),
+                                )}
                             </DropdownMenuContent>
                         </DropdownMenu>
                         {selectedRowCount > 0 && (

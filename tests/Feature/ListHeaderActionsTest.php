@@ -207,38 +207,56 @@ test('fromSchema ignores invalid header actions without exactly one target', fun
     expect($actions)->toBe([]);
 });
 
-test('fromSchema sets disable_until_dirty when yaml requests it', function () {
-    config()->set('flatpack.forms.disable_actions_until_dirty', false);
-
+test('fromSchema includes normalized enabled_if predicates', function () {
     $actions = HeaderActions::fromSchema([
         'actions' => [
             'save' => [
                 'label' => 'Save',
                 'action' => 'save',
-                'disable_until_dirty' => true,
+                'enabled_if' => [
+                    'all' => [
+                        ['form.dirty' => true],
+                    ],
+                    'any' => [
+                        ['form.mode_in' => ['edit', 'invalid']],
+                    ],
+                    'message' => 'Make changes first',
+                ],
             ],
         ],
     ]);
 
-    expect($actions[0]['disable_until_dirty'] ?? false)->toBeTrue();
+    expect($actions[0]['enabled_if'] ?? null)->toMatchArray([
+        'all' => [
+            ['form.dirty' => true],
+        ],
+        'any' => [
+            ['form.mode_in' => ['edit']],
+        ],
+        'message' => 'Make changes first',
+    ]);
 });
 
-test('fromSchema sets disable_until_dirty for all actions when global config is true', function () {
-    config()->set('flatpack.forms.disable_actions_until_dirty', true);
-
+test('fromSchema includes normalized visible_if predicates', function () {
     $actions = HeaderActions::fromSchema([
         'actions' => [
-            'save' => [
-                'label' => 'Save',
+            'publish' => [
+                'label' => 'Publish',
                 'action' => 'save',
-            ],
-            'back' => [
-                'label' => 'Back',
-                'href' => '/list',
+                'visible_if' => [
+                    'all' => [
+                        ['form.mode_in' => ['edit']],
+                    ],
+                    'message' => 'Visible only while editing',
+                ],
             ],
         ],
     ]);
 
-    expect($actions[0]['disable_until_dirty'] ?? false)->toBeTrue();
-    expect($actions[1]['disable_until_dirty'] ?? false)->toBeTrue();
+    expect($actions[0]['visible_if'] ?? null)->toMatchArray([
+        'all' => [
+            ['form.mode_in' => ['edit']],
+        ],
+        'message' => 'Visible only while editing',
+    ]);
 });

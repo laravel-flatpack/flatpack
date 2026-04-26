@@ -193,6 +193,76 @@ describe('DataTable toolbar create flow', () => {
         });
     });
 
+    it('disables bulk menu items while enabled_if is unmet', async () => {
+        const onValueChange = vi.fn();
+        const user = userEvent.setup();
+
+        render(
+            <DataTable
+                id="lines-relation-bulk-inactive"
+                columns={[{ id: 'name', label: 'Name', type: 'text' }]}
+                data={[
+                    { id: '1', name: 'Line 1' },
+                    { id: '2', name: 'Line 2' },
+                ]}
+                bulkActions={[
+                    {
+                        id: 'remove',
+                        label: 'Remove',
+                        action: 'remove',
+                        enabled_if: {
+                            all: [{ 'list.selection.min': 2 }],
+                        },
+                    },
+                ]}
+                onValueChange={onValueChange}
+            />,
+        );
+
+        const [, firstRowCheckbox] = screen.getAllByRole('checkbox');
+        await user.click(firstRowCheckbox);
+        await user.click(screen.getByRole('button', { name: 'Bulk Actions' }));
+
+        expect(
+            screen.getByRole('menuitem', { name: 'Remove' }),
+        ).toHaveAttribute('data-disabled', '');
+    });
+
+    it('hides bulk menu items while visible_if is unmet', async () => {
+        const onValueChange = vi.fn();
+        const user = userEvent.setup();
+
+        render(
+            <DataTable
+                id="lines-relation-bulk-invisible"
+                columns={[{ id: 'name', label: 'Name', type: 'text' }]}
+                data={[
+                    { id: '1', name: 'Line 1' },
+                    { id: '2', name: 'Line 2' },
+                ]}
+                bulkActions={[
+                    {
+                        id: 'remove',
+                        label: 'Remove',
+                        action: 'remove',
+                        visible_if: {
+                            any: [{ 'list.search_present': true }],
+                        },
+                    },
+                ]}
+                onValueChange={onValueChange}
+            />,
+        );
+
+        const [, firstRowCheckbox] = screen.getAllByRole('checkbox');
+        await user.click(firstRowCheckbox);
+        await user.click(screen.getByRole('button', { name: 'Bulk Actions' }));
+
+        expect(
+            screen.queryByRole('menuitem', { name: 'Remove' }),
+        ).not.toBeInTheDocument();
+    });
+
     it('supports create, edit, save, then remove in one flow', async () => {
         const onValueChange = vi.fn();
         const user = userEvent.setup();

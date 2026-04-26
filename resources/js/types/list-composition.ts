@@ -3,6 +3,7 @@ import type {
     FlatpackDataTableSelectOptionStatus,
     FlatpackSuccessRedirect,
 } from '@/types/data-table';
+import type { FlatpackActionCondition } from '@/types/flatpack-actions';
 
 /**
  * Raw list composition from `list.yaml` (decoded JSON). Parity with `resources/schema/list.json`.
@@ -145,6 +146,8 @@ export type FlatpackListCompositionListHeaderActionYaml = {
         success_message?: string;
         confirm?: boolean;
         success_redirect?: ListCompositionHeaderActionSuccessRedirect;
+        enabled_if?: FlatpackActionCondition;
+        visible_if?: FlatpackActionCondition;
         shortcut?: string;
     };
 
@@ -162,6 +165,8 @@ export type FlatpackListCompositionBulkActionYaml = {
     success_message?: string;
     confirm?: boolean;
     success_redirect?: ListCompositionHeaderActionSuccessRedirect;
+    enabled_if?: FlatpackActionCondition;
+    visible_if?: FlatpackActionCondition;
 };
 
 export type FlatpackListCompositionBulkActionsYaml = Record<

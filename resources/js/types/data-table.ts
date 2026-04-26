@@ -1,5 +1,6 @@
 import type { RowSelectionState } from '@tanstack/react-table';
 import type { Dispatch, ReactNode, SetStateAction } from 'react';
+import type { FlatpackActionCondition } from '@/types/flatpack-actions';
 
 /** Allowed values for YAML {@code success_redirect} on Flatpack actions (server-driven redirects). */
 export type FlatpackSuccessRedirect =
@@ -43,6 +44,8 @@ export type FlatpackDataTableBulkAction = {
     success_message?: string;
     confirm?: boolean;
     success_redirect?: FlatpackSuccessRedirect;
+    enabled_if?: FlatpackActionCondition;
+    visible_if?: FlatpackActionCondition;
 };
 
 /**

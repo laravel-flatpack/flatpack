@@ -90,6 +90,57 @@ describe('form composition schema (resources/schema/form.json)', function () {
         expect($errors)->toBeEmpty();
     });
 
+    it('accepts enabled_if on form header actions', function () {
+        $errors = CompositionSchemaAsserter::validateForm([
+            'actions' => [
+                'save' => [
+                    'label' => 'Save',
+                    'action' => 'save',
+                    'enabled_if' => [
+                        'all' => [
+                            ['form.dirty' => true],
+                        ],
+                        'message' => 'Make changes first.',
+                    ],
+                ],
+            ],
+        ]);
+
+        expect($errors)->toBeEmpty();
+    });
+
+    it('accepts visible_if on form header actions', function () {
+        $errors = CompositionSchemaAsserter::validateForm([
+            'actions' => [
+                'publish' => [
+                    'label' => 'Publish',
+                    'action' => 'save',
+                    'visible_if' => [
+                        'all' => [
+                            ['form.mode_in' => ['edit']],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        expect($errors)->toBeEmpty();
+    });
+
+    it('rejects deprecated disable_until_dirty on form actions', function () {
+        $errors = CompositionSchemaAsserter::validateForm([
+            'actions' => [
+                'save' => [
+                    'label' => 'Save',
+                    'action' => 'save',
+                    'disable_until_dirty' => true,
+                ],
+            ],
+        ]);
+
+        expect($errors)->not->toBeEmpty();
+    });
+
     it('rejects obsolete form field type relation', function () {
         $errors = CompositionSchemaAsserter::validateForm([
             'fields' => [
@@ -238,6 +289,79 @@ describe('list composition schema (resources/schema/list.json)', function () {
             'filters' => [
                 'status' => [
                     'type' => 'select',
+                ],
+            ],
+        ]);
+
+        expect($errors)->toBeEmpty();
+    });
+
+    it('accepts enabled_if on list and bulk actions', function () {
+        $errors = CompositionSchemaAsserter::validateList([
+            'actions' => [
+                'export' => [
+                    'label' => 'Export',
+                    'action' => 'create',
+                    'enabled_if' => [
+                        'any' => [
+                            ['list.search_present' => true],
+                            ['list.filters_applied' => true],
+                        ],
+                    ],
+                ],
+            ],
+            'bulk_actions' => [
+                'archive' => [
+                    'label' => 'Archive',
+                    'action' => 'delete',
+                    'enabled_if' => [
+                        'all' => [
+                            ['list.selection.min' => 1],
+                        ],
+                    ],
+                ],
+            ],
+            'columns' => [
+                [
+                    'id' => 'title',
+                    'type' => 'text',
+                    'label' => 'Title',
+                ],
+            ],
+        ]);
+
+        expect($errors)->toBeEmpty();
+    });
+
+    it('accepts visible_if on list and bulk actions', function () {
+        $errors = CompositionSchemaAsserter::validateList([
+            'actions' => [
+                'export' => [
+                    'label' => 'Export',
+                    'action' => 'create',
+                    'visible_if' => [
+                        'any' => [
+                            ['list.search_present' => true],
+                        ],
+                    ],
+                ],
+            ],
+            'bulk_actions' => [
+                'archive' => [
+                    'label' => 'Archive',
+                    'action' => 'delete',
+                    'visible_if' => [
+                        'all' => [
+                            ['list.selection.min' => 1],
+                        ],
+                    ],
+                ],
+            ],
+            'columns' => [
+                [
+                    'id' => 'title',
+                    'type' => 'text',
+                    'label' => 'Title',
                 ],
             ],
         ]);

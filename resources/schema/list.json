@@ -133,6 +133,12 @@
                 "success_redirect": {
                     "$ref": "#/$defs/successRedirect"
                 },
+                "enabled_if": {
+                    "$ref": "#/$defs/actionInactiveUntil"
+                },
+                "visible_if": {
+                    "$ref": "#/$defs/actionInactiveUntil"
+                },
                 "primary": {
                     "type": "boolean",
                     "description": "When true, this list header action is treated as the primary CTA where that matters for defaults."
@@ -183,6 +189,12 @@
                 },
                 "success_redirect": {
                     "$ref": "#/$defs/successRedirect"
+                },
+                "enabled_if": {
+                    "$ref": "#/$defs/actionInactiveUntil"
+                },
+                "visible_if": {
+                    "$ref": "#/$defs/actionInactiveUntil"
                 }
             },
             "additionalProperties": false
@@ -242,6 +254,95 @@
                     "type": "boolean",
                     "enum": [true],
                     "description": "Alias for list (redirect to entity index after success)."
+                }
+            ]
+        },
+        "actionInactiveUntil": {
+            "type": "object",
+            "description": "Disables the action until one or more predicates become true.",
+            "properties": {
+                "all": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/$defs/actionInactivePredicate"
+                    }
+                },
+                "any": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/$defs/actionInactivePredicate"
+                    }
+                },
+                "message": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "anyOf": [
+                { "required": ["all"] },
+                { "required": ["any"] }
+            ],
+            "additionalProperties": false
+        },
+        "actionInactivePredicate": {
+            "oneOf": [
+                {
+                    "type": "object",
+                    "required": ["form.dirty"],
+                    "properties": {
+                        "form.dirty": {
+                            "type": "boolean"
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "required": ["form.mode_in"],
+                    "properties": {
+                        "form.mode_in": {
+                            "type": "array",
+                            "minItems": 1,
+                            "items": {
+                                "type": "string",
+                                "enum": ["create", "edit"]
+                            }
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "required": ["list.selection.min"],
+                    "properties": {
+                        "list.selection.min": {
+                            "type": "integer",
+                            "minimum": 0
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "required": ["list.search_present"],
+                    "properties": {
+                        "list.search_present": {
+                            "type": "boolean"
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "required": ["list.filters_applied"],
+                    "properties": {
+                        "list.filters_applied": {
+                            "type": "boolean"
+                        }
+                    },
+                    "additionalProperties": false
                 }
             ]
         },

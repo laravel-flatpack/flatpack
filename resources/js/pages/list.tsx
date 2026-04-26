@@ -98,6 +98,8 @@ export default function FlatpackListPage(props: FlatpackListPageProps) {
                             listActions={listActions}
                             onRequestConfirm={setPendingListConfirm}
                             runListAction={executeListAction}
+                            searchTerm={searchTerm}
+                            serverFilterState={serverFilterValues}
                         />
                     }
                 />

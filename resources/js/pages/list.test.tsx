@@ -404,6 +404,82 @@ describe('FlatpackListPage', () => {
         );
     });
 
+    it('keeps list actions inactive until search condition is met', () => {
+        render(
+            <FlatpackListPage
+                entity="posts"
+                name="Posts"
+                list_actions={[
+                    {
+                        id: 'export',
+                        label: 'Export',
+                        action: 'create',
+                        enabled_if: {
+                            any: [{ 'list.search_present': true }],
+                        },
+                    },
+                ]}
+            />,
+        );
+
+        expect(screen.getByRole('button', { name: 'Export' })).toBeDisabled();
+        expect(routerPost).not.toHaveBeenCalled();
+    });
+
+    it('enables list actions when enabled_if search condition is met', () => {
+        render(
+            <FlatpackListPage
+                entity="posts"
+                name="Posts"
+                search_term="hello"
+                list_actions={[
+                    {
+                        id: 'export',
+                        label: 'Export',
+                        action: 'create',
+                        enabled_if: {
+                            any: [{ 'list.search_present': true }],
+                        },
+                    },
+                ]}
+            />,
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: 'Export' }));
+
+        expect(routerPost).toHaveBeenCalledWith(
+            '/flatpack/posts/action',
+            { action: 'create' },
+            expect.objectContaining({
+                preserveState: true,
+                preserveScroll: true,
+            }),
+        );
+    });
+
+    it('hides list actions while visible_if condition is unmet', () => {
+        render(
+            <FlatpackListPage
+                entity="posts"
+                name="Posts"
+                list_actions={[
+                    {
+                        id: 'export',
+                        label: 'Export',
+                        action: 'create',
+                        visible_if: {
+                            any: [{ 'list.search_present': true }],
+                        },
+                    },
+                ]}
+            />,
+        );
+
+        expect(
+            screen.queryByRole('button', { name: 'Export' }),
+        ).not.toBeInTheDocument();
+    });
+
     it('triggers list action shortcut for non-confirm actions', async () => {
         render(
             <FlatpackListPage

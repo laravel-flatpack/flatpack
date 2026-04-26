@@ -96,7 +96,7 @@ final class CompositionSchemaKeys
     public const array HEADER_ACTION_ENTRY_KEYS = [
         'action',
         'confirm',
-        'disable_until_dirty',
+        'enabled_if',
         'href',
         'icon',
         'label',
@@ -105,6 +105,7 @@ final class CompositionSchemaKeys
         'success_message',
         'success_redirect',
         'variant',
+        'visible_if',
     ];
 
     /**
@@ -115,11 +116,13 @@ final class CompositionSchemaKeys
     public const array LIST_BULK_ACTION_ENTRY_KEYS = [
         'action',
         'confirm',
+        'enabled_if',
         'icon',
         'label',
         'success_message',
         'success_redirect',
         'variant',
+        'visible_if',
     ];
 
     /**

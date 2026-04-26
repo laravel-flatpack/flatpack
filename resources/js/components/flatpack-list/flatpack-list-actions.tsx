@@ -4,6 +4,11 @@ import {
     flatpackActionIconButtonClass,
     flatpackActionVariant,
 } from '@/components/flatpack/flatpack-action-button-content';
+import {
+    FlatpackActionInactiveTooltip,
+    flatpackActionEnabledState,
+    flatpackActionVisibilityState,
+} from '@/components/flatpack/flatpack-action-dirty-guard';
 import { Button } from '@/components/ui/button';
 import { useFlatpackActionShortcuts } from '@/hooks/use-flatpack-action-shortcuts';
 import { useFlatpackRegisterActionShortcuts } from '@/hooks/use-flatpack-register-action-shortcuts';
@@ -17,14 +22,16 @@ type FlatpackListActionsProps = {
     listActions: FlatpackListHeaderAction[];
     onRequestConfirm: (action: FlatpackListSubmitAction) => void;
     runListAction: (action: FlatpackListSubmitAction) => void | Promise<void>;
-    /** List pages have no form dirty state; default true keeps actions enabled unless global YAML forces disable_until_dirty (then still effectively enabled). */
-    formIsDirty?: boolean;
+    searchTerm?: string;
+    serverFilterState?: Record<string, string | string[] | null>;
 };
 
 export function FlatpackListActions({
     listActions,
     onRequestConfirm,
     runListAction,
+    searchTerm = '',
+    serverFilterState = {},
 }: FlatpackListActionsProps) {
     const {
         props: { flatpack },
@@ -61,6 +68,8 @@ export function FlatpackListActions({
                     }
                     onRequestConfirm={onRequestConfirm}
                     runListAction={runListAction}
+                    searchTerm={searchTerm}
+                    serverFilterState={serverFilterState}
                 />
             ))}
         </div>
@@ -73,6 +82,8 @@ type FlatpackListActionProps = {
     shortcut?: ParsedFlatpackShortcut;
     onRequestConfirm: FlatpackListActionsProps['onRequestConfirm'];
     runListAction: FlatpackListActionsProps['runListAction'];
+    searchTerm: string;
+    serverFilterState: Record<string, string | string[] | null>;
 };
 
 function FlatpackListAction({
@@ -81,51 +92,88 @@ function FlatpackListAction({
     shortcut,
     onRequestConfirm,
     runListAction,
+    searchTerm,
+    serverFilterState,
 }: FlatpackListActionProps) {
     const variant = flatpackActionVariant(action);
     const iconClass = flatpackActionIconButtonClass(action);
     const actionClassName = cn(iconClass);
     const bodyProps = { action, isMacPlatform, shortcut, variant };
+    const visibilityState = flatpackActionVisibilityState(action, {
+        listSearchTerm: searchTerm,
+        listFilterState: serverFilterState,
+    });
+    if (!visibilityState.visible) {
+        return null;
+    }
+    const inactiveState = flatpackActionEnabledState(action, {
+        listSearchTerm: searchTerm,
+        listFilterState: serverFilterState,
+    });
 
     if ('href' in action) {
         return (
-            <Button asChild size="lg" variant={variant}>
-                <Link
-                    href={action.href}
-                    className={actionClassName}
-                    data-flatpack-action-id={action.id}
-                >
-                    <FlatpackActionButtonContent
-                        {...bodyProps}
-                        showSpinner={false}
-                        hideLabelOnMobileWhenIcon
-                    />
-                </Link>
-            </Button>
+            <FlatpackActionInactiveTooltip
+                show={inactiveState.inactive}
+                message={inactiveState.message}
+            >
+                {inactiveState.inactive ? (
+                    <Button type="button" size="lg" variant={variant} disabled>
+                        <FlatpackActionButtonContent
+                            {...bodyProps}
+                            showSpinner={false}
+                            hideLabelOnMobileWhenIcon
+                        />
+                    </Button>
+                ) : (
+                    <Button asChild size="lg" variant={variant}>
+                        <Link
+                            href={action.href}
+                            className={actionClassName}
+                            data-flatpack-action-id={action.id}
+                        >
+                            <FlatpackActionButtonContent
+                                {...bodyProps}
+                                showSpinner={false}
+                                hideLabelOnMobileWhenIcon
+                            />
+                        </Link>
+                    </Button>
+                )}
+            </FlatpackActionInactiveTooltip>
         );
     }
 
     return (
-        <Button
-            type="button"
-            size="lg"
-            variant={variant}
-            className={actionClassName}
-            data-flatpack-action-id={action.id}
-            onClick={() => {
-                if (action.confirm) {
-                    onRequestConfirm(action);
-                    return;
-                }
-
-                void runListAction(action);
-            }}
+        <FlatpackActionInactiveTooltip
+            show={inactiveState.inactive}
+            message={inactiveState.message}
         >
-            <FlatpackActionButtonContent
-                {...bodyProps}
-                showSpinner={false}
-                hideLabelOnMobileWhenIcon
-            />
-        </Button>
+            <Button
+                type="button"
+                size="lg"
+                variant={variant}
+                className={actionClassName}
+                data-flatpack-action-id={action.id}
+                disabled={inactiveState.inactive}
+                onClick={() => {
+                    if (inactiveState.inactive) {
+                        return;
+                    }
+                    if (action.confirm) {
+                        onRequestConfirm(action);
+                        return;
+                    }
+
+                    void runListAction(action);
+                }}
+            >
+                <FlatpackActionButtonContent
+                    {...bodyProps}
+                    showSpinner={false}
+                    hideLabelOnMobileWhenIcon
+                />
+            </Button>
+        </FlatpackActionInactiveTooltip>
     );
 }

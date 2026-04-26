@@ -7,6 +7,7 @@ import type {
     FlatpackListServerSorting,
     FlatpackSuccessRedirect,
 } from '@/types/data-table';
+import type { FlatpackActionCondition } from '@/types/flatpack-actions';
 import type { FlatpackFormCompositionSchema } from '@/types/form-composition';
 import type { FlatpackListCompositionSchema } from '@/types/list-composition';
 
@@ -23,8 +24,8 @@ export type FlatpackListHeaderAction = {
     success_message?: string;
     confirm?: boolean;
     success_redirect?: FlatpackSuccessRedirect;
-    /** When true, action stays disabled until the form has unsaved changes (form pages). */
-    disable_until_dirty?: boolean;
+    enabled_if?: FlatpackActionCondition;
+    visible_if?: FlatpackActionCondition;
 } & ({ href: string; action?: never } | { action: string; href?: never });
 
 /** Props for `/flatpack` dashboard (Inertia `dashboard` page). */

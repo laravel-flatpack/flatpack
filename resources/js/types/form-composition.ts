@@ -3,6 +3,7 @@ import type {
     FlatpackSuccessRedirect,
     FlatpackTableRelationType,
 } from '@/types/data-table';
+import type { FlatpackActionCondition } from '@/types/flatpack-actions';
 import type { FormFieldPreset } from '@/types/form-fields';
 import type {
     FlatpackListCompositionBulkActionYaml,
@@ -32,7 +33,8 @@ export type FlatpackFormCompositionHeaderActionYaml = {
         success_message?: string;
         confirm?: boolean;
         success_redirect?: FormCompositionHeaderActionSuccessRedirect;
-        disable_until_dirty?: boolean;
+        enabled_if?: FlatpackActionCondition;
+        visible_if?: FlatpackActionCondition;
         shortcut?: string;
     };
 

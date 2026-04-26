@@ -77,6 +77,7 @@ export default function FlatpackFormPage(props: FlatpackFormPageProps) {
                             formId={formId}
                             formProcessing={form.processing}
                             formIsDirty={isDirty}
+                            formMode={mode}
                             fieldsLength={fields.length}
                             onFormSubmitIntent={prepareFormSubmit}
                             onFormSubmitConfirmClick={(action) =>

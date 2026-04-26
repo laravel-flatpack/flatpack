@@ -764,7 +764,7 @@ describe('FlatpackFormPage', () => {
         });
     });
 
-    it('enables disable_until_dirty save after date-picker value changes', async () => {
+    it('enables enabled_if form.dirty save after date-picker value changes', async () => {
         const user = userEvent.setup();
 
         renderFlatpackFormPage(
@@ -789,7 +789,9 @@ describe('FlatpackFormPage', () => {
                         label: 'Save',
                         action: 'save',
                         variant: 'default',
-                        disable_until_dirty: true,
+                        enabled_if: {
+                            all: [{ 'form.dirty': true }],
+                        },
                     },
                 ]}
             />,
@@ -863,6 +865,42 @@ describe('FlatpackFormPage', () => {
                 }),
             );
         });
+    });
+
+    it('hides form actions while visible_if condition is unmet', async () => {
+        renderFlatpackFormPage(
+            <FlatpackFormPage
+                entity="posts"
+                name="Posts"
+                record={null}
+                mode="create"
+                schema={{
+                    fields: {
+                        title: {
+                            type: 'text',
+                            label: 'Title',
+                            placeholder: 'Title',
+                        },
+                    },
+                }}
+                values={{}}
+                form_actions={[
+                    {
+                        id: 'publish',
+                        label: 'Publish',
+                        action: 'save',
+                        visible_if: {
+                            all: [{ 'form.mode_in': ['edit'] }],
+                        },
+                    },
+                ]}
+            />,
+        );
+
+        await screen.findByRole('heading', { name: 'Create Posts' });
+        expect(
+            screen.queryByRole('button', { name: 'Publish' }),
+        ).not.toBeInTheDocument();
     });
 
     it('shows confirm dialog before save when confirm is true', async () => {
