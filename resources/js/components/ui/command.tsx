@@ -65,11 +65,21 @@ function CommandInput({
     className,
     ...props
 }: React.ComponentProps<typeof CommandPrimitive.Input>) {
+    const resolvedId =
+        props.id ??
+        (typeof props.name === 'string'
+            ? `${props.name}-command-input`
+            : 'command-input');
+    const resolvedName =
+        props.name ??
+        (typeof props.id === 'string' ? props.id : 'command-input');
     return (
         <div data-slot="command-input-wrapper" className="p-1 pb-0">
             <InputGroup className="h-9 bg-input/50">
                 <CommandPrimitive.Input
                     data-slot="command-input"
+                    id={resolvedId}
+                    name={resolvedName}
                     className={cn(
                         'w-full text-sm outline-hidden disabled:cursor-not-allowed disabled:opacity-50',
                         className,

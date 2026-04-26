@@ -43,6 +43,7 @@ export function DataTableFooter({
                         Rows per page
                     </Label>
                     <Select
+                        name={`${id}-rows-per-page`}
                         value={`${pageSize}`}
                         onValueChange={onPageSizeChange}
                     >

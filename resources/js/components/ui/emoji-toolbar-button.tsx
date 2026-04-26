@@ -376,6 +376,8 @@ function EmojiPickerSearchBar({
             <div className="relative flex grow items-center">
                 <input
                     className="block w-full appearance-none rounded-full border-0 bg-muted px-10 py-2 text-sm outline-none placeholder:text-muted-foreground focus-visible:outline-none"
+                    id="emoji-search"
+                    name="emoji-search"
                     value={searchValue}
                     onChange={(event) => setSearch(event.target.value)}
                     placeholder={i18n.search}

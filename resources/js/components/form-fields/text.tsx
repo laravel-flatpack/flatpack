@@ -32,16 +32,17 @@ export const TextField = ({
     invalid?: boolean;
 }) => {
     const labelId = `${id}-label`;
+    const labelledBy = !inline && label ? labelId : undefined;
 
     const input = (
         <Input
             id={id}
-            name={`${id}-input`}
+            name={id}
             type="text"
             placeholder={placeholder}
             defaultValue={value === undefined ? defaultValue : undefined}
             value={value}
-            aria-labelledby={label ? labelId : undefined}
+            aria-labelledby={labelledBy}
             aria-invalid={invalid || undefined}
             required={required}
             className={cn(inputClassName)}

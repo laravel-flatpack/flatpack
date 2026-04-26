@@ -106,6 +106,7 @@ export const TimePickerField = ({
                         <InputGroupInput
                             type="time"
                             id={timeId}
+                            name={timeId}
                             autoComplete="off"
                             step={1}
                             value={time}

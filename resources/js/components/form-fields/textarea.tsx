@@ -34,6 +34,7 @@ export const TextareaField = ({
             <FieldContent>
                 <Textarea
                     id={id}
+                    name={id}
                     placeholder={placeholder}
                     defaultValue={
                         value === undefined ? defaultValue : undefined

@@ -454,6 +454,7 @@ function ColorInput({
                 {...props}
                 className="size-0 overflow-hidden border-0 p-0"
                 ref={useComposedRef(props.ref, inputRef)}
+                name={props.name ?? props.id ?? 'font-color-input'}
                 type="color"
                 value={value}
             />

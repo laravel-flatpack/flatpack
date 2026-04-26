@@ -239,6 +239,7 @@ export const SelectField = ({
                     </DropdownMenu>
                 ) : (
                     <Select
+                        name={id}
                         value={singleValue}
                         onValueChange={(v) => {
                             if (v === CLEAR_SELECT_ITEM_VALUE) {

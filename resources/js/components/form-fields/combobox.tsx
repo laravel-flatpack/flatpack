@@ -474,6 +474,7 @@ export const ComboboxField = ({
                 {label ? <FieldTitle id={labelId}>{label}</FieldTitle> : null}
                 <FieldContent>
                     <Combobox
+                        name={id}
                         items={selectableItems}
                         multiple
                         value={multiValue}
@@ -518,6 +519,7 @@ export const ComboboxField = ({
                             </ComboboxValue>
                             <ComboboxChipsInput
                                 id={id}
+                                name={id}
                                 placeholder={multiPlaceholder}
                                 autoComplete="off"
                                 aria-labelledby={label ? labelId : undefined}
@@ -563,6 +565,7 @@ export const ComboboxField = ({
             {label ? <FieldTitle id={labelId}>{label}</FieldTitle> : null}
             <FieldContent>
                 <Combobox
+                    name={id}
                     items={normalizedItems}
                     value={singleValue}
                     onValueChange={(v) => {
@@ -578,6 +581,7 @@ export const ComboboxField = ({
                 >
                     <ComboboxInput
                         id={id}
+                        name={id}
                         placeholder={singlePlaceholder}
                         autoComplete="off"
                         showClear={singleValue != null}

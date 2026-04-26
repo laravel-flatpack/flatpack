@@ -26,6 +26,7 @@ export const DatePickerField = ({
     const [open, setOpen] = useState(false);
     const [date, setDate] = useState<Date | undefined>(value);
     const labelId = `${id}-label`;
+    const labelledBy = !inline && label ? labelId : undefined;
 
     const trigger = (
         <Popover open={open} onOpenChange={setOpen}>
@@ -39,7 +40,7 @@ export const DatePickerField = ({
                         triggerClassName,
                     )}
                     aria-expanded={open}
-                    aria-labelledby={label ? labelId : undefined}
+                    aria-labelledby={labelledBy}
                 >
                     <CalendarIcon className="mr-2 size-4 shrink-0 text-muted-foreground" />
                     {date ? (
