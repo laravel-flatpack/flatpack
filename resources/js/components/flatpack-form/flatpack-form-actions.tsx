@@ -1,4 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
+import { useEffect, useState } from 'react';
 import {
     FlatpackActionButtonContent,
     flatpackActionIconButtonClass,
@@ -45,6 +46,9 @@ export function FlatpackFormActions({
 
     const showShortcutHintsOnButtons =
         flatpack.showActionShortcutHints === true;
+    const [activeSubmittingActionId, setActiveSubmittingActionId] = useState<
+        string | null
+    >(null);
 
     const { shortcutByActionId, isMacPlatform } = useFlatpackActionShortcuts({
         actions: formActions,
@@ -55,6 +59,12 @@ export function FlatpackFormActions({
         actions: formActions,
         shortcutByActionId,
     });
+
+    useEffect(() => {
+        if (!formProcessing) {
+            setActiveSubmittingActionId(null);
+        }
+    }, [formProcessing]);
 
     if (formActions.length === 0) {
         return null;
@@ -78,6 +88,8 @@ export function FlatpackFormActions({
                     }
                     onFormSubmitConfirmClick={onFormSubmitConfirmClick}
                     onFormSubmitIntent={onFormSubmitIntent}
+                    activeSubmittingActionId={activeSubmittingActionId}
+                    setActiveSubmittingActionId={setActiveSubmittingActionId}
                 />
             ))}
         </div>
@@ -94,6 +106,8 @@ type FlatpackFormActionProps = {
     shortcut?: ParsedFlatpackShortcut;
     onFormSubmitIntent: FlatpackFormActionsProps['onFormSubmitIntent'];
     onFormSubmitConfirmClick: FlatpackFormActionsProps['onFormSubmitConfirmClick'];
+    activeSubmittingActionId: string | null;
+    setActiveSubmittingActionId: (actionId: string) => void;
 };
 
 function FlatpackFormAction({
@@ -106,6 +120,8 @@ function FlatpackFormAction({
     shortcut,
     onFormSubmitConfirmClick,
     onFormSubmitIntent,
+    activeSubmittingActionId,
+    setActiveSubmittingActionId,
 }: FlatpackFormActionProps) {
     const variant = flatpackActionVariant(action);
     const iconClass = flatpackActionIconButtonClass(action);
@@ -179,17 +195,21 @@ function FlatpackFormAction({
                 onClick={
                     action.confirm
                         ? () => {
+                              setActiveSubmittingActionId(action.id);
                               onFormSubmitIntent(submitRow);
                               onFormSubmitConfirmClick(submitRow);
                           }
                         : () => {
+                              setActiveSubmittingActionId(action.id);
                               onFormSubmitIntent(submitRow);
                           }
                 }
             >
                 <FlatpackActionButtonContent
                     {...bodyProps}
-                    showSpinner={formProcessing}
+                    showSpinner={
+                        formProcessing && activeSubmittingActionId === action.id
+                    }
                     hideLabelOnMobileWhenIcon
                 />
             </Button>

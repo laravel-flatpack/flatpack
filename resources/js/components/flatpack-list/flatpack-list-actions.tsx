@@ -95,7 +95,11 @@ function FlatpackListAction({
                     className={actionClassName}
                     data-flatpack-action-id={action.id}
                 >
-                    <FlatpackActionButtonContent {...bodyProps} />
+                    <FlatpackActionButtonContent
+                        {...bodyProps}
+                        showSpinner={false}
+                        hideLabelOnMobileWhenIcon
+                    />
                 </Link>
             </Button>
         );
@@ -117,7 +121,11 @@ function FlatpackListAction({
                 void runListAction(action);
             }}
         >
-            <FlatpackActionButtonContent {...bodyProps} />
+            <FlatpackActionButtonContent
+                {...bodyProps}
+                showSpinner={false}
+                hideLabelOnMobileWhenIcon
+            />
         </Button>
     );
 }
