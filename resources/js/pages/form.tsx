@@ -1,5 +1,5 @@
 import { Head } from '@inertiajs/react';
-import { useEffect, useRef, useState, type ReactElement } from 'react';
+import { type ReactElement, useEffect, useRef, useState } from 'react';
 import { FlatpackConfirmDialog } from '@/components/flatpack/flatpack-confirm-dialog';
 import { FlatpackFormActions } from '@/components/flatpack-form/flatpack-form-actions';
 import { FlatpackFormFields } from '@/components/flatpack-form/flatpack-form-fields';
@@ -45,7 +45,7 @@ export default function FlatpackFormPage(props: FlatpackFormPageProps) {
 
     useEffect(() => {
         const sentinel = stickySentinelRef.current;
-        if (sentinel === null) {
+        if (sentinel === null || typeof IntersectionObserver === 'undefined') {
             return;
         }
 
@@ -53,7 +53,7 @@ export default function FlatpackFormPage(props: FlatpackFormPageProps) {
             ([entry]) => {
                 setIsHeaderCompact(!entry.isIntersecting);
             },
-            { threshold: 1 }
+            { threshold: 1 },
         );
 
         observer.observe(sentinel);
@@ -96,12 +96,14 @@ export default function FlatpackFormPage(props: FlatpackFormPageProps) {
                         <div className="min-w-0 flex-1">
                             <h1
                                 className={`font-semibold tracking-tight capitalize ${
-                                    isHeaderCompact ? 'text-lg' : 'text-lg sm:text-2xl'
+                                    isHeaderCompact
+                                        ? 'text-lg'
+                                        : 'text-lg sm:text-2xl'
                                 }`}
                             >
                                 {displayName}
                             </h1>
-                            
+
                             <p
                                 className={`text-muted-foreground ${isHeaderCompact ? 'text-xs' : 'text-xs sm:text-base'}`}
                             >

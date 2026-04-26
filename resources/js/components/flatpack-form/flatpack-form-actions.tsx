@@ -89,7 +89,9 @@ function FormActionButtonBody({
         <>
             {action.icon ? <LucideIconByName name={action.icon} /> : null}
             {showSpinner ? <Spinner className="size-4" /> : null}
-            <span className={hideLabelOnMobile ? 'hidden sm:inline' : undefined}>
+            <span
+                className={hideLabelOnMobile ? 'hidden sm:inline' : undefined}
+            >
                 {action.label}
             </span>
             {hideLabelOnMobile ? (
