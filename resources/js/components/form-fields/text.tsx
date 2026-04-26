@@ -1,5 +1,5 @@
-import { cn } from '@/lib/utils';
 import { formatInputValue } from '@/lib/form-field-preset';
+import { cn } from '@/lib/utils';
 import type { FormFieldInputFormat } from '@/types/form-fields';
 import { Field, FieldContent, FieldDescription, FieldTitle } from '../ui/field';
 import { Input } from '../ui/input';
@@ -52,7 +52,9 @@ export const TextField = ({
             className={cn(inputClassName)}
             onChange={(e) =>
                 onValueChange?.(
-                    format ? formatInputValue(e.target.value, format) : e.target.value,
+                    format
+                        ? formatInputValue(e.target.value, format)
+                        : e.target.value,
                 )
             }
             onBlur={onBlur}

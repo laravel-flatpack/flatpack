@@ -4,7 +4,10 @@ import type {
     FlatpackTableRelationType,
 } from '@/types/data-table';
 import type { FlatpackActionCondition } from '@/types/flatpack-actions';
-import type { FormFieldInputFormat, FormFieldPreset } from '@/types/form-fields';
+import type {
+    FormFieldInputFormat,
+    FormFieldPreset,
+} from '@/types/form-fields';
 import type {
     FlatpackListCompositionBulkActionYaml,
     FlatpackListCompositionColumnOptionsYaml,
