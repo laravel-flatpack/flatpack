@@ -132,6 +132,7 @@ final class SuccessRedirect
 
     /**
      * After a form save (create or edit). {@code $savedKey} is the persisted model key as string.
+     * "current"/"stay" keep the user on the saved record edit page.
      */
     public static function responseForFormSave(
         string $target,
@@ -151,14 +152,10 @@ final class SuccessRedirect
                 'record' => $savedKey,
             ])->setStatusCode(303),
             'back', 'previous' => back(303),
-            'current', 'stay' => $wasCreate
-                ? redirect()->route('flatpack.entities.create', [
-                    'entity' => $entity,
-                ])->setStatusCode(303)
-                : redirect()->route('flatpack.entities.edit', [
-                    'entity' => $entity,
-                    'record' => $savedKey,
-                ])->setStatusCode(303),
+            'current', 'stay' => redirect()->route('flatpack.entities.edit', [
+                'entity' => $entity,
+                'record' => $savedKey,
+            ])->setStatusCode(303),
             default => redirect()->route('flatpack.entities.edit', [
                 'entity' => $entity,
                 'record' => $savedKey,
