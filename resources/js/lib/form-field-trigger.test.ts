@@ -14,10 +14,12 @@ describe('triggerConditionMatches', () => {
 
     it('matches value[x] conditions for scalar and arrays', () => {
         expect(triggerConditionMatches('draft', 'value[draft]')).toBe(true);
-        expect(triggerConditionMatches(['draft', 'published'], 'value[draft]')).toBe(
-            true,
+        expect(
+            triggerConditionMatches(['draft', 'published'], 'value[draft]'),
+        ).toBe(true);
+        expect(triggerConditionMatches('published', 'value[draft]')).toBe(
+            false,
         );
-        expect(triggerConditionMatches('published', 'value[draft]')).toBe(false);
     });
 });
 
@@ -70,8 +72,8 @@ describe('emptyValueForField', () => {
                 multiple: true,
             }),
         ).toEqual([]);
-        expect(
-            emptyValueForField({ type: 'checkbox', label: 'Enabled' }),
-        ).toBe(false);
+        expect(emptyValueForField({ type: 'checkbox', label: 'Enabled' })).toBe(
+            false,
+        );
     });
 });

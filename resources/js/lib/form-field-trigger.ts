@@ -50,7 +50,10 @@ export function evaluateFieldTrigger(
         return { visible: true, disabled: false, shouldEmpty: false };
     }
 
-    const matched = triggerConditionMatches(values[sourceField], trigger.condition);
+    const matched = triggerConditionMatches(
+        values[sourceField],
+        trigger.condition,
+    );
 
     switch (trigger.action) {
         case 'show':

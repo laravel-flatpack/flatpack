@@ -1,11 +1,11 @@
 import { useEffect } from 'react';
 import { useFlatpackEmbeddedTableToolbarAction } from '@/components/flatpack-form/flatpack-embedded-table-toolbar';
+import { SchemaFieldsRenderer } from '@/components/form-fields/schema-fields-renderer';
 import {
     emptyValueForField,
     evaluateFieldTrigger,
     valuesEqual,
 } from '@/lib/form-field-trigger';
-import { SchemaFieldsRenderer } from '@/components/form-fields/schema-fields-renderer';
 import { fieldErrorMessages } from '@/lib/form-schema';
 import {
     rowValidationFieldErrorsByStableId,
@@ -35,7 +35,10 @@ export function FlatpackFormFields({
 
     useEffect(() => {
         for (const { id, field } of fields) {
-            const triggerState = evaluateFieldTrigger(field.trigger, formValues);
+            const triggerState = evaluateFieldTrigger(
+                field.trigger,
+                formValues,
+            );
             if (!triggerState.shouldEmpty) {
                 continue;
             }
@@ -49,7 +52,10 @@ export function FlatpackFormFields({
 
     const entries: SchemaFieldRenderEntry[] = fields.map(({ id, field }) => ({
         ...(() => {
-            const triggerState = evaluateFieldTrigger(field.trigger, formValues);
+            const triggerState = evaluateFieldTrigger(
+                field.trigger,
+                formValues,
+            );
             return {
                 hidden: !triggerState.visible,
                 disabled: triggerState.disabled,
@@ -78,7 +84,10 @@ export function FlatpackFormFields({
         field,
         value: formValues[id],
         onValueChange: (nextValue: unknown) => {
-            const triggerState = evaluateFieldTrigger(field.trigger, formValues);
+            const triggerState = evaluateFieldTrigger(
+                field.trigger,
+                formValues,
+            );
             if (triggerState.disabled) {
                 return;
             }
