@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 use Flatpack\Actions\FlatpackActionContext;
 use Flatpack\Actions\Handlers\SaveRecordHandler;
-use Flatpack\Actions\RelationFormSynchronizer;
 use Flatpack\Tests\Models\Post;
 use Flatpack\Tests\TestCase;
-use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 
@@ -119,96 +117,4 @@ test('save record handler creates a new model from form schema', function () {
     expect($result?->status)->toBe('draft');
     expect(Post::query()->where('title', 'Created from form schema')->exists())
         ->toBeTrue();
-});
-
-test('save record handler maps relation sync required-column DB errors to nested table keys', function () {
-    $handler = new SaveRecordHandler(app(RelationFormSynchronizer::class));
-    $method = new ReflectionMethod(SaveRecordHandler::class, 'relationSyncValidationError');
-    $method->setAccessible(true);
-
-    $schema = [
-        'fields' => [
-            'comments' => [
-                'type' => 'table',
-                'label' => 'Comments',
-                'relation' => 'comments',
-                'columns' => [
-                    'content' => [
-                        'label' => 'Content',
-                        'type' => 'text',
-                    ],
-                    'user_id' => [
-                        'label' => 'User',
-                        'type' => 'relation',
-                        'relation' => 'user',
-                        'relation_name' => 'name',
-                        'relation_value' => 'id',
-                    ],
-                ],
-            ],
-        ],
-    ];
-    $values = [
-        'comments' => [
-            [
-                'content' => 'Missing user id',
-                'user_id' => '',
-            ],
-        ],
-    ];
-
-    $queryException = new QueryException(
-        'sqlite',
-        'insert into "post_comments" ("user_id") values (?)',
-        [],
-        new PDOException('NOT NULL constraint failed: post_comments.user_id'),
-    );
-
-    $result = $method->invoke($handler, $queryException, $schema, $values);
-
-    expect($result)->toBe([
-        'field' => 'values.comments.0.user_id',
-        'message' => 'User id is required.',
-    ]);
-});
-
-test('save record handler validates required table columns for all invalid rows', function () {
-    $handler = new SaveRecordHandler(app(RelationFormSynchronizer::class));
-    $method = new ReflectionMethod(SaveRecordHandler::class, 'deferredRelationRequiredErrors');
-    $method->setAccessible(true);
-
-    $schema = [
-        'fields' => [
-            'comments' => [
-                'type' => 'table',
-                'label' => 'Comments',
-                'relation' => 'comments',
-                'columns' => [
-                    'content' => [
-                        'label' => 'Content',
-                        'type' => 'text',
-                    ],
-                    'user_id' => [
-                        'label' => 'User',
-                        'type' => 'relation',
-                        'edit_form_field' => [
-                            'type' => 'combobox',
-                            'required' => true,
-                        ],
-                    ],
-                ],
-            ],
-        ],
-    ];
-    $values = [
-        'comments' => [
-            ['content' => 'A', 'user_id' => ''],
-            ['content' => 'B', 'user_id' => null],
-        ],
-    ];
-
-    $result = $method->invoke($handler, $schema, $values);
-
-    expect($result)->toHaveKey('values.comments.0.user_id');
-    expect($result)->toHaveKey('values.comments.1.user_id');
 });

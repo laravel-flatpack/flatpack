@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Flatpack\Actions\Handlers;
 
+use Flatpack\Actions\FlatpackActionContext;
 use Flatpack\Contracts\Actions\FlatpackAction;
 use Flatpack\Contracts\Authorization\FlatpackAuthorizer;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -37,5 +38,23 @@ abstract class FlatpackActionHandler implements FlatpackAction
     protected function modelExists(?Model $model): bool
     {
         return $model instanceof Model && $model->exists;
+    }
+
+    protected function resolveModel(FlatpackActionContext $context): ?Model
+    {
+        if ($context->model instanceof Model) {
+            return $context->model;
+        }
+
+        $modelClass = trim($context->modelClass);
+        if ($modelClass === '' || ! class_exists($modelClass)) {
+            return null;
+        }
+        if (! is_subclass_of($modelClass, Model::class)) {
+            return null;
+        }
+
+        /** @var class-string<Model> $modelClass */
+        return new $modelClass();
     }
 }

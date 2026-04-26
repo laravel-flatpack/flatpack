@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Flatpack\Support\ActionRuntime;
+use Flatpack\Services\Runtime\ActionRuntime;
 use Flatpack\Support\Exceptions\ActionRuntimeException;
 use Flatpack\Tests\Models\Post;
 use Flatpack\Tests\TestCase;

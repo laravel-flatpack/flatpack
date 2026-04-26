@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Flatpack\Actions;
 
 use Flatpack\Schema\Forms\FormFieldType;
-use Flatpack\Schema\Forms\FormRelationValuesHydrator;
+use Flatpack\Services\Forms\FormRelationValuesHydrator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;

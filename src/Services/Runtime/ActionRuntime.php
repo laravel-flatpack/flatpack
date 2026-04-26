@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Flatpack\Support;
+namespace Flatpack\Services\Runtime;
 
 use Flatpack\Actions\ActionModelClassResolver;
 use Flatpack\Contracts\Actions\FlatpackAction;

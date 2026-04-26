@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Flatpack\Navigation\MenuItem;
+use Flatpack\Services\Navigation\MenuItem;
 
 test('menu item converts to array', function () {
     $item = new MenuItem('posts', 'Posts', 'flatpack.posts.index', 'book-open');

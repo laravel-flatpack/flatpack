@@ -6,7 +6,7 @@ namespace Flatpack\Http\Controllers\Concerns;
 
 use Flatpack\Contracts\Actions\FlatpackAction;
 use Flatpack\Http\Requests\FormSubmitRequest;
-use Flatpack\Support\ActionRuntime;
+use Flatpack\Services\Runtime\ActionRuntime;
 use Flatpack\Support\Exceptions\ActionRuntimeException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\ValidationException;

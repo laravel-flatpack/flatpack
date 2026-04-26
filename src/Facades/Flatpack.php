@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Facade;
 /**
  * Static proxy for the {@see FlatpackBinding} container singleton.
  *
- * @method static array<int, \Flatpack\Navigation\MenuItem> menu()
+ * @method static array<int, \Flatpack\Services\Navigation\MenuItem> menu()
  * @method static string version()
  * @method static string routePrefix()
  * @method static string dashboardEntity()

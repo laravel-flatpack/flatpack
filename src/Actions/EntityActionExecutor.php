@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Flatpack\Actions;
 
-use Flatpack\Support\ActionRuntime;
+use Flatpack\Services\Runtime\ActionRuntime;
 use Illuminate\Auth\Access\AuthorizationException;
 use Throwable;
 

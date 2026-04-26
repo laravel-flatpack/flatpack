@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Flatpack\Schema\Forms;
+namespace Flatpack\Services\Forms;
 
 use Flatpack\Schema\RelationFieldQuery;
 use Flatpack\Support\CompositionDebugLog;

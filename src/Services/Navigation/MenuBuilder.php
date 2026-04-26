@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Flatpack\Navigation;
+namespace Flatpack\Services\Navigation;
 
 interface MenuBuilder
 {

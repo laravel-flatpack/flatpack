@@ -11,7 +11,7 @@ use Flatpack\Http\Controllers\Concerns\LoadsListComposition;
 use Flatpack\Http\Requests\BulkActionRequest;
 use Flatpack\Http\Requests\ListActionRequest;
 use Flatpack\Http\Requests\ListRecordUpdateRequest;
-use Flatpack\Support\ActionRuntime;
+use Flatpack\Services\Runtime\ActionRuntime;
 use Flatpack\Support\Exceptions\ActionRuntimeException;
 use Flatpack\Support\SuccessRedirect;
 use Flatpack\Support\SuccessRedirectSchema;

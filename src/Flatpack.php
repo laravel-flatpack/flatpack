@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Flatpack;
 
 use Composer\InstalledVersions;
-use Flatpack\Navigation\BreadcrumbsBuilder;
-use Flatpack\Navigation\MenuBuilder;
-use Flatpack\Navigation\MenuItem;
+use Flatpack\Services\Navigation\BreadcrumbsBuilder;
+use Flatpack\Services\Navigation\MenuBuilder;
+use Flatpack\Services\Navigation\MenuItem;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Http\Request;
 use Throwable;

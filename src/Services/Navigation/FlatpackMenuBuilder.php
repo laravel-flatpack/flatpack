@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Flatpack\Navigation;
+namespace Flatpack\Services\Navigation;
 
 use Flatpack\Composition\CompositionValues;
 use Flatpack\Contracts\Authorization\FlatpackAuthorizer;

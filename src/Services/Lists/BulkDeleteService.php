@@ -2,9 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Flatpack\Schema\Lists;
+namespace Flatpack\Services\Lists;
 
 use Flatpack\Contracts\Authorization\FlatpackAuthorizer;
+use Flatpack\Schema\Lists\FilterProcessor;
+use Flatpack\Schema\Lists\SchemaInspector;
+use Flatpack\Schema\Lists\SearchApplier;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use InvalidArgumentException;

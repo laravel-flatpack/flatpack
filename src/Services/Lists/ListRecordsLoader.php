@@ -2,9 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Flatpack\Schema\Lists;
+namespace Flatpack\Services\Lists;
 
 use Flatpack\Facades\Flatpack;
+use Flatpack\Schema\Lists\FilterDefinition;
+use Flatpack\Schema\Lists\FilterProcessor;
+use Flatpack\Schema\Lists\RelationDefinition;
+use Flatpack\Schema\Lists\RelationSerializer;
+use Flatpack\Schema\Lists\SchemaInspector;
+use Flatpack\Schema\Lists\SearchApplier;
+use Flatpack\Schema\Lists\SortingProcessor;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 

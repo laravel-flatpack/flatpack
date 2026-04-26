@@ -1,0 +1,148 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Flatpack\Services\SaveRecord;
+
+use Flatpack\Actions\FlatpackActionContext;
+use Flatpack\Actions\RelationFormSynchronizer;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\QueryException;
+use Illuminate\Validation\ValidationException;
+
+final readonly class SaveRecordService
+{
+    public function __construct(
+        private ResolveFormPayload $resolveFormPayload,
+        private DeferredRelationValidationService $deferredRelationValidationService,
+        private RelationSyncErrorMapper $relationSyncErrorMapper,
+        private RelationFormSynchronizer $relationFormSynchronizer,
+    ) {}
+
+    public function resolveModel(FlatpackActionContext $context): ?Model
+    {
+        if ($context->model instanceof Model) {
+            return $context->model;
+        }
+
+        $modelClass = trim($context->modelClass);
+        if ($modelClass === '' || ! class_exists($modelClass)) {
+            return null;
+        }
+        if (! is_subclass_of($modelClass, Model::class)) {
+            return null;
+        }
+
+        /** @var class-string<Model> $modelClass */
+        return new $modelClass();
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    public function resolvePayload(FlatpackActionContext $context): ?array
+    {
+        return $this->resolveFormPayload->resolve($context->request);
+    }
+
+    /**
+     * @param  array<string, mixed>  $values
+     */
+    public function validate(
+        Model $model,
+        array $values,
+        FlatpackActionContext $context,
+    ): WritablePayloadResult {
+        return $this->resolveFormPayload->validate(
+            model: $model,
+            compositionType: $context->compositionType,
+            schema: $context->schema,
+            values: $values,
+        );
+    }
+
+    public function save(
+        Model $model,
+        WritablePayloadResult $validated,
+    ): Model {
+        if ($validated->attributes === [] && ! $validated->hasDeferredRelationPayload) {
+            return $model;
+        }
+
+        if ($validated->attributes !== []) {
+            $model->fill($validated->attributes);
+            $model->save();
+        }
+
+        return $validated->attributes !== [] ? ($model->fresh() ?? $model) : $model;
+    }
+
+    /**
+     * @param  array<string, mixed>  $values
+     */
+    public function validateRelations(
+        Model $model,
+        array $values,
+        FlatpackActionContext $context,
+    ): ValidatedRelationsPayload {
+        if (! $this->shouldProcessRelations($model, $context)) {
+            return new ValidatedRelationsPayload(
+                schema: $context->schema,
+                values: $values,
+                shouldSync: false,
+            );
+        }
+
+        $rowValidationErrors = $this->deferredRelationValidationService->requiredRowErrors(
+            schema: $context->schema,
+            values: $values,
+        );
+        if ($rowValidationErrors !== []) {
+            throw ValidationException::withMessages($rowValidationErrors);
+        }
+
+        return new ValidatedRelationsPayload(
+            schema: $context->schema,
+            values: $values,
+            shouldSync: true,
+        );
+    }
+
+    public function saveRelations(
+        Model $model,
+        ValidatedRelationsPayload $validated,
+    ): Model {
+        if (! $validated->shouldSync) {
+            return $model;
+        }
+
+        try {
+            $this->relationFormSynchronizer->sync(
+                $model,
+                $validated->schema,
+                $validated->values,
+            );
+        } catch (QueryException $exception) {
+            $mapped = $this->relationSyncErrorMapper->mapRequiredConstraint(
+                exception: $exception,
+                schema: $validated->schema,
+                values: $validated->values,
+            );
+            if ($mapped !== null) {
+                throw ValidationException::withMessages([
+                    $mapped['field'] => $mapped['message'],
+                ]);
+            }
+
+            throw $exception;
+        }
+
+        return $model->fresh() ?? $model;
+    }
+
+    private function shouldProcessRelations(Model $model, FlatpackActionContext $context): bool
+    {
+        return $context->compositionType === 'form'
+            && $model->getKey() !== null;
+    }
+}

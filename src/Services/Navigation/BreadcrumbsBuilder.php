@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Flatpack\Navigation;
+namespace Flatpack\Services\Navigation;
 
 use Flatpack\Composition\EntityComposition;
 use Flatpack\Http\FlatpackRequest;

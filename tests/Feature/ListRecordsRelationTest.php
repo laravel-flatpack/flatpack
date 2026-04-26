@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Flatpack\Schema\Lists\ListRecordsLoader;
+use Flatpack\Services\Lists\ListRecordsLoader;
 use Flatpack\Tests\Models\Category;
 use Flatpack\Tests\Models\Post;
 use Flatpack\Tests\TestCase;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Flatpack\Http\Controllers\Concerns;
 
-use Flatpack\Schema\Lists\ListRecordsLoader;
+use Flatpack\Services\Lists\ListRecordsLoader;
 
 /**
  * Shared list record loading for list controllers.

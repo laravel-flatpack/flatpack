@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Flatpack\Navigation;
+namespace Flatpack\Services\Navigation;
 
 use Throwable;
 
@@ -87,7 +87,7 @@ final class NavigationUrl
 
         return mb_strtolower($urlHost) === mb_strtolower($appHost)
             && ($urlPort ?? self::defaultPort((string) parse_url($url, PHP_URL_SCHEME)))
-                === ($appPort ?? self::defaultPort((string) parse_url($appUrl, PHP_URL_SCHEME)));
+            === ($appPort ?? self::defaultPort((string) parse_url($appUrl, PHP_URL_SCHEME)));
     }
 
     private static function defaultPort(string $scheme): ?int
