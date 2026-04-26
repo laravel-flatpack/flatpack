@@ -1,19 +1,27 @@
 import { Head } from '@inertiajs/react';
 import type { ReactElement } from 'react';
 import { FlatpackConfirmDialog } from '@/components/flatpack/flatpack-confirm-dialog';
-import { FlatpackListHeader } from '@/components/flatpack-list/flatpack-list-header';
+import { FlatpackPageHeader } from '@/components/flatpack/flatpack-page-header';
+import { FlatpackListActions } from '@/components/flatpack-list/flatpack-list-actions';
 import { DataTable } from '@/components/table/data-table';
 import { useCompositionDebugLog } from '@/hooks/use-composition-debug-log';
 import { useFlatpackList } from '@/hooks/use-flatpack-list';
 import FlatpackLayout from '@/layouts/flatpack-layout';
 import type { FlatpackListPageProps } from '@/types/pages/flatpack';
 
+const NoColumnsMessage = ({ entity }: { entity: string }) => (
+    <p className="text-sm text-muted-foreground">
+        Define columns in{' '}
+        <code className="font-mono text-xs bg-muted px-1 py-0.5 rounded-md">{`/${entity}/list.yaml`}</code>{' '}
+        to render this table.
+    </p>
+);
+
 export default function FlatpackListPage(props: FlatpackListPageProps) {
     useCompositionDebugLog(props.composition_debug);
     const {
         displayName,
         pageTitle,
-        noContentMessage,
         columns,
         filterDefinitions,
         reorderable,
@@ -43,7 +51,7 @@ export default function FlatpackListPage(props: FlatpackListPageProps) {
 
     return (
         <>
-            {displayName ? <Head title={pageTitle} /> : null}
+            <Head title={pageTitle} />
             <FlatpackConfirmDialog
                 open={
                     pendingListConfirm !== null ||
@@ -83,45 +91,49 @@ export default function FlatpackListPage(props: FlatpackListPageProps) {
                 }}
             />
             <div className="flex flex-col gap-2">
-                {displayName ? (
-                    <FlatpackListHeader
-                        displayName={displayName}
-                        listActions={listActions}
-                        onRequestConfirm={setPendingListConfirm}
-                        runListAction={executeListAction}
-                    />
-                ) : null}
-                {noContentMessage ? (
-                    <p className="text-muted-foreground">{noContentMessage}</p>
-                ) : (
-                    <DataTable
-                        id={`flatpack-list-${entity || 'entity'}`}
-                        dataRowKey={modelKey || 'id'}
-                        bulkActions={bulkActions}
-                        reorderable={reorderable}
-                        onRowClick={
-                            rowClickEditKey !== null
-                                ? handleRowClick
-                                : undefined
-                        }
-                        columns={columns}
-                        data={records}
-                        serverPagination={pagination}
-                        serverSearch={searchTerm}
-                        serverFilters={filterDefinitions}
-                        serverFilterValues={serverFilterValues}
-                        serverSorting={serverSorting}
-                        onBulkAction={handleBulkAction}
-                        onRowAction={handleRowAction}
-                        onCellUpdate={handleCellUpdate}
-                        onRowUpdate={handleRowUpdate}
-                        onServerPaginationChange={
-                            pagination
-                                ? handleServerPaginationChange
-                                : undefined
-                        }
-                    />
-                )}
+                <FlatpackPageHeader
+                    title={displayName}
+                    actions={
+                        <FlatpackListActions
+                            listActions={listActions}
+                            onRequestConfirm={setPendingListConfirm}
+                            runListAction={executeListAction}
+                        />
+                    }
+                />
+                <div className="flex flex-col gap-6">
+                    {columns.length > 0 ? (
+                        <DataTable
+                            id={`flatpack-list-${entity || 'entity'}`}
+                            dataRowKey={modelKey || 'id'}
+                            bulkActions={bulkActions}
+                            reorderable={reorderable}
+                            onRowClick={
+                                rowClickEditKey !== null
+                                    ? handleRowClick
+                                    : undefined
+                            }
+                            columns={columns}
+                            data={records}
+                            serverPagination={pagination}
+                            serverSearch={searchTerm}
+                            serverFilters={filterDefinitions}
+                            serverFilterValues={serverFilterValues}
+                            serverSorting={serverSorting}
+                            onBulkAction={handleBulkAction}
+                            onRowAction={handleRowAction}
+                            onCellUpdate={handleCellUpdate}
+                            onRowUpdate={handleRowUpdate}
+                            onServerPaginationChange={
+                                pagination
+                                    ? handleServerPaginationChange
+                                    : undefined
+                            }
+                        />
+                    ) : (
+                        <NoColumnsMessage entity={entity} />
+                    )}
+                </div>
             </div>
         </>
     );

@@ -1,5 +1,11 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import type { ReactNode } from 'react';
+import {
+    cleanup,
+    fireEvent,
+    render as rtlRender,
+    screen,
+    waitFor,
+} from '@testing-library/react';
+import type { ReactElement, ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 const { routerGet, routerPost, routeMock } = vi.hoisted(() => ({
@@ -44,6 +50,10 @@ vi.mock('@/lib/route', () => ({
     route: routeMock,
 }));
 
+vi.mock('@/hooks/use-is-mac-platform', () => ({
+    useIsMacPlatform: () => false,
+}));
+
 vi.mock('@inertiajs/react', () => ({
     Head: ({ title }: { title: string }) => <title>{title}</title>,
     Link: ({
@@ -65,7 +75,16 @@ vi.mock('@inertiajs/react', () => ({
     },
 }));
 
+import { FlatpackShortcutsProvider } from '@/contexts/flatpack-shortcuts-registry';
 import FlatpackListPage from '@/pages/list';
+
+function render(page: ReactElement) {
+    return rtlRender(page, {
+        wrapper: ({ children }) => (
+            <FlatpackShortcutsProvider>{children}</FlatpackShortcutsProvider>
+        ),
+    });
+}
 
 describe('FlatpackListPage', () => {
     afterEach(() => {
@@ -376,5 +395,73 @@ describe('FlatpackListPage', () => {
                 preserveScroll: true,
             }),
         );
+    });
+
+    it('triggers list action shortcut for non-confirm actions', async () => {
+        render(
+            <FlatpackListPage
+                entity="posts"
+                name="Posts"
+                list_actions={[
+                    {
+                        id: 'create',
+                        label: 'Create',
+                        action: 'create',
+                        shortcut: 'mod+k',
+                    },
+                ]}
+            />,
+        );
+
+        fireEvent.keyDown(window, { key: 'k', ctrlKey: true });
+
+        await waitFor(() => {
+            expect(routerPost).toHaveBeenCalledWith(
+                '/flatpack/posts/action',
+                { action: 'create' },
+                expect.objectContaining({
+                    preserveState: true,
+                    preserveScroll: true,
+                }),
+            );
+        });
+    });
+
+    it('opens confirm dialog for shortcut on confirm list action', async () => {
+        render(
+            <FlatpackListPage
+                entity="posts"
+                name="Posts"
+                list_actions={[
+                    {
+                        id: 'delete',
+                        label: 'Delete',
+                        action: 'delete',
+                        confirm: true,
+                        shortcut: 'mod+d',
+                    },
+                ]}
+            />,
+        );
+
+        fireEvent.keyDown(window, { key: 'd', ctrlKey: true });
+
+        await waitFor(() => {
+            expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+        });
+        expect(routerPost).not.toHaveBeenCalled();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+
+        await waitFor(() => {
+            expect(routerPost).toHaveBeenCalledWith(
+                '/flatpack/posts/action',
+                { action: 'delete' },
+                expect.objectContaining({
+                    preserveState: true,
+                    preserveScroll: true,
+                }),
+            );
+        });
     });
 });

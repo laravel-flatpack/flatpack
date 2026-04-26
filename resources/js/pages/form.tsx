@@ -1,6 +1,7 @@
 import { Head } from '@inertiajs/react';
-import { type ReactElement, useEffect, useRef, useState } from 'react';
+import type { ReactElement } from 'react';
 import { FlatpackConfirmDialog } from '@/components/flatpack/flatpack-confirm-dialog';
+import { FlatpackPageHeader } from '@/components/flatpack/flatpack-page-header';
 import { FlatpackFormActions } from '@/components/flatpack-form/flatpack-form-actions';
 import { FlatpackFormFields } from '@/components/flatpack-form/flatpack-form-fields';
 import { FlatpackFormTopErrors } from '@/components/flatpack-form/flatpack-form-top-errors';
@@ -40,28 +41,6 @@ export default function FlatpackFormPage(props: FlatpackFormPageProps) {
     const pageTitle =
         mode === 'create' ? `Create ${displayName}` : `Edit ${displayName}`;
     const formId = `flatpack-form-${entity}-${record ?? 'new'}`;
-    const stickySentinelRef = useRef<HTMLDivElement | null>(null);
-    const [isHeaderCompact, setIsHeaderCompact] = useState(false);
-
-    useEffect(() => {
-        const sentinel = stickySentinelRef.current;
-        if (sentinel === null || typeof IntersectionObserver === 'undefined') {
-            return;
-        }
-
-        const observer = new IntersectionObserver(
-            ([entry]) => {
-                setIsHeaderCompact(!entry.isIntersecting);
-            },
-            { threshold: 1 },
-        );
-
-        observer.observe(sentinel);
-
-        return () => {
-            observer.disconnect();
-        };
-    }, []);
 
     return (
         <>
@@ -89,33 +68,10 @@ export default function FlatpackFormPage(props: FlatpackFormPageProps) {
                     runSubmit();
                 }}
             />
-            <div className="flex flex-col gap-6 px-2 pb-4 sm:px-4">
-                <div ref={stickySentinelRef} className="h-px w-full" />
-                <div
-                    className={`sticky top-0 z-20 flex flex-col gap-2 bg-background px-2 py-2 sm:px-0 ${
-                        isHeaderCompact ? 'border-b' : ''
-                    }`}
-                >
-                    <div className="flex w-full items-center justify-between gap-3 sm:gap-4">
-                        <div className="min-w-0 flex-1">
-                            <h1
-                                className={`font-semibold tracking-tight capitalize ${
-                                    isHeaderCompact
-                                        ? 'text-lg'
-                                        : 'text-lg sm:text-2xl'
-                                }`}
-                            >
-                                {displayName}
-                            </h1>
-
-                            <p
-                                className={`text-muted-foreground ${isHeaderCompact ? 'text-xs' : 'text-xs sm:text-base'}`}
-                            >
-                                {mode === 'create'
-                                    ? `Create a new ${displayName}.`
-                                    : `Edit ${displayName} (${record ?? 'unknown'}).`}
-                            </p>
-                        </div>
+            <div className="flex flex-col gap-2">
+                <FlatpackPageHeader
+                    title={pageTitle}
+                    actions={
                         <FlatpackFormActions
                             formActions={formActions}
                             formId={formId}
@@ -127,8 +83,8 @@ export default function FlatpackFormPage(props: FlatpackFormPageProps) {
                                 setPendingConfirm({ config: action })
                             }
                         />
-                    </div>
-                </div>
+                    }
+                />
 
                 <form
                     id={formId}
