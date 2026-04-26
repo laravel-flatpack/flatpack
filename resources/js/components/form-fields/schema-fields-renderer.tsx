@@ -63,6 +63,9 @@ export function SchemaFieldsRenderer({
             {entries.map((entry) => {
                 const FieldComponent =
                     fieldComponents?.[entry.id] ?? loadField(entry.field.type);
+                if (entry.hidden === true) {
+                    return null;
+                }
                 const componentProps = buildFieldComponentProps(entry, {
                     entity,
                     parentRecordKey,
@@ -71,7 +74,12 @@ export function SchemaFieldsRenderer({
                 return (
                     <div
                         key={`${entry.id}:${modeKey ?? 'default'}`}
-                        className="space-y-2"
+                        className={
+                            entry.disabled === true
+                                ? 'space-y-2 pointer-events-none opacity-60'
+                                : 'space-y-2'
+                        }
+                        aria-disabled={entry.disabled === true || undefined}
                     >
                         <Suspense fallback={<FieldLoading {...entry.field} />}>
                             <FieldComponent {...componentProps} />

@@ -953,4 +953,93 @@ describe('FlatpackFormPage', () => {
             expect(hoisted.post).toHaveBeenCalledTimes(1);
         });
     });
+
+    it('shows a field when trigger show condition becomes true', async () => {
+        const user = userEvent.setup();
+
+        renderFlatpackFormPage(
+            <FlatpackFormPage
+                entity="posts"
+                name="Posts"
+                record={null}
+                mode="create"
+                schema={{
+                    fields: {
+                        is_delayed: {
+                            type: 'checkbox',
+                            label: 'Send later',
+                        },
+                        send_at: {
+                            type: 'text',
+                            label: 'Send date',
+                            trigger: {
+                                action: 'show',
+                                field: 'is_delayed',
+                                condition: 'checked',
+                            },
+                        },
+                    },
+                }}
+                values={{ is_delayed: false, send_at: '' }}
+                form_actions={[]}
+            />,
+        );
+
+        expect(screen.queryByTestId('field-send_at')).not.toBeInTheDocument();
+
+        await user.click(
+            await screen.findByRole('button', { name: 'update-is_delayed' }),
+        );
+
+        await waitFor(() => {
+            expect(screen.getByTestId('field-send_at')).toBeInTheDocument();
+        });
+    });
+
+    it('empties a field when trigger empty condition is met', async () => {
+        const user = userEvent.setup();
+
+        renderFlatpackFormPage(
+            <FlatpackFormPage
+                entity="posts"
+                name="Posts"
+                record={null}
+                mode="create"
+                schema={{
+                    fields: {
+                        is_delayed: {
+                            type: 'checkbox',
+                            label: 'Send later',
+                        },
+                        slug: {
+                            type: 'text',
+                            label: 'Slug',
+                            trigger: {
+                                action: 'empty',
+                                field: 'is_delayed',
+                                condition: 'checked',
+                            },
+                        },
+                    },
+                }}
+                values={{ is_delayed: false, slug: 'existing-slug' }}
+                form_actions={[]}
+            />,
+        );
+
+        expect(await screen.findByTestId('field-slug')).toHaveTextContent(
+            'Slug: existing-slug',
+        );
+
+        await user.click(
+            await screen.findByRole('button', { name: 'update-is_delayed' }),
+        );
+
+        await waitFor(() => {
+            expect(screen.getByTestId('field-slug')).toHaveTextContent('Slug:');
+            expect(screen.getByTestId('field-slug')).not.toHaveTextContent(
+                'existing-slug',
+            );
+        });
+    });
 });

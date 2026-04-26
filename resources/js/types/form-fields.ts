@@ -21,6 +21,24 @@ export type FormFieldPreset = {
     type: FormFieldPresetType;
 };
 
+export type FormFieldTriggerAction =
+    | 'show'
+    | 'hide'
+    | 'enable'
+    | 'disable'
+    | 'empty';
+
+export type FormFieldTriggerCondition =
+    | 'checked'
+    | 'unchecked'
+    | `value[${string}]`;
+
+export type FormFieldTrigger = {
+    action: FormFieldTriggerAction;
+    field: string;
+    condition: FormFieldTriggerCondition;
+};
+
 export type FormFieldOutput = {
     show: boolean;
     label: string;
@@ -34,6 +52,7 @@ type FormFieldBase = {
      * or the field was non-empty when the form loaded (e.g. existing record).
      */
     preset?: FormFieldPreset;
+    trigger?: FormFieldTrigger;
     onValueChange?: (value: unknown) => void;
 };
 

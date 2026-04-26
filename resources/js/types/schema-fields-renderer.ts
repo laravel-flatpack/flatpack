@@ -10,6 +10,8 @@ export type SchemaFieldRenderEntry = {
     onValueChange: (nextSerializedValue: unknown) => void;
     required?: boolean;
     invalid?: boolean;
+    disabled?: boolean;
+    hidden?: boolean;
     errors?: SchemaFieldError[];
     /**
      * Extra props merged after mapped/component value props.

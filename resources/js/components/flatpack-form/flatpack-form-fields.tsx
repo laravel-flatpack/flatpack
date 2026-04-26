@@ -1,4 +1,10 @@
+import { useEffect } from 'react';
 import { useFlatpackEmbeddedTableToolbarAction } from '@/components/flatpack-form/flatpack-embedded-table-toolbar';
+import {
+    emptyValueForField,
+    evaluateFieldTrigger,
+    valuesEqual,
+} from '@/lib/form-field-trigger';
 import { SchemaFieldsRenderer } from '@/components/form-fields/schema-fields-renderer';
 import { fieldErrorMessages } from '@/lib/form-schema';
 import {
@@ -26,7 +32,29 @@ export function FlatpackFormFields({
     const onEmbeddedTableToolbarAction =
         onEmbeddedTableToolbarActionProp ??
         onEmbeddedTableToolbarActionFromContext;
+
+    useEffect(() => {
+        for (const { id, field } of fields) {
+            const triggerState = evaluateFieldTrigger(field.trigger, formValues);
+            if (!triggerState.shouldEmpty) {
+                continue;
+            }
+            const nextEmptyValue = emptyValueForField(field);
+            if (valuesEqual(formValues[id], nextEmptyValue)) {
+                continue;
+            }
+            setFieldValue(field, id, nextEmptyValue);
+        }
+    }, [fields, formValues, setFieldValue]);
+
     const entries: SchemaFieldRenderEntry[] = fields.map(({ id, field }) => ({
+        ...(() => {
+            const triggerState = evaluateFieldTrigger(field.trigger, formValues);
+            return {
+                hidden: !triggerState.visible,
+                disabled: triggerState.disabled,
+            };
+        })(),
         ...(field.type === 'table'
             ? (() => {
                   const errorState = tableFieldErrorState(fieldErrors, id);
@@ -49,8 +77,13 @@ export function FlatpackFormFields({
         id,
         field,
         value: formValues[id],
-        onValueChange: (nextValue: unknown) =>
-            setFieldValue(field, id, nextValue),
+        onValueChange: (nextValue: unknown) => {
+            const triggerState = evaluateFieldTrigger(field.trigger, formValues);
+            if (triggerState.disabled) {
+                return;
+            }
+            setFieldValue(field, id, nextValue);
+        },
         required: fieldIsRequired(field),
         invalid: fieldErrorMessages(fieldErrors, id).length > 0,
         errors: fieldErrorMessages(fieldErrors, id),

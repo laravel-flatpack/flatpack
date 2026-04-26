@@ -308,6 +308,33 @@
             },
             "additionalProperties": false
         },
+        "fieldTriggerCondition": {
+            "oneOf": [
+                { "type": "string", "enum": ["checked", "unchecked"] },
+                {
+                    "type": "string",
+                    "pattern": "^value\\[[^\\]]+\\]$"
+                }
+            ]
+        },
+        "fieldTrigger": {
+            "type": "object",
+            "required": ["action", "field", "condition"],
+            "properties": {
+                "action": {
+                    "type": "string",
+                    "enum": ["show", "hide", "enable", "disable", "empty"]
+                },
+                "field": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "condition": {
+                    "$ref": "#/$defs/fieldTriggerCondition"
+                }
+            },
+            "additionalProperties": false
+        },
         "fieldDefinition": {
             "description": "Discriminated union on type. Only keys valid for that field type are permitted.",
             "oneOf": [
@@ -342,7 +369,8 @@
                 "format": {
                     "type": "string",
                     "enum": ["slug", "url", "camel", "file"]
-                }
+                },
+                "trigger": { "$ref": "#/$defs/fieldTrigger" }
             },
             "additionalProperties": false
         },
@@ -359,7 +387,8 @@
                 "rules": { "$ref": "#/$defs/validationRules" },
                 "value": {},
                 "rows": { "type": "integer", "minimum": 1 },
-                "preset": { "$ref": "#/$defs/preset" }
+                "preset": { "$ref": "#/$defs/preset" },
+                "trigger": { "$ref": "#/$defs/fieldTrigger" }
             },
             "additionalProperties": false
         },
@@ -375,7 +404,8 @@
                 "required": { "type": "boolean" },
                 "rules": { "$ref": "#/$defs/validationRules" },
                 "value": {},
-                "options": { "$ref": "#/$defs/selectOptions" }
+                "options": { "$ref": "#/$defs/selectOptions" },
+                "trigger": { "$ref": "#/$defs/fieldTrigger" }
             },
             "additionalProperties": false
         },
@@ -408,7 +438,8 @@
                     "minLength": 1,
                     "description": "Value column on related model (often id)"
                 },
-                "remote": { "type": "boolean" }
+                "remote": { "type": "boolean" },
+                "trigger": { "$ref": "#/$defs/fieldTrigger" }
             },
             "additionalProperties": false
         },
@@ -423,7 +454,8 @@
                 "placeholder": { "type": "string" },
                 "required": { "type": "boolean" },
                 "rules": { "$ref": "#/$defs/validationRules" },
-                "value": {}
+                "value": {},
+                "trigger": { "$ref": "#/$defs/fieldTrigger" }
             },
             "additionalProperties": false
         },
@@ -438,7 +470,8 @@
                 "placeholder": { "type": "string" },
                 "required": { "type": "boolean" },
                 "rules": { "$ref": "#/$defs/validationRules" },
-                "value": {}
+                "value": {},
+                "trigger": { "$ref": "#/$defs/fieldTrigger" }
             },
             "additionalProperties": false
         },
@@ -453,7 +486,8 @@
                 "placeholder": { "type": "string" },
                 "required": { "type": "boolean" },
                 "rules": { "$ref": "#/$defs/validationRules" },
-                "value": {}
+                "value": {},
+                "trigger": { "$ref": "#/$defs/fieldTrigger" }
             },
             "additionalProperties": false
         },
@@ -472,7 +506,8 @@
                 "dateLabel": { "type": "string" },
                 "datePlaceholder": { "type": "string" },
                 "timeLabel": { "type": "string" },
-                "timeDefaultValue": { "type": "string" }
+                "timeDefaultValue": { "type": "string" },
+                "trigger": { "$ref": "#/$defs/fieldTrigger" }
             },
             "additionalProperties": false
         },
@@ -487,7 +522,8 @@
                 "required": { "type": "boolean" },
                 "rules": { "$ref": "#/$defs/validationRules" },
                 "value": {},
-                "defaultChecked": { "type": "boolean" }
+                "defaultChecked": { "type": "boolean" },
+                "trigger": { "$ref": "#/$defs/fieldTrigger" }
             },
             "additionalProperties": false
         },
@@ -502,7 +538,8 @@
                 "required": { "type": "boolean" },
                 "rules": { "$ref": "#/$defs/validationRules" },
                 "value": {},
-                "defaultChecked": { "type": "boolean" }
+                "defaultChecked": { "type": "boolean" },
+                "trigger": { "$ref": "#/$defs/fieldTrigger" }
             },
             "additionalProperties": false
         },
@@ -518,7 +555,8 @@
                 "required": { "type": "boolean" },
                 "rules": { "$ref": "#/$defs/validationRules" },
                 "value": {},
-                "showFixedToolbar": { "type": "boolean" }
+                "showFixedToolbar": { "type": "boolean" },
+                "trigger": { "$ref": "#/$defs/fieldTrigger" }
             },
             "additionalProperties": false
         },
@@ -534,7 +572,8 @@
                 "required": { "type": "boolean" },
                 "rules": { "$ref": "#/$defs/validationRules" },
                 "value": {},
-                "showFixedToolbar": { "type": "boolean" }
+                "showFixedToolbar": { "type": "boolean" },
+                "trigger": { "$ref": "#/$defs/fieldTrigger" }
             },
             "additionalProperties": false
         },
@@ -670,7 +709,8 @@
                         "unknown"
                     ],
                     "description": "Eloquent relation class for this table field, usually derived from the parent form model. Authors may set this in YAML to override auto-detection."
-                }
+                },
+                "trigger": { "$ref": "#/$defs/fieldTrigger" }
             },
             "additionalProperties": false
         },

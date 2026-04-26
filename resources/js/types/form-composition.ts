@@ -7,6 +7,7 @@ import type { FlatpackActionCondition } from '@/types/flatpack-actions';
 import type {
     FormFieldInputFormat,
     FormFieldPreset,
+    FormFieldTrigger,
 } from '@/types/form-fields';
 import type {
     FlatpackListCompositionBulkActionYaml,
@@ -67,6 +68,7 @@ export type FlatpackFormCompositionFieldTextYaml = {
     value?: unknown;
     preset?: FormFieldPreset;
     format?: FormFieldInputFormat;
+    trigger?: FormFieldTrigger;
 };
 
 export type FlatpackFormCompositionFieldTextareaYaml = {
@@ -80,6 +82,7 @@ export type FlatpackFormCompositionFieldTextareaYaml = {
     value?: unknown;
     rows?: number;
     preset?: FormFieldPreset;
+    trigger?: FormFieldTrigger;
 };
 
 export type FlatpackFormCompositionFieldSelectYaml = {
@@ -92,6 +95,7 @@ export type FlatpackFormCompositionFieldSelectYaml = {
     rules?: FlatpackFormCompositionValidationRulesYaml;
     value?: unknown;
     options: FlatpackListCompositionColumnOptionsYaml;
+    trigger?: FormFieldTrigger;
 };
 
 export type FlatpackFormCompositionFieldComboboxYaml = {
@@ -109,6 +113,7 @@ export type FlatpackFormCompositionFieldComboboxYaml = {
     relation_name?: string;
     relation_value?: string;
     remote?: boolean;
+    trigger?: FormFieldTrigger;
 };
 
 export type FlatpackFormCompositionFieldDateYaml = {
@@ -120,6 +125,7 @@ export type FlatpackFormCompositionFieldDateYaml = {
     required?: boolean;
     rules?: FlatpackFormCompositionValidationRulesYaml;
     value?: unknown;
+    trigger?: FormFieldTrigger;
 };
 
 export type FlatpackFormCompositionFieldDatePickerYaml = {
@@ -131,6 +137,7 @@ export type FlatpackFormCompositionFieldDatePickerYaml = {
     required?: boolean;
     rules?: FlatpackFormCompositionValidationRulesYaml;
     value?: unknown;
+    trigger?: FormFieldTrigger;
 };
 
 export type FlatpackFormCompositionFieldDateRangePickerYaml = {
@@ -142,6 +149,7 @@ export type FlatpackFormCompositionFieldDateRangePickerYaml = {
     required?: boolean;
     rules?: FlatpackFormCompositionValidationRulesYaml;
     value?: unknown;
+    trigger?: FormFieldTrigger;
 };
 
 export type FlatpackFormCompositionFieldTimePickerYaml = {
@@ -157,6 +165,7 @@ export type FlatpackFormCompositionFieldTimePickerYaml = {
     datePlaceholder?: string;
     timeLabel?: string;
     timeDefaultValue?: string;
+    trigger?: FormFieldTrigger;
 };
 
 export type FlatpackFormCompositionFieldCheckboxYaml = {
@@ -168,6 +177,7 @@ export type FlatpackFormCompositionFieldCheckboxYaml = {
     rules?: FlatpackFormCompositionValidationRulesYaml;
     value?: unknown;
     defaultChecked?: boolean;
+    trigger?: FormFieldTrigger;
 };
 
 export type FlatpackFormCompositionFieldSwitchYaml = {
@@ -179,6 +189,7 @@ export type FlatpackFormCompositionFieldSwitchYaml = {
     rules?: FlatpackFormCompositionValidationRulesYaml;
     value?: unknown;
     defaultChecked?: boolean;
+    trigger?: FormFieldTrigger;
 };
 
 export type FlatpackFormCompositionFieldRichTextYaml = {
@@ -191,6 +202,7 @@ export type FlatpackFormCompositionFieldRichTextYaml = {
     rules?: FlatpackFormCompositionValidationRulesYaml;
     value?: unknown;
     showFixedToolbar?: boolean;
+    trigger?: FormFieldTrigger;
 };
 
 export type FlatpackFormCompositionFieldBlockEditorYaml = {
@@ -203,6 +215,7 @@ export type FlatpackFormCompositionFieldBlockEditorYaml = {
     rules?: FlatpackFormCompositionValidationRulesYaml;
     value?: unknown;
     showFixedToolbar?: boolean;
+    trigger?: FormFieldTrigger;
 };
 
 export type FlatpackFormCompositionFieldTableYaml = {
@@ -242,6 +255,7 @@ export type FlatpackFormCompositionFieldTableYaml = {
     table_relation_type?: FlatpackTableRelationType;
     /** When false, row clicks do not open the detail drawer (`create` toolbar draft flow unchanged). */
     row_detail_drawer?: boolean;
+    trigger?: FormFieldTrigger;
 };
 
 export type FlatpackFormCompositionFieldYaml =
