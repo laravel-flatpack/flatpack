@@ -7,7 +7,7 @@ namespace Flatpack\Http\Controllers;
 use Flatpack\Actions\EntityActionExecutor;
 use Flatpack\Actions\FlatpackActionContext;
 use Flatpack\Actions\FlatpackBulkActionContext;
-use Flatpack\Composition\EntityComposition;
+use Flatpack\Http\Controllers\Concerns\LoadsListComposition;
 use Flatpack\Http\Requests\BulkActionRequest;
 use Flatpack\Http\Requests\ListActionRequest;
 use Flatpack\Http\Requests\ListRecordUpdateRequest;
@@ -19,16 +19,18 @@ use Illuminate\Http\RedirectResponse;
 
 final readonly class EntityActionController
 {
+    use LoadsListComposition;
+
     public function __construct(
-        private EntityComposition $entityComposition,
         private ActionRuntime $actions,
         private EntityActionExecutor $executor,
     ) {}
 
     public function bulkAction(BulkActionRequest $request, string $entity): RedirectResponse
     {
-        $list = $this->entityComposition->listFor($entity);
-        $schema = $this->entityComposition->listSchema($entity);
+        $list = $this->loadList($entity);
+        $schema = $this->loadListSchema($entity);
+        $listModelClass = $this->listModelClass($list);
         $action = trim((string) $request->input('action', ''));
         if ($action === '') {
             abort(404, 'Flatpack bulk action is missing.');
@@ -44,11 +46,11 @@ final readonly class EntityActionController
         } catch (ActionRuntimeException $exception) {
             abort($exception->statusCode(), $exception->getMessage());
         }
-        $this->actions->ensureBulkActionAuthorized($handler, $user, trim((string) ($list->model ?? '')));
+        $this->actions->ensureBulkActionAuthorized($handler, $user, $listModelClass);
         $result = $handler->handle(FlatpackBulkActionContext::fromRequest(
             request: $request,
             entity: $entity,
-            modelClass: (string) ($list->model ?? ''),
+            modelClass: $listModelClass,
             schema: $schema,
         ));
 
@@ -150,7 +152,7 @@ final readonly class EntityActionController
             return $result->setStatusCode(303);
         }
 
-        $formSchema = $this->entityComposition->formSchema($entity);
+        $formSchema = $this->entityComposition()->formSchema($entity);
         $target = SuccessRedirectSchema::findForRowAction($formSchema, $schema, $action);
         if ($target !== null) {
             return SuccessRedirect::responseForEntityAction($target, $entity, $record)->with('flatpack', [
@@ -203,9 +205,9 @@ final readonly class EntityActionController
      */
     private function listModelAndSchema(string $entity): array
     {
-        $list = $this->entityComposition->listFor($entity);
-        $schema = $this->entityComposition->listSchema($entity);
+        $list = $this->loadList($entity);
+        $schema = $this->loadListSchema($entity);
 
-        return [(string) ($list->model ?? ''), $schema];
+        return [$this->listModelClass($list), $schema];
     }
 }

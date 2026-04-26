@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Flatpack\Http\Controllers;
 
-use Flatpack\Composition\EntityComposition;
+use Flatpack\Http\Controllers\Concerns\LoadsFormComposition;
 use Flatpack\Http\Requests\EmbeddedTableColumnRelationOptionsRequest;
 use Flatpack\Http\Response\FlatpackErrorPayload;
 use Flatpack\Http\Response\RelationOptionsPayload;
@@ -15,14 +15,12 @@ use Illuminate\Http\JsonResponse;
 
 final readonly class EmbeddedTableColumnRelationOptionsController
 {
-    public function __construct(
-        private EntityComposition $entityComposition,
-    ) {}
+    use LoadsFormComposition;
 
     public function __invoke(EmbeddedTableColumnRelationOptionsRequest $request, string $entity): JsonResponse
     {
-        $form = $this->entityComposition->formFor($entity);
-        $schema = $this->entityComposition->formSchema($entity);
+        $form = $this->loadForm($entity);
+        $schema = $this->loadSchema($entity);
         $tableFieldId = trim((string) $request->validated('table_field'));
         $columnId = trim((string) $request->validated('column_id'));
 
@@ -42,7 +40,7 @@ final readonly class EmbeddedTableColumnRelationOptionsController
             return FlatpackErrorPayload::notFound('Flatpack table column is not a relation column.');
         }
 
-        $parentClass = (string) ($form->model ?? '');
+        $parentClass = $this->formModelClass($form);
         if ($parentClass === '' || ! class_exists($parentClass) || ! is_subclass_of($parentClass, Model::class)) {
             return FlatpackErrorPayload::notFound('Flatpack form model is not configured.');
         }

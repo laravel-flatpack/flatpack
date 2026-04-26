@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Flatpack\Http\Controllers;
 
-use Flatpack\Composition\EntityComposition;
+use Flatpack\Http\Controllers\Concerns\LoadsFormComposition;
 use Flatpack\Http\Requests\RelationOptionsRequest;
 use Flatpack\Http\Response\FlatpackErrorPayload;
 use Flatpack\Http\Response\RelationOptionsPayload;
@@ -14,14 +14,12 @@ use Illuminate\Http\JsonResponse;
 
 final readonly class RelationOptionsController
 {
-    public function __construct(
-        private EntityComposition $entityComposition,
-    ) {}
+    use LoadsFormComposition;
 
     public function __invoke(RelationOptionsRequest $request, string $entity): JsonResponse
     {
-        $form = $this->entityComposition->formFor($entity);
-        $schema = $this->entityComposition->formSchema($entity);
+        $form = $this->loadForm($entity);
+        $schema = $this->loadSchema($entity);
         $fieldId = trim((string) $request->validated('field'));
 
         $fieldDefinition = $this->relationFieldDefinition($schema, $fieldId);
@@ -30,7 +28,7 @@ final readonly class RelationOptionsController
         }
 
         return response()->json(RelationOptionsPayload::forModelField(
-            (string) ($form->model ?? ''),
+            $this->formModelClass($form),
             $fieldDefinition,
             $request,
         ));
