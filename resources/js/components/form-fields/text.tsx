@@ -1,4 +1,4 @@
-import { formatInputValue } from '@/lib/form-field-preset';
+import { formatInputValue, formatInputValueOnBlur } from '@/lib/form-field-preset';
 import { cn } from '@/lib/utils';
 import type { FormFieldInputFormat } from '@/types/form-fields';
 import { Field, FieldContent, FieldDescription, FieldTitle } from '../ui/field';
@@ -57,7 +57,12 @@ export const TextField = ({
                         : e.target.value,
                 )
             }
-            onBlur={onBlur}
+            onBlur={(event) => {
+                if (format) {
+                    onValueChange?.(formatInputValueOnBlur(event.target.value, format));
+                }
+                onBlur?.(event);
+            }}
             onKeyDown={onKeyDown}
             autoComplete="off"
             autoCorrect="off"

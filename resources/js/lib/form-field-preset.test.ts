@@ -4,6 +4,7 @@ import {
     buildInitialPresetBlockedIds,
     buildPresetEdgesBySourceId,
     formatInputValue,
+    formatInputValueOnBlur,
     formatPresetValue,
     parsePreset,
 } from '@/lib/form-field-preset';
@@ -59,9 +60,14 @@ describe('formatInputValue', () => {
     });
 
     it('keeps typed dashes and converts spaces to dashes for slug', () => {
-        expect(formatInputValue('hello-', 'slug')).toBe('hello');
-        expect(formatInputValue('hello ', 'slug')).toBe('hello');
+        expect(formatInputValue('hello-', 'slug')).toBe('hello-');
+        expect(formatInputValue('hello ', 'slug')).toBe('hello-');
         expect(formatInputValue('hello - world', 'slug')).toBe('hello-world');
+    });
+
+    it('trims trailing slug/url dash on blur', () => {
+        expect(formatInputValueOnBlur('hello-', 'slug')).toBe('hello');
+        expect(formatInputValueOnBlur('hello-', 'url')).toBe('/hello');
     });
 });
 

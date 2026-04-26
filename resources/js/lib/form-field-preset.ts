@@ -108,8 +108,7 @@ function formatSlugInput(raw: string): string {
         .replace(/\p{M}/gu, '')
         .replace(/\s+/g, '-')
         .replace(/[^a-z0-9-]+/g, '-')
-        .replace(/-{2,}/g, '-')
-        .replace(/-+$/g, '');
+        .replace(/-{2,}/g, '-');
 }
 
 const presetFormatters: Record<FormFieldPresetType, (raw: string) => string> = {
@@ -147,6 +146,19 @@ export function formatInputValue(
         return slug === '' ? '' : `/${slug.replace(/^\/+/, '')}`;
     }
     return formatPresetValue(raw, format);
+}
+
+export function formatInputValueOnBlur(
+    source: unknown,
+    format: FormFieldInputFormat,
+): string {
+    if (format === 'slug') {
+        return formatPresetValue(source, 'slug');
+    }
+    if (format === 'url') {
+        return formatPresetValue(source, 'url');
+    }
+    return formatInputValue(source, format);
 }
 
 export type PresetEdge = {
