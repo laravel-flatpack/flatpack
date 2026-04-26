@@ -27,6 +27,6 @@ final readonly class DashboardController
 
         return FlatpackResponse::inertia('dashboard', [
             'schema' => $schema,
-        ], $request->boolean('json'));
+        ]);
     }
 }

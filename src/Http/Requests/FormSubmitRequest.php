@@ -8,9 +8,11 @@ use Closure;
 use Flatpack\Composition\EntityComposition;
 use Flatpack\Contracts\Authorization\FlatpackAuthorizer;
 use Flatpack\Http\Requests\Concerns\InteractsWithFlatpackAuthorization;
+use Flatpack\Schema\Forms\FormSubmitActionAllowed;
 use Flatpack\Schema\Validation\FormSchemaRuleBuilder;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Override;
 
 final class FormSubmitRequest extends FormRequest
@@ -23,7 +25,7 @@ final class FormSubmitRequest extends FormRequest
         $user = $this->user();
 
         if ($user === null) {
-            return $this->denyFlatpackAuthorization('You must be logged in to save this form.');
+            return $this->denyFlatpackAuthorization('You must be logged in to submit this form.');
         }
 
         if (! $authorizer->canAccessPanel($user)) {
@@ -48,20 +50,11 @@ final class FormSubmitRequest extends FormRequest
             );
         }
 
-        if ($this->isMethod('POST')) {
+        if ($this->isMethod('POST') && $this->routeIs('flatpack.entities.form.submit')) {
             return true;
         }
 
-        if ($this->isMethod('PATCH')) {
-            $record = trim((string) $this->route('record', ''));
-            if ($record === '') {
-                return $this->denyFlatpackAuthorization('The route is missing the record id.');
-            }
-
-            return true;
-        }
-
-        return $this->denyFlatpackAuthorization('Flatpack form save only supports POST (create) or PATCH (edit).');
+        return $this->denyFlatpackAuthorization('Flatpack form submit must use POST {entity}/submit.');
     }
 
     /**
@@ -84,6 +77,8 @@ final class FormSubmitRequest extends FormRequest
         $builder = $this->container->make(FormSchemaRuleBuilder::class);
         $valueRules = $builder->rulesForValues($schema, $modelClass);
 
+        $allowed = FormSubmitActionAllowed::allowedActionStrings($schema);
+
         return array_merge(
             [
                 'values' => [
@@ -95,6 +90,8 @@ final class FormSubmitRequest extends FormRequest
                         }
                     },
                 ],
+                'action' => ['required', 'string', 'max:64', Rule::in($allowed)],
+                'record' => ['nullable', 'string', 'max:191'],
                 'form_action_id' => ['nullable', 'string', 'max:191'],
             ],
             $valueRules,
@@ -110,6 +107,8 @@ final class FormSubmitRequest extends FormRequest
         return [
             'values.present' => 'Nothing to save',
             'values.array' => 'Nothing to save',
+            'action.required' => 'Choose an action to run.',
+            'action.in' => 'This action is not allowed for this form.',
         ];
     }
 }

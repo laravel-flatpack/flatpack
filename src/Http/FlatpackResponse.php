@@ -35,12 +35,11 @@ final class FlatpackResponse
     public static function inertia(
         string $view,
         array $data = [],
-        bool $json = false,
         ?FlatpackResponseOptions $options = null,
     ): Response|JsonResponse {
         $data = self::prepareInertiaData($view, $data, $options);
 
-        if ($json) {
+        if (request()->boolean('json')) {
             return response()->json($data);
         }
 

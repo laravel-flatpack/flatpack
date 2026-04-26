@@ -6,8 +6,11 @@ namespace Flatpack\Navigation;
 
 use Flatpack\Composition\CompositionValues;
 use Flatpack\Contracts\Composition\CompositionQuery;
+use Flatpack\Contracts\Authorization\FlatpackAuthorizer;
 use Flatpack\Http\Controllers\ListController;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 final readonly class FlatpackMenuBuilder implements MenuBuilder
@@ -16,6 +19,7 @@ final readonly class FlatpackMenuBuilder implements MenuBuilder
         private ConfigRepository $config,
         private CompositionQuery $compositions,
         private CompositionValues $compositionValues,
+        private FlatpackAuthorizer $authorizer,
     ) {}
 
     public function build(): array
@@ -90,6 +94,9 @@ final readonly class FlatpackMenuBuilder implements MenuBuilder
             }
 
             $list = $this->compositions->optional($entry, 'list');
+            if (! $this->canIncludeListInMenu($list)) {
+                continue;
+            }
             $displayName = $this->compositionValues->displayName($list);
             $icon = $this->compositionValues->icon($list);
             $navOrder = $this->compositionValues->navOrder($list);
@@ -123,5 +130,26 @@ final readonly class FlatpackMenuBuilder implements MenuBuilder
         });
 
         return $items;
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $list
+     */
+    private function canIncludeListInMenu(?array $list): bool
+    {
+        $modelClass = $this->compositionValues->modelClass($list);
+        if (! is_string($modelClass) || trim($modelClass) === '') {
+            return true;
+        }
+        if (! class_exists($modelClass) || ! is_subclass_of($modelClass, Model::class)) {
+            return false;
+        }
+        $user = Auth::user();
+        if ($user === null) {
+            return false;
+        }
+
+        return $this->authorizer->allows($user, 'viewAny', $modelClass)
+            || $this->authorizer->allows($user, 'viewAll', $modelClass);
     }
 }

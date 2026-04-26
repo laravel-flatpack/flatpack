@@ -67,6 +67,10 @@
                 "disable_until_dirty": {
                     "type": "boolean"
                 },
+                "primary": {
+                    "type": "boolean",
+                    "description": "When true, this action is the default for implicit form submit (Enter / primary CTA). If multiple are primary, the first in YAML order wins."
+                },
                 "shortcut": {
                     "type": "string"
                 }

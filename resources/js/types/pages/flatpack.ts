@@ -18,6 +18,8 @@ export type FlatpackListHeaderAction = {
     icon?: string;
     shortcut?: string;
     variant?: FlatpackActionVariant;
+    /** When true, default intent for implicit form submit (Enter / primary CTA). */
+    primary?: boolean;
     success_message?: string;
     confirm?: boolean;
     success_redirect?: FlatpackSuccessRedirect;

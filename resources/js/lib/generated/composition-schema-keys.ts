@@ -83,6 +83,7 @@ export const HEADER_ACTION_ENTRY_KEYS = [
     'href',
     'icon',
     'label',
+    'primary',
     'shortcut',
     'success_message',
     'success_redirect',

@@ -3,9 +3,11 @@
 declare(strict_types=1);
 
 use Flatpack\Tests\Models\User;
+use Flatpack\Tests\Policies\DenyViewPostPolicy;
 use Flatpack\Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Gate;
 
 uses(TestCase::class, RefreshDatabase::class);
 
@@ -110,4 +112,35 @@ test('flatpack filters unsafe menu routes from config override', function () {
             ->where('flatpack.menu.1.slug', 'safe-same-origin')
             ->where('flatpack.menu.1.url', 'https://app.test/flatpack/categories')
         );
+});
+
+test('flatpack hides filesystem menu entries when policy denies viewAny or viewAll', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-menu-policy-filter-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::ensureDirectoryExists($tempPath . '/categories');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+YAML);
+        File::put($tempPath . '/categories/list.yaml', <<<'YAML'
+name: Categories
+model: Flatpack\Tests\Models\PostBySlug
+YAML);
+        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.menu', null);
+        Gate::policy(\Flatpack\Tests\Models\Post::class, DenyViewPostPolicy::class);
+
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get(route('flatpack.dashboard'))
+            ->assertInertia(fn ($page) => $page
+                ->has('flatpack.menu', 1)
+                ->where('flatpack.menu.0.slug', 'categories')
+            );
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
 });

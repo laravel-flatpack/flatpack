@@ -8,6 +8,7 @@ use Flatpack\Actions\FlatpackActionContext;
 use Flatpack\Composition\EntityComposition;
 use Flatpack\Composition\FormComposition;
 use Flatpack\Http\FlatpackResponse;
+use Flatpack\Http\Controllers\Concerns\AuthorizesFlatpackModelAbility;
 use Flatpack\Http\FlatpackResponseOptions;
 use Flatpack\Http\Requests\FormSubmitRequest;
 use Flatpack\Schema\Forms\FormSchemaNormalizer;
@@ -26,6 +27,8 @@ use Throwable;
 
 final readonly class FormController
 {
+    use AuthorizesFlatpackModelAbility;
+
     public function __construct(
         private EntityComposition $entityComposition,
         private ActionRuntime $actions,
@@ -39,11 +42,11 @@ final readonly class FormController
     {
         $form = $this->entityComposition->formFor($entity);
         $schema = $this->entityComposition->formSchema($entity);
+        $this->ensureModelAbility($request, (string) ($form->model ?? ''), 'create');
 
         return FlatpackResponse::inertia(
             'form',
             $this->formPageProps($entity, $form, $schema, 'create', null, []),
-            $request->boolean('json'),
         );
     }
 
@@ -52,7 +55,6 @@ final readonly class FormController
      */
     public function edit(Request $request, string $entity, string $record): Response|JsonResponse
     {
-        $showJsonResponse = $request->boolean('json');
         $form = $this->entityComposition->formFor($entity);
         $schema = $this->entityComposition->formSchema($entity);
 
@@ -60,7 +62,6 @@ final readonly class FormController
             return FlatpackResponse::inertia(
                 'form',
                 $this->formPageProps($entity, $form, $schema, 'edit', $record, []),
-                $showJsonResponse,
             );
         }
         $model = $this->actions->resolveOptionalRecordModel(
@@ -72,8 +73,9 @@ final readonly class FormController
             return FlatpackResponse::inertia('errors/record-not-found', [
                 'entity' => $entity,
                 'entityName' => mb_strtolower($form->name ?? $entity),
-            ], $showJsonResponse);
+            ]);
         }
+        $this->ensureModelAbility($request, (string) ($form->model ?? ''), 'view', $model);
 
         $formModel = (string) ($form->model ?? '');
         $normalization = $this->formSchemaNormalizer->normalizeForFormPage(
@@ -98,7 +100,6 @@ final readonly class FormController
                 $record,
                 $values,
             ),
-            $showJsonResponse,
             new FlatpackResponseOptions(
                 compositionDebugLog: $normalization->debugLog,
                 skipFormSchemaNormalize: true,
@@ -107,29 +108,40 @@ final readonly class FormController
     }
 
     /**
-     * Persist create or update from the form submission.
+     * Persist create or update from the form submission (single POST endpoint).
      *
      * Uses HTTP 303 redirects after successful POST so the browser replaces the
      * POST URL in history (see PRG pattern). Handler-provided redirects keep
      * their 303 status as well.
      *
      * @throws AuthorizationException When the action handler denies access.
-     * @throws ValidationException When the save fails in a user-recoverable way.
+     * @throws ValidationException When the submit fails in a user-recoverable way.
      * @throws Throwable
      */
-    public function save(FormSubmitRequest $request, string $entity, ?string $record = null): RedirectResponse
+    public function submit(FormSubmitRequest $request, string $entity): RedirectResponse
     {
         $form = $this->entityComposition->formFor($entity);
         $schema = $this->entityComposition->formSchema($entity);
         $modelClass = (string) ($form->model ?? '');
+        $record = self::recordKeyFromSubmitRequest($request);
+        $actionName = trim((string) $request->validated('action'));
+
         try {
             $model = $record !== null
                 ? $this->actions->resolveRecordModel($modelClass, $record, 'form')
                 : null;
-            $handler = $this->actions->resolveRecordActionHandler('save');
         } catch (ActionRuntimeException $exception) {
             abort($exception->statusCode(), $exception->getMessage());
         }
+
+        try {
+            $handler = $this->actions->resolveRecordActionHandler($actionName);
+        } catch (ActionRuntimeException $exception) {
+            throw ValidationException::withMessages([
+                'action' => [$exception->getMessage()],
+            ]);
+        }
+
         $user = $request->user();
         if ($user === null) {
             abort(403);
@@ -141,7 +153,7 @@ final readonly class FormController
             $result = $handler->handle(new FlatpackActionContext(
                 request: $request,
                 entity: $entity,
-                actionName: 'save',
+                actionName: $actionName,
                 modelClass: $modelClass,
                 record: $record,
                 compositionType: 'form',
@@ -170,9 +182,10 @@ final readonly class FormController
 
         $savedKey = (string) $savedModel->getKey();
         $formActionId = $request->input('form_action_id');
-        $target = SuccessRedirect::successRedirectForFormSave(
+        $target = SuccessRedirect::successRedirectForFormSubmit(
             $schema,
             is_string($formActionId) ? $formActionId : null,
+            $actionName,
         );
         if ($target === null) {
             return redirect()->route('flatpack.entities.edit', [
@@ -187,6 +200,20 @@ final readonly class FormController
             $record === null,
             $savedKey,
         );
+    }
+
+    /**
+     * Non-empty {@code record} request value means edit; omitted or blank means create.
+     */
+    private static function recordKeyFromSubmitRequest(FormSubmitRequest $request): ?string
+    {
+        $raw = $request->input('record');
+        if (! is_string($raw)) {
+            return null;
+        }
+        $trimmed = trim($raw);
+
+        return $trimmed === '' ? null : $trimmed;
     }
 
     /**

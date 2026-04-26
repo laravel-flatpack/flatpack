@@ -18,7 +18,7 @@ final class DemoController
         return FlatpackResponse::inertia('demo', [
             'query' => $request->query(),
             'catalog' => $this->catalog(),
-        ], $request->boolean('json'));
+        ]);
     }
 
     /**

@@ -64,13 +64,17 @@ final class SuccessRedirect
     }
 
     /**
-     * Resolves redirect after form POST/PATCH when YAML defines multiple header keys with {@code action: save}
-     * (e.g. {@code save} vs {@code save_and_quit}). Uses {@code form_action_id} from the request when present.
+     * Resolves redirect after form submit when YAML defines per-action {@code success_redirect}.
+     * Prefers {@code form_action_id} (YAML key), then {@code actions.save} when that key exists,
+     * otherwise the first action block whose {@code action} matches the submitted handler name.
      *
      * @param  non-empty-string|null  $formActionId  YAML action key from {@see HeaderActions} ({@code id} field).
      */
-    public static function successRedirectForFormSave(?array $schema, ?string $formActionId): ?string
-    {
+    public static function successRedirectForFormSubmit(
+        ?array $schema,
+        ?string $formActionId,
+        string $submittedAction,
+    ): ?string {
         $id = $formActionId !== null ? trim($formActionId) : '';
         if ($schema === null) {
             return null;
@@ -91,7 +95,39 @@ final class SuccessRedirect
             }
         }
 
-        return self::fromFormSchema($schema);
+        $saveBlock = $actions['save'] ?? null;
+        if (is_array($saveBlock)) {
+            return self::normalize($saveBlock['success_redirect'] ?? null);
+        }
+
+        $needle = trim($submittedAction);
+        if ($needle === '') {
+            return null;
+        }
+
+        foreach ($actions as $block) {
+            if (! is_array($block)) {
+                continue;
+            }
+            $blockAction = isset($block['action']) ? trim((string) $block['action']) : '';
+            if ($blockAction !== $needle) {
+                continue;
+            }
+            $direct = self::normalize($block['success_redirect'] ?? null);
+            if ($direct !== null) {
+                return $direct;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @deprecated Use {@see successRedirectForFormSubmit} with the submitted action name.
+     */
+    public static function successRedirectForFormSave(?array $schema, ?string $formActionId): ?string
+    {
+        return self::successRedirectForFormSubmit($schema, $formActionId, 'save');
     }
 
     /**

@@ -41,13 +41,11 @@ Route::middleware(['auth:' . config('flatpack.guard', 'web'), EnsureFlatpackAcce
 
     /** Renders the create form page for an entity. */
     Route::get('{entity}/create', [FormController::class, 'create'])->name('entities.create');
-    /** Saves a new record submitted from the create form. */
-    Route::post('{entity}', [FormController::class, 'save'])->name('entities.store');
+    /** Submits the form (create or update); pass {@code record} in the body for edits. */
+    Route::post('{entity}/submit', [FormController::class, 'submit'])->name('entities.form.submit');
 
     /** Renders the edit form page for an existing record. */
     Route::get('{entity}/{record}/edit', [FormController::class, 'edit'])->name('entities.edit');
-    /** Saves updates submitted from the edit form. */
-    Route::patch('{entity}/{record}/save', [FormController::class, 'save'])->name('entities.save');
 
     /** Returns paginated relation options for remote combobox fields. */
     Route::get('{entity}/relation-options', RelationOptionsController::class)->name('entities.relation-options');

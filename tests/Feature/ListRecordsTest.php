@@ -6,6 +6,7 @@ use Flatpack\Tests\Models\Post;
 use Flatpack\Tests\Models\User;
 use Flatpack\Tests\Policies\DenyDeletePostPolicy;
 use Flatpack\Tests\Policies\DenyUpdatePostPolicy;
+use Flatpack\Tests\Policies\DenyViewPostPolicy;
 use Flatpack\Tests\Policies\SelectiveDeletePostPolicy;
 use Flatpack\Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -48,6 +49,32 @@ YAML);
         expect($body['pagination']['total'])->toBe(1);
         expect($body['pagination']['current_page'])->toBe(1);
         expect($body['model_key'])->toBe('id');
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
+test('flatpack entity list JSON rejects users when policy denies viewAny', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-list-viewany-deny-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+columns:
+  id:
+    label: ID
+YAML);
+        config()->set('flatpack.path', $tempPath);
+        Gate::policy(Post::class, DenyViewPostPolicy::class);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        actingAs($user)
+            ->getJson(route('flatpack.entities.index', ['entity' => 'posts', 'json' => true]))
+            ->assertForbidden();
     } finally {
         File::deleteDirectory($tempPath);
     }
@@ -132,6 +159,7 @@ YAML);
                 'icon' => '',
                 'action' => 'create',
                 'variant' => 'default',
+                'primary' => true,
                 'success_message' => 'Created',
                 'confirm' => true,
                 'success_redirect' => 'list',
@@ -942,6 +970,7 @@ columns:
     label: Slug
 YAML);
         config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.authorization.allow_when_policy_missing', false);
 
         Post::factory()->create(['slug' => 'one', 'title' => 'Keep me']);
 

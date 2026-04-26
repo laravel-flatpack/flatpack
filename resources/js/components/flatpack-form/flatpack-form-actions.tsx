@@ -97,6 +97,8 @@ function FormActionButtonBody({
     );
 }
 
+type FormSubmitToolbarRow = FlatpackListHeaderAction & { action: string };
+
 type FlatpackFormActionsProps = {
     formActions: FlatpackListHeaderAction[];
     formId: string;
@@ -104,20 +106,10 @@ type FlatpackFormActionsProps = {
     /** When false and an action has disable_until_dirty, that action stays disabled. Defaults to true (e.g. list pages). */
     formIsDirty?: boolean;
     fieldsLength: number;
-    record: string | null;
-    /** Called before save so the correct YAML action key is submitted as {@code form_action_id}. */
-    onSaveIntent: (
-        action: FlatpackListHeaderAction & { action: 'save' },
-    ) => void;
-    onSaveConfirmClick: (
-        action: FlatpackListHeaderAction & { action: 'save' },
-    ) => void;
-    onNamedActionConfirm: (
-        action: FlatpackListHeaderAction & { action: string },
-    ) => void;
-    runNamedAction: (
-        action: FlatpackListHeaderAction & { action: string },
-    ) => void | Promise<void>;
+    /** Sets which YAML row / handler name is sent on the next {@code POST …/submit}. */
+    onFormSubmitIntent: (action: FormSubmitToolbarRow) => void;
+    /** Opens confirm dialog for toolbar rows with {@code confirm: true}. */
+    onFormSubmitConfirmClick: (action: FormSubmitToolbarRow) => void;
 };
 
 export function FlatpackFormActions({
@@ -126,11 +118,8 @@ export function FlatpackFormActions({
     formProcessing,
     formIsDirty = true,
     fieldsLength,
-    record,
-    onSaveIntent,
-    onSaveConfirmClick,
-    onNamedActionConfirm,
-    runNamedAction,
+    onFormSubmitIntent,
+    onFormSubmitConfirmClick,
 }: FlatpackFormActionsProps) {
     const {
         props: { flatpack },
@@ -180,16 +169,13 @@ export function FlatpackFormActions({
                     formIsDirty={formIsDirty ?? true}
                     formProcessing={formProcessing}
                     isMacPlatform={isMacPlatform}
-                    record={record}
                     shortcut={
                         showShortcutHintsOnButtons
                             ? shortcutByActionId.get(action.id)
                             : undefined
                     }
-                    onNamedActionConfirm={onNamedActionConfirm}
-                    onSaveIntent={onSaveIntent}
-                    onSaveConfirmClick={onSaveConfirmClick}
-                    runNamedAction={runNamedAction}
+                    onFormSubmitConfirmClick={onFormSubmitConfirmClick}
+                    onFormSubmitIntent={onFormSubmitIntent}
                 />
             ))}
         </div>
@@ -202,13 +188,10 @@ type FlatpackFormActionRowProps = {
     formProcessing: boolean;
     formIsDirty: boolean;
     fieldsLength: number;
-    record: string | null;
     isMacPlatform: boolean;
     shortcut?: ParsedFlatpackShortcut;
-    onSaveIntent: FlatpackFormActionsProps['onSaveIntent'];
-    onSaveConfirmClick: FlatpackFormActionsProps['onSaveConfirmClick'];
-    onNamedActionConfirm: FlatpackFormActionsProps['onNamedActionConfirm'];
-    runNamedAction: FlatpackFormActionsProps['runNamedAction'];
+    onFormSubmitIntent: FlatpackFormActionsProps['onFormSubmitIntent'];
+    onFormSubmitConfirmClick: FlatpackFormActionsProps['onFormSubmitConfirmClick'];
 };
 
 function FlatpackFormActionRow({
@@ -218,12 +201,9 @@ function FlatpackFormActionRow({
     formIsDirty,
     formProcessing,
     isMacPlatform,
-    record,
     shortcut,
-    onNamedActionConfirm,
-    onSaveIntent,
-    onSaveConfirmClick,
-    runNamedAction,
+    onFormSubmitConfirmClick,
+    onFormSubmitIntent,
 }: FlatpackFormActionRowProps) {
     const variant = actionVariant(action);
     const iconClass = iconButtonClass(action);
@@ -271,73 +251,42 @@ function FlatpackFormActionRow({
         );
     }
 
-    if (action.action === 'save') {
-        const saveAction = action as FlatpackListHeaderAction & {
-            action: 'save';
-        };
-        const disabledByDirty = flatpackActionDisabledByDirty(
-            action,
-            formIsDirty,
-        );
-        const disabled =
-            formProcessing || fieldsLength === 0 || disabledByDirty;
-        const showDirtyTooltip =
-            disabledByDirty && !formProcessing && fieldsLength > 0;
-
-        return (
-            <FlatpackActionDirtyTooltip show={showDirtyTooltip}>
-                <Button
-                    type={action.confirm ? 'button' : 'submit'}
-                    form={action.confirm ? undefined : formId}
-                    size="lg"
-                    variant={variant}
-                    disabled={disabled}
-                    className={iconClass}
-                    data-flatpack-action-id={action.id}
-                    onClick={
-                        action.confirm
-                            ? () => {
-                                  onSaveIntent(saveAction);
-                                  onSaveConfirmClick(saveAction);
-                              }
-                            : () => {
-                                  onSaveIntent(saveAction);
-                              }
-                    }
-                >
-                    <FormActionButtonBody
-                        {...bodyProps}
-                        showSpinner={formProcessing}
-                    />
-                </Button>
-            </FlatpackActionDirtyTooltip>
-        );
+    if (!('action' in action) || action.action === '') {
+        return null;
     }
 
+    const submitRow = action as FormSubmitToolbarRow;
     const disabledByDirty = flatpackActionDisabledByDirty(action, formIsDirty);
     const disabled =
-        formProcessing || record == null || record === '' || disabledByDirty;
+        formProcessing || fieldsLength === 0 || disabledByDirty;
     const showDirtyTooltip =
-        disabledByDirty && !formProcessing && record != null && record !== '';
+        disabledByDirty && !formProcessing && fieldsLength > 0;
 
     return (
         <FlatpackActionDirtyTooltip show={showDirtyTooltip}>
             <Button
-                type="button"
+                type={action.confirm ? 'button' : 'submit'}
+                form={action.confirm ? undefined : formId}
                 size="lg"
                 variant={variant}
                 disabled={disabled}
                 className={iconClass}
                 data-flatpack-action-id={action.id}
-                onClick={() => {
-                    if (action.confirm) {
-                        onNamedActionConfirm(action);
-                        return;
-                    }
-                    void runNamedAction(action);
-                }}
+                onClick={
+                    action.confirm
+                        ? () => {
+                              onFormSubmitIntent(submitRow);
+                              onFormSubmitConfirmClick(submitRow);
+                          }
+                        : () => {
+                              onFormSubmitIntent(submitRow);
+                          }
+                }
             >
-                <FormActionButtonBody {...bodyProps} showSpinner={false} />
+                <FormActionButtonBody
+                    {...bodyProps}
+                    showSpinner={formProcessing}
+                />
             </Button>
         </FlatpackActionDirtyTooltip>
     );

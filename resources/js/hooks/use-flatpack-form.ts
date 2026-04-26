@@ -1,5 +1,5 @@
 import type { FormDataConvertible } from '@inertiajs/core';
-import { router, useForm } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
 import type { FormEvent } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
@@ -19,7 +19,38 @@ import type {
     FlatpackListHeaderAction,
 } from '@/types/pages/flatpack';
 
-/** Header action waiting for confirm dialog; branch on {@code config.action === 'save'} vs named action. */
+export type FlatpackFormSubmitIntent = {
+    /** YAML action key; optional disambiguator when multiple rows share the same {@code action}. */
+    id: string;
+    /** Handler name sent as {@code action} (matches config/flatpack.php). */
+    action: string;
+};
+
+function defaultFormSubmitIntent(
+    actions: FlatpackListHeaderAction[],
+): FlatpackFormSubmitIntent {
+    const withAction = actions.filter(
+        (a): a is FlatpackListHeaderAction & { action: string } =>
+            'action' in a &&
+            typeof (a as { action?: string }).action === 'string' &&
+            (a as { action: string }).action !== '',
+    );
+    const primary = withAction.find((a) => a.primary === true);
+    if (primary) {
+        return { id: primary.id, action: primary.action };
+    }
+    const save = withAction.find((a) => a.action === 'save');
+    if (save) {
+        return { id: save.id, action: save.action };
+    }
+    const first = withAction[0];
+    if (first) {
+        return { id: first.id, action: first.action };
+    }
+    return { id: '', action: 'save' };
+}
+
+/** Header action waiting for confirm dialog before {@link runSubmit}. */
 export type FlatpackFormPendingConfirm = {
     config: FlatpackListHeaderAction & { action: string };
 };
@@ -65,27 +96,24 @@ export function useFlatpackForm({
             ...new Map(errors.map((error) => [error?.message, error])).values(),
         ];
     }, [fieldErrors]);
-    const defaultSaveActionId = useMemo(
-        () =>
-            formActions.find(
-                (a): a is FlatpackListHeaderAction & { action: 'save' } =>
-                    'action' in a && a.action === 'save',
-            )?.id ?? '',
+
+    const defaultIntent = useMemo(
+        () => defaultFormSubmitIntent(formActions),
         [formActions],
     );
 
-    const pendingSaveActionIdRef = useRef(defaultSaveActionId);
+    const pendingSubmitIntentRef = useRef<FlatpackFormSubmitIntent>(defaultIntent);
 
-    const prepareSaveSubmit = useCallback(
-        (action: FlatpackListHeaderAction & { action: 'save' }) => {
-            pendingSaveActionIdRef.current = action.id;
+    const prepareFormSubmit = useCallback(
+        (row: FlatpackListHeaderAction & { action: string }) => {
+            pendingSubmitIntentRef.current = { id: row.id, action: row.action };
         },
         [],
     );
 
     useEffect(() => {
-        pendingSaveActionIdRef.current = defaultSaveActionId;
-    }, [defaultSaveActionId]);
+        pendingSubmitIntentRef.current = defaultIntent;
+    }, [defaultIntent]);
 
     const [pendingConfirm, setPendingConfirm] =
         useState<FlatpackFormPendingConfirm | null>(null);
@@ -127,42 +155,36 @@ export function useFlatpackForm({
             fields,
             form.data.values,
         );
+        const submitUrl = route('flatpack.entities.form.submit', { entity });
         if (Object.keys(validationErrors).length > 0) {
             form.clearErrors();
             form.setError(validationErrors);
-            const submitUrl =
-                mode === 'create'
-                    ? route('flatpack.entities.store', { entity })
-                    : route('flatpack.entities.save', {
-                          entity,
-                          record: record ?? '',
-                      });
             toast.error(
                 firstErrorMessage(validationErrors) ?? 'Please review errors',
             );
             return;
         }
 
-        const submitUrl =
-            mode === 'create'
-                ? route('flatpack.entities.store', { entity })
-                : route('flatpack.entities.save', {
-                      entity,
-                      record: record ?? '',
-                  });
-
         form.clearErrors();
 
-        const submittedActionId = pendingSaveActionIdRef.current;
+        const intent = pendingSubmitIntentRef.current;
 
-        form.transform((data) => ({
-            ...data,
-            form_action_id: submittedActionId,
-        }));
+        form.transform((data) => {
+            const payload: Record<string, unknown> = {
+                ...data,
+                action: intent.action,
+            };
+            if (intent.id !== '') {
+                payload.form_action_id = intent.id;
+            }
+            if (mode === 'edit' && record != null && record !== '') {
+                payload.record = record;
+            }
+            return payload;
+        });
 
         const options = {
             preserveScroll: true,
-            /** Default PATCH merges {@code preserveState: true}, which keeps stale props after 303 → same edit URL. */
             preserveState: false,
             onSuccess: () => {
                 form.clearErrors();
@@ -174,23 +196,20 @@ export function useFlatpackForm({
                 });
                 form.reset();
                 const submittedAction = formActions.find(
-                    (a) => a.id === submittedActionId,
+                    (a) => a.id === intent.id,
                 );
                 if (submittedAction?.success_message) {
                     toast.success(submittedAction.success_message);
                 }
             },
             onError: (errors: Record<string, unknown>) => {
-                toast.error(firstErrorMessage(errors) ?? 'Form save failed');
+                toast.error(
+                    firstErrorMessage(errors) ?? 'Form submission failed',
+                );
             },
         };
 
-        if (mode === 'create') {
-            form.post(submitUrl, options);
-            return;
-        }
-
-        form.patch(submitUrl, options);
+        form.post(submitUrl, options);
     }, [entity, fields, form, formActions, mode, record]);
 
     const handleSubmit = useCallback(
@@ -201,46 +220,6 @@ export function useFlatpackForm({
         [runSubmit],
     );
 
-    const executeNamedAction = useCallback(
-        async (config: FlatpackListHeaderAction & { action: string }) => {
-            const { action } = config;
-            if (action === 'save') {
-                return;
-            }
-            if (record == null || record === '') {
-                return;
-            }
-
-            await new Promise<void>((resolve, reject) => {
-                router.post(
-                    route('flatpack.entities.row-action', {
-                        entity,
-                        record,
-                    }),
-                    { action },
-                    {
-                        preserveState: true,
-                        preserveScroll: true,
-                        onSuccess: () => {
-                            resolve();
-                            if (config.success_message) {
-                                toast.success(config.success_message);
-                            }
-                        },
-                        onError: (errors) => {
-                            const message =
-                                firstErrorMessage(errors) ??
-                                'Form action failed';
-                            toast.error(message);
-                            reject(new Error(message));
-                        },
-                    },
-                );
-            });
-        },
-        [entity, record],
-    );
-
     return {
         form,
         isDirty,
@@ -249,12 +228,11 @@ export function useFlatpackForm({
         fieldErrors,
         flatpackTopErrors,
         formActions,
-        prepareSaveSubmit,
+        prepareFormSubmit,
         pendingConfirm,
         setPendingConfirm,
         setFieldValue,
         handleSubmit,
         runSubmit,
-        executeNamedAction,
     };
 }

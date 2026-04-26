@@ -62,7 +62,7 @@ test('flatpack entity list returns JSON schema when json query is true', functio
         File::ensureDirectoryExists($tempPath . '/posts');
         File::put($tempPath . '/posts/list.yaml', <<<'YAML'
 name: Posts
-model: App\Models\Post
+model: Flatpack\Tests\Models\Post
 YAML);
         config()->set('flatpack.path', $tempPath);
 
@@ -75,7 +75,7 @@ YAML);
             ->assertJson([
                 'schema' => [
                     'name' => 'Posts',
-                    'model' => 'App\Models\Post',
+                    'model' => 'Flatpack\Tests\Models\Post',
                 ],
             ]);
     } finally {
@@ -90,6 +90,7 @@ test('flatpack entity create returns JSON schema when json query is true', funct
         File::ensureDirectoryExists($tempPath . '/posts');
         File::put($tempPath . '/posts/form.yaml', <<<'YAML'
 name: Post
+model: Flatpack\Tests\Models\Post
 fields: []
 YAML);
         config()->set('flatpack.path', $tempPath);

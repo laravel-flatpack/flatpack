@@ -54,6 +54,31 @@ test('fromSchema defaults invalid variant to outline', function () {
     expect($actions[0]['variant'])->toBe('outline');
 });
 
+test('fromSchema sets primary flag for variant primary and explicit primary yaml', function () {
+    $fromVariant = HeaderActions::fromSchema([
+        'actions' => [
+            'go' => [
+                'label' => 'Go',
+                'action' => 'save',
+                'variant' => 'primary',
+            ],
+        ],
+    ]);
+    expect($fromVariant[0]['primary'] ?? false)->toBeTrue();
+
+    $fromBool = HeaderActions::fromSchema([
+        'actions' => [
+            'go' => [
+                'label' => 'Go',
+                'action' => 'save',
+                'variant' => 'outline',
+                'primary' => true,
+            ],
+        ],
+    ]);
+    expect($fromBool[0]['primary'] ?? false)->toBeTrue();
+});
+
 test('fromSchema maps primary alias to default', function () {
     $actions = HeaderActions::fromSchema([
         'actions' => [

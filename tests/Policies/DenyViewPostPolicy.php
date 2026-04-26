@@ -7,16 +7,16 @@ namespace Flatpack\Tests\Policies;
 use Flatpack\Tests\Models\Post;
 use Flatpack\Tests\Models\User;
 
-final class PostPolicy
+final class DenyViewPostPolicy
 {
     public function viewAny(User $user): bool
     {
-        return true;
+        return false;
     }
 
     public function view(User $user, Post $post): bool
     {
-        return true;
+        return false;
     }
 
     public function create(User $user): bool

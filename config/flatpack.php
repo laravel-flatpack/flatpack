@@ -85,9 +85,10 @@ return [
     | Flatpack actions
     |--------------------------------------------------------------------------
     |
-    | The actions for forms and lists. Default: ['save', 'delete'].
-    | You can add your own actions by adding a class that implements
-    | the Flatpack\Contracts\Actions\FlatpackAction interface.
+    | Handler map for form submits (`POST {prefix}/{entity}/submit`) and row/list
+    | actions. The request body must include a string `action` key matching a key here.
+    | Default handlers include `save` and `delete`. Add your own keys with classes that
+    | implement `Flatpack\Contracts\Actions\FlatpackAction`.
     |
     */
     'actions' => [
@@ -127,12 +128,21 @@ return [
     | Authorization defaults
     |--------------------------------------------------------------------------
     |
-    | Policy lookup is fail-closed by default. If a model has no policy class,
-    | Flatpack denies mutating actions unless explicitly overridden below.
+    | When no policy is registered for a model, {@see PolicyAwareAuthorizer}
+    | allows mutating actions only if this flag is true (default) and the user
+    | passes {@code canAccessFlatpack()}. Set {@code FLATPACK_ALLOW_WHEN_POLICY_MISSING=false}
+    | for fail-closed behavior when no policy exists.
     |
     */
     'authorization' => [
-        'allow_when_policy_missing' => env('FLATPACK_ALLOW_WHEN_POLICY_MISSING', false),
+        'allow_when_policy_missing' => value(function (): bool {
+            $raw = env('FLATPACK_ALLOW_WHEN_POLICY_MISSING');
+            if ($raw === null || trim((string) $raw) === '') {
+                return true;
+            }
+
+            return filter_var($raw, FILTER_VALIDATE_BOOLEAN);
+        }),
     ],
 
     /*

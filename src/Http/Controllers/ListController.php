@@ -7,6 +7,7 @@ namespace Flatpack\Http\Controllers;
 use Flatpack\Composition\EntityComposition;
 use Flatpack\Facades\Flatpack;
 use Flatpack\Http\FlatpackResponse;
+use Flatpack\Http\Controllers\Concerns\AuthorizesFlatpackModelAbility;
 use Flatpack\Schema\HeaderActions;
 use Flatpack\Schema\Lists\BulkActions;
 use Flatpack\Schema\Lists\ListRecordsLoader;
@@ -17,6 +18,8 @@ use Inertia\Response;
 
 final readonly class ListController
 {
+    use AuthorizesFlatpackModelAbility;
+
     public function __construct(
         private EntityComposition $entityComposition,
         private ListRecordsLoader $listRecords,
@@ -30,6 +33,7 @@ final readonly class ListController
     {
         $list = $this->entityComposition->listFor($entity);
         $schema = $this->entityComposition->listSchema($entity);
+        $this->ensureModelAbility($request, (string) ($list->model ?? ''), 'viewAny');
 
         $page = max(1, (int) $request->query('page', 1));
         $maxPerPage = Flatpack::maxListPerPage();
@@ -74,6 +78,7 @@ final readonly class ListController
             'sorting' => $result['sorting'],
             'list_actions' => HeaderActions::fromSchema($schema),
             'bulk_actions' => BulkActions::fromSchema($schema),
-        ], $request->boolean('json'));
+        ]);
     }
+
 }

@@ -133,6 +133,10 @@
                 "success_redirect": {
                     "$ref": "#/$defs/successRedirect"
                 },
+                "primary": {
+                    "type": "boolean",
+                    "description": "When true, this list header action is treated as the primary CTA where that matters for defaults."
+                },
                 "shortcut": {
                     "type": "string"
                 }

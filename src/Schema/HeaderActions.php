@@ -17,7 +17,7 @@ final class HeaderActions
 {
     /**
      * @param  array<string, mixed>|null  $schema
-     * @return list<array{id: string, label: string, icon: string, variant: string, href?: string, action?: string, success_message?: string, confirm?: bool, success_redirect?: string, disable_until_dirty?: true, shortcut?: string}>
+     * @return list<array{id: string, label: string, icon: string, variant: string, primary?: true, href?: string, action?: string, success_message?: string, confirm?: bool, success_redirect?: string, disable_until_dirty?: true, shortcut?: string}>
      */
     public static function fromSchema(?array $schema): array
     {
@@ -55,12 +55,18 @@ final class HeaderActions
                 }
             }
             $id = is_string($key) && $key !== '' ? $key : (string) count($out);
+            $variantRaw = $definition['variant'] ?? null;
+            $isPrimaryVariant = is_string($variantRaw) && trim($variantRaw) === 'primary';
+            $explicitPrimary = ($definition['primary'] ?? null) === true;
             $normalized = [
                 'id' => $id,
                 'label' => $label,
                 'icon' => $icon,
-                'variant' => self::normalizeVariant($definition['variant'] ?? null),
+                'variant' => self::normalizeVariant($variantRaw),
             ];
+            if ($explicitPrimary || $isPrimaryVariant) {
+                $normalized['primary'] = true;
+            }
             if ($action !== '') {
                 $normalized['action'] = $action;
             }

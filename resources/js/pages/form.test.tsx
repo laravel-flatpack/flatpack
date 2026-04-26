@@ -15,11 +15,8 @@ const hoisted = vi.hoisted(() => ({
                 record?: string;
             },
         ) => {
-            if (name === 'flatpack.entities.store') {
-                return `/flatpack/${params?.entity ?? 'unknown'}`;
-            }
-            if (name === 'flatpack.entities.save') {
-                return `/flatpack/${params?.entity ?? 'unknown'}/${params?.record ?? 'missing'}/save`;
+            if (name === 'flatpack.entities.form.submit') {
+                return `/flatpack/${params?.entity ?? 'unknown'}/submit`;
             }
             if (name === 'flatpack.entities.row-action') {
                 return `/flatpack/${params?.entity ?? 'unknown'}/${params?.record ?? 'missing'}/action`;
@@ -308,7 +305,7 @@ describe('FlatpackFormPage', () => {
         );
     });
 
-    it('submits create mode through the store route', async () => {
+    it('submits create mode through the form submit route', async () => {
         const user = userEvent.setup();
 
         renderFlatpackFormPage(
@@ -348,9 +345,10 @@ describe('FlatpackFormPage', () => {
         });
 
         expect(hoisted.post).toHaveBeenCalledWith(
-            '/flatpack/posts',
+            '/flatpack/posts/submit',
             {
                 values: { title: 'changed-title' },
+                action: 'save',
                 form_action_id: 'save',
             },
             expect.objectContaining({
@@ -409,12 +407,13 @@ describe('FlatpackFormPage', () => {
         });
 
         expect(hoisted.post).toHaveBeenCalledWith(
-            '/flatpack/posts',
+            '/flatpack/posts/submit',
             {
                 values: {
                     title: 'changed-title',
                     published_at: '2026-04-25',
                 },
+                action: 'save',
                 form_action_id: 'save',
             },
             expect.objectContaining({
@@ -425,7 +424,7 @@ describe('FlatpackFormPage', () => {
         );
     });
 
-    it('submits edit mode through the save route', async () => {
+    it('submits edit mode through the same submit route with record in the body', async () => {
         const user = userEvent.setup();
 
         renderFlatpackFormPage(
@@ -463,14 +462,18 @@ describe('FlatpackFormPage', () => {
         await user.click(screen.getByRole('button', { name: 'Save' }));
 
         await waitFor(() => {
-            expect(hoisted.patch).toHaveBeenCalledTimes(1);
+            expect(hoisted.post).toHaveBeenCalledTimes(1);
         });
 
-        expect(hoisted.patch).toHaveBeenCalledWith(
-            '/flatpack/posts/7/save',
+        expect(hoisted.patch).not.toHaveBeenCalled();
+
+        expect(hoisted.post).toHaveBeenCalledWith(
+            '/flatpack/posts/submit',
             {
                 values: { title: 'changed-title' },
+                action: 'save',
                 form_action_id: 'save',
+                record: '7',
             },
             expect.objectContaining({
                 preserveScroll: true,
@@ -659,7 +662,7 @@ describe('FlatpackFormPage', () => {
         ).not.toBeInTheDocument();
     });
 
-    it('renders non-save yaml actions and posts row actions for edit mode', async () => {
+    it('submits non-save yaml actions through the form submit route in edit mode', async () => {
         const user = userEvent.setup();
 
         renderFlatpackFormPage(
@@ -693,8 +696,13 @@ describe('FlatpackFormPage', () => {
 
         await waitFor(() => {
             expect(hoisted.post).toHaveBeenCalledWith(
-                '/flatpack/posts/7/action',
-                { action: 'delete' },
+                '/flatpack/posts/submit',
+                {
+                    values: { title: 'Existing title' },
+                    action: 'delete',
+                    form_action_id: 'delete',
+                    record: '7',
+                },
                 expect.objectContaining({
                     preserveScroll: true,
                     onSuccess: expect.any(Function),
@@ -841,8 +849,13 @@ describe('FlatpackFormPage', () => {
 
         await waitFor(() => {
             expect(hoisted.post).toHaveBeenCalledWith(
-                '/flatpack/posts/7/action',
-                { action: 'delete' },
+                '/flatpack/posts/submit',
+                {
+                    values: { title: 'Existing title' },
+                    action: 'delete',
+                    form_action_id: 'delete',
+                    record: '7',
+                },
                 expect.objectContaining({
                     preserveScroll: true,
                     onSuccess: expect.any(Function),

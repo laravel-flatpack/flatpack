@@ -10,6 +10,7 @@ use Flatpack\Tests\Models\PostMeta;
 use Flatpack\Tests\Models\User;
 use Flatpack\Tests\Policies\DenyCreatePostPolicy;
 use Flatpack\Tests\Policies\DenyUpdatePostPolicy;
+use Flatpack\Tests\Policies\DenyViewPostPolicy;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
@@ -58,7 +59,8 @@ YAML, function (): void {
         $user = User::factory()->createOne();
 
         actingAs($user)
-            ->post(route('flatpack.entities.store', ['entity' => 'posts']), [
+            ->post(route('flatpack.entities.form.submit', ['entity' => 'posts']), [
+                'action' => 'save',
                 'values' => [
                     'title' => 'Via save_and_quit',
                     'slug' => 'via-save-and-quit',
@@ -94,7 +96,8 @@ YAML, function (): void {
         $user = User::factory()->createOne();
 
         actingAs($user)
-            ->post(route('flatpack.entities.store', ['entity' => 'posts']), [
+            ->post(route('flatpack.entities.form.submit', ['entity' => 'posts']), [
+                'action' => 'save',
                 'values' => [
                     'title' => 'Redirect list',
                     'slug' => 'redirect-list',
@@ -105,6 +108,29 @@ YAML, function (): void {
         expect(
             Post::query()->where('title', 'Redirect list')->exists(),
         )->toBeTrue();
+    });
+});
+
+test('flatpack entity form submit rejects missing action', function () {
+    withTempFormSchema(<<<'YAML'
+name: Post
+model: Flatpack\Tests\Models\Post
+fields:
+  title:
+    type: text
+    label: Title
+YAML, function (): void {
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        actingAs($user)
+            ->from(route('flatpack.entities.create', ['entity' => 'posts']))
+            ->post(route('flatpack.entities.form.submit', ['entity' => 'posts']), [
+                'values' => [
+                    'title' => 'Has title',
+                ],
+            ])
+            ->assertSessionHasErrors(['action']);
     });
 });
 
@@ -122,7 +148,8 @@ YAML, function (): void {
 
         actingAs($user)
             ->from(route('flatpack.entities.create', ['entity' => 'posts']))
-            ->post(route('flatpack.entities.store', ['entity' => 'posts']), [
+            ->post(route('flatpack.entities.form.submit', ['entity' => 'posts']), [
+                'action' => 'save',
                 'values' => [],
             ])
             ->assertSessionHasErrors(['values' => 'Nothing to save']);
@@ -145,7 +172,8 @@ YAML, function (): void {
         $user = User::factory()->createOne();
 
         actingAs($user)
-            ->post(route('flatpack.entities.store', ['entity' => 'posts']), [
+            ->post(route('flatpack.entities.form.submit', ['entity' => 'posts']), [
+                'action' => 'save',
                 'values' => [
                     'title' => 'Created from form submit',
                     'slug' => 'created-from-form-submit',
@@ -164,7 +192,27 @@ YAML, function (): void {
     });
 });
 
-test('flatpack form save returns 404 when save action handler is not configured', function () {
+test('flatpack form create page rejects when policy denies create', function () {
+    withTempFormSchema(<<<'YAML'
+name: Post
+model: Flatpack\Tests\Models\Post
+fields:
+  title:
+    type: text
+    label: Title
+YAML, function (): void {
+        Gate::policy(Post::class, DenyCreatePostPolicy::class);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        actingAs($user)
+            ->get(route('flatpack.entities.create', ['entity' => 'posts']))
+            ->assertForbidden();
+    });
+});
+
+test('flatpack form submit returns validation error when save action handler is not configured', function () {
     withTempFormSchema(<<<'YAML'
 name: Post
 model: Flatpack\Tests\Models\Post
@@ -183,12 +231,13 @@ YAML, function (): void {
         $user = User::factory()->createOne();
 
         actingAs($user)
-            ->post(route('flatpack.entities.store', ['entity' => 'posts']), [
+            ->post(route('flatpack.entities.form.submit', ['entity' => 'posts']), [
+                'action' => 'save',
                 'values' => [
                     'title' => 'Ignored',
                 ],
             ])
-            ->assertNotFound();
+            ->assertSessionHasErrors(['action']);
     });
 });
 
@@ -209,10 +258,9 @@ YAML, function (): void {
         ]);
 
         actingAs($user)
-            ->patch(route('flatpack.entities.save', [
-                'entity' => 'posts',
+            ->post(route('flatpack.entities.form.submit', ['entity' => 'posts']), [
+                'action' => 'save',
                 'record' => (string) $post->getKey(),
-            ]), [
                 'values' => [
                     'title' => 'Updated title',
                 ],
@@ -226,7 +274,7 @@ YAML, function (): void {
     });
 });
 
-test('flatpack entity edit GET inertia props include values persisted by PATCH', function () {
+test('flatpack entity edit GET inertia props include values persisted by form submit', function () {
     withTempFormSchema(<<<'YAML'
 name: Post
 model: Flatpack\Tests\Models\Post
@@ -243,10 +291,9 @@ YAML, function (): void {
         ]);
 
         actingAs($user)
-            ->patch(route('flatpack.entities.save', [
-                'entity' => 'posts',
+            ->post(route('flatpack.entities.form.submit', ['entity' => 'posts']), [
+                'action' => 'save',
                 'record' => (string) $post->getKey(),
-            ]), [
                 'values' => [
                     'title' => 'Updated title',
                 ],
@@ -302,6 +349,33 @@ YAML, function (): void {
             ->assertOk()
             ->assertJsonPath('values.title', 'Hydrated title')
             ->assertJsonPath('values.status', 'active');
+    });
+});
+
+test('flatpack form edit page rejects when policy denies view', function () {
+    withTempFormSchema(<<<'YAML'
+name: Post
+model: Flatpack\Tests\Models\Post
+fields:
+  title:
+    type: text
+    label: Title
+YAML, function (): void {
+        Gate::policy(Post::class, DenyViewPostPolicy::class);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+        $post = Post::factory()->createOne([
+            'title' => 'Original title',
+            'slug' => 'original-title',
+        ]);
+
+        actingAs($user)
+            ->get(route('flatpack.entities.edit', [
+                'entity' => 'posts',
+                'record' => (string) $post->getKey(),
+            ]))
+            ->assertForbidden();
     });
 });
 
@@ -626,7 +700,8 @@ YAML, function (): void {
 
         actingAs($user)
             ->from(route('flatpack.entities.create', ['entity' => 'posts']))
-            ->post(route('flatpack.entities.store', ['entity' => 'posts']), [
+            ->post(route('flatpack.entities.form.submit', ['entity' => 'posts']), [
+                'action' => 'save',
                 'values' => [
                     'title' => 'Should fail',
                     'slug' => 'should-fail',
@@ -675,7 +750,8 @@ YAML, function (): void {
         $user = User::factory()->createOne();
 
         actingAs($user)
-            ->post(route('flatpack.entities.store', ['entity' => 'posts']), [
+            ->post(route('flatpack.entities.form.submit', ['entity' => 'posts']), [
+                'action' => 'save',
                 'values' => [
                     'title' => 'Nope',
                     'slug' => 'nope',
@@ -703,7 +779,8 @@ YAML, function (): void {
         $user = User::factory()->createOne();
 
         actingAs($user)
-            ->post(route('flatpack.entities.store', ['entity' => 'posts']), [
+            ->post(route('flatpack.entities.form.submit', ['entity' => 'posts']), [
+                'action' => 'save',
                 'values' => [
                     'title' => 'Nope',
                     'slug' => 'nope',
@@ -732,8 +809,9 @@ YAML, function (): void {
 
         actingAs($user)
             ->post(
-                route('flatpack.entities.store', ['entity' => 'posts']),
+                route('flatpack.entities.form.submit', ['entity' => 'posts']),
                 [
+                    'action' => 'save',
                     'values' => [
                         'title' => 'Nope',
                         'slug' => 'nope',
@@ -767,10 +845,9 @@ YAML, function (): void {
         ]);
 
         actingAs($user)
-            ->patch(route('flatpack.entities.save', [
-                'entity' => 'posts',
+            ->post(route('flatpack.entities.form.submit', ['entity' => 'posts']), [
+                'action' => 'save',
                 'record' => (string) $post->getKey(),
-            ]), [
                 'values' => [
                     'title' => 'Updated title',
                 ],
@@ -797,7 +874,8 @@ YAML, function (): void {
 
         actingAs($user)
             ->from(route('flatpack.entities.create', ['entity' => 'posts']))
-            ->post(route('flatpack.entities.store', ['entity' => 'posts']), [
+            ->post(route('flatpack.entities.form.submit', ['entity' => 'posts']), [
+                'action' => 'save',
                 'values' => [
                     'title' => '',
                     'slug' => 'some-slug',
@@ -831,7 +909,8 @@ YAML, function (): void {
 
         actingAs($user)
             ->from(route('flatpack.entities.create', ['entity' => 'posts']))
-            ->post(route('flatpack.entities.store', ['entity' => 'posts']), [
+            ->post(route('flatpack.entities.form.submit', ['entity' => 'posts']), [
+                'action' => 'save',
                 'values' => [
                     'title' => 'With bad category',
                     'slug' => 'with-bad-category',
@@ -913,10 +992,9 @@ YAML, function (): void {
         ]);
 
         actingAs($user)
-            ->patch(route('flatpack.entities.save', [
-                'entity' => 'posts',
+            ->post(route('flatpack.entities.form.submit', ['entity' => 'posts']), [
+                'action' => 'save',
                 'record' => (string) $post->getKey(),
-            ]), [
                 'values' => [
                     'category' => (string) $next->getKey(),
                 ],
@@ -949,7 +1027,8 @@ YAML, function (): void {
 
         actingAs($user)
             ->from(route('flatpack.entities.create', ['entity' => 'posts']))
-            ->post(route('flatpack.entities.store', ['entity' => 'posts']), [
+            ->post(route('flatpack.entities.form.submit', ['entity' => 'posts']), [
+                'action' => 'save',
                 'values' => [
                     'title' => 'short',
                     'slug' => 'short-slug',
@@ -978,7 +1057,8 @@ YAML, function (): void {
 
         actingAs($user)
             ->from(route('flatpack.entities.create', ['entity' => 'posts']))
-            ->post(route('flatpack.entities.store', ['entity' => 'posts']), [
+            ->post(route('flatpack.entities.form.submit', ['entity' => 'posts']), [
+                'action' => 'save',
                 'values' => [
                     'title' => 'ok',
                     'slug' => 'toolong',
@@ -1203,10 +1283,9 @@ YAML, function (): void {
         $post->categories()->sync([$keep->getKey()]);
 
         actingAs($user)
-            ->patch(route('flatpack.entities.save', [
-                'entity' => 'posts',
+            ->post(route('flatpack.entities.form.submit', ['entity' => 'posts']), [
+                'action' => 'save',
                 'record' => (string) $post->getKey(),
-            ]), [
                 'values' => [
                     'title' => 'T',
                     'slug' => 't',
@@ -1372,10 +1451,9 @@ YAML, function (): void {
         ]);
 
         actingAs($user)
-            ->patch(route('flatpack.entities.save', [
-                'entity' => 'posts',
+            ->post(route('flatpack.entities.form.submit', ['entity' => 'posts']), [
+                'action' => 'save',
                 'record' => (string) $post->getKey(),
-            ]), [
                 'values' => [
                     'title' => 'T',
                     'slug' => 't',
@@ -1428,10 +1506,9 @@ YAML, function (): void {
         ]);
 
         actingAs($user)
-            ->patch(route('flatpack.entities.save', [
-                'entity' => 'posts',
+            ->post(route('flatpack.entities.form.submit', ['entity' => 'posts']), [
+                'action' => 'save',
                 'record' => (string) $post->getKey(),
-            ]), [
                 'values' => [
                     'title' => 'T',
                     'slug' => 't',
@@ -1448,10 +1525,9 @@ YAML, function (): void {
         expect($post->fresh()->meta?->subtitle)->toBe('Updated subtitle');
 
         actingAs($user)
-            ->patch(route('flatpack.entities.save', [
-                'entity' => 'posts',
+            ->post(route('flatpack.entities.form.submit', ['entity' => 'posts']), [
+                'action' => 'save',
                 'record' => (string) $post->getKey(),
-            ]), [
                 'values' => [
                     'title' => 'T',
                     'slug' => 't',

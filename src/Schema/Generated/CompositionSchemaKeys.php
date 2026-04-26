@@ -100,6 +100,7 @@ final class CompositionSchemaKeys
         'href',
         'icon',
         'label',
+        'primary',
         'shortcut',
         'success_message',
         'success_redirect',
