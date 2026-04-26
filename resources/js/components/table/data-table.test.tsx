@@ -327,7 +327,7 @@ describe('DataTable toolbar create flow', () => {
 
         const row = screen.getByText('Line 1').closest('tr');
         expect(row).not.toBeNull();
-        expect(row).toHaveClass('border-l-2');
+        expect(row).toHaveClass('bg-destructive/5');
         expect(screen.getByLabelText('Validation errors')).toBeInTheDocument();
 
         await user.click(screen.getByText('Line 1'));
