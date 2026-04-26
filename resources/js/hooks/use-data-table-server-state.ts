@@ -109,6 +109,13 @@ export function useDataTableServerState({
     serverSorting = { sort_by: null, sort_direction: null },
     onServerPaginationChange,
 }: UseDataTableServerStateOptions) {
+    const hasMountedRef = React.useRef(false);
+    React.useEffect(() => {
+        hasMountedRef.current = true;
+        return () => {
+            hasMountedRef.current = false;
+        };
+    }, []);
     const [globalFilter, setGlobalFilter] = React.useState(serverSearch ?? '');
     const [serverFilterState, setServerFilterState] =
         React.useState<FlatpackDataTableServerFiltersState>(() =>
@@ -180,6 +187,9 @@ export function useDataTableServerState({
                 );
                 return;
             }
+            if (!hasMountedRef.current) {
+                return;
+            }
             setPagination(updater);
         },
         [
@@ -197,6 +207,9 @@ export function useDataTableServerState({
             if (serverPagination != null && onServerPaginationChange != null) {
                 const nextSorting =
                     typeof updater === 'function' ? updater(sorting) : updater;
+                if (!hasMountedRef.current) {
+                    return;
+                }
                 setSorting(nextSorting);
                 onServerPaginationChange(
                     1,
@@ -205,6 +218,9 @@ export function useDataTableServerState({
                     serverFilterState,
                     serverSortingFromState(nextSorting),
                 );
+                return;
+            }
+            if (!hasMountedRef.current) {
                 return;
             }
             setSorting(updater);
