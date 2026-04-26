@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use Flatpack\Actions\FlatpackActionContext;
-use Flatpack\Actions\RelationFormSynchronizer;
 use Flatpack\Actions\Handlers\SaveRecordHandler;
+use Flatpack\Actions\RelationFormSynchronizer;
 use Flatpack\Tests\Models\Post;
 use Flatpack\Tests\TestCase;
 use Illuminate\Database\QueryException;

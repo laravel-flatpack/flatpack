@@ -520,7 +520,7 @@ final class SaveRecordHandler extends FlatpackActionHandler
     }
 
     /**
-     * @param  array<string, mixed>  $columnDefinition
+     * @param  array<string, mixed>  $fieldDefinition
      */
     private function hasTableColumn(array $fieldDefinition, string $columnId): bool
     {

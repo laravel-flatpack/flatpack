@@ -237,6 +237,7 @@ export function DataTableRowDrawerPanel({
             flatpackEntity,
             flatpackTableFieldId,
             portalContainer,
+            columnValidationErrorsById,
         ],
     );
     const readOnlyColumns = React.useMemo(
