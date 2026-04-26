@@ -1473,6 +1473,63 @@ YAML, function (): void {
     });
 });
 
+test('flatpack form edit prefers flashed old input values over hydrated model values', function () {
+    withTempFormSchema(<<<'YAML'
+name: Post
+model: Flatpack\Tests\Models\Post
+fields:
+  title:
+    type: text
+    label: Title
+  slug:
+    type: text
+    label: Slug
+  comments:
+    type: table
+    label: Comments
+    relation: comments
+    relation_value: id
+    columns:
+      content:
+        label: Content
+        type: text
+      user_id:
+        label: User
+        type: relation
+        relation: user
+        relation_name: name
+        relation_value: id
+YAML, function (): void {
+        /** @var User $user */
+        $user = User::factory()->createOne();
+        $post = Post::factory()->createOne([
+            'title' => 'T',
+            'slug' => 't',
+        ]);
+
+        actingAs($user)
+            ->withSession([
+                '_old_input' => [
+                    'values' => [
+                        'title' => 'T',
+                        'slug' => 't',
+                        'comments' => [
+                            ['content' => 'Hello', 'user_id' => ''],
+                        ],
+                    ],
+                ],
+            ])
+            ->getJson(route('flatpack.entities.edit', [
+                'entity' => 'posts',
+                'record' => (string) $post->getKey(),
+                'json' => true,
+            ]))
+            ->assertOk()
+            ->assertJsonPath('values.comments.0.content', 'Hello')
+            ->assertJsonPath('values.comments.0.user_id', '');
+    });
+});
+
 test('flatpack form save syncs HasOne RelationRow payload from table field', function () {
     withTempFormSchema(<<<'YAML'
 name: Post

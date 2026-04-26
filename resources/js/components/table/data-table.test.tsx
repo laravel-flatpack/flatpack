@@ -310,6 +310,32 @@ describe('DataTable toolbar create flow', () => {
         });
     });
 
+    it('marks rows with validation errors and keeps them interactive', async () => {
+        const user = userEvent.setup();
+
+        render(
+            <DataTable
+                id="lines-validation"
+                columns={[{ id: 'name', label: 'Name', type: 'text' }]}
+                data={[{ id: '1', name: 'Line 1' }]}
+                rowDetailDrawer
+                rowValidationMessagesById={{
+                    '1': ['User id is required.'],
+                }}
+            />,
+        );
+
+        const row = screen.getByText('Line 1').closest('tr');
+        expect(row).not.toBeNull();
+        expect(row).toHaveClass('border-l-2');
+        expect(screen.getByLabelText('Validation errors')).toBeInTheDocument();
+
+        await user.click(screen.getByText('Line 1'));
+        expect(
+            screen.getByRole('button', { name: 'Save changes' }),
+        ).toBeInTheDocument();
+    });
+
     it('supports confirm remove flow with cancel then confirm', async () => {
         const onValueChange = vi.fn();
         const user = userEvent.setup();

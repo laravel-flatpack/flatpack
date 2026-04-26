@@ -77,4 +77,36 @@ describe('DataTableRowDrawerPanel', () => {
             screen.queryByText(/Set options in the column/i),
         ).not.toBeInTheDocument();
     });
+
+    it('renders drawer field errors for invalid row columns', () => {
+        const onRowReplace = vi.fn();
+        const onOpenChange = vi.fn();
+        const relationColumns: FlatpackDataTableColumn[] = [
+            titleColumn,
+            {
+                id: 'user_id',
+                label: 'User',
+                type: 'relation',
+                relation: 'user',
+                relationName: 'name',
+                relationValue: 'id',
+                options: [{ value: '1', label: 'Ada' }],
+            },
+        ];
+        render(
+            <DataTableRowDrawerPanel
+                open
+                onOpenChange={onOpenChange}
+                row={{ name: 'Post', user_id: '' }}
+                rowId="row-0"
+                schemaColumns={relationColumns}
+                titleColumn={titleColumn}
+                onRowReplace={onRowReplace}
+                columnValidationErrorsById={{
+                    user_id: ['User id is required.'],
+                }}
+            />,
+        );
+        expect(screen.getByText('User id is required.')).toBeInTheDocument();
+    });
 });

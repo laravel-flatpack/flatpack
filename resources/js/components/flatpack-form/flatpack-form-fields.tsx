@@ -1,6 +1,11 @@
 import { useFlatpackEmbeddedTableToolbarAction } from '@/components/flatpack-form/flatpack-embedded-table-toolbar';
 import { SchemaFieldsRenderer } from '@/components/form-fields/schema-fields-renderer';
 import { fieldErrorMessages } from '@/lib/form-schema';
+import {
+    rowValidationFieldErrorsByStableId,
+    rowValidationMessagesByStableId,
+    tableFieldErrorState,
+} from '@/lib/form-table-errors';
 import { fieldIsRequired } from '@/lib/form-validation';
 import type { FlatpackFormFieldsProps } from '@/types/flatpack-form-fields';
 import type { SchemaFieldRenderEntry } from '@/types/schema-fields-renderer';
@@ -22,6 +27,25 @@ export function FlatpackFormFields({
         onEmbeddedTableToolbarActionProp ??
         onEmbeddedTableToolbarActionFromContext;
     const entries: SchemaFieldRenderEntry[] = fields.map(({ id, field }) => ({
+        ...(field.type === 'table'
+            ? (() => {
+                  const errorState = tableFieldErrorState(fieldErrors, id);
+                  return {
+                      extraComponentProps: {
+                          rowValidationMessagesById:
+                              rowValidationMessagesByStableId(
+                                  formValues[id],
+                                  errorState,
+                              ),
+                          rowValidationFieldErrorsById:
+                              rowValidationFieldErrorsByStableId(
+                                  formValues[id],
+                                  errorState,
+                              ),
+                      },
+                  };
+              })()
+            : {}),
         id,
         field,
         value: formValues[id],

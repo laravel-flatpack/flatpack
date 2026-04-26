@@ -125,6 +125,11 @@ export type FlatpackDataTableServerFiltersState = Record<
 >;
 
 export type DataTableRow = Record<string, unknown>;
+export type DataTableRowValidationMessagesById = Record<string, string[]>;
+export type DataTableRowValidationFieldErrorsById = Record<
+    string,
+    Record<string, string[]>
+>;
 
 export type DataTableRowActionPayload<
     TRow extends DataTableRow = DataTableRow,
@@ -384,4 +389,8 @@ export type DataTableProps<TRow extends DataTableRow = DataTableRow> = {
     flatpackEntity?: string;
     /** Form field id for this table (same as the field key in `form.yaml`). */
     flatpackTableFieldId?: string;
+    /** Row-level validation messages keyed by stable row id (used for embedded table error highlighting). */
+    rowValidationMessagesById?: DataTableRowValidationMessagesById;
+    /** Row+column validation messages keyed by stable row id then column id (for drawer field invalid state). */
+    rowValidationFieldErrorsById?: DataTableRowValidationFieldErrorsById;
 };

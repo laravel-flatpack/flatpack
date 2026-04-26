@@ -50,6 +50,8 @@ import type {
     DataTableProps,
     DataTableRowActionPayload,
     DataTableRowDrawerBodyVariant,
+    DataTableRowValidationFieldErrorsById,
+    DataTableRowValidationMessagesById,
     FlatpackDataTableBulkAction,
     FlatpackDataTableColumn,
     FlatpackDataTableFilter,
@@ -111,6 +113,8 @@ export type DataTableController = {
     detailDrawerBodyVariant: DataTableRowDrawerBodyVariant;
     /** Optional BTM “pick existing” slot when `detailDrawerBodyVariant` is `attachExisting`. */
     renderRowDrawerAttachBody: DataTableProps['renderRowDrawerAttachBody'];
+    rowValidationMessagesById: DataTableRowValidationMessagesById;
+    rowValidationFieldErrorsById: DataTableRowValidationFieldErrorsById;
 };
 
 export function useDataTableController(
@@ -142,6 +146,8 @@ export function useDataTableController(
         serverSorting = { sort_by: null, sort_direction: null },
         onServerPaginationChange,
         renderRowDrawerAttachBody,
+        rowValidationMessagesById = {},
+        rowValidationFieldErrorsById = {},
     } = props;
 
     const openDetailDrawerOnRowClick =
@@ -535,6 +541,7 @@ export function useDataTableController(
             emptyColSpan={columnDefs.length}
             rowCountLabel={rowCountLabel}
             onDragEnd={handleDragEnd}
+            rowValidationMessagesById={rowValidationMessagesById}
         />
     );
 
@@ -578,5 +585,7 @@ export function useDataTableController(
         tableLabelId,
         detailDrawerBodyVariant,
         renderRowDrawerAttachBody,
+        rowValidationMessagesById,
+        rowValidationFieldErrorsById,
     };
 }

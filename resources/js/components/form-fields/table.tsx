@@ -3,6 +3,8 @@ import { DataTable } from '@/components/table/data-table';
 import type {
     DataTableRow,
     DataTableRowDrawerAttachBodyRenderContext,
+    DataTableRowValidationFieldErrorsById,
+    DataTableRowValidationMessagesById,
     FlatpackDataTableBulkAction,
     FlatpackDataTableColumn,
     FlatpackFormTableToolbarAction,
@@ -33,6 +35,8 @@ export type TableFieldProps = {
     tableRelationType?: FlatpackTableRelationType;
     flatpackEntity?: string;
     flatpackTableFieldId?: string;
+    rowValidationMessagesById?: DataTableRowValidationMessagesById;
+    rowValidationFieldErrorsById?: DataTableRowValidationFieldErrorsById;
 };
 
 export const TableField = ({
@@ -54,6 +58,8 @@ export const TableField = ({
     tableRelationType,
     flatpackEntity,
     flatpackTableFieldId,
+    rowValidationMessagesById,
+    rowValidationFieldErrorsById,
 }: TableFieldProps) => {
     const labelId = `${id}-label`;
     return (
@@ -77,6 +83,8 @@ export const TableField = ({
                     tableRelationType={tableRelationType}
                     flatpackEntity={flatpackEntity}
                     flatpackTableFieldId={flatpackTableFieldId}
+                    rowValidationMessagesById={rowValidationMessagesById}
+                    rowValidationFieldErrorsById={rowValidationFieldErrorsById}
                 />
                 {helperText ? (
                     <FieldDescription>{helperText}</FieldDescription>

@@ -3,6 +3,7 @@ import type { Table } from '@tanstack/react-table';
 import * as React from 'react';
 import { DataTableBody } from '@/components/table/data-table-body';
 import { DataTableFooter } from '@/components/table/data-table-footer';
+import type { DataTableRowValidationMessagesById } from '@/types/data-table';
 
 const LazyDataTableDndWrapper = React.lazy(() =>
     import('@/components/table/data-table-dnd-wrapper').then((module) => ({
@@ -21,6 +22,7 @@ type DataTableBodyWithFooterProps = {
     emptyColSpan: number;
     rowCountLabel: string;
     onDragEnd: (event: DragEndEvent) => void;
+    rowValidationMessagesById: DataTableRowValidationMessagesById;
 };
 
 /**
@@ -34,6 +36,7 @@ export function DataTableBodyWithFooter({
     emptyColSpan,
     rowCountLabel,
     onDragEnd,
+    rowValidationMessagesById,
 }: DataTableBodyWithFooterProps): React.JSX.Element {
     const paginationStateCurrent = table.getState().pagination;
 
@@ -43,6 +46,7 @@ export function DataTableBodyWithFooter({
             isReorderable={isReorderable}
             onRowClick={onRowClick}
             emptyColSpan={emptyColSpan}
+            rowValidationMessagesById={rowValidationMessagesById}
         />
     );
 

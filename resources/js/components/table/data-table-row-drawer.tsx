@@ -36,6 +36,7 @@ function DrawerRowField({
     flatpackEntity,
     flatpackTableFieldId,
     portalContainer,
+    columnValidationErrorsById,
 }: {
     col: FlatpackDataTableColumn;
     mapped: DrawerMapped;
@@ -46,15 +47,19 @@ function DrawerRowField({
     flatpackEntity?: string;
     flatpackTableFieldId?: string;
     portalContainer?: HTMLElement | null;
+    columnValidationErrorsById?: Record<string, string[]>;
 }): SchemaFieldRenderEntry | null {
     if (mapped?.kind !== 'form') {
         return null;
     }
     const fieldId = `drawer-field-${col.id}`;
+    const columnErrors = columnValidationErrorsById?.[col.id] ?? [];
     const baseEntry: SchemaFieldRenderEntry = {
         id: fieldId,
         field: mapped.field,
         value,
+        invalid: columnErrors.length > 0,
+        errors: columnErrors.map((message) => ({ message })),
         serializeValue: (field, nextValue, currentValue) => {
             if (field.type === 'date-picker') {
                 const nextDate =
@@ -121,6 +126,7 @@ export type DataTableRowDrawerPanelProps = {
     ) => React.ReactNode;
     flatpackEntity?: string;
     flatpackTableFieldId?: string;
+    columnValidationErrorsById?: Record<string, string[]>;
 };
 
 /**
@@ -140,6 +146,7 @@ export function DataTableRowDrawerPanel({
     renderAttachBody,
     flatpackEntity,
     flatpackTableFieldId,
+    columnValidationErrorsById,
 }: DataTableRowDrawerPanelProps) {
     const isMobile = useIsMobile();
     const [draft, setDraft] = React.useState<Record<string, unknown>>(row);
@@ -215,6 +222,7 @@ export function DataTableRowDrawerPanel({
                               flatpackEntity,
                               flatpackTableFieldId,
                               portalContainer,
+                              columnValidationErrorsById,
                           })
                         : null,
                 )
@@ -277,7 +285,10 @@ export function DataTableRowDrawerPanel({
                             renderAttachBody(attachContext)
                         ) : (
                             <>
-                                <SchemaFieldsRenderer entries={drawerEntries} />
+                                <SchemaFieldsRenderer
+                                    entries={drawerEntries}
+                                    showErrors
+                                />
                                 {readOnlyColumns.map((c) => (
                                     <div
                                         key={`read-${c.id}`}

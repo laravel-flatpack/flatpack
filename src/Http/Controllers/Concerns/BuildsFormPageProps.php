@@ -24,6 +24,11 @@ trait BuildsFormPageProps
         ?string $record,
         array $values,
     ): array {
+        $oldValues = old('values');
+        if (is_array($oldValues)) {
+            $values = $oldValues;
+        }
+
         return [
             'entity' => $entity,
             'name' => $form->name,

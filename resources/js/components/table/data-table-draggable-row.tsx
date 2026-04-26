@@ -1,7 +1,7 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { flexRender, type Row } from '@tanstack/react-table';
-import { GripVerticalIcon } from 'lucide-react';
+import { AlertCircleIcon, GripVerticalIcon } from 'lucide-react';
 import { DATA_TABLE_DRAG_COLUMN_CELL_CLASS } from '@/components/table/data-table-constants';
 import { Button } from '@/components/ui/button';
 import { TableCell, TableRow } from '@/components/ui/table';
@@ -10,12 +10,14 @@ import { cn } from '@/lib/utils';
 export function DataTableDraggableRow({
     row,
     onRowClick,
+    validationMessages = [],
 }: {
     row: Row<Record<string, unknown>>;
     onRowClick?: (
         event: React.MouseEvent<HTMLTableRowElement>,
         row: Record<string, unknown>,
     ) => void;
+    validationMessages?: string[];
 }) {
     const {
         attributes,
@@ -34,6 +36,7 @@ export function DataTableDraggableRow({
             className={cn(
                 'relative z-0 data-[dragging=true]:z-10 data-[dragging=true]:opacity-80',
                 onRowClick && 'cursor-pointer',
+                validationMessages.length > 0 && 'bg-destructive/5',
             )}
             style={{
                 transform: CSS.Transform.toString(transform),
@@ -47,7 +50,7 @@ export function DataTableDraggableRow({
                     : undefined
             }
         >
-            {row.getVisibleCells().map((cell) => (
+            {row.getVisibleCells().map((cell, cellIndex) => (
                 <TableCell
                     key={cell.id}
                     className={cn(
@@ -55,27 +58,37 @@ export function DataTableDraggableRow({
                             DATA_TABLE_DRAG_COLUMN_CELL_CLASS,
                     )}
                 >
-                    {cell.column.id === 'drag' ? (
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon-xs"
-                            className="cursor-grab text-muted-foreground hover:bg-transparent active:cursor-grabbing"
-                            {...attributes}
-                            {...listeners}
-                        >
-                            <GripVerticalIcon
-                                className="size-3 shrink-0"
-                                aria-hidden
+                    <div className="flex items-center gap-2">
+                        {cellIndex === 0 && validationMessages.length > 0 ? (
+                            <AlertCircleIcon
+                                className="size-4 shrink-0 text-destructive"
+                                aria-label="Validation errors"
                             />
-                            <span className="sr-only">Drag to reorder row</span>
-                        </Button>
-                    ) : (
-                        flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext(),
-                        )
-                    )}
+                        ) : null}
+                        {cell.column.id === 'drag' ? (
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon-xs"
+                                className="cursor-grab text-muted-foreground hover:bg-transparent active:cursor-grabbing"
+                                {...attributes}
+                                {...listeners}
+                            >
+                                <GripVerticalIcon
+                                    className="size-3 shrink-0"
+                                    aria-hidden
+                                />
+                                <span className="sr-only">
+                                    Drag to reorder row
+                                </span>
+                            </Button>
+                        ) : (
+                            flexRender(
+                                cell.column.columnDef.cell,
+                                cell.getContext(),
+                            )
+                        )}
+                    </div>
                 </TableCell>
             ))}
         </TableRow>

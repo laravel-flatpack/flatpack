@@ -3,6 +3,7 @@ import {
     verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { flexRender, type Table as TanStackTable } from '@tanstack/react-table';
+import { AlertCircleIcon } from 'lucide-react';
 import type * as React from 'react';
 import {
     DATA_TABLE_DRAG_COLUMN_HEAD_CLASS,
@@ -18,6 +19,7 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
+import type { DataTableRowValidationMessagesById } from '@/types/data-table';
 
 type DataTableBodyProps = {
     table: TanStackTable<Record<string, unknown>>;
@@ -27,6 +29,7 @@ type DataTableBodyProps = {
         row: Record<string, unknown>,
     ) => void;
     emptyColSpan: number;
+    rowValidationMessagesById: DataTableRowValidationMessagesById;
 };
 
 export function DataTableBody({
@@ -34,6 +37,7 @@ export function DataTableBody({
     isReorderable,
     onRowClick,
     emptyColSpan,
+    rowValidationMessagesById,
 }: DataTableBodyProps) {
     const tableRows = table.getRowModel().rows;
     const hasRows = tableRows.length > 0;
@@ -76,32 +80,58 @@ export function DataTableBody({
                                     key={row.id}
                                     row={row}
                                     onRowClick={onRowClick}
+                                    validationMessages={
+                                        rowValidationMessagesById[row.id] ?? []
+                                    }
                                 />
                             ))}
                         </SortableContext>
                     ) : (
-                        tableRows.map((row) => (
-                            <TableRow
-                                key={row.id}
-                                data-state={row.getIsSelected() && 'selected'}
-                                className={cn(hasRowClick && 'cursor-pointer')}
-                                onClick={
-                                    onRowClick
-                                        ? (event) =>
-                                              onRowClick(event, row.original)
-                                        : undefined
-                                }
-                            >
-                                {row.getVisibleCells().map((cell) => (
-                                    <TableCell key={cell.id}>
-                                        {flexRender(
-                                            cell.column.columnDef.cell,
-                                            cell.getContext(),
-                                        )}
-                                    </TableCell>
-                                ))}
-                            </TableRow>
-                        ))
+                        tableRows.map((row) => {
+                            const rowMessages =
+                                rowValidationMessagesById[row.id] ?? [];
+                            const visibleCells = row.getVisibleCells();
+                            return (
+                                <TableRow
+                                    key={row.id}
+                                    data-state={
+                                        row.getIsSelected() && 'selected'
+                                    }
+                                    className={cn(
+                                        hasRowClick && 'cursor-pointer',
+                                        rowMessages.length > 0 &&
+                                            'border-l-2 border-destructive/70 bg-destructive/5',
+                                    )}
+                                    onClick={
+                                        onRowClick
+                                            ? (event) =>
+                                                  onRowClick(
+                                                      event,
+                                                      row.original,
+                                                  )
+                                            : undefined
+                                    }
+                                >
+                                    {visibleCells.map((cell, cellIndex) => (
+                                        <TableCell key={cell.id}>
+                                            <div className="flex items-center gap-2">
+                                                {cellIndex === 0 &&
+                                                rowMessages.length > 0 ? (
+                                                    <AlertCircleIcon
+                                                        className="size-4 shrink-0 text-destructive"
+                                                        aria-label="Validation errors"
+                                                    />
+                                                ) : null}
+                                                {flexRender(
+                                                    cell.column.columnDef.cell,
+                                                    cell.getContext(),
+                                                )}
+                                            </div>
+                                        </TableCell>
+                                    ))}
+                                </TableRow>
+                            );
+                        })
                     )
                 ) : (
                     <TableRow>

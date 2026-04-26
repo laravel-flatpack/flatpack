@@ -88,6 +88,10 @@ export function DataTable(props: DataTableProps) {
                     renderAttachBody={c.renderRowDrawerAttachBody}
                     flatpackEntity={flatpackEntity}
                     flatpackTableFieldId={flatpackTableFieldId}
+                    columnValidationErrorsById={
+                        c.rowValidationFieldErrorsById[c.detailDrawerRowId] ??
+                        {}
+                    }
                 />
             ) : null}
             <FlatpackConfirmDialog

@@ -121,9 +121,15 @@ export function useFlatpackForm({
 
     useEffect(() => {
         const f = formRef.current;
-        f.setDefaults({
+        const nextDefaults = {
             values: baselineValues as Record<string, FormDataConvertible>,
-        });
+        };
+        if (f.isDirty) {
+            // Keep local unsaved edits (e.g. embedded table drafts) across failed submits.
+            f.setDefaults(nextDefaults);
+            return;
+        }
+        f.setDefaults(nextDefaults);
         f.reset();
         f.clearErrors();
     }, [baselineValues]);
@@ -186,7 +192,7 @@ export function useFlatpackForm({
 
         const options = {
             preserveScroll: true,
-            preserveState: false,
+            preserveState: true,
             onSuccess: () => {
                 form.clearErrors();
                 form.setDefaults({

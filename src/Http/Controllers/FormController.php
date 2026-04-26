@@ -149,6 +149,9 @@ final readonly class FormController
             if ($exception instanceof AuthorizationException) {
                 throw $exception;
             }
+            if ($exception instanceof ValidationException) {
+                throw $exception;
+            }
 
             throw $this->actionRuntime()->toUserFacingValidationException($exception);
         }
