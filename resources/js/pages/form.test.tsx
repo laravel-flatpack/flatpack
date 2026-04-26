@@ -295,7 +295,7 @@ describe('FlatpackFormPage', () => {
         );
 
         expect(
-            await screen.findByRole('heading', { name: 'Posts' }),
+            await screen.findByRole('heading', { name: 'Edit Posts' }),
         ).toBeInTheDocument();
         expect(await screen.findByTestId('field-title')).toHaveTextContent(
             'Title: Hydrated title',

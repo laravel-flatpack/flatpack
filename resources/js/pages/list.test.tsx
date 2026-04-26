@@ -73,6 +73,13 @@ vi.mock('@inertiajs/react', () => ({
         get: routerGet,
         post: routerPost,
     },
+    usePage: () => ({
+        props: {
+            flatpack: {
+                showActionShortcutHints: false,
+            },
+        },
+    }),
 }));
 
 import { FlatpackShortcutsProvider } from '@/contexts/flatpack-shortcuts-registry';
@@ -100,11 +107,9 @@ describe('FlatpackListPage', () => {
         expect(
             screen.getByRole('heading', { name: 'posts' }),
         ).toBeInTheDocument();
-        expect(
-            screen.getByText(
-                /Define columns in list\.yaml to render this table/i,
-            ),
-        ).toBeInTheDocument();
+        expect(screen.getByText(/Define columns in/i)).toBeInTheDocument();
+        expect(screen.getByText('/posts/list.yaml')).toBeInTheDocument();
+        expect(screen.getByText(/to render this table\./i)).toBeInTheDocument();
         expect(document.querySelector('title')?.textContent).toBe('posts list');
     });
 
@@ -122,9 +127,11 @@ describe('FlatpackListPage', () => {
     it('omits Head and h1 when there is no display name', () => {
         render(<FlatpackListPage entity="" />);
 
-        expect(screen.queryAllByRole('heading')).toHaveLength(0);
-        expect(document.querySelector('title')).toBeNull();
-        expect(screen.getByText('Nothing to list yet.')).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: '' })).toBeInTheDocument();
+        expect(document.querySelector('title')?.textContent).toBe('');
+        expect(screen.getByText(/Define columns in/i)).toBeInTheDocument();
+        expect(screen.getByText('//list.yaml')).toBeInTheDocument();
+        expect(screen.getByText(/to render this table\./i)).toBeInTheDocument();
     });
 
     it('renders a data table when list schema defines columns', () => {
