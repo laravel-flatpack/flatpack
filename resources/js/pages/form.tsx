@@ -91,8 +91,12 @@ export default function FlatpackFormPage(props: FlatpackFormPageProps) {
             />
             <div className="flex flex-col gap-6 px-2 pb-4 sm:px-4">
                 <div ref={stickySentinelRef} className="h-px w-full" />
-                <div className="sticky top-0 z-20 flex flex-col gap-2 bg-background px-2 py-2 sm:px-3">
-                    <div className="mb-1 flex w-full items-center justify-between gap-3 sm:gap-4">
+                <div
+                    className={`sticky top-0 z-20 flex flex-col gap-2 bg-background px-2 py-2 sm:px-0 ${
+                        isHeaderCompact ? 'border-b' : ''
+                    }`}
+                >
+                    <div className="flex w-full items-center justify-between gap-3 sm:gap-4">
                         <div className="min-w-0 flex-1">
                             <h1
                                 className={`font-semibold tracking-tight capitalize ${
