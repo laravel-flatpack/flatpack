@@ -59,12 +59,6 @@ export function DataTableDraggableRow({
                     )}
                 >
                     <div className="flex items-center gap-2">
-                        {cellIndex === 0 && validationMessages.length > 0 ? (
-                            <AlertCircleIcon
-                                className="size-4 shrink-0 text-destructive"
-                                aria-label="Validation errors"
-                            />
-                        ) : null}
                         {cell.column.id === 'drag' ? (
                             <Button
                                 type="button"
@@ -88,6 +82,12 @@ export function DataTableDraggableRow({
                                 cell.getContext(),
                             )
                         )}
+                        {cellIndex === 0 && validationMessages.length > 0 ? (
+                            <AlertCircleIcon
+                                className="size-4 shrink-0 text-destructive"
+                                aria-label="Validation errors"
+                            />
+                        ) : null}
                     </div>
                 </TableCell>
             ))}

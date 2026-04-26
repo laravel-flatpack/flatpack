@@ -115,6 +115,10 @@ export function DataTableBody({
                                     {visibleCells.map((cell, cellIndex) => (
                                         <TableCell key={cell.id}>
                                             <div className="flex items-center gap-2">
+                                                {flexRender(
+                                                    cell.column.columnDef.cell,
+                                                    cell.getContext(),
+                                                )}
                                                 {cellIndex === 0 &&
                                                 rowMessages.length > 0 ? (
                                                     <AlertCircleIcon
@@ -122,10 +126,6 @@ export function DataTableBody({
                                                         aria-label="Validation errors"
                                                     />
                                                 ) : null}
-                                                {flexRender(
-                                                    cell.column.columnDef.cell,
-                                                    cell.getContext(),
-                                                )}
                                             </div>
                                         </TableCell>
                                     ))}
