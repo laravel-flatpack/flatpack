@@ -6,7 +6,7 @@ namespace Flatpack\Http\Controllers;
 
 use Flatpack\Composition\EntityComposition;
 use Flatpack\Facades\Flatpack;
-use Flatpack\Http\Controllers\Concerns\AuthorizesFlatpackModelAbility;
+use Flatpack\Http\Controllers\Concerns\AuthorizesModelAbility;
 use Flatpack\Http\FlatpackResponse;
 use Flatpack\Schema\HeaderActions;
 use Flatpack\Schema\Lists\BulkActions;
@@ -18,7 +18,7 @@ use Inertia\Response;
 
 final readonly class ListController
 {
-    use AuthorizesFlatpackModelAbility;
+    use AuthorizesModelAbility;
 
     public function __construct(
         private EntityComposition $entityComposition,

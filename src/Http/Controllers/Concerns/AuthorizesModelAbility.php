@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 /**
  * Shared policy checks for Flatpack controllers that read/write model-backed resources.
  */
-trait AuthorizesFlatpackModelAbility
+trait AuthorizesModelAbility
 {
     protected function ensureModelAbility(
         Request $request,
