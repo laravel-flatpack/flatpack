@@ -7,8 +7,8 @@ namespace Flatpack\Http\Controllers;
 use Flatpack\Actions\FlatpackActionContext;
 use Flatpack\Composition\EntityComposition;
 use Flatpack\Composition\FormComposition;
-use Flatpack\Http\FlatpackResponse;
 use Flatpack\Http\Controllers\Concerns\AuthorizesFlatpackModelAbility;
+use Flatpack\Http\FlatpackResponse;
 use Flatpack\Http\FlatpackResponseOptions;
 use Flatpack\Http\Requests\FormSubmitRequest;
 use Flatpack\Schema\Forms\FormSchemaNormalizer;
@@ -256,5 +256,4 @@ final readonly class FormController
 
         return count($fields) > 0;
     }
-
 }

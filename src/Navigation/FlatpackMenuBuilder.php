@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Flatpack\Navigation;
 
 use Flatpack\Composition\CompositionValues;
-use Flatpack\Contracts\Composition\CompositionQuery;
 use Flatpack\Contracts\Authorization\FlatpackAuthorizer;
+use Flatpack\Contracts\Composition\CompositionQuery;
 use Flatpack\Http\Controllers\ListController;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 

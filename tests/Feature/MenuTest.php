@@ -130,7 +130,7 @@ model: Flatpack\Tests\Models\PostBySlug
 YAML);
         config()->set('flatpack.path', $tempPath);
         config()->set('flatpack.menu', null);
-        Gate::policy(\Flatpack\Tests\Models\Post::class, DenyViewPostPolicy::class);
+        Gate::policy(Flatpack\Tests\Models\Post::class, DenyViewPostPolicy::class);
 
         $user = User::factory()->create();
 

@@ -6,8 +6,8 @@ namespace Flatpack\Http\Controllers;
 
 use Flatpack\Composition\EntityComposition;
 use Flatpack\Facades\Flatpack;
-use Flatpack\Http\FlatpackResponse;
 use Flatpack\Http\Controllers\Concerns\AuthorizesFlatpackModelAbility;
+use Flatpack\Http\FlatpackResponse;
 use Flatpack\Schema\HeaderActions;
 use Flatpack\Schema\Lists\BulkActions;
 use Flatpack\Schema\Lists\ListRecordsLoader;
@@ -80,5 +80,4 @@ final readonly class ListController
             'bulk_actions' => BulkActions::fromSchema($schema),
         ]);
     }
-
 }
