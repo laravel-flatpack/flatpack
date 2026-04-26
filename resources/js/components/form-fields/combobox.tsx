@@ -519,6 +519,7 @@ export const ComboboxField = ({
                             <ComboboxChipsInput
                                 id={id}
                                 placeholder={multiPlaceholder}
+                                autoComplete="off"
                                 aria-labelledby={label ? labelId : undefined}
                                 aria-invalid={invalid || undefined}
                                 onChange={(event) => {
@@ -578,6 +579,7 @@ export const ComboboxField = ({
                     <ComboboxInput
                         id={id}
                         placeholder={singlePlaceholder}
+                        autoComplete="off"
                         showClear={singleValue != null}
                         className="w-full rounded-3xl"
                         loading={remoteLoading}

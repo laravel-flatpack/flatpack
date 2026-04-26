@@ -43,6 +43,7 @@ export const TextareaField = ({
                     className={cn(className)}
                     aria-labelledby={label ? labelId : undefined}
                     aria-invalid={invalid || undefined}
+                    autoComplete="off"
                     required={required}
                     onChange={(e) => onValueChange?.(e.target.value)}
                 />

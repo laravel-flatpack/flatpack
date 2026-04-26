@@ -106,6 +106,7 @@ export const TimePickerField = ({
                         <InputGroupInput
                             type="time"
                             id={timeId}
+                            autoComplete="off"
                             step={1}
                             value={time}
                             className="appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"

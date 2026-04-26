@@ -48,7 +48,7 @@ export const TextField = ({
             onChange={(e) => onValueChange?.(e.target.value)}
             onBlur={onBlur}
             onKeyDown={onKeyDown}
-            autoComplete="new-password"
+            autoComplete="off"
             autoCorrect="off"
             autoCapitalize="none"
             spellCheck={false}
