@@ -83,11 +83,18 @@ function FormActionButtonBody({
     showSpinner: boolean;
     variant: FlatpackActionVariant;
 }) {
+    const hideLabelOnMobile = Boolean(action.icon);
+
     return (
         <>
             {action.icon ? <LucideIconByName name={action.icon} /> : null}
             {showSpinner ? <Spinner className="size-4" /> : null}
-            {action.label}
+            <span className={hideLabelOnMobile ? 'hidden sm:inline' : undefined}>
+                {action.label}
+            </span>
+            {hideLabelOnMobile ? (
+                <span className="sr-only">{action.label}</span>
+            ) : null}
             <FormActionShortcut
                 shortcut={shortcut}
                 isMacPlatform={isMacPlatform}
@@ -159,7 +166,7 @@ export function FlatpackFormActions({
     }
 
     return (
-        <div className="flex shrink-0 flex-wrap items-center justify-start gap-2 sm:justify-end">
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
             {formActions.map((action) => (
                 <FlatpackFormActionRow
                     key={action.id}
@@ -207,6 +214,7 @@ function FlatpackFormActionRow({
 }: FlatpackFormActionRowProps) {
     const variant = actionVariant(action);
     const iconClass = iconButtonClass(action);
+    const actionClassName = cn(iconClass, 'h-8 px-3 text-sm sm:h-10 sm:px-4');
     const bodyProps = { action, isMacPlatform, shortcut, variant };
 
     if ('href' in action) {
@@ -222,10 +230,10 @@ function FlatpackFormActionRow({
                 {disabled ? (
                     <Button
                         type="button"
-                        size="lg"
+                        size="sm"
                         variant={variant}
                         disabled
-                        className={iconClass}
+                        className={actionClassName}
                         data-flatpack-action-id={action.id}
                     >
                         <FormActionButtonBody
@@ -234,10 +242,10 @@ function FlatpackFormActionRow({
                         />
                     </Button>
                 ) : (
-                    <Button asChild size="lg" variant={variant}>
+                    <Button asChild size="sm" variant={variant}>
                         <Link
                             href={action.href}
-                            className={iconClass}
+                            className={actionClassName}
                             data-flatpack-action-id={action.id}
                         >
                             <FormActionButtonBody
@@ -266,10 +274,10 @@ function FlatpackFormActionRow({
             <Button
                 type={action.confirm ? 'button' : 'submit'}
                 form={action.confirm ? undefined : formId}
-                size="lg"
+                size="sm"
                 variant={variant}
                 disabled={disabled}
-                className={iconClass}
+                className={actionClassName}
                 data-flatpack-action-id={action.id}
                 onClick={
                     action.confirm
