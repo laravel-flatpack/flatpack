@@ -353,7 +353,7 @@ describe('FlatpackFormPage', () => {
             },
             expect.objectContaining({
                 preserveScroll: true,
-                preserveState: true,
+                preserveState: 'errors',
                 onSuccess: expect.any(Function),
                 onError: expect.any(Function),
             }),
@@ -419,7 +419,7 @@ describe('FlatpackFormPage', () => {
             },
             expect.objectContaining({
                 preserveScroll: true,
-                preserveState: true,
+                preserveState: 'errors',
                 onSuccess: expect.any(Function),
                 onError: expect.any(Function),
             }),
@@ -479,7 +479,7 @@ describe('FlatpackFormPage', () => {
             },
             expect.objectContaining({
                 preserveScroll: true,
-                preserveState: true,
+                preserveState: 'errors',
                 onSuccess: expect.any(Function),
                 onError: expect.any(Function),
             }),
@@ -708,7 +708,7 @@ describe('FlatpackFormPage', () => {
                 },
                 expect.objectContaining({
                     preserveScroll: true,
-                    preserveState: true,
+                    preserveState: 'errors',
                     onSuccess: expect.any(Function),
                     onError: expect.any(Function),
                 }),
@@ -864,7 +864,7 @@ describe('FlatpackFormPage', () => {
                 },
                 expect.objectContaining({
                     preserveScroll: true,
-                    preserveState: true,
+                    preserveState: 'errors',
                     onSuccess: expect.any(Function),
                     onError: expect.any(Function),
                 }),

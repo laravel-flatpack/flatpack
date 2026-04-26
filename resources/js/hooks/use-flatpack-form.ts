@@ -125,7 +125,7 @@ export function useFlatpackForm({
             values: baselineValues as Record<string, FormDataConvertible>,
         };
         if (f.isDirty) {
-            // Keep local unsaved edits (e.g. embedded table drafts) across failed submits.
+            // Keep local unsaved edits across failed submits (including embedded table drafts).
             f.setDefaults(nextDefaults);
             return;
         }
@@ -192,16 +192,9 @@ export function useFlatpackForm({
 
         const options = {
             preserveScroll: true,
-            preserveState: true,
+            preserveState: 'errors' as const,
             onSuccess: () => {
                 form.clearErrors();
-                form.setDefaults({
-                    values: form.data.values as Record<
-                        string,
-                        FormDataConvertible
-                    >,
-                });
-                form.reset();
                 const submittedAction = formActions.find(
                     (a) => a.id === intent.id,
                 );

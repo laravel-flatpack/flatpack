@@ -6,6 +6,8 @@ namespace Flatpack\Http\Controllers\Concerns;
 
 use Flatpack\Composition\FormComposition;
 use Flatpack\Schema\HeaderActions;
+use Illuminate\Support\MessageBag;
+use Illuminate\Support\ViewErrorBag;
 
 /**
  * Shared form page props builder for Flatpack form responses.
@@ -25,7 +27,7 @@ trait BuildsFormPageProps
         array $values,
     ): array {
         $oldValues = old('values');
-        if (is_array($oldValues)) {
+        if ($this->hasFlashedValidationErrors() && is_array($oldValues)) {
             $values = $oldValues;
         }
 
@@ -40,5 +42,21 @@ trait BuildsFormPageProps
             'values' => $values,
             'form_actions' => HeaderActions::fromSchema($schema),
         ];
+    }
+
+    private function hasFlashedValidationErrors(): bool
+    {
+        $errors = session('errors');
+        if ($errors instanceof ViewErrorBag) {
+            return $errors->isNotEmpty();
+        }
+        if ($errors instanceof MessageBag) {
+            return $errors->isNotEmpty();
+        }
+        if (is_array($errors)) {
+            return $errors !== [];
+        }
+
+        return false;
     }
 }

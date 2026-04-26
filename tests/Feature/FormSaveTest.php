@@ -15,6 +15,8 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\MessageBag;
+use Illuminate\Support\ViewErrorBag;
 
 use function Pest\Laravel\actingAs;
 
@@ -1518,6 +1520,11 @@ YAML, function (): void {
                         ],
                     ],
                 ],
+                'errors' => tap(new ViewErrorBag(), function (ViewErrorBag $bag): void {
+                    $bag->put('default', new MessageBag([
+                        'values.comments.0.user_id' => ['User id is required.'],
+                    ]));
+                }),
             ])
             ->getJson(route('flatpack.entities.edit', [
                 'entity' => 'posts',
@@ -1527,6 +1534,40 @@ YAML, function (): void {
             ->assertOk()
             ->assertJsonPath('values.comments.0.content', 'Hello')
             ->assertJsonPath('values.comments.0.user_id', '');
+    });
+});
+
+test('flatpack form edit ignores flashed old input values when there are no validation errors', function () {
+    withTempFormSchema(<<<'YAML'
+name: Post
+model: Flatpack\Tests\Models\Post
+fields:
+  title:
+    type: text
+    label: Title
+YAML, function (): void {
+        /** @var User $user */
+        $user = User::factory()->createOne();
+        $post = Post::factory()->createOne([
+            'title' => 'Hydrated title',
+            'slug' => 'hydrated-title',
+        ]);
+
+        actingAs($user)
+            ->withSession([
+                '_old_input' => [
+                    'values' => [
+                        'title' => 'Stale title',
+                    ],
+                ],
+            ])
+            ->getJson(route('flatpack.entities.edit', [
+                'entity' => 'posts',
+                'record' => (string) $post->getKey(),
+                'json' => true,
+            ]))
+            ->assertOk()
+            ->assertJsonPath('values.title', 'Hydrated title');
     });
 });
 
