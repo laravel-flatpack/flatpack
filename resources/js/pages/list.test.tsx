@@ -107,7 +107,9 @@ describe('FlatpackListPage', () => {
         expect(
             screen.getByRole('heading', { name: 'posts' }),
         ).toBeInTheDocument();
-        expect(screen.getByText(/Define columns in/i)).toBeInTheDocument();
+        expect(
+            screen.getByText(/Define columns or tabs in/i),
+        ).toBeInTheDocument();
         expect(screen.getByText('/posts/list.yaml')).toBeInTheDocument();
         expect(screen.getByText(/to render this table\./i)).toBeInTheDocument();
         expect(document.querySelector('title')?.textContent).toBe('posts list');
@@ -129,7 +131,9 @@ describe('FlatpackListPage', () => {
 
         expect(screen.getByRole('heading', { name: '' })).toBeInTheDocument();
         expect(document.querySelector('title')?.textContent).toBe('');
-        expect(screen.getByText(/Define columns in/i)).toBeInTheDocument();
+        expect(
+            screen.getByText(/Define columns or tabs in/i),
+        ).toBeInTheDocument();
         expect(screen.getByText('//list.yaml')).toBeInTheDocument();
         expect(screen.getByText(/to render this table\./i)).toBeInTheDocument();
     });

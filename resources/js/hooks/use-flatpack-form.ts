@@ -8,7 +8,9 @@ import { loadField } from '@/lib/form';
 import { firstErrorMessage } from '@/lib/form-errors';
 import {
     buildInitialValues,
+    type FlatpackFormTabPanelLayout,
     fieldErrorMessages,
+    mergeFormTabsIntoSchemaFields,
     normalizeFields,
 } from '@/lib/form-schema';
 import { clientValidationErrors } from '@/lib/form-validation';
@@ -55,6 +57,26 @@ export type FlatpackFormPendingConfirm = {
     config: FlatpackListHeaderAction & { action: string };
 };
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isTabPanelLayout(value: unknown): value is FlatpackFormTabPanelLayout {
+    if (!isRecord(value)) {
+        return false;
+    }
+    if (typeof value.id !== 'string' || value.id.trim() === '') {
+        return false;
+    }
+    if (typeof value.label !== 'string' || value.label.trim() === '') {
+        return false;
+    }
+    if (!Array.isArray(value.field_ids)) {
+        return false;
+    }
+    return true;
+}
+
 export function useFlatpackForm({
     entity,
     record,
@@ -63,7 +85,27 @@ export function useFlatpackForm({
     values = {},
     form_actions: formActions = [],
 }: FlatpackFormPageProps) {
-    const fields = useMemo(() => normalizeFields(schema), [schema]);
+    const effectiveSchema = useMemo(() => {
+        if (!isRecord(schema)) {
+            return null;
+        }
+        return isRecord(schema.tabs)
+            ? mergeFormTabsIntoSchemaFields(schema)
+            : schema;
+    }, [schema]);
+
+    const fields = useMemo(
+        () => normalizeFields(effectiveSchema ?? undefined),
+        [effectiveSchema],
+    );
+
+    const tabPanels = useMemo((): FlatpackFormTabPanelLayout[] => {
+        const raw = effectiveSchema?.tab_panels;
+        if (!Array.isArray(raw)) {
+            return [];
+        }
+        return raw.filter(isTabPanelLayout);
+    }, [effectiveSchema]);
     const fieldComponents = useMemo(
         () =>
             Object.fromEntries(
@@ -224,6 +266,7 @@ export function useFlatpackForm({
         form,
         isDirty,
         fields,
+        tabPanels,
         fieldComponents,
         fieldErrors,
         flatpackTopErrors,

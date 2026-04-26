@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Flatpack\Actions;
 
+use Flatpack\Schema\CompositionTabsMerge;
 use Flatpack\Schema\Forms\FormFieldType;
 use Flatpack\Services\Forms\FormRelationValuesHydrator;
 use Illuminate\Database\Eloquent\Model;
@@ -26,6 +27,8 @@ final class RelationFormSynchronizer
         if ($schema === null) {
             return;
         }
+
+        $schema = CompositionTabsMerge::form($schema) ?? $schema;
 
         $fields = $schema['fields'] ?? null;
         if (! is_array($fields)) {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Flatpack\Services\SaveRecord;
 
+use Flatpack\Schema\CompositionTabsMerge;
 use Flatpack\Schema\Forms\FormFieldType;
 
 final class DeferredRelationValidationService
@@ -18,6 +19,9 @@ final class DeferredRelationValidationService
         if ($schema === null) {
             return [];
         }
+
+        $schema = CompositionTabsMerge::form($schema) ?? $schema;
+
         $fields = $schema['fields'] ?? null;
         if (! is_array($fields)) {
             return [];

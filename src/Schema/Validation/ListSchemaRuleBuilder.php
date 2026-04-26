@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Flatpack\Schema\Validation;
 
+use Flatpack\Schema\CompositionTabsMerge;
 use Flatpack\Schema\Generated\CompositionSchemaKeys;
 use Flatpack\Schema\RelationFieldQuery;
 use Illuminate\Validation\Rule;
@@ -28,6 +29,8 @@ final class ListSchemaRuleBuilder
         if ($schema === null) {
             return [];
         }
+
+        $schema = CompositionTabsMerge::list($schema) ?? $schema;
 
         $columns = $schema['columns'] ?? null;
         if (! is_array($columns)) {

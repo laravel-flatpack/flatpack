@@ -1,7 +1,7 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "title": "Flatpack form composition",
-    "description": "Structural contract for entity form.yaml (decoded to JSON). Each field is a discriminated union on type: only the options valid for that type are allowed (additionalProperties: false). Runtime still normalizes aliases (e.g. date → date-picker).",
+    "description": "Structural contract for entity form.yaml (decoded to JSON). Each field is a discriminated union on type: only the options valid for that type are allowed (additionalProperties: false). Runtime still normalizes aliases (e.g. date → date-picker). Use top-level `fields` and/or `tabs` together or separately: root `fields` and every `tabs.*.fields` map are merged into one flat `fields` map (single `values` payload for validation and submit). On the form page, fields that only appear at the top level render above the tab strip; fields listed under `tabs` render inside their panel.",
     "type": "object",
     "properties": {
         "name": {
@@ -18,8 +18,17 @@
         },
         "fields": {
             "type": "object",
+            "description": "Optional alongside `tabs`. Field ids that only appear here (not under any `tabs.*.fields`) render above the tab strip on the form page after normalization.",
             "additionalProperties": {
                 "$ref": "#/$defs/fieldDefinition"
+            }
+        },
+        "tabs": {
+            "type": "object",
+            "minProperties": 1,
+            "description": "Keyed tab panels (tab id → panel). Each panel nests `fields` the same shape as top-level `fields`. May coexist with top-level `fields`; runtime merges all into one values object.",
+            "additionalProperties": {
+                "$ref": "#/$defs/formTabPanel"
             }
         },
         "actions": {
@@ -34,6 +43,27 @@
             "additionalProperties": {
                 "$ref": "#/$defs/headerActionDefinition"
             }
+        },
+        "formTabPanel": {
+            "type": "object",
+            "required": ["label", "fields"],
+            "properties": {
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "icon": {
+                    "type": "string"
+                },
+                "fields": {
+                    "type": "object",
+                    "minProperties": 1,
+                    "additionalProperties": {
+                        "$ref": "#/$defs/fieldDefinition"
+                    }
+                }
+            },
+            "additionalProperties": false
         },
         "headerActionDefinition": {
             "type": "object",

@@ -3,7 +3,10 @@ import type { ReactElement } from 'react';
 import { FlatpackConfirmDialog } from '@/components/flatpack/flatpack-confirm-dialog';
 import { FlatpackPageHeader } from '@/components/flatpack/flatpack-page-header';
 import { FlatpackListActions } from '@/components/flatpack-list/flatpack-list-actions';
+import type { FlatpackMenuIconName } from '@/components/lucide-menu-icon-registry';
+import { flatpackMenuIcons } from '@/components/lucide-menu-icon-registry';
 import { DataTable } from '@/components/table/data-table';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCompositionDebugLog } from '@/hooks/use-composition-debug-log';
 import { useFlatpackList } from '@/hooks/use-flatpack-list';
 import FlatpackLayout from '@/layouts/flatpack-layout';
@@ -11,7 +14,7 @@ import type { FlatpackListPageProps } from '@/types/pages/flatpack';
 
 const NoColumnsMessage = ({ entity }: { entity: string }) => (
     <p className="text-sm text-muted-foreground">
-        Define columns in{' '}
+        Define columns or tabs in{' '}
         <code className="font-mono text-xs bg-muted px-1 py-0.5 rounded-md">{`/${entity}/list.yaml`}</code>{' '}
         to render this table.
     </p>
@@ -23,6 +26,10 @@ export default function FlatpackListPage(props: FlatpackListPageProps) {
         displayName,
         pageTitle,
         columns,
+        allColumns,
+        listTabPanels,
+        listActiveTabId,
+        setListActiveTabId,
         filterDefinitions,
         reorderable,
         rowClickEditKey,
@@ -48,6 +55,41 @@ export default function FlatpackListPage(props: FlatpackListPageProps) {
         entity,
         modelKey,
     } = useFlatpackList(props);
+
+    const listTabsToolbar =
+        listTabPanels.length > 0 ? (
+            <Tabs
+                value={listActiveTabId ?? listTabPanels[0].id}
+                onValueChange={(value) => setListActiveTabId(value)}
+                className="w-full max-w-full"
+            >
+                <TabsList
+                    variant="line"
+                    className="w-full max-w-full flex-wrap"
+                >
+                    {listTabPanels.map((panel) => {
+                        const Icon =
+                            panel.icon != null &&
+                            panel.icon in flatpackMenuIcons
+                                ? flatpackMenuIcons[
+                                      panel.icon as FlatpackMenuIconName
+                                  ]
+                                : null;
+                        return (
+                            <TabsTrigger key={panel.id} value={panel.id}>
+                                {Icon != null ? (
+                                    <Icon
+                                        data-icon="inline-start"
+                                        className="size-4"
+                                    />
+                                ) : null}
+                                {panel.label}
+                            </TabsTrigger>
+                        );
+                    })}
+                </TabsList>
+            </Tabs>
+        ) : undefined;
 
     return (
         <>
@@ -104,10 +146,11 @@ export default function FlatpackListPage(props: FlatpackListPageProps) {
                     }
                 />
                 <div className="flex flex-col gap-6">
-                    {columns.length > 0 ? (
+                    {allColumns.length > 0 ? (
                         <DataTable
                             id={`flatpack-list-${entity || 'entity'}`}
                             dataRowKey={modelKey || 'id'}
+                            toolbarStart={listTabsToolbar}
                             bulkActions={bulkActions}
                             reorderable={reorderable}
                             onRowClick={

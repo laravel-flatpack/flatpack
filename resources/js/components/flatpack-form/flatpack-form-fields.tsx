@@ -1,12 +1,20 @@
-import { useEffect } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useFlatpackEmbeddedTableToolbarAction } from '@/components/flatpack-form/flatpack-embedded-table-toolbar';
 import { SchemaFieldsRenderer } from '@/components/form-fields/schema-fields-renderer';
+import type { FlatpackMenuIconName } from '@/components/lucide-menu-icon-registry';
+import { flatpackMenuIcons } from '@/components/lucide-menu-icon-registry';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { focusFirstControlForFieldId } from '@/lib/focus-field-control';
 import {
     emptyValueForField,
     evaluateFieldTrigger,
     valuesEqual,
 } from '@/lib/form-field-trigger';
-import { fieldErrorMessages } from '@/lib/form-schema';
+import {
+    fieldErrorMessages,
+    firstVisibleFieldEntryWithValidationError,
+    validationErrorsFingerprint,
+} from '@/lib/form-schema';
 import {
     rowValidationFieldErrorsByStableId,
     rowValidationMessagesByStableId,
@@ -20,6 +28,7 @@ export function FlatpackFormFields({
     entity,
     mode,
     record,
+    tabPanels,
     fields,
     fieldComponents,
     fieldErrors,
@@ -50,57 +59,176 @@ export function FlatpackFormFields({
         }
     }, [fields, formValues, setFieldValue]);
 
-    const entries: SchemaFieldRenderEntry[] = fields.map(({ id, field }) => ({
-        ...(() => {
-            const triggerState = evaluateFieldTrigger(
-                field.trigger,
-                formValues,
-            );
+    const entries: SchemaFieldRenderEntry[] = useMemo(
+        () =>
+            fields.map(({ id, field }) => ({
+                ...(() => {
+                    const triggerState = evaluateFieldTrigger(
+                        field.trigger,
+                        formValues,
+                    );
+                    return {
+                        hidden: !triggerState.visible,
+                        disabled: triggerState.disabled,
+                    };
+                })(),
+                ...(field.type === 'table'
+                    ? (() => {
+                          const errorState = tableFieldErrorState(
+                              fieldErrors,
+                              id,
+                          );
+                          return {
+                              extraComponentProps: {
+                                  rowValidationMessagesById:
+                                      rowValidationMessagesByStableId(
+                                          formValues[id],
+                                          errorState,
+                                      ),
+                                  rowValidationFieldErrorsById:
+                                      rowValidationFieldErrorsByStableId(
+                                          formValues[id],
+                                          errorState,
+                                      ),
+                              },
+                          };
+                      })()
+                    : {}),
+                id,
+                field,
+                value: formValues[id],
+                onValueChange: (nextValue: unknown) => {
+                    const triggerState = evaluateFieldTrigger(
+                        field.trigger,
+                        formValues,
+                    );
+                    if (triggerState.disabled) {
+                        return;
+                    }
+                    setFieldValue(field, id, nextValue);
+                },
+                required: fieldIsRequired(field),
+                invalid: fieldErrorMessages(fieldErrors, id).length > 0,
+                errors: fieldErrorMessages(fieldErrors, id),
+            })),
+        [fields, fieldErrors, formValues, setFieldValue],
+    );
+
+    const entryById = useMemo(
+        () => new Map(entries.map((e) => [e.id, e])),
+        [entries],
+    );
+
+    const { unassignedEntries, tabBlocks } = useMemo(() => {
+        if (tabPanels === undefined || tabPanels.length === 0) {
             return {
-                hidden: !triggerState.visible,
-                disabled: triggerState.disabled,
+                unassignedEntries: entries,
+                tabBlocks: [] as Array<{
+                    panelId: string;
+                    entries: SchemaFieldRenderEntry[];
+                }>,
             };
-        })(),
-        ...(field.type === 'table'
-            ? (() => {
-                  const errorState = tableFieldErrorState(fieldErrors, id);
-                  return {
-                      extraComponentProps: {
-                          rowValidationMessagesById:
-                              rowValidationMessagesByStableId(
-                                  formValues[id],
-                                  errorState,
-                              ),
-                          rowValidationFieldErrorsById:
-                              rowValidationFieldErrorsByStableId(
-                                  formValues[id],
-                                  errorState,
-                              ),
-                      },
-                  };
-              })()
-            : {}),
-        id,
-        field,
-        value: formValues[id],
-        onValueChange: (nextValue: unknown) => {
-            const triggerState = evaluateFieldTrigger(
-                field.trigger,
-                formValues,
-            );
-            if (triggerState.disabled) {
+        }
+        const assigned = new Set<string>();
+        for (const p of tabPanels) {
+            for (const fid of p.field_ids) {
+                assigned.add(fid);
+            }
+        }
+        const unassignedEntries = entries.filter((e) => !assigned.has(e.id));
+        const tabBlocks = tabPanels.map((p) => ({
+            panelId: p.id,
+            entries: p.field_ids
+                .map((fid) => entryById.get(fid))
+                .filter((e): e is SchemaFieldRenderEntry => e !== undefined),
+        }));
+
+        return { unassignedEntries, tabBlocks };
+    }, [entries, entryById, tabPanels]);
+
+    const orderedEntriesForErrorNav = useMemo((): SchemaFieldRenderEntry[] => {
+        if (tabPanels === undefined || tabPanels.length === 0) {
+            return entries;
+        }
+        return [
+            ...unassignedEntries,
+            ...tabBlocks.flatMap((block) => block.entries),
+        ];
+    }, [tabPanels, entries, unassignedEntries, tabBlocks]);
+
+    const [activeTab, setActiveTab] = useState(() => tabPanels?.[0]?.id ?? '');
+    const activeTabRef = useRef(activeTab);
+    activeTabRef.current = activeTab;
+
+    useEffect(() => {
+        if (tabPanels === undefined || tabPanels.length === 0) {
+            return;
+        }
+        setActiveTab((cur) =>
+            tabPanels.some((p) => p.id === cur)
+                ? cur
+                : (tabPanels[0]?.id ?? ''),
+        );
+    }, [tabPanels]);
+
+    const previousErrorFingerprintRef = useRef('');
+    const pendingFocusFieldIdRef = useRef<string | null>(null);
+    const [focusAfterTabChangeTick, setFocusAfterTabChangeTick] = useState(0);
+
+    useLayoutEffect(() => {
+        const fp = validationErrorsFingerprint(fieldErrors);
+        if (fp === previousErrorFingerprintRef.current) {
+            return;
+        }
+        previousErrorFingerprintRef.current = fp;
+        if (fp === '') {
+            return;
+        }
+
+        const entry = firstVisibleFieldEntryWithValidationError(
+            orderedEntriesForErrorNav,
+            fieldErrors,
+        );
+        if (entry === undefined) {
+            return;
+        }
+
+        if (tabPanels !== undefined && tabPanels.length > 0) {
+            const panel = tabPanels.find((p) => p.field_ids.includes(entry.id));
+            if (panel !== undefined && panel.id !== activeTabRef.current) {
+                pendingFocusFieldIdRef.current = entry.id;
+                setActiveTab(panel.id);
+                setFocusAfterTabChangeTick((n) => n + 1);
                 return;
             }
-            setFieldValue(field, id, nextValue);
-        },
-        required: fieldIsRequired(field),
-        invalid: fieldErrorMessages(fieldErrors, id).length > 0,
-        errors: fieldErrorMessages(fieldErrors, id),
-    }));
+        }
 
-    return (
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                focusFirstControlForFieldId(entry.id);
+            });
+        });
+    }, [fieldErrors, orderedEntriesForErrorNav, tabPanels]);
+
+    useLayoutEffect(() => {
+        if (focusAfterTabChangeTick === 0) {
+            return;
+        }
+        const id = pendingFocusFieldIdRef.current;
+        if (id === null) {
+            return;
+        }
+        pendingFocusFieldIdRef.current = null;
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                focusFirstControlForFieldId(id);
+            });
+        });
+    }, [focusAfterTabChangeTick]);
+
+    const renderFields = (subset: SchemaFieldRenderEntry[]) => (
         <SchemaFieldsRenderer
-            entries={entries}
+            entries={subset}
             entity={entity}
             parentRecordKey={record}
             modeKey={`${mode}:${record ?? 'new'}`}
@@ -108,5 +236,54 @@ export function FlatpackFormFields({
             fieldComponents={fieldComponents}
             showErrors
         />
+    );
+
+    if (tabPanels === undefined || tabPanels.length === 0) {
+        return renderFields(entries);
+    }
+
+    return (
+        <div className="flex flex-col gap-6">
+            {unassignedEntries.length > 0
+                ? renderFields(unassignedEntries)
+                : null}
+            <Tabs
+                value={activeTab}
+                onValueChange={setActiveTab}
+                className="w-full"
+            >
+                <TabsList variant="line" className="w-full max-w-full">
+                    {tabPanels.map((panel) => {
+                        const Icon =
+                            panel.icon != null &&
+                            panel.icon in flatpackMenuIcons
+                                ? flatpackMenuIcons[
+                                      panel.icon as FlatpackMenuIconName
+                                  ]
+                                : null;
+                        return (
+                            <TabsTrigger key={panel.id} value={panel.id}>
+                                {Icon != null ? (
+                                    <Icon
+                                        data-icon="inline-start"
+                                        className="size-4"
+                                    />
+                                ) : null}
+                                {panel.label}
+                            </TabsTrigger>
+                        );
+                    })}
+                </TabsList>
+                {tabBlocks.map((block) => (
+                    <TabsContent
+                        key={block.panelId}
+                        value={block.panelId}
+                        className="flex flex-col gap-6 pt-4"
+                    >
+                        {renderFields(block.entries)}
+                    </TabsContent>
+                ))}
+            </Tabs>
+        </div>
     );
 }

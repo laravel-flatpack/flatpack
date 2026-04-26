@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Flatpack\Services\SaveRecord;
 
+use Flatpack\Schema\CompositionTabsMerge;
 use Flatpack\Schema\Forms\FormFieldType;
 use Illuminate\Database\Eloquent\MassAssignmentException;
 use Illuminate\Database\Eloquent\Model;
@@ -40,6 +41,14 @@ final class ResolveFormPayload
         ?array $schema,
         array $values,
     ): WritablePayloadResult {
+        if ($schema !== null) {
+            $schema = match ($compositionType) {
+                'form' => CompositionTabsMerge::form($schema) ?? $schema,
+                'list' => CompositionTabsMerge::list($schema) ?? $schema,
+                default => $schema,
+            };
+        }
+
         $writableFields = $this->writableFieldsFromSchema($compositionType, $schema);
         $attributes = [];
 

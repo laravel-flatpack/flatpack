@@ -20,6 +20,27 @@ describe('form composition schema (resources/schema/form.json)', function () {
         expect($errors)->toBeEmpty();
     });
 
+    it('accepts tabs-only form with nested fields', function () {
+        $errors = CompositionSchemaAsserter::validateForm([
+            'name' => 'Post',
+            'model' => 'Flatpack\\Tests\\Models\\Post',
+            'tabs' => [
+                'profile' => [
+                    'label' => 'Profile',
+                    'icon' => 'user',
+                    'fields' => [
+                        'title' => [
+                            'type' => 'text',
+                            'label' => 'Title',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        expect($errors)->toBeEmpty();
+    });
+
     it('accepts text fields with preset', function () {
         $errors = CompositionSchemaAsserter::validateForm([
             'fields' => [
@@ -157,6 +178,27 @@ describe('form composition schema (resources/schema/form.json)', function () {
 });
 
 describe('list composition schema (resources/schema/list.json)', function () {
+    it('accepts tabs-only list with nested columns', function () {
+        $errors = CompositionSchemaAsserter::validateList([
+            'name' => 'Posts',
+            'model' => 'Flatpack\\Tests\\Models\\Post',
+            'tabs' => [
+                'main' => [
+                    'label' => 'Main',
+                    'columns' => [
+                        [
+                            'id' => 'title',
+                            'type' => 'text',
+                            'label' => 'Title',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        expect($errors)->toBeEmpty();
+    });
+
     it('accepts columns as a list with select and options', function () {
         $errors = CompositionSchemaAsserter::validateList([
             'name' => 'Posts',

@@ -1,9 +1,18 @@
 import { SUPPORTED_FORM_FIELD_TYPES } from '@/lib/form-schema-contract';
+import { tableFieldErrorState } from '@/lib/form-table-errors';
 import type { FormFieldProps, FormFieldType } from '@/types/form-fields';
+import type { SchemaFieldRenderEntry } from '@/types/schema-fields-renderer';
 
 export type FormFieldEntry = {
     id: string;
     field: FormFieldProps;
+};
+
+export type FlatpackFormTabPanelLayout = {
+    id: string;
+    label: string;
+    icon?: string;
+    field_ids: string[];
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -73,10 +82,85 @@ function canonicalInitialFieldValue(
     return value;
 }
 
+/**
+ * When raw schema still has {@code tabs} (e.g. JSON debug), merge nested fields into
+ * {@code fields} and build {@code tab_panels} the same way as the PHP normalizer.
+ *
+ * Top-level {@code fields} and {@code tabs.*.fields} are combined: root keys are applied first, then tab
+ * keys (overwriting on duplicate ids). The form UI renders fields that are not listed in any
+ * {@code tab_panels.field_ids} above the tab strip.
+ */
+export function mergeFormTabsIntoSchemaFields(
+    schema: Record<string, unknown>,
+): Record<string, unknown> {
+    const tabs = schema.tabs;
+    if (!isRecord(tabs)) {
+        return schema;
+    }
+
+    const merged: Record<string, unknown> = {};
+    if (isRecord(schema.fields)) {
+        Object.assign(merged, schema.fields);
+    }
+
+    const tab_panels: FlatpackFormTabPanelLayout[] = [];
+
+    for (const [tabId, panel] of Object.entries(tabs)) {
+        if (!isRecord(panel)) {
+            continue;
+        }
+        const label = typeof panel.label === 'string' ? panel.label.trim() : '';
+        if (label === '') {
+            continue;
+        }
+        const iconRaw = panel.icon;
+        const icon =
+            typeof iconRaw === 'string' && iconRaw.trim() !== ''
+                ? iconRaw.trim()
+                : undefined;
+
+        const tabFields = panel.fields;
+        const field_ids: string[] = [];
+        if (isRecord(tabFields)) {
+            for (const [yamlKey, definition] of Object.entries(tabFields)) {
+                if (!isRecord(definition)) {
+                    continue;
+                }
+                const resolvedId = String(definition.id ?? yamlKey).trim();
+                if (resolvedId === '') {
+                    continue;
+                }
+                merged[resolvedId] = definition;
+                field_ids.push(resolvedId);
+            }
+        }
+
+        tab_panels.push({
+            id: tabId.trim(),
+            label,
+            ...(icon !== undefined ? { icon } : {}),
+            field_ids,
+        });
+    }
+
+    const { tabs: _omit, ...rest } = schema;
+    return {
+        ...rest,
+        fields: merged,
+        tab_panels,
+    };
+}
+
 export function normalizeFields(
     schema?: Record<string, unknown> | null,
 ): FormFieldEntry[] {
-    const rawFields = schema?.fields;
+    if (!isRecord(schema)) {
+        return [];
+    }
+    const effective = isRecord(schema.tabs)
+        ? mergeFormTabsIntoSchemaFields(schema)
+        : schema;
+    const rawFields = effective.fields;
     if (!isRecord(rawFields)) {
         return [];
     }
@@ -128,11 +212,11 @@ export function buildInitialValues(
     return nextValues;
 }
 
-export function fieldErrorMessages(
+function fieldErrorMessagesForKey(
     errors: Record<string, unknown>,
-    fieldId: string,
+    key: string,
 ): Array<{ message: string }> {
-    const error = errors[fieldId];
+    const error = errors[key];
     if (typeof error === 'string' && error.trim() !== '') {
         return [{ message: error }];
     }
@@ -147,4 +231,59 @@ export function fieldErrorMessages(
     }
 
     return [];
+}
+
+/**
+ * Maps Laravel / Inertia error keys for a logical field id (`title` or `values.title`).
+ */
+export function fieldErrorMessages(
+    errors: Record<string, unknown>,
+    fieldId: string,
+): Array<{ message: string }> {
+    const seen = new Set<string>();
+    const out: Array<{ message: string }> = [];
+    for (const key of [`values.${fieldId}`, fieldId]) {
+        for (const row of fieldErrorMessagesForKey(errors, key)) {
+            if (!seen.has(row.message)) {
+                seen.add(row.message);
+                out.push(row);
+            }
+        }
+    }
+    return out;
+}
+
+/** Stable fingerprint of which field-level validation keys are set (excludes `flatpack` top errors). */
+export function validationErrorsFingerprint(
+    errors: Record<string, unknown>,
+): string {
+    return Object.keys(errors)
+        .filter((k) => k !== 'flatpack')
+        .sort()
+        .join('\0');
+}
+
+export function fieldHasValidationError(
+    errors: Record<string, unknown>,
+    fieldId: string,
+    field: FormFieldProps,
+): boolean {
+    if (fieldErrorMessages(errors, fieldId).length > 0) {
+        return true;
+    }
+    if (field.type === 'table') {
+        return tableFieldErrorState(errors, fieldId) !== null;
+    }
+    return false;
+}
+
+export function firstVisibleFieldEntryWithValidationError(
+    orderedEntries: SchemaFieldRenderEntry[],
+    fieldErrors: Record<string, unknown>,
+): SchemaFieldRenderEntry | undefined {
+    return orderedEntries.find(
+        (e) =>
+            e.hidden !== true &&
+            fieldHasValidationError(fieldErrors, e.id, e.field),
+    );
 }

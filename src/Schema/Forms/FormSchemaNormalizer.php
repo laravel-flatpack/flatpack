@@ -6,6 +6,7 @@ namespace Flatpack\Schema\Forms;
 
 use Flatpack\Schema\Forms\Normalization\FormSchemaPipelineState;
 use Flatpack\Schema\Forms\Normalization\Pipes\LogUnknownFormRootKeysPipe;
+use Flatpack\Schema\Forms\Normalization\Pipes\MergeFormTabsIntoFieldsPipe;
 use Flatpack\Schema\Forms\Normalization\Pipes\NormalizeFormFieldDefinitionsPipe;
 use Flatpack\Schema\Forms\Normalization\Pipes\StripInvalidFormPresetsPipe;
 use Flatpack\Schema\Forms\Normalization\Pipes\WarnUnknownFormActionsNestedKeysPipe;
@@ -48,6 +49,7 @@ final readonly class FormSchemaNormalizer
         $out = $this->resolvePipeline()
             ->send($state)
             ->through([
+                MergeFormTabsIntoFieldsPipe::class,
                 LogUnknownFormRootKeysPipe::class,
                 WarnUnknownFormActionsNestedKeysPipe::class,
                 NormalizeFormFieldDefinitionsPipe::class,

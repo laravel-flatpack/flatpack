@@ -1,3 +1,4 @@
+import type { FlatpackFormTabPanelLayout } from '@/lib/form-schema';
 import type {
     FlatpackActionVariant,
     FlatpackSuccessRedirect,
@@ -278,6 +279,17 @@ export type FlatpackFormCompositionFieldsYaml = Record<
     FlatpackFormCompositionFieldYaml
 >;
 
+export type FlatpackFormCompositionTabPanelYaml = {
+    label: string;
+    icon?: string;
+    fields: FlatpackFormCompositionFieldsYaml;
+};
+
+export type FlatpackFormCompositionTabsYaml = Record<
+    string,
+    FlatpackFormCompositionTabPanelYaml
+>;
+
 /**
  * Entity form composition from form.yaml (decoded JSON). Structural contract: `resources/schema/form.json`.
  */
@@ -287,5 +299,7 @@ export type FlatpackFormCompositionSchema = {
     model?: string;
     icon?: string;
     fields?: FlatpackFormCompositionFieldsYaml;
+    tabs?: FlatpackFormCompositionTabsYaml;
+    tab_panels?: FlatpackFormTabPanelLayout[];
     actions?: FlatpackFormCompositionActionsYaml;
 };

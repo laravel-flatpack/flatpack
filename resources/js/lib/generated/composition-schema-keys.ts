@@ -16,6 +16,7 @@ export const FORM_ROOT_PROPERTY_KEYS = [
     'icon',
     'model',
     'name',
+    'tabs',
 ] as const;
 
 /** Identity map of list.json root property names; use `LIST_ROOT.nav_order`, `LIST_ROOT['bulk_actions']`, etc. */
@@ -30,6 +31,7 @@ export const LIST_ROOT = {
     nav_order: 'nav_order',
     reorderable: 'reorderable',
     row_click_edit: 'row_click_edit',
+    tabs: 'tabs',
 } as const;
 
 export type ListRootKey = keyof typeof LIST_ROOT;
@@ -53,6 +55,7 @@ export const LIST_ROOT_PROPERTY_KEYS = [
     'nav_order',
     'reorderable',
     'row_click_edit',
+    'tabs',
 ] as const;
 
 /**

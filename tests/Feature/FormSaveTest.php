@@ -524,6 +524,40 @@ YAML, function (): void {
     });
 });
 
+test('flatpack relation options resolves combobox fields defined under form tabs', function () {
+    withTempFormSchema(<<<'YAML'
+name: Post
+model: Flatpack\Tests\Models\Post
+tabs:
+  settings:
+    label: Settings
+    fields:
+      category_id:
+        type: combobox
+        label: Category
+        relation: category
+        relation_name: name
+        relation_value: id
+YAML, function (): void {
+        /** @var User $user */
+        $user = User::factory()->createOne();
+        $category = Category::factory()->createOne([
+            'name' => 'From tab',
+        ]);
+
+        actingAs($user)
+            ->getJson(route('flatpack.entities.relation-options', [
+                'entity' => 'posts',
+                'field' => 'category_id',
+                'q' => '',
+                'selected' => (string) $category->getKey(),
+            ]))
+            ->assertOk()
+            ->assertJsonPath('data.0.value', (string) $category->getKey())
+            ->assertJsonPath('data.0.label', 'From tab');
+    });
+});
+
 test('flatpack relation options endpoint returns stable 404 envelope when field is unknown', function () {
     withTempFormSchema(<<<'YAML'
 name: Post
@@ -571,6 +605,42 @@ YAML, function (): void {
         $user = User::factory()->createOne();
         User::factory()->createOne(['name' => 'Picker One']);
         User::factory()->createOne(['name' => 'Picker Two']);
+
+        actingAs($user)
+            ->getJson(route('flatpack.entities.embedded-table-relation-options', [
+                'entity' => 'posts',
+                'table_field' => 'comments',
+                'column_id' => 'user_id',
+                'per_page' => 10,
+            ]))
+            ->assertOk()
+            ->assertJsonPath('meta.per_page', 10);
+    });
+});
+
+test('embedded table relation options resolves table field defined under form tabs', function (): void {
+    withTempFormSchema(<<<'YAML'
+name: Post
+model: Flatpack\Tests\Models\Post
+tabs:
+  comments_tab:
+    label: Comments
+    fields:
+      comments:
+        type: table
+        label: Comments
+        relation: comments
+        columns:
+          user_id:
+            type: relation
+            label: User
+            relation: user
+            relation_name: name
+            relation_value: id
+YAML, function (): void {
+        /** @var User $user */
+        $user = User::factory()->createOne();
+        User::factory()->createOne(['name' => 'Tab picker']);
 
         actingAs($user)
             ->getJson(route('flatpack.entities.embedded-table-relation-options', [
@@ -1293,6 +1363,63 @@ YAML, function (): void {
                     'slug' => 't',
                     'post_categories' => [
                         ['id' => (string) $keep->getKey(), 'name' => 'Keep'],
+                    ],
+                ],
+            ])
+            ->assertRedirect(route('flatpack.entities.edit', [
+                'entity' => 'posts',
+                'record' => (string) $post->getKey(),
+            ]));
+
+        expect($post->fresh()->categories->pluck('id')->all())->toBe([(int) $keep->getKey()]);
+    });
+});
+
+test('flatpack form save syncs BelongsToMany RelationRow payload when table field is under form tabs', function () {
+    withTempFormSchema(<<<'YAML'
+name: Post
+model: Flatpack\Tests\Models\Post
+tabs:
+  main:
+    label: Main
+    fields:
+      title:
+        type: text
+        label: Title
+      slug:
+        type: text
+        label: Slug
+  categories_tab:
+    label: Categories
+    fields:
+      post_categories:
+        type: table
+        label: Categories
+        relation: categories
+        relation_value: id
+        columns:
+          - id: name
+            label: Name
+            type: text
+YAML, function (): void {
+        /** @var User $user */
+        $user = User::factory()->createOne();
+        $keep = Category::factory()->createOne(['name' => 'Keep tab', 'slug' => 'keep-tab']);
+        $post = Post::factory()->createOne([
+            'title' => 'T',
+            'slug' => 't',
+        ]);
+        $post->categories()->sync([$keep->getKey()]);
+
+        actingAs($user)
+            ->post(route('flatpack.entities.form.submit', ['entity' => 'posts']), [
+                'action' => 'save',
+                'record' => (string) $post->getKey(),
+                'values' => [
+                    'title' => 'T',
+                    'slug' => 't',
+                    'post_categories' => [
+                        ['id' => (string) $keep->getKey(), 'name' => 'Keep tab'],
                     ],
                 ],
             ])

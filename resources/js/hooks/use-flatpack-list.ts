@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/react';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { firstErrorMessage } from '@/lib/form-errors';
 import {
@@ -12,10 +12,26 @@ import type {
     DataTableRowActionPayload,
     FlatpackActionVariant,
 } from '@/types/data-table';
+import type { FlatpackListTabPanelLayout } from '@/types/list-composition';
 import type {
     FlatpackListHeaderAction,
     FlatpackListPageProps,
 } from '@/types/pages/flatpack';
+
+function isListTabPanel(value: unknown): value is FlatpackListTabPanelLayout {
+    if (value === null || typeof value !== 'object') {
+        return false;
+    }
+    const o = value as Record<string, unknown>;
+    if (typeof o.id !== 'string' || o.id.trim() === '') {
+        return false;
+    }
+    if (typeof o.label !== 'string' || o.label.trim() === '') {
+        return false;
+    }
+
+    return Array.isArray(o.column_ids);
+}
 
 export function useFlatpackList({
     entity,
@@ -34,16 +50,56 @@ export function useFlatpackList({
     const displayName = name ?? entity ?? '';
     const pageTitle = displayName ? `${displayName} list` : '';
 
-    const columns = useMemo(
+    const allColumns = useMemo(
         () => listYamlColumnsToDataTableColumns(schema?.columns),
         [schema],
     );
+
+    const listTabPanels = useMemo((): FlatpackListTabPanelLayout[] => {
+        const raw = schema?.tab_panels;
+        if (!Array.isArray(raw)) {
+            return [];
+        }
+        return raw.filter(isListTabPanel);
+    }, [schema]);
+
+    const [listActiveTabId, setListActiveTabId] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (listTabPanels.length > 0) {
+            if (
+                listActiveTabId === null ||
+                !listTabPanels.some((p) => p.id === listActiveTabId)
+            ) {
+                setListActiveTabId(listTabPanels[0].id);
+            }
+        } else if (listActiveTabId !== null) {
+            setListActiveTabId(null);
+        }
+    }, [listActiveTabId, listTabPanels]);
+
+    const columns = useMemo(() => {
+        if (listTabPanels.length === 0) {
+            return allColumns;
+        }
+        const activeId = listActiveTabId ?? listTabPanels[0]?.id ?? '';
+        const panel = listTabPanels.find((p) => p.id === activeId);
+        if (panel === undefined) {
+            return allColumns;
+        }
+        const allowed = new Set(panel.column_ids);
+        return allColumns.filter((c) => allowed.has(c.id));
+    }, [allColumns, listActiveTabId, listTabPanels]);
+
     const filterDefinitions = useMemo(
         () =>
             serverFilters.length > 0
                 ? serverFilters
-                : listYamlFiltersToDataTableFilters(columns, schema?.filters),
-        [columns, schema?.filters, serverFilters],
+                : listYamlFiltersToDataTableFilters(
+                      allColumns,
+                      schema?.filters,
+                  ),
+        [allColumns, schema?.filters, serverFilters],
     );
 
     const reorderable =
@@ -323,7 +379,7 @@ export function useFlatpackList({
 
     const noContentMessage = !displayName
         ? 'Nothing to list yet.'
-        : columns.length === 0
+        : allColumns.length === 0
           ? 'Define columns in list.yaml to render this table.'
           : null;
 
@@ -332,6 +388,10 @@ export function useFlatpackList({
         pageTitle,
         noContentMessage,
         columns,
+        allColumns,
+        listTabPanels,
+        listActiveTabId,
+        setListActiveTabId,
         filterDefinitions,
         reorderable,
         rowClickEditKey,

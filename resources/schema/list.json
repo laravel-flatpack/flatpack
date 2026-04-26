@@ -1,7 +1,7 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "title": "Flatpack list composition",
-    "description": "Structural contract for entity list.yaml (decoded to JSON). Columns are a discriminated union on type (or default text-like when type is omitted). Filters use oneOf so select/date options match their type.",
+    "description": "Structural contract for entity list.yaml (decoded to JSON). Columns are a discriminated union on type (or default text-like when type is omitted). Filters use oneOf so select/date options match their type. Use top-level `columns` and/or `tabs`; tabbed columns merge into one column set for the data table.",
     "type": "object",
     "properties": {
         "name": {
@@ -64,6 +64,14 @@
                 }
             ]
         },
+        "tabs": {
+            "type": "object",
+            "minProperties": 1,
+            "description": "Keyed tab panels (tab id → panel). Each panel nests `columns` the same shapes as top-level `columns`; runtime merges into one column list.",
+            "additionalProperties": {
+                "$ref": "#/$defs/listTabPanel"
+            }
+        },
         "filters": {
             "type": "object",
             "description": "Keys are column ids; values override or define filter UI for that column.",
@@ -83,6 +91,38 @@
     },
     "additionalProperties": false,
     "$defs": {
+        "listTabPanel": {
+            "type": "object",
+            "required": ["label", "columns"],
+            "properties": {
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "icon": {
+                    "type": "string"
+                },
+                "columns": {
+                    "oneOf": [
+                        {
+                            "type": "array",
+                            "minItems": 1,
+                            "items": {
+                                "$ref": "#/$defs/columnDefinition"
+                            }
+                        },
+                        {
+                            "type": "object",
+                            "minProperties": 1,
+                            "additionalProperties": {
+                                "$ref": "#/$defs/columnDefinition"
+                            }
+                        }
+                    ]
+                }
+            },
+            "additionalProperties": false
+        },
         "validationRules": {
             "description": "Laravel validation rules as a pipe-separated string or list of strings (same as form composition).",
             "oneOf": [

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Flatpack\Services\SaveRecord;
 
+use Flatpack\Schema\CompositionTabsMerge;
 use Flatpack\Schema\Forms\FormFieldType;
 use Illuminate\Database\QueryException;
 
@@ -23,6 +24,8 @@ final class RelationSyncErrorMapper
         if ($column === null || $schema === null) {
             return null;
         }
+
+        $schema = CompositionTabsMerge::form($schema) ?? $schema;
 
         $fields = $schema['fields'] ?? null;
         if (! is_array($fields)) {

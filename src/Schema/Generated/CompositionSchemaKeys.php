@@ -23,6 +23,7 @@ final class CompositionSchemaKeys
         'icon',
         'model',
         'name',
+        'tabs',
     ];
 
     /**
@@ -42,6 +43,7 @@ final class CompositionSchemaKeys
         'nav_order' => 'nav_order',
         'reorderable' => 'reorderable',
         'row_click_edit' => 'row_click_edit',
+        'tabs' => 'tabs',
     ];
 
     /**
@@ -66,6 +68,7 @@ final class CompositionSchemaKeys
         'nav_order',
         'reorderable',
         'row_click_edit',
+        'tabs',
     ];
 
     /**

@@ -179,6 +179,25 @@ export type FlatpackListCompositionBulkActionsYaml = Record<
  *
  * Index signature keeps forward-compatible with YAML additions; known keys match the schema file.
  */
+export type FlatpackListCompositionTabPanelYaml = {
+    label: string;
+    icon?: string;
+    columns: FlatpackListCompositionColumnsYaml;
+};
+
+export type FlatpackListCompositionTabsYaml = Record<
+    string,
+    FlatpackListCompositionTabPanelYaml
+>;
+
+/** After PHP normalization: tab layout for list column visibility groups. */
+export type FlatpackListTabPanelLayout = {
+    id: string;
+    label: string;
+    icon?: string;
+    column_ids: string[];
+};
+
 export type FlatpackListCompositionSchema = {
     [key: string]: unknown;
     name?: string;
@@ -189,6 +208,8 @@ export type FlatpackListCompositionSchema = {
     /** When false, rows do not open the edit page. When a string, names the row field used as the record id in the edit URL. Omit or true: default (server `model_key`, else `id`). */
     row_click_edit?: boolean | string;
     columns?: FlatpackListCompositionColumnsYaml;
+    tabs?: FlatpackListCompositionTabsYaml;
+    tab_panels?: FlatpackListTabPanelLayout[];
     filters?: FlatpackListCompositionFiltersYaml;
     actions?: FlatpackListCompositionListActionsYaml;
     bulk_actions?: FlatpackListCompositionBulkActionsYaml;

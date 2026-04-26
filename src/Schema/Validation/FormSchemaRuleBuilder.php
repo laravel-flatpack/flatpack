@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Flatpack\Schema\Validation;
 
+use Flatpack\Schema\CompositionTabsMerge;
 use Flatpack\Schema\Forms\FormFieldType;
 use Flatpack\Schema\RelationFieldQuery;
 use Illuminate\Validation\Rule;
@@ -25,6 +26,8 @@ final class FormSchemaRuleBuilder
         if ($schema === null) {
             return [];
         }
+
+        $schema = CompositionTabsMerge::form($schema) ?? $schema;
 
         $fields = $schema['fields'] ?? null;
         if (! is_array($fields)) {

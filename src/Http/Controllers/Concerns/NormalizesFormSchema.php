@@ -18,15 +18,32 @@ trait NormalizesFormSchema
      */
     private function hasRenderableFields(?array $schema): bool
     {
-        if ($schema === null || ! array_key_exists('fields', $schema)) {
-            return false;
-        }
-        $fields = $schema['fields'];
-        if (! is_array($fields)) {
+        if ($schema === null) {
             return false;
         }
 
-        return count($fields) > 0;
+        $fields = $schema['fields'] ?? null;
+        if (is_array($fields) && $fields !== []) {
+            return true;
+        }
+
+        $tabs = $schema['tabs'] ?? null;
+        if (! is_array($tabs) || $tabs === []) {
+            return false;
+        }
+
+        foreach ($tabs as $panel) {
+            if (! is_array($panel)) {
+                continue;
+            }
+
+            $tabFields = $panel['fields'] ?? null;
+            if (is_array($tabFields) && $tabFields !== []) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

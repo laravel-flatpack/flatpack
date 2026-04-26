@@ -12,7 +12,7 @@ import type { FlatpackFormPageProps } from '@/types/pages/flatpack';
 
 const NoFieldsMessage = ({ entity }: { entity: string }) => (
     <p className="text-sm text-muted-foreground">
-        Define fields in{' '}
+        Define fields or tabs in{' '}
         <code className="font-mono text-xs bg-muted px-1 py-0.5 rounded-md">{`/${entity}/form.yaml`}</code>{' '}
         to render this form.
     </p>
@@ -25,6 +25,7 @@ export default function FlatpackFormPage(props: FlatpackFormPageProps) {
         form,
         isDirty,
         fields,
+        tabPanels,
         fieldComponents,
         fieldErrors,
         flatpackTopErrors,
@@ -96,10 +97,13 @@ export default function FlatpackFormPage(props: FlatpackFormPageProps) {
                     <FlatpackFormTopErrors errors={flatpackTopErrors} />
 
                     {fields.length > 0 ? (
+                        // Root-only fields (YAML `fields` not listed in any tab panel) render above tabs
+                        // when both `fields` and `tabs` exist; see FlatpackFormFields unassignedEntries.
                         <FlatpackFormFields
                             entity={entity}
                             mode={mode}
                             record={record}
+                            tabPanels={tabPanels}
                             fields={fields}
                             fieldComponents={fieldComponents}
                             fieldErrors={fieldErrors}

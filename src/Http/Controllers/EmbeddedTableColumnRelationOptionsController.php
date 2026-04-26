@@ -8,6 +8,7 @@ use Flatpack\Http\Controllers\Concerns\LoadsFormComposition;
 use Flatpack\Http\Requests\EmbeddedTableColumnRelationOptionsRequest;
 use Flatpack\Http\Response\FlatpackErrorPayload;
 use Flatpack\Http\Response\RelationOptionsPayload;
+use Flatpack\Schema\CompositionTabsMerge;
 use Flatpack\Schema\Forms\FormSchemaFields;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -20,7 +21,8 @@ final readonly class EmbeddedTableColumnRelationOptionsController
     public function __invoke(EmbeddedTableColumnRelationOptionsRequest $request, string $entity): JsonResponse
     {
         $form = $this->loadForm($entity);
-        $schema = $this->loadSchema($entity);
+        $rawSchema = $this->loadSchema($entity);
+        $schema = CompositionTabsMerge::form($rawSchema) ?? $rawSchema;
         $tableFieldId = trim((string) $request->validated('table_field'));
         $columnId = trim((string) $request->validated('column_id'));
 
