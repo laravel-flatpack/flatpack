@@ -102,7 +102,8 @@ export function useFlatpackForm({
         [formActions],
     );
 
-    const pendingSubmitIntentRef = useRef<FlatpackFormSubmitIntent>(defaultIntent);
+    const pendingSubmitIntentRef =
+        useRef<FlatpackFormSubmitIntent>(defaultIntent);
 
     const prepareFormSubmit = useCallback(
         (row: FlatpackListHeaderAction & { action: string }) => {

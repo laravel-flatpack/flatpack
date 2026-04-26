@@ -257,8 +257,7 @@ function FlatpackFormActionRow({
 
     const submitRow = action as FormSubmitToolbarRow;
     const disabledByDirty = flatpackActionDisabledByDirty(action, formIsDirty);
-    const disabled =
-        formProcessing || fieldsLength === 0 || disabledByDirty;
+    const disabled = formProcessing || fieldsLength === 0 || disabledByDirty;
     const showDirtyTooltip =
         disabledByDirty && !formProcessing && fieldsLength > 0;
 
