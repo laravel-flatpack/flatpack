@@ -14,6 +14,7 @@ export type SelectFieldOption = {
 
 export type FormFieldPresetType =
     typeof import('@/lib/generated/composition-schema-keys').FORM_PRESET_TYPES[number];
+export type FormFieldInputFormat = Exclude<FormFieldPresetType, 'exact'>;
 
 export type FormFieldPreset = {
     field: string;
@@ -40,7 +41,10 @@ type WithPlaceholder = {
     placeholder?: string;
 };
 
-type TextFieldProps = FormFieldBase & WithPlaceholder;
+type TextFieldProps = FormFieldBase &
+    WithPlaceholder & {
+        format?: FormFieldInputFormat;
+    };
 type TextareaFieldProps = FormFieldBase &
     WithPlaceholder & {
         rows?: number;

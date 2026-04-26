@@ -1,4 +1,6 @@
 import { cn } from '@/lib/utils';
+import { formatInputValue } from '@/lib/form-field-preset';
+import type { FormFieldInputFormat } from '@/types/form-fields';
 import { Field, FieldContent, FieldDescription, FieldTitle } from '../ui/field';
 import { Input } from '../ui/input';
 
@@ -12,6 +14,7 @@ export const TextField = ({
     onValueChange,
     onBlur,
     onKeyDown,
+    format,
     inline = false,
     inputClassName,
     required = false,
@@ -26,6 +29,7 @@ export const TextField = ({
     onValueChange?: (value: string) => void;
     onBlur?: React.FocusEventHandler<HTMLInputElement>;
     onKeyDown?: React.KeyboardEventHandler<HTMLInputElement>;
+    format?: FormFieldInputFormat;
     inline?: boolean;
     inputClassName?: string;
     required?: boolean;
@@ -46,7 +50,11 @@ export const TextField = ({
             aria-invalid={invalid || undefined}
             required={required}
             className={cn(inputClassName)}
-            onChange={(e) => onValueChange?.(e.target.value)}
+            onChange={(e) =>
+                onValueChange?.(
+                    format ? formatInputValue(e.target.value, format) : e.target.value,
+                )
+            }
             onBlur={onBlur}
             onKeyDown={onKeyDown}
             autoComplete="off"

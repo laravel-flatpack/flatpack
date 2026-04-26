@@ -4,7 +4,7 @@ import type {
     FlatpackTableRelationType,
 } from '@/types/data-table';
 import type { FlatpackActionCondition } from '@/types/flatpack-actions';
-import type { FormFieldPreset } from '@/types/form-fields';
+import type { FormFieldInputFormat, FormFieldPreset } from '@/types/form-fields';
 import type {
     FlatpackListCompositionBulkActionYaml,
     FlatpackListCompositionColumnOptionsYaml,
@@ -63,6 +63,7 @@ export type FlatpackFormCompositionFieldTextYaml = {
     rules?: FlatpackFormCompositionValidationRulesYaml;
     value?: unknown;
     preset?: FormFieldPreset;
+    format?: FormFieldInputFormat;
 };
 
 export type FlatpackFormCompositionFieldTextareaYaml = {

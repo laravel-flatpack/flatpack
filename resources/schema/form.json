@@ -338,7 +338,11 @@
                 "required": { "type": "boolean" },
                 "rules": { "$ref": "#/$defs/validationRules" },
                 "value": {},
-                "preset": { "$ref": "#/$defs/preset" }
+                "preset": { "$ref": "#/$defs/preset" },
+                "format": {
+                    "type": "string",
+                    "enum": ["slug", "url", "camel", "file"]
+                }
             },
             "additionalProperties": false
         },

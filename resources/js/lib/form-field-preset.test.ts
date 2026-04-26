@@ -3,6 +3,7 @@ import {
     applyPresetCascade,
     buildInitialPresetBlockedIds,
     buildPresetEdgesBySourceId,
+    formatInputValue,
     formatPresetValue,
     parsePreset,
 } from '@/lib/form-field-preset';
@@ -46,6 +47,21 @@ describe('formatPresetValue', () => {
         expect(formatPresetValue('a/b:test?.txt', 'file')).toBe(
             'a-b-test-.txt',
         );
+    });
+});
+
+describe('formatInputValue', () => {
+    it('reuses preset formatters except exact', () => {
+        expect(formatInputValue('Hello world', 'slug')).toBe('hello-world');
+        expect(formatInputValue('Hello world', 'url')).toBe('/hello-world');
+        expect(formatInputValue('hello world', 'camel')).toBe('helloWorld');
+        expect(formatInputValue('my file name', 'file')).toBe('my-file-name');
+    });
+
+    it('keeps typed dashes and converts spaces to dashes for slug', () => {
+        expect(formatInputValue('hello-', 'slug')).toBe('hello');
+        expect(formatInputValue('hello ', 'slug')).toBe('hello');
+        expect(formatInputValue('hello - world', 'slug')).toBe('hello-world');
     });
 });
 

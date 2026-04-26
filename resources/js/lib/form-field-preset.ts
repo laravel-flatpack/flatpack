@@ -2,6 +2,7 @@ import { serializeFieldValue } from '@/lib/form-page-field-values';
 import type { FormFieldEntry } from '@/lib/form-schema';
 import { FORM_PRESET_TYPES } from '@/lib/generated/composition-schema-keys';
 import type {
+    FormFieldInputFormat,
     FormFieldPreset,
     FormFieldPresetType,
     FormFieldProps,
@@ -100,6 +101,17 @@ function formatFilePreset(raw: string): string {
         .replace(/^-+|-+$/g, '');
 }
 
+function formatSlugInput(raw: string): string {
+    return raw
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/\p{M}/gu, '')
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9-]+/g, '-')
+        .replace(/-{2,}/g, '-')
+        .replace(/-+$/g, '');
+}
+
 const presetFormatters: Record<FormFieldPresetType, (raw: string) => string> = {
     exact: (raw) => raw,
     slug: (raw) => slugifySegment(raw),
@@ -120,6 +132,21 @@ export function formatPresetValue(
 ): string {
     const raw = toPresetString(source);
     return presetFormatters[presetType](raw);
+}
+
+export function formatInputValue(
+    source: unknown,
+    format: FormFieldInputFormat,
+): string {
+    const raw = toPresetString(source);
+    if (format === 'slug') {
+        return formatSlugInput(raw);
+    }
+    if (format === 'url') {
+        const slug = formatSlugInput(raw);
+        return slug === '' ? '' : `/${slug.replace(/^\/+/, '')}`;
+    }
+    return formatPresetValue(raw, format);
 }
 
 export type PresetEdge = {
