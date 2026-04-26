@@ -100,7 +100,7 @@ export function DataTableBody({
                                     className={cn(
                                         hasRowClick && 'cursor-pointer',
                                         rowMessages.length > 0 &&
-                                            'border-l-2 border-destructive/70 bg-destructive/5',
+                                            'bg-destructive/5',
                                     )}
                                     onClick={
                                         onRowClick
