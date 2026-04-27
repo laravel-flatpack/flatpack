@@ -93,10 +93,13 @@ final class ReorderActionHandler extends FlatpackActionHandler
         }, 3);
     }
 
-    private function resolveReorderColumn(FlatpackActionContext $context): string
+    /**
+     * Same resolution rules as {@see HandlesReorderRecord::resolveReorderColumn()} (nullable for controller guards).
+     *
+     * @param  array<string, mixed>  $schema
+     */
+    public static function reorderColumnFromSchema(array $schema): ?string
     {
-        $schema = $context->schema ?? [];
-
         $normalized = $schema['reorderableColumn'] ?? null;
         if (is_string($normalized) && trim($normalized) !== '') {
             return trim($normalized);
@@ -110,6 +113,16 @@ final class ReorderActionHandler extends FlatpackActionHandler
             return trim($reorderable);
         }
 
-        throw new InvalidArgumentException('Cannot reorder records: reorderable column is not configured.');
+        return null;
+    }
+
+    private function resolveReorderColumn(FlatpackActionContext $context): string
+    {
+        $column = self::reorderColumnFromSchema($context->schema ?? []);
+        if ($column === null || trim($column) === '') {
+            throw new InvalidArgumentException('Cannot reorder records: reorderable column is not configured.');
+        }
+
+        return trim($column);
     }
 }

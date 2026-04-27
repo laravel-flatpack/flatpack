@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Flatpack\Http\Controllers\Concerns;
 
 use Flatpack\Actions\FlatpackActionContext;
+use Flatpack\Actions\Handlers\ReorderActionHandler;
 use Flatpack\Contracts\Actions\FlatpackAction;
 use Flatpack\Support\Exceptions\ActionRuntimeException;
 use Illuminate\Database\Eloquent\Model;
@@ -22,20 +23,7 @@ trait HandlesReorderRecord
      */
     private function resolveReorderColumn(array $schema): ?string
     {
-        $normalized = $schema['reorderableColumn'] ?? null;
-        if (is_string($normalized) && trim($normalized) !== '') {
-            return trim($normalized);
-        }
-
-        $reorderable = $schema['reorderable'] ?? null;
-        if ($reorderable === true || $reorderable === 'true') {
-            return 'sort_order';
-        }
-        if (is_string($reorderable) && trim($reorderable) !== '') {
-            return trim($reorderable);
-        }
-
-        return null;
+        return ReorderActionHandler::reorderColumnFromSchema($schema);
     }
 
     /**
