@@ -10,7 +10,7 @@ use Illuminate\Foundation\Http\FormRequest;
 /**
  * Validates POST payloads for {@see \Flatpack\Http\Controllers\EntityActionController::bulkAction}.
  *
- * Selection may be {@code all}, a list of ids under {@code selection} or {@code ids}, plus optional filters/search.
+ * Selection may be {@code all} or a list of ids under {@code selection}, plus optional filters/search.
  */
 final class BulkActionRequest extends FormRequest
 {
@@ -27,8 +27,6 @@ final class BulkActionRequest extends FormRequest
         return [
             'action' => ['required', 'string', 'max:255'],
             'selection' => ['nullable'],
-            'ids' => ['nullable', 'array'],
-            'ids.*' => ['string', 'max:65535'],
             'filters' => ['nullable', 'array'],
             'search' => ['nullable', 'string', 'max:65535'],
         ];

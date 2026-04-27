@@ -37,7 +37,6 @@ final readonly class FlatpackBulkActionContext
     ): self {
         $selection = $request->input('selection');
         if ($selection !== 'all') {
-            $selection = $request->input('ids', $selection);
             $selection = is_array($selection) ? $selection : [];
         }
 
