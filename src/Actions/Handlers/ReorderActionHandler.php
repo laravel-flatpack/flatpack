@@ -6,6 +6,7 @@ namespace Flatpack\Actions\Handlers;
 
 use Flatpack\Actions\FlatpackActionContext;
 use Flatpack\Contracts\Authorization\FlatpackAuthorizer;
+use Flatpack\Support\ReorderColumnResolver;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -93,32 +94,9 @@ final class ReorderActionHandler extends FlatpackActionHandler
         }, 3);
     }
 
-    /**
-     * Same resolution rules as {@see HandlesReorderRecord::resolveReorderColumn()} (nullable for controller guards).
-     *
-     * @param  array<string, mixed>  $schema
-     */
-    public static function reorderColumnFromSchema(array $schema): ?string
-    {
-        $normalized = $schema['reorderableColumn'] ?? null;
-        if (is_string($normalized) && trim($normalized) !== '') {
-            return trim($normalized);
-        }
-
-        $reorderable = $schema['reorderable'] ?? null;
-        if ($reorderable === true || $reorderable === 'true') {
-            return 'sort_order';
-        }
-        if (is_string($reorderable) && trim($reorderable) !== '') {
-            return trim($reorderable);
-        }
-
-        return null;
-    }
-
     private function resolveReorderColumn(FlatpackActionContext $context): string
     {
-        $column = self::reorderColumnFromSchema($context->schema ?? []);
+        $column = ReorderColumnResolver::reorderColumnFromSchema($context->schema ?? []);
         if ($column === null || trim($column) === '') {
             throw new InvalidArgumentException('Cannot reorder records: reorderable column is not configured.');
         }

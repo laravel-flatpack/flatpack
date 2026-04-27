@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Flatpack\Http\Controllers\Concerns;
 
 use Flatpack\Actions\FlatpackActionContext;
-use Flatpack\Actions\Handlers\ReorderActionHandler;
 use Flatpack\Contracts\Actions\FlatpackAction;
 use Flatpack\Support\Exceptions\ActionRuntimeException;
+use Flatpack\Support\ReorderColumnResolver;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
@@ -23,7 +23,7 @@ trait HandlesReorderRecord
      */
     private function resolveReorderColumn(array $schema): ?string
     {
-        return ReorderActionHandler::reorderColumnFromSchema($schema);
+        return ReorderColumnResolver::reorderColumnFromSchema($schema);
     }
 
     /**
