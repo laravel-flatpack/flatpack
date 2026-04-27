@@ -89,7 +89,6 @@ trait HandlesReorderRecord
         string $entity,
         string $record,
         string $modelClass,
-        string $column,
         array $schema,
         Model $model,
     ): Model|JsonResponse {
@@ -101,11 +100,6 @@ trait HandlesReorderRecord
                 modelClass: $modelClass,
                 record: $record,
                 compositionType: 'list',
-                composition: [
-                    'model' => $modelClass,
-                    'reorderableColumn' => $column,
-                    'reorderable' => $schema['reorderable'] ?? null,
-                ],
                 schema: $schema,
                 model: $model,
             ));

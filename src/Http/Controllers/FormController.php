@@ -145,7 +145,6 @@ final readonly class FormController
                 modelClass: $modelClass,
                 record: $record,
                 compositionType: 'form',
-                composition: $schema ?? [],
                 schema: $schema,
                 model: $model,
             ));

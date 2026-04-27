@@ -212,7 +212,6 @@ final readonly class EntityActionController
             entity: $entity,
             record: $record,
             modelClass: $modelClass,
-            column: $column,
             schema: $schema,
             model: $model,
         );

@@ -81,7 +81,6 @@ trait HandlesListActions
                 modelClass: $modelClass,
                 record: $record,
                 compositionType: 'list',
-                composition: $schema ?? [],
                 schema: $schema,
                 model: $model,
             )

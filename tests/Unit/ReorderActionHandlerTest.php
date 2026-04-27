@@ -104,10 +104,6 @@ function reorderContext(
         modelClass: Post::class,
         record: $record,
         compositionType: 'list',
-        composition: [
-            'model' => Post::class,
-            'reorderableColumn' => $reorderableColumn,
-        ],
         schema: [
             'model' => Post::class,
             'reorderable' => true,

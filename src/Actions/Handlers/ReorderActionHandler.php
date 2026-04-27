@@ -89,11 +89,14 @@ final class ReorderActionHandler extends FlatpackActionHandler
 
     private function resolveReorderColumn(FlatpackActionContext $context): string
     {
-        $normalized = $context->composition['reorderableColumn'] ?? null;
+        $schema = $context->schema ?? [];
+
+        $normalized = $schema['reorderableColumn'] ?? null;
         if (is_string($normalized) && trim($normalized) !== '') {
             return trim($normalized);
         }
-        $reorderable = $context->schema['reorderable'] ?? $context->composition['reorderable'] ?? null;
+
+        $reorderable = $schema['reorderable'] ?? null;
         if ($reorderable === true || $reorderable === 'true') {
             return 'sort_order';
         }

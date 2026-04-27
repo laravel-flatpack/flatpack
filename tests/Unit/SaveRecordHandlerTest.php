@@ -30,17 +30,6 @@ test('save record handler supports writable fields from form schema', function (
         modelClass: Post::class,
         record: (string) $post->getKey(),
         compositionType: 'form',
-        composition: [
-            'model' => Post::class,
-            'schema' => [
-                'fields' => [
-                    'title' => [
-                        'type' => 'text',
-                        'label' => 'Title',
-                    ],
-                ],
-            ],
-        ],
         schema: [
             'fields' => [
                 'title' => [
@@ -72,25 +61,6 @@ test('save record handler creates a new model from form schema', function () {
         modelClass: Post::class,
         record: null,
         compositionType: 'form',
-        composition: [
-            'model' => Post::class,
-            'schema' => [
-                'fields' => [
-                    'title' => [
-                        'type' => 'text',
-                        'label' => 'Title',
-                    ],
-                    'slug' => [
-                        'type' => 'text',
-                        'label' => 'Slug',
-                    ],
-                    'status' => [
-                        'type' => 'select',
-                        'label' => 'Status',
-                    ],
-                ],
-            ],
-        ],
         schema: [
             'fields' => [
                 'title' => [
