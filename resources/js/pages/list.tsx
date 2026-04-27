@@ -45,6 +45,8 @@ export default function FlatpackListPage(props: FlatpackListPageProps) {
         executeListAction,
         handleCellUpdate,
         handleRowUpdate,
+        reorderEndpoint,
+        handleReorderError,
         records,
         pagination,
         searchTerm,
@@ -173,6 +175,8 @@ export default function FlatpackListPage(props: FlatpackListPageProps) {
                             onRowAction={handleRowAction}
                             onCellUpdate={handleCellUpdate}
                             onRowUpdate={handleRowUpdate}
+                            reorderEndpoint={reorderEndpoint}
+                            reorderOnError={handleReorderError}
                             onServerPaginationChange={
                                 pagination
                                     ? handleServerPaginationChange

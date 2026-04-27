@@ -211,6 +211,64 @@ describe('FlatpackListPage', () => {
         expect(screen.getByRole('tab', { name: 'Trash' })).toBeInTheDocument();
     });
 
+    it('switching tabs sends only tab query param', async () => {
+        render(
+            <FlatpackListPage
+                entity="posts"
+                name="Posts"
+                active_tab="records"
+                schema={{
+                    columns: {
+                        id: { label: 'ID' },
+                        title: { label: 'Title' },
+                    },
+                    tab_panels: [
+                        {
+                            id: 'records',
+                            label: 'All records',
+                            column_ids: ['id', 'title'],
+                        },
+                        {
+                            id: 'trash',
+                            label: 'Trash',
+                            column_ids: ['id', 'title'],
+                        },
+                    ],
+                }}
+                records={[{ id: 1, title: 'Hello' }]}
+                pagination={{
+                    current_page: 1,
+                    last_page: 1,
+                    per_page: 10,
+                    total: 1,
+                    from: 1,
+                    to: 1,
+                }}
+                search_term=""
+                filter_values={{
+                    status: null,
+                    published_at: null,
+                    created_at: null,
+                }}
+                sorting={{
+                    sort_by: 'sorting_order',
+                    sort_direction: 'asc',
+                }}
+            />,
+        );
+
+        const trashTab = screen.getByRole('tab', { name: 'Trash' });
+        fireEvent.mouseDown(trashTab);
+        fireEvent.click(trashTab);
+
+        await waitFor(() => {
+            expect(routerGet).toHaveBeenCalled();
+        });
+        const lastCall = routerGet.mock.calls.at(-1);
+        expect(lastCall?.[0]).toBe('/flatpack/posts');
+        expect(lastCall?.[1]).toEqual({ tab: 'trash' });
+    });
+
     it('shows row and header selection checkboxes when bulk actions are present', () => {
         render(
             <FlatpackListPage
@@ -335,6 +393,54 @@ describe('FlatpackListPage', () => {
         fireEvent.click(screen.getByRole('cell', { name: 'Hello' }));
 
         expect(routerGet).toHaveBeenCalledWith('/flatpack/posts/abc-123/edit');
+    });
+
+    it('search request omits empty filters and unset sorting params', async () => {
+        render(
+            <FlatpackListPage
+                entity="posts"
+                schema={{
+                    columns: {
+                        id: { label: 'ID' },
+                        title: { label: 'Title', searchable: true },
+                    },
+                }}
+                records={[{ id: 42, title: 'Hello' }]}
+                pagination={{
+                    current_page: 1,
+                    last_page: 1,
+                    per_page: 10,
+                    total: 1,
+                    from: 1,
+                    to: 1,
+                }}
+                search_term=""
+                filter_values={{
+                    status: null,
+                    published_at: null,
+                    created_at: null,
+                }}
+                sorting={{
+                    sort_by: null,
+                    sort_direction: null,
+                }}
+            />,
+        );
+
+        fireEvent.change(screen.getByPlaceholderText('Search…'), {
+            target: { value: 'hello' },
+        });
+
+        await waitFor(() => {
+            expect(routerGet).toHaveBeenCalled();
+        });
+        const lastCall = routerGet.mock.calls.at(-1);
+        expect(lastCall?.[0]).toBe('/flatpack/posts');
+        expect(lastCall?.[1]).toEqual({
+            page: 1,
+            per_page: 10,
+            search: 'hello',
+        });
     });
 
     it('does not navigate on row click when row_click is omitted', () => {

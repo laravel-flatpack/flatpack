@@ -36,6 +36,10 @@ Route::middleware(['auth:' . config('flatpack.guard', 'web'), EnsureFlatpackAcce
     Route::post('{entity}/action', [EntityActionController::class, 'listAction'])->name('entities.action');
     /** Executes a row-level action against a specific record. */
     Route::post('{entity}/{record}/action', [EntityActionController::class, 'rowAction'])->name('entities.row-action');
+    /** Persists drag-and-drop record ordering in one request. */
+    Route::patch('{entity}/{record}/reorder', [EntityActionController::class, 'reorderRecord'])
+        ->middleware('throttle:60,1')
+        ->name('entities.row-reorder');
     /** Persists inline edits for a specific list record. */
     Route::patch('{entity}/{record}', [EntityActionController::class, 'updateRecord'])->name('entities.update');
 

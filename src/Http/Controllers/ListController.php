@@ -93,7 +93,7 @@ final readonly class ListController
 
     /**
      * @param  array<string, mixed>|null  $schema
-     * @return array{id: string, scope?: string, reorderable?: bool|string, row_click?: string, columns?: mixed, filters?: mixed, bulk_actions?: mixed}|null
+     * @return array{id: string, scope?: string, reorderable?: bool|string, reorderableColumn?: string, row_click?: string, columns?: mixed, filters?: mixed, bulk_actions?: mixed}|null
      */
     private function resolveActiveTabDefinition(?array $schema, string $requestedTabId): ?array
     {
@@ -102,7 +102,7 @@ final readonly class ListController
             return null;
         }
 
-        /** @var list<array{id: string, scope?: string, reorderable?: bool|string, row_click?: string, columns?: mixed, filters?: mixed, bulk_actions?: mixed}> $panels */
+        /** @var list<array{id: string, scope?: string, reorderable?: bool|string, reorderableColumn?: string, row_click?: string, columns?: mixed, filters?: mixed, bulk_actions?: mixed}> $panels */
         $panels = [];
         foreach ($tabs as $tabId => $panel) {
             $id = trim((string) $tabId);
@@ -122,6 +122,9 @@ final readonly class ListController
                 $entry['reorderable'] = $panel['reorderable'];
             } elseif (is_string($panel['reorderable'] ?? null) && trim($panel['reorderable']) !== '') {
                 $entry['reorderable'] = trim($panel['reorderable']);
+            }
+            if (is_string($panel['reorderableColumn'] ?? null) && trim($panel['reorderableColumn']) !== '') {
+                $entry['reorderableColumn'] = trim($panel['reorderableColumn']);
             }
             $rowClick = $panel['row_click'] ?? null;
             if (is_string($rowClick) && in_array($rowClick, ['none', 'edit_page', 'edit_modal', 'edit_drawer'], true)) {
@@ -157,7 +160,7 @@ final readonly class ListController
 
     /**
      * @param  array<string, mixed>|null  $schema
-     * @param  array{id: string, scope?: string, reorderable?: bool|string, row_click?: string, columns?: mixed, filters?: mixed, bulk_actions?: mixed}|null  $activeTab
+     * @param  array{id: string, scope?: string, reorderable?: bool|string, reorderableColumn?: string, row_click?: string, columns?: mixed, filters?: mixed, bulk_actions?: mixed}|null  $activeTab
      * @return array<string, mixed>|null
      */
     private function schemaForActiveTab(?array $schema, ?array $activeTab): ?array
@@ -185,6 +188,9 @@ final readonly class ListController
         }
         if (isset($activeTab['reorderable']) && (is_bool($activeTab['reorderable']) || is_string($activeTab['reorderable']))) {
             $out['reorderable'] = $activeTab['reorderable'];
+        }
+        if (isset($activeTab['reorderableColumn']) && is_string($activeTab['reorderableColumn'])) {
+            $out['reorderableColumn'] = $activeTab['reorderableColumn'];
         }
         if (isset($activeTab['row_click']) && is_string($activeTab['row_click'])) {
             $out['row_click'] = $activeTab['row_click'];

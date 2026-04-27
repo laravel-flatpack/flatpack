@@ -44,6 +44,79 @@ function isColumnsYaml(
     );
 }
 
+type ListQuerySorting = {
+    sort_by: string | null;
+    sort_direction: 'asc' | 'desc' | null;
+};
+
+function sanitizeQueryFilters(
+    filters?: Record<string, string | string[] | null>,
+): Record<string, string | string[] | null> | undefined {
+    if (filters == null) {
+        return undefined;
+    }
+    const entries = Object.entries(filters).filter(([, value]) => {
+        if (value == null) {
+            return false;
+        }
+        if (Array.isArray(value)) {
+            return value.length > 0;
+        }
+        return value.trim() !== '';
+    });
+    if (entries.length === 0) {
+        return undefined;
+    }
+
+    return Object.fromEntries(entries);
+}
+
+function buildListQueryParams({
+    page,
+    perPage,
+    search,
+    filters,
+    sorting,
+    tab,
+}: {
+    page?: number;
+    perPage?: number;
+    search?: string;
+    filters?: Record<string, string | string[] | null>;
+    sorting?: ListQuerySorting;
+    tab?: string | null;
+}): Record<string, unknown> {
+    const payload: Record<string, unknown> = {};
+    if (page != null) {
+        payload.page = page;
+    }
+    if (perPage != null) {
+        payload.per_page = perPage;
+    }
+    const normalizedSearch = search?.trim() ?? '';
+    if (normalizedSearch !== '') {
+        payload.search = normalizedSearch;
+    }
+    const normalizedFilters = sanitizeQueryFilters(filters);
+    if (normalizedFilters != null) {
+        payload.filters = normalizedFilters;
+    }
+    if (sorting?.sort_by != null && sorting.sort_by.trim() !== '') {
+        payload.sort_by = sorting.sort_by;
+    }
+    if (
+        sorting?.sort_direction != null &&
+        (sorting.sort_direction === 'asc' || sorting.sort_direction === 'desc')
+    ) {
+        payload.sort_direction = sorting.sort_direction;
+    }
+    if (tab != null && tab.trim() !== '') {
+        payload.tab = tab;
+    }
+
+    return payload;
+}
+
 export function useFlatpackList({
     entity,
     name,
@@ -133,15 +206,9 @@ export function useFlatpackList({
             setListActiveTabId(tabId);
             router.get(
                 route('flatpack.entities.index', { entity }),
-                {
-                    page: 1,
-                    per_page: pagination?.per_page ?? 10,
-                    search: searchTerm,
-                    filters: serverFilterValues,
-                    sort_by: serverSorting.sort_by ?? null,
-                    sort_direction: serverSorting.sort_direction ?? null,
+                buildListQueryParams({
                     tab: tabId,
-                },
+                }) as never,
                 {
                     preserveState: true,
                     preserveScroll: true,
@@ -156,15 +223,7 @@ export function useFlatpackList({
                 },
             );
         },
-        [
-            entity,
-            listTabPanels,
-            pagination?.per_page,
-            searchTerm,
-            serverActiveTab,
-            serverFilterValues,
-            serverSorting,
-        ],
+        [entity, listTabPanels, serverActiveTab],
     );
 
     const filterDefinitions = useMemo(
@@ -179,9 +238,11 @@ export function useFlatpackList({
     );
 
     const reorderable =
-        typeof schema?.reorderable === 'string'
-            ? schema.reorderable
-            : schema?.reorderable === true;
+        typeof schema?.reorderableColumn === 'string'
+            ? schema.reorderableColumn
+            : typeof schema?.reorderable === 'string'
+              ? schema.reorderable
+              : schema?.reorderable === true;
     const rowClickBehavior = schema?.row_click ?? 'none';
     const isRowClickEditPage = rowClickBehavior === 'edit_page';
     const rowClickRecordKey = modelKey || 'id';
@@ -229,15 +290,14 @@ export function useFlatpackList({
         ) => {
             router.get(
                 route('flatpack.entities.index', { entity }),
-                {
+                buildListQueryParams({
                     page,
-                    per_page: perPage,
+                    perPage,
                     search,
                     filters,
-                    sort_by: sorting?.sort_by ?? null,
-                    sort_direction: sorting?.sort_direction ?? null,
+                    sorting,
                     tab: listActiveTabId,
-                },
+                }) as never,
                 {
                     preserveState: true,
                     preserveScroll: true,
@@ -451,6 +511,24 @@ export function useFlatpackList({
         [entity, modelKey],
     );
 
+    const reorderEndpoint = useCallback(
+        (item: Record<string, unknown>) => {
+            const record = item[modelKey || 'id'];
+            if (record == null || record === '') {
+                return '';
+            }
+            return route('flatpack.entities.row-reorder', {
+                entity,
+                record: String(record),
+            });
+        },
+        [entity, modelKey],
+    );
+
+    const handleReorderError = useCallback(() => {
+        toast.error('Reorder failed');
+    }, []);
+
     const noContentMessage = !displayName
         ? 'Nothing to list yet.'
         : allColumns.length === 0
@@ -481,6 +559,8 @@ export function useFlatpackList({
         executeListAction,
         handleCellUpdate,
         handleRowUpdate,
+        reorderEndpoint,
+        handleReorderError,
         records,
         pagination,
         searchTerm,

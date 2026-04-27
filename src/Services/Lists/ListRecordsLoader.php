@@ -128,11 +128,22 @@ final readonly class ListRecordsLoader
             $filters,
         );
         FilterProcessor::applyToQuery($query, $filterDefinitions, $normalizedFilterValues);
+        $defaultSortBy = $this->defaultSortColumnFromSchema($schema);
+        $defaultSortDirection = $defaultSortBy === null ? 'desc' : 'asc';
+        $sortableColumns = SchemaInspector::sortableColumnIds($schema);
+        if (
+            $defaultSortBy !== null
+            && ! in_array($defaultSortBy, $sortableColumns, true)
+        ) {
+            $sortableColumns[] = $defaultSortBy;
+        }
         $normalizedSorting = SortingProcessor::normalize(
             $sortBy,
             $sortDirection,
-            SchemaInspector::sortableColumnIds($schema),
+            $sortableColumns,
             $model->getKeyName(),
+            $defaultSortBy,
+            $defaultSortDirection,
         );
         SortingProcessor::applyToQuery(
             $query,
@@ -177,6 +188,29 @@ final readonly class ListRecordsLoader
             return;
         }
         $query->{$scopeName}();
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $schema
+     */
+    private function defaultSortColumnFromSchema(?array $schema): ?string
+    {
+        if (! is_array($schema)) {
+            return null;
+        }
+        $resolved = $schema['reorderableColumn'] ?? null;
+        if (is_string($resolved) && trim($resolved) !== '') {
+            return trim($resolved);
+        }
+        $reorderable = $schema['reorderable'] ?? null;
+        if ($reorderable === true || $reorderable === 'true') {
+            return 'sort_order';
+        }
+        if (is_string($reorderable) && trim($reorderable) !== '') {
+            return trim($reorderable);
+        }
+
+        return null;
     }
 
     /**

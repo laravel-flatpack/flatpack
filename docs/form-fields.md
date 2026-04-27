@@ -289,3 +289,30 @@ fields:
 | `table_relation_type` | `belongs_to_many \| has_many \| morph_many \| morph_to_many \| has_one \| unknown` | Relation class hint/override. |
 | `row_detail_drawer` | `boolean` | Disables/enables row detail drawer open on row click. |
 
+### `table.reorderable`
+
+`reorderable` on table fields enables drag-and-drop row ordering inside form pages.
+
+- `reorderable: true` uses the default `sort_order` column.
+- `reorderable: sorting_order` uses the provided custom column.
+- No trait is required on your models; Flatpack handles reorder persistence.
+
+Example:
+
+```yaml
+fields:
+  comments:
+    type: table
+    relation: comments
+    reorderable: true
+    columns:
+      body:
+        type: text
+        label: Body
+```
+
+Persistence requirements:
+
+- The configured reorder column must exist on the related model table.
+- Existing rows should already have contiguous values (`1..n`) in that column before enabling reordering.
+

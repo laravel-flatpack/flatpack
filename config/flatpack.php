@@ -6,6 +6,7 @@ use Flatpack\Actions\Handlers\BulkDeleteHandler;
 use Flatpack\Actions\Handlers\CreateRecordHandler;
 use Flatpack\Actions\Handlers\DeleteRecordHandler;
 use Flatpack\Actions\Handlers\EditRecordHandler;
+use Flatpack\Actions\Handlers\ReorderActionHandler;
 use Flatpack\Actions\Handlers\SaveRecordHandler;
 use Flatpack\Http\Controllers\SessionController;
 
@@ -92,6 +93,7 @@ return [
         'edit' => EditRecordHandler::class,
         'save' => SaveRecordHandler::class,
         'delete' => DeleteRecordHandler::class,
+        'reorder' => ReorderActionHandler::class,
     ],
 
     /*

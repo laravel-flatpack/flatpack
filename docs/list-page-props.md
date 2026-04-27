@@ -99,3 +99,39 @@ Same shape as form actions, with one-of requirement: exactly one of `action` or 
 | `enabled_if` | `object` | No | Conditional enablement predicate. |
 | `visible_if` | `object` | No | Conditional visibility predicate. |
 
+## Reordering column behavior
+
+`reorderable` accepts both boolean and string values:
+
+- `reorderable: true` uses the default reorder column (`sort_order`).
+- `reorderable: custom_column_name` uses that exact column for drag-and-drop persistence.
+
+Example:
+
+```yaml
+reorderable: custom_column_name
+```
+
+Persistence requirements:
+
+- The configured reorder column must exist in the entity database table.
+- The value must be writable by the model/update flow.
+- On drag-and-drop, Flatpack persists the new row order by updating that column per row.
+- If the column is missing, reorder fails and the UI shows an error toast.
+- No trait is required on your model; reordering is handled internally by Flatpack.
+- The reorder endpoint is rate limited with `throttle:60,1`.
+
+Migration snippet:
+
+```php
+$table->unsignedBigInteger('sort_order')->default(0)->index();
+// or for a custom column:
+$table->unsignedBigInteger('sorting_order')->default(0)->index();
+```
+
+If the table already has rows, initialize contiguous values before enabling `reorderable`:
+
+```php
+Post::orderBy('id')->each(fn($p, $i) => $p->update(['sort_order' => $i + 1]));
+```
+

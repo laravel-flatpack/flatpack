@@ -168,6 +168,13 @@ export type DataTableRowUpdatePayload<
     row: TRow;
 };
 
+export type DataTableReorderPayload<TRow extends DataTableRow = DataTableRow> =
+    {
+        rows: TRow[];
+        movedRow: TRow;
+        reorderKey: string;
+    };
+
 export type FlatpackListServerPagination = {
     current_page: number;
     last_page: number;
@@ -354,6 +361,8 @@ export type DataTableProps<TRow extends DataTableRow = DataTableRow> = {
     onRowUpdate?: (
         payload: DataTableRowUpdatePayload<TRow>,
     ) => void | Promise<void>;
+    reorderEndpoint?: (item: TRow) => string;
+    reorderOnError?: () => void;
     className?: string;
     toolbarStart?: ReactNode;
     toolbarAfterColumns?: ReactNode;

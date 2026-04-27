@@ -17,10 +17,21 @@ final class SortingProcessor
         string $sortDirection,
         array $sortableColumns,
         string $modelKeyName,
+        ?string $defaultSortBy = null,
+        string $defaultSortDirection = 'desc',
     ): array {
         $direction = mb_strtolower(trim($sortDirection)) === 'asc' ? 'asc' : 'desc';
         $requestedSortBy = trim((string) $sortBy);
         if ($requestedSortBy === '') {
+            $fallbackSortBy = trim((string) $defaultSortBy);
+            $fallbackDirection = mb_strtolower(trim($defaultSortDirection)) === 'asc' ? 'asc' : 'desc';
+            if ($fallbackSortBy !== '') {
+                return [
+                    'sort_by' => $fallbackSortBy,
+                    'sort_direction' => $fallbackDirection,
+                ];
+            }
+
             return [
                 'sort_by' => $modelKeyName,
                 'sort_direction' => 'desc',

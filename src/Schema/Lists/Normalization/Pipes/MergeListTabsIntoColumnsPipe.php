@@ -15,6 +15,8 @@ final readonly class MergeListTabsIntoColumnsPipe
 {
     public function handle(ListSchemaPipelineState $state, Closure $next): mixed
     {
+        $this->applyReorderableColumn($state->schema);
+
         $tabs = $state->schema['tabs'] ?? null;
         if (! is_array($tabs) || $tabs === []) {
             return $next($state);
@@ -84,7 +86,7 @@ final readonly class MergeListTabsIntoColumnsPipe
         /** @var list<string> $rootColumnIds */
         $rootColumnIds = $mergedOrder;
 
-        /** @var list<array{id: string, label: string, icon?: string, scope?: string, reorderable?: bool|string, row_click?: string, columns?: mixed, filters?: mixed, bulk_actions?: mixed, column_ids: list<string>}> $tabPanels */
+        /** @var list<array{id: string, label: string, icon?: string, scope?: string, reorderable?: bool|string, reorderableColumn?: string, row_click?: string, columns?: mixed, filters?: mixed, bulk_actions?: mixed, column_ids: list<string>}> $tabPanels */
         $tabPanels = [];
 
         foreach ($tabs as $tabId => $panel) {
@@ -172,6 +174,10 @@ final readonly class MergeListTabsIntoColumnsPipe
             }
             if ($reorderable !== null) {
                 $entry['reorderable'] = $reorderable;
+                $resolvedTabColumn = $this->resolveReorderableColumn($reorderable);
+                if ($resolvedTabColumn !== null) {
+                    $entry['reorderableColumn'] = $resolvedTabColumn;
+                }
             }
             if ($rowClick !== null) {
                 $entry['row_click'] = $rowClick;
@@ -202,5 +208,28 @@ final readonly class MergeListTabsIntoColumnsPipe
         unset($state->schema['tabs']);
 
         return $next($state);
+    }
+
+    /**
+     * @param  array<string, mixed>  $schema
+     */
+    private function applyReorderableColumn(array &$schema): void
+    {
+        $resolved = $this->resolveReorderableColumn($schema['reorderable'] ?? null);
+        if ($resolved !== null) {
+            $schema['reorderableColumn'] = $resolved;
+        }
+    }
+
+    private function resolveReorderableColumn(mixed $reorderable): ?string
+    {
+        if ($reorderable === true || $reorderable === 'true') {
+            return 'sort_order';
+        }
+        if (is_string($reorderable) && trim($reorderable) !== '') {
+            return trim($reorderable);
+        }
+
+        return null;
     }
 }

@@ -184,6 +184,7 @@ export type FlatpackListCompositionTabPanelYaml = {
     icon?: string;
     scope?: string;
     reorderable?: boolean | string;
+    reorderableColumn?: string;
     row_click?: 'none' | 'edit_page' | 'edit_modal' | 'edit_drawer';
     columns?: FlatpackListCompositionColumnsYaml;
     filters?: FlatpackListCompositionFiltersYaml;
@@ -203,6 +204,7 @@ export type FlatpackListTabPanelLayout = {
     icon?: string;
     scope?: string;
     reorderable?: boolean | string;
+    reorderableColumn?: string;
     row_click?: 'none' | 'edit_page' | 'edit_modal' | 'edit_drawer';
     columns?: FlatpackListCompositionColumnsYaml;
     filters?: FlatpackListCompositionFiltersYaml;
@@ -217,6 +219,7 @@ export type FlatpackListCompositionSchema = {
     icon?: string;
     nav_order?: number;
     reorderable?: boolean | string;
+    reorderableColumn?: string;
     /** Row click behavior. Default `none`; `edit_page` navigates to edit route. */
     row_click?: 'none' | 'edit_page' | 'edit_modal' | 'edit_drawer';
     columns?: FlatpackListCompositionColumnsYaml;

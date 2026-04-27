@@ -23,6 +23,7 @@ type DataTableBodyWithFooterProps = {
     rowCountLabel: string;
     onDragEnd: (event: DragEndEvent) => void;
     rowValidationMessagesById: DataTableRowValidationMessagesById;
+    isReordering: boolean;
 };
 
 /**
@@ -37,6 +38,7 @@ export function DataTableBodyWithFooter({
     rowCountLabel,
     onDragEnd,
     rowValidationMessagesById,
+    isReordering,
 }: DataTableBodyWithFooterProps): React.JSX.Element {
     const paginationStateCurrent = table.getState().pagination;
 
@@ -53,6 +55,11 @@ export function DataTableBodyWithFooter({
     return (
         <>
             <div className="overflow-hidden rounded-lg border">
+                {isReordering ? (
+                    <div className="px-3 py-1 text-right text-xs text-muted-foreground">
+                        Saving...
+                    </div>
+                ) : null}
                 {isReorderable ? (
                     <React.Suspense fallback={tableBody}>
                         <LazyDataTableDndWrapper onDragEnd={onDragEnd}>

@@ -10,6 +10,7 @@ use Flatpack\Http\Requests\Concerns\InteractsWithFlatpackAuthorization;
 use Flatpack\Schema\Validation\ListSchemaRuleBuilder;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
 use Override;
 
 /**
@@ -90,6 +91,33 @@ final class ListRecordUpdateRequest extends FormRequest
         );
     }
 
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator): void {
+            $values = $this->input('values');
+            if (! is_array($values)) {
+                return;
+            }
+
+            $allowedFields = $this->editableListFieldIds();
+
+            foreach ($values as $field => $_value) {
+                if (! is_string($field)) {
+                    continue;
+                }
+                $id = trim($field);
+                if ($id === '' || in_array($id, $allowedFields, true)) {
+                    continue;
+                }
+
+                $validator->errors()->add(
+                    'values.' . $id,
+                    sprintf('Field "%s" is not editable for this list.', $id),
+                );
+            }
+        });
+    }
+
     #[Override]
     protected function prepareForValidation(): void
     {
@@ -103,5 +131,37 @@ final class ListRecordUpdateRequest extends FormRequest
                 'values' => [$field => $this->input('value')],
             ]);
         }
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function editableListFieldIds(): array
+    {
+        $entity = trim((string) $this->route('entity', ''));
+        if ($entity === '') {
+            return [];
+        }
+
+        $entityComposition = $this->container->make(EntityComposition::class);
+        $list = $entityComposition->listFor($entity);
+        $modelClass = trim((string) ($list->model ?? ''));
+        $schema = $entityComposition->listSchema($entity);
+        $builder = $this->container->make(ListSchemaRuleBuilder::class);
+        $valueRules = $builder->rulesForValues($schema, $modelClass);
+
+        $fields = [];
+        foreach (array_keys($valueRules) as $ruleKey) {
+            if (! is_string($ruleKey) || ! str_starts_with($ruleKey, 'values.')) {
+                continue;
+            }
+            $id = mb_substr($ruleKey, mb_strlen('values.'));
+            if ($id === '') {
+                continue;
+            }
+            $fields[] = $id;
+        }
+
+        return $fields;
     }
 }

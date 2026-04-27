@@ -4,27 +4,26 @@ declare(strict_types=1);
 
 namespace Flatpack\Http\Controllers;
 
-use Flatpack\Actions\EntityActionExecutor;
-use Flatpack\Actions\FlatpackActionContext;
 use Flatpack\Actions\FlatpackBulkActionContext;
+use Flatpack\Http\Controllers\Concerns\HandlesListActions;
+use Flatpack\Http\Controllers\Concerns\HandlesReorderRecord;
 use Flatpack\Http\Controllers\Concerns\LoadsListComposition;
 use Flatpack\Http\Requests\BulkActionRequest;
 use Flatpack\Http\Requests\ListActionRequest;
 use Flatpack\Http\Requests\ListRecordUpdateRequest;
-use Flatpack\Services\Runtime\ActionRuntime;
-use Flatpack\Support\Exceptions\ActionRuntimeException;
+use Flatpack\Http\Requests\ReorderRequest;
 use Flatpack\Support\SuccessRedirect;
 use Flatpack\Support\SuccessRedirectSchema;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 
 final readonly class EntityActionController
 {
+    use HandlesListActions;
+    use HandlesReorderRecord;
     use LoadsListComposition;
 
-    public function __construct(
-        private ActionRuntime $actions,
-        private EntityActionExecutor $executor,
-    ) {}
+    public function __construct() {}
 
     public function bulkAction(BulkActionRequest $request, string $entity): RedirectResponse
     {
@@ -36,17 +35,9 @@ final readonly class EntityActionController
             abort(404, 'Flatpack bulk action is missing.');
         }
 
-        $user = $request->user();
-        if ($user === null) {
-            abort(403);
-        }
-
-        try {
-            $handler = $this->actions->resolveBulkActionHandler($action);
-        } catch (ActionRuntimeException $exception) {
-            abort($exception->statusCode(), $exception->getMessage());
-        }
-        $this->actions->ensureBulkActionAuthorized($handler, $user, $listModelClass);
+        $user = $this->requireUserOrAbort($request);
+        $handler = $this->resolveBulkActionHandlerOrAbort($action);
+        $this->actionRuntime()->ensureBulkActionAuthorized($handler, $user, $listModelClass);
         $result = $handler->handle(FlatpackBulkActionContext::fromRequest(
             request: $request,
             entity: $entity,
@@ -73,29 +64,21 @@ final readonly class EntityActionController
             abort(404, 'Flatpack list action is missing.');
         }
 
-        $user = $request->user();
-        if ($user === null) {
-            abort(403);
-        }
+        $user = $this->requireUserOrAbort($request);
 
         [$listModelClass, $schema] = $this->listModelAndSchema($entity);
-        try {
-            $handler = $this->actions->resolveRecordActionHandler($action);
-        } catch (ActionRuntimeException $exception) {
-            abort($exception->statusCode(), $exception->getMessage());
-        }
-        $this->actions->ensureRecordActionAuthorized($handler, $user, $listModelClass, null);
-        $result = $this->executor->execute(fn () => $handler->handle(new FlatpackActionContext(
+        $handler = $this->resolveRecordActionHandlerOrAbort($action);
+        $this->actionRuntime()->ensureRecordActionAuthorized($handler, $user, $listModelClass, null);
+        $result = $this->executeRecordActionContext(
+            handler: $handler,
             request: $request,
             entity: $entity,
             actionName: $action,
             modelClass: $listModelClass,
             record: null,
-            compositionType: 'list',
-            composition: $schema ?? [],
             schema: $schema,
             model: null,
-        )));
+        );
 
         if ($result instanceof RedirectResponse) {
             return $result->setStatusCode(303);
@@ -123,30 +106,22 @@ final readonly class EntityActionController
             abort(404, 'Flatpack row action is missing.');
         }
 
-        $user = $request->user();
-        if ($user === null) {
-            abort(403);
-        }
+        $user = $this->requireUserOrAbort($request);
 
         [$listModelClass, $schema] = $this->listModelAndSchema($entity);
-        try {
-            $model = $this->actions->resolveRecordModel($listModelClass, $record, 'list');
-            $handler = $this->actions->resolveRecordActionHandler($action);
-        } catch (ActionRuntimeException $exception) {
-            abort($exception->statusCode(), $exception->getMessage());
-        }
-        $this->actions->ensureRecordActionAuthorized($handler, $user, $listModelClass, $model);
-        $result = $this->executor->execute(fn () => $handler->handle(new FlatpackActionContext(
+        $model = $this->resolveListRecordModelOrAbort($listModelClass, $record);
+        $handler = $this->resolveRecordActionHandlerOrAbort($action);
+        $this->actionRuntime()->ensureRecordActionAuthorized($handler, $user, $listModelClass, $model);
+        $result = $this->executeRecordActionContext(
+            handler: $handler,
             request: $request,
             entity: $entity,
             actionName: $action,
             modelClass: $listModelClass,
             record: $record,
-            compositionType: 'list',
-            composition: $schema ?? [],
             schema: $schema,
             model: $model,
-        )));
+        );
 
         if ($result instanceof RedirectResponse) {
             return $result->setStatusCode(303);
@@ -171,32 +146,79 @@ final readonly class EntityActionController
         string $record,
     ): RedirectResponse {
         [$listModelClass, $schema] = $this->listModelAndSchema($entity);
-        try {
-            $model = $this->actions->resolveRecordModel($listModelClass, $record, 'list');
-            $handler = $this->actions->resolveRecordActionHandler('save');
-        } catch (ActionRuntimeException $exception) {
-            abort($exception->statusCode(), $exception->getMessage());
-        }
-        $user = $request->user();
-        if ($user === null) {
-            abort(403);
-        }
-
-        $this->actions->ensureRecordActionAuthorized($handler, $user, $listModelClass, $model);
-        $this->executor->execute(fn () => $handler->handle(new FlatpackActionContext(
+        $model = $this->resolveListRecordModelOrAbort($listModelClass, $record);
+        $handler = $this->resolveRecordActionHandlerOrAbort('save');
+        $user = $this->requireUserOrAbort($request);
+        $this->actionRuntime()->ensureRecordActionAuthorized($handler, $user, $listModelClass, $model);
+        $this->executeRecordActionContext(
+            handler: $handler,
             request: $request,
             entity: $entity,
             actionName: 'save',
             modelClass: $listModelClass,
             record: $record,
-            compositionType: 'list',
-            composition: $schema ?? [],
             schema: $schema,
             model: $model,
-        )));
+        );
 
         return back(303)->with('flatpack', [
             'save' => true,
+        ]);
+    }
+
+    public function reorderRecord(
+        ReorderRequest $request,
+        string $entity,
+        string $record,
+    ): JsonResponse {
+        [$fallbackModelClass, $schema] = $this->listModelAndSchema($entity);
+        $resolved = $this->resolveReorderSchemaAndModelClass(
+            schema: $schema,
+            fallbackModelClass: $fallbackModelClass,
+        );
+        if ($resolved instanceof JsonResponse) {
+            return $resolved;
+        }
+        $schema = $resolved['schema'];
+        $modelClass = $resolved['modelClass'];
+        $column = $this->resolveReorderColumn($schema);
+        if ($column === null) {
+            return response()->json(['message' => 'Reordering is not enabled for this model.'], 422);
+        }
+
+        $model = $this->resolveReorderTargetModelOrJson404($modelClass, $record);
+        if ($model instanceof JsonResponse) {
+            return $model;
+        }
+
+        $handler = $this->resolveReorderHandlerOrJsonError();
+        if ($handler instanceof JsonResponse) {
+            return $handler;
+        }
+
+        $user = $request->user();
+        if ($user === null) {
+            return response()->json(['message' => 'Unauthorized.'], 403);
+        }
+        $this->actionRuntime()->ensureRecordActionAuthorized($handler, $user, $modelClass, $model);
+
+        $reordered = $this->executeReorderOrJsonError(
+            request: $request,
+            handler: $handler,
+            entity: $entity,
+            record: $record,
+            modelClass: $modelClass,
+            column: $column,
+            schema: $schema,
+            model: $model,
+        );
+        if ($reordered instanceof JsonResponse) {
+            return $reordered;
+        }
+
+        return response()->json([
+            'id' => $reordered->getKey(),
+            $column => $reordered->getAttribute($column),
         ]);
     }
 

@@ -12,6 +12,7 @@ use Flatpack\Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Schema;
 
 use function Pest\Laravel\actingAs;
 
@@ -770,6 +771,255 @@ YAML);
     }
 });
 
+test('flatpack entity update rejects fields not marked editable in list schema', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-list-update-non-editable-field-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+reorderable: true
+columns:
+  title:
+    label: Title
+    type: text
+    editable: true
+YAML);
+        config()->set('flatpack.path', $tempPath);
+
+        /** @var Post $post */
+        $post = Post::factory()->create([
+            'title' => 'Original title',
+        ]);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        actingAs($user)
+            ->from(route('flatpack.entities.index', ['entity' => 'posts']))
+            ->patch(route('flatpack.entities.update', [
+                'entity' => 'posts',
+                'record' => (string) $post->getKey(),
+            ]), [
+                'field' => 'sort_order',
+                'value' => 1,
+            ])
+            ->assertRedirect(route('flatpack.entities.index', ['entity' => 'posts']))
+            ->assertSessionHasErrors('values.sort_order');
+
+        expect($post->fresh()?->title)->toBe('Original title');
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
+test('flatpack entity reorder persists all rows in a single request', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-list-reorder-success-' . uniqid('', true);
+
+    try {
+        Schema::table('posts', static function ($table): void {
+            $table->unsignedInteger('sort_order')->nullable();
+        });
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+reorderable: true
+columns:
+  title:
+    label: Title
+YAML);
+        config()->set('flatpack.path', $tempPath);
+
+        /** @var Post $first */
+        $first = Post::factory()->create(['title' => 'First', 'sort_order' => 1]);
+        /** @var Post $second */
+        $second = Post::factory()->create(['title' => 'Second', 'sort_order' => 2]);
+        /** @var Post $third */
+        $third = Post::factory()->create(['title' => 'Third', 'sort_order' => 3]);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        actingAs($user)
+            ->from(route('flatpack.entities.index', ['entity' => 'posts']))
+            ->patch(route('flatpack.entities.row-reorder', [
+                'entity' => 'posts',
+                'record' => (string) $third->getKey(),
+            ]), [
+                'position' => 1,
+            ])
+            ->assertOk();
+
+        expect((int) (Post::query()->find($third->getKey())?->sort_order ?? 0))->toBe(1);
+        expect((int) (Post::query()->find($first->getKey())?->sort_order ?? 0))->toBe(2);
+        expect((int) (Post::query()->find($second->getKey())?->sort_order ?? 0))->toBe(3);
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
+test('flatpack entity reorder affects list ordering after refresh', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-list-reorder-refresh-order-' . uniqid('', true);
+
+    try {
+        Schema::table('posts', static function ($table): void {
+            $table->unsignedInteger('sort_order')->nullable();
+        });
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+reorderable: true
+columns:
+  id:
+    label: ID
+  title:
+    label: Title
+YAML);
+        config()->set('flatpack.path', $tempPath);
+
+        /** @var Post $first */
+        $first = Post::factory()->create(['title' => 'First', 'sort_order' => 1]);
+        /** @var Post $second */
+        $second = Post::factory()->create(['title' => 'Second', 'sort_order' => 2]);
+        /** @var Post $third */
+        $third = Post::factory()->create(['title' => 'Third', 'sort_order' => 3]);
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        actingAs($user)
+            ->patch(route('flatpack.entities.row-reorder', [
+                'entity' => 'posts',
+                'record' => (string) $third->getKey(),
+            ]), [
+                'position' => 1,
+            ])
+            ->assertOk();
+
+        $payload = actingAs($user)
+            ->getJson(route('flatpack.entities.index', [
+                'entity' => 'posts',
+                'json' => true,
+            ]))
+            ->assertOk()
+            ->json();
+
+        expect($payload['records'])->toHaveCount(3);
+        expect(array_column($payload['records'], 'title'))->toBe([
+            'Third',
+            'First',
+            'Second',
+        ]);
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
+test('flatpack entity reorder returns validation error when reorder column is missing', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-list-reorder-missing-column-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+reorderable: true
+columns:
+  title:
+    label: Title
+YAML);
+        config()->set('flatpack.path', $tempPath);
+
+        /** @var Post $first */
+        $first = Post::factory()->create(['title' => 'First']);
+        /** @var Post $second */
+        $second = Post::factory()->create(['title' => 'Second']);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        actingAs($user)
+            ->from(route('flatpack.entities.index', ['entity' => 'posts']))
+            ->patch(route('flatpack.entities.row-reorder', [
+                'entity' => 'posts',
+                'record' => (string) $second->getKey(),
+            ]), [
+                'position' => 1,
+            ])
+            ->assertStatus(422)
+            ->assertJsonPath('message', 'Cannot reorder records: column "sort_order" does not exist on table "posts".');
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
+test('flatpack entity reorder returns validation error when list schema is missing', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-list-reorder-missing-schema-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath);
+        config()->set('flatpack.path', $tempPath);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+        /** @var Post $post */
+        $post = Post::factory()->create(['title' => 'Post']);
+
+        actingAs($user)
+            ->patch(route('flatpack.entities.row-reorder', [
+                'entity' => 'posts',
+                'record' => (string) $post->getKey(),
+            ]), [
+                'position' => 1,
+            ])
+            ->assertStatus(422)
+            ->assertJsonPath('message', 'No list.yaml configuration found for this entity.');
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
+test('flatpack entity reorder rejects when policy denies update', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-list-reorder-policy-deny-' . uniqid('', true);
+
+    try {
+        Schema::table('posts', static function ($table): void {
+            $table->unsignedInteger('sort_order')->nullable();
+        });
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+reorderable: true
+columns:
+  title:
+    label: Title
+YAML);
+        config()->set('flatpack.path', $tempPath);
+        Gate::policy(Post::class, DenyUpdatePostPolicy::class);
+
+        /** @var Post $first */
+        $first = Post::factory()->create(['title' => 'First', 'sort_order' => 1]);
+        /** @var Post $second */
+        $second = Post::factory()->create(['title' => 'Second', 'sort_order' => 2]);
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        actingAs($user)
+            ->patch(route('flatpack.entities.row-reorder', [
+                'entity' => 'posts',
+                'record' => (string) $second->getKey(),
+            ]), [
+                'position' => 1,
+            ])
+            ->assertForbidden();
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
 test('flatpack entity row delete rejects when policy denies delete', function () {
     $tempPath = sys_get_temp_dir() . '/flatpack-list-row-delete-policy-' . uniqid('', true);
 
@@ -1253,6 +1503,147 @@ YAML);
         expect($body['records'][1]['title'])->toBe('Newer post');
         expect($body['sorting'])->toMatchArray([
             'sort_by' => 'created_at',
+            'sort_direction' => 'asc',
+        ]);
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
+test('flatpack entity list defaults to reorder column sort when reorderable is true', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-list-default-reorder-sort-' . uniqid('', true);
+
+    try {
+        Schema::table('posts', static function ($table): void {
+            $table->unsignedInteger('sort_order')->nullable();
+        });
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+reorderable: true
+columns:
+  id:
+    label: ID
+  title:
+    label: Title
+YAML);
+        config()->set('flatpack.path', $tempPath);
+
+        Post::factory()->create(['title' => 'Second', 'sort_order' => 2]);
+        Post::factory()->create(['title' => 'First', 'sort_order' => 1]);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        $payload = actingAs($user)
+            ->getJson(route('flatpack.entities.index', [
+                'entity' => 'posts',
+                'json' => true,
+            ]))
+            ->assertOk()
+            ->json();
+
+        expect($payload['records'])->toHaveCount(2);
+        expect($payload['records'][0]['title'])->toBe('First');
+        expect($payload['records'][1]['title'])->toBe('Second');
+        expect($payload['sorting'])->toMatchArray([
+            'sort_by' => 'sort_order',
+            'sort_direction' => 'asc',
+        ]);
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
+test('flatpack entity list defaults to custom reorder column sort when reorderable is string', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-list-default-custom-reorder-sort-' . uniqid('', true);
+
+    try {
+        Schema::table('posts', static function ($table): void {
+            $table->unsignedInteger('priority')->nullable();
+        });
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+reorderable: priority
+columns:
+  id:
+    label: ID
+  title:
+    label: Title
+YAML);
+        config()->set('flatpack.path', $tempPath);
+
+        Post::factory()->create(['title' => 'Second', 'priority' => 2]);
+        Post::factory()->create(['title' => 'First', 'priority' => 1]);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        $payload = actingAs($user)
+            ->getJson(route('flatpack.entities.index', [
+                'entity' => 'posts',
+                'json' => true,
+            ]))
+            ->assertOk()
+            ->json();
+
+        expect($payload['records'])->toHaveCount(2);
+        expect($payload['records'][0]['title'])->toBe('First');
+        expect($payload['records'][1]['title'])->toBe('Second');
+        expect($payload['sorting'])->toMatchArray([
+            'sort_by' => 'priority',
+            'sort_direction' => 'asc',
+        ]);
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
+test('flatpack entity list keeps reorder default sorting when custom reorder column is requested explicitly', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-list-explicit-custom-reorder-sort-' . uniqid('', true);
+
+    try {
+        Schema::table('posts', static function ($table): void {
+            $table->unsignedInteger('priority')->nullable();
+        });
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+reorderable: priority
+columns:
+  id:
+    label: ID
+  title:
+    label: Title
+YAML);
+        config()->set('flatpack.path', $tempPath);
+
+        Post::factory()->create(['title' => 'Second', 'priority' => 2]);
+        Post::factory()->create(['title' => 'First', 'priority' => 1]);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        $payload = actingAs($user)
+            ->getJson(route('flatpack.entities.index', [
+                'entity' => 'posts',
+                'json' => true,
+                'search' => 'i',
+                'sort_by' => 'priority',
+                'sort_direction' => 'asc',
+            ]))
+            ->assertOk()
+            ->json();
+
+        expect($payload['records'])->toHaveCount(2);
+        expect($payload['records'][0]['title'])->toBe('First');
+        expect($payload['records'][1]['title'])->toBe('Second');
+        expect($payload['sorting'])->toMatchArray([
+            'sort_by' => 'priority',
             'sort_direction' => 'asc',
         ]);
     } finally {

@@ -87,3 +87,22 @@ it('does not log normalized tab_panels as unknown root keys', function (): void 
 
     expect(implode(' ', $log->all()))->not->toContain('tab_panels');
 });
+
+it('resolves reorderableColumn in normalized list schema', function (): void {
+    $normalizer = new ListSchemaNormalizer;
+
+    $schema = $normalizer->normalizedListSchema([
+        'name' => 'Posts',
+        'reorderable' => 'sorting_order',
+        'columns' => [
+            'title' => [
+                'label' => 'Title',
+                'type' => 'text',
+            ],
+        ],
+    ]);
+
+    expect($schema)->toBeArray()
+        ->and($schema)->toHaveKey('reorderableColumn')
+        ->and($schema['reorderableColumn'])->toBe('sorting_order');
+});

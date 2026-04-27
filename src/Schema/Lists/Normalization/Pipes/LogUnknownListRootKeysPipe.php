@@ -11,7 +11,7 @@ use Flatpack\Schema\Lists\Normalization\ListSchemaPipelineState;
 final class LogUnknownListRootKeysPipe
 {
     /** @var list<string> */
-    private const array INTERNAL_NORMALIZED_KEYS = ['tab_panels'];
+    private const array INTERNAL_NORMALIZED_KEYS = ['tab_panels', 'reorderableColumn'];
 
     public function handle(ListSchemaPipelineState $state, Closure $next): mixed
     {

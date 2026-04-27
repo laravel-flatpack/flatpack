@@ -6,7 +6,7 @@
  * - {@link useDataTableCellUpdateFlow} — inline cell edits, rollback
  * - {@link useDataTableRowReplaceFlow} — drawer save / new row commit, `deferNotifyParentFormValues` for `onValueChange`
  * - {@link useDataTableRelationshipFlow} — row/bulk relationship actions, destructive confirm
- * - {@link useDataTableReorder} — drag order
+ * - {@link useSortable} — drag order + optimistic persistence
  * - {@link useDataTableServerState} — pagination, filters, sorting, search when `serverPagination` is set
  *
  * Invariants (embedded form / list tables):
@@ -14,6 +14,7 @@
  * - Create/add/attach `action` keys: see `data-table-action-semantics` and `useDataTableCreateRowFlow`.
  * - Do not key toolbar behavior by button `id`, only by each button’s `action` string in `useDataTableCreateRowFlow`.
  */
+import type { DragEndEvent } from '@dnd-kit/core';
 import {
     type Column,
     type ColumnFiltersState,
@@ -30,6 +31,7 @@ import {
     type VisibilityState,
 } from '@tanstack/react-table';
 import * as React from 'react';
+import { toast } from 'sonner';
 import { DataTableBodyWithFooter } from '@/components/table/data-table-body-with-footer';
 import { buildDataTableColumnDefs } from '@/components/table/data-table-column-defs';
 import {
@@ -40,9 +42,9 @@ import { DATA_TABLE_ROW_CLICK_IGNORE_SELECTOR } from '@/components/table/data-ta
 import { useDataTableCellUpdateFlow } from '@/hooks/use-data-table-cell-update-flow';
 import { useDataTableCreateRowFlow } from '@/hooks/use-data-table-create-row-flow';
 import { useDataTableRelationshipFlow } from '@/hooks/use-data-table-relationship-flow';
-import { useDataTableReorder } from '@/hooks/use-data-table-reorder';
 import { useDataTableRowReplaceFlow } from '@/hooks/use-data-table-row-replace-flow';
 import { useDataTableServerState } from '@/hooks/use-data-table-server-state';
+import { useSortable } from '@/hooks/use-sortable';
 import { isEmbeddedTableEditRowAction } from '@/lib/data-table-action-semantics';
 import { stableRowId } from '@/lib/data-table-utils';
 import { DEFAULT_LIST_ROW_REORDER_COLUMN } from '@/lib/generated/composition-schema-keys';
@@ -139,6 +141,8 @@ export function useDataTableController(
         onRowAction,
         onCellUpdate,
         onRowUpdate,
+        reorderEndpoint,
+        reorderOnError,
         serverPagination,
         serverSearch,
         serverFilters = [],
@@ -254,7 +258,6 @@ export function useDataTableController(
         setGlobalFilter,
         serverFilterState,
         sorting,
-        setSorting,
         paginationState,
         handlePaginationChange,
         handleSortingChange,
@@ -479,14 +482,96 @@ export function useDataTableController(
         getFacetedUniqueValues: getFacetedUniqueValues(),
     });
 
-    const { handleDragEnd } = useDataTableReorder({
-        data,
-        table,
-        reorderKey,
-        onValueChange,
-        onReorderApplied: setData,
-        onReorderCompleted: () => setSorting([]),
+    const sortableRows = React.useMemo(
+        () =>
+            data.map((row, index) => ({
+                ...row,
+                id: getStableRowId(row, index),
+            })),
+        [data, getStableRowId],
+    );
+    const sortable = useSortable<
+        Array<Record<string, unknown> & { id: string }>[number]
+    >(sortableRows, {
+        sortColumn: reorderKey ?? 'sort_order',
+        endpoint: (item) =>
+            reorderEndpoint != null ? reorderEndpoint(item) : '',
+        reindexOnReorder: serverPagination == null,
+        onError: () => {
+            if (reorderOnError != null) {
+                reorderOnError();
+                return;
+            }
+            toast.error('Reorder failed to persist');
+        },
+        onItemsChange: (next) => {
+            setData(next);
+        },
     });
+    const isReorderSortDesc = React.useMemo(() => {
+        if (reorderKey == null) {
+            return false;
+        }
+        const activeSort = sorting[0];
+        return activeSort?.id === reorderKey && activeSort.desc === true;
+    }, [reorderKey, sorting]);
+    const hasNonReorderSorting = React.useMemo(() => {
+        if (reorderKey == null) {
+            return false;
+        }
+        const activeSort = sorting[0];
+        if (activeSort == null) {
+            return false;
+        }
+
+        return activeSort.id !== reorderKey;
+    }, [reorderKey, sorting]);
+
+    const handleDragEnd = React.useCallback(
+        (event: DragEndEvent) => {
+            if (!isReorderable || event.over == null) {
+                return;
+            }
+            if (hasNonReorderSorting) {
+                toast.error(
+                    `Reordering is available only when table is sorted by '${reorderKey ?? 'sort_order'}'.`,
+                );
+                return;
+            }
+            if (event.active.id === event.over.id) {
+                return;
+            }
+            const tableRows = table.getRowModel().rows;
+            const newIndex = tableRows.findIndex(
+                (row) => row.id === String(event.over?.id),
+            );
+            if (newIndex < 0) {
+                return;
+            }
+            const pagination = table.getState().pagination;
+            const pageOffset = pagination.pageIndex * pagination.pageSize;
+            const ascPosition = pageOffset + newIndex + 1;
+            const totalCount = serverPagination?.total ?? sortable.items.length;
+            const targetPosition = isReorderSortDesc
+                ? totalCount - pageOffset - newIndex
+                : ascPosition;
+            const localPosition = newIndex + 1;
+            sortable.handleReorder(
+                event.active.id,
+                localPosition,
+                targetPosition,
+            );
+        },
+        [
+            hasNonReorderSorting,
+            isReorderSortDesc,
+            isReorderable,
+            reorderKey,
+            serverPagination?.total,
+            sortable,
+            table,
+        ],
+    );
 
     const tableLabelId = `${id}-table-label`;
     const handleSelectAllRows = React.useCallback(() => {
@@ -542,6 +627,7 @@ export function useDataTableController(
             rowCountLabel={rowCountLabel}
             onDragEnd={handleDragEnd}
             rowValidationMessagesById={rowValidationMessagesById}
+            isReordering={sortable.isReordering}
         />
     );
 

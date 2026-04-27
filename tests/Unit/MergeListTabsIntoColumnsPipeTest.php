@@ -171,3 +171,27 @@ it('keeps tab filters and bulk action overrides in tab_panels metadata', functio
         ->and($state->schema['tab_panels'][0])->toHaveKey('filters')
         ->and($state->schema['tab_panels'][0])->toHaveKey('bulk_actions');
 });
+
+it('resolves reorderableColumn on root and tab overrides', function (): void {
+    $pipe = new MergeListTabsIntoColumnsPipe;
+    $state = new ListSchemaPipelineState([
+        'reorderable' => true,
+        'columns' => [
+            'title' => [
+                'label' => 'Title',
+                'type' => 'text',
+            ],
+        ],
+        'tabs' => [
+            'custom' => [
+                'label' => 'Custom',
+                'reorderable' => 'sorting_order',
+            ],
+        ],
+    ], null);
+
+    $pipe->handle($state, fn ($s) => $s);
+
+    expect($state->schema['reorderableColumn'])->toBe('sort_order')
+        ->and($state->schema['tab_panels'][0]['reorderableColumn'])->toBe('sorting_order');
+});
