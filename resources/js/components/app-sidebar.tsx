@@ -1,4 +1,3 @@
-import { CommandIcon } from 'lucide-react';
 import { NavMain } from '@/components/nav-main';
 import { NavSecondary } from '@/components/nav-secondary';
 import { NavSettings } from '@/components/nav-settings';
@@ -17,13 +16,18 @@ import type {
     FlatpackSecondaryMenu,
     FlatpackUser,
 } from '@/types/flatpack';
+import AppLogoIcon from './app-logo-icon';
 
 export function AppSidebar({
-    variant,
-    navigation,
     currentPath,
+    logo,
+    displayName,
+    navigation,
+    variant,
 }: {
-    variant: 'sidebar' | 'floating' | 'inset';
+    currentPath: string;
+    logo: string | null;
+    displayName: string;
     navigation: {
         quickAction?: FlatpackMenuItem;
         menu: FlatpackMenuItem[] | null;
@@ -31,7 +35,7 @@ export function AppSidebar({
         bottomMenu?: FlatpackSecondaryMenu;
         user?: FlatpackUser;
     };
-    currentPath: string;
+    variant: 'sidebar' | 'floating' | 'inset';
 }) {
     const mainMenuItems = Array.isArray(navigation.menu) ? navigation.menu : [];
 
@@ -42,11 +46,11 @@ export function AppSidebar({
                     <SidebarMenuItem>
                         <a
                             href={route('flatpack.dashboard')}
-                            className="flex items-center gap-2 py-1 data-[slot=sidebar-menu-button]:p-1.5!"
+                            className="flex items-center gap-2 py-1 text-foreground data-[slot=sidebar-menu-button]:p-1.5!"
                         >
-                            <CommandIcon className="size-5!" />
+                            {logo && <AppLogoIcon src={logo} />}
                             <span className="text-base font-semibold">
-                                Flatpack
+                                {displayName}
                             </span>
                         </a>
                     </SidebarMenuItem>

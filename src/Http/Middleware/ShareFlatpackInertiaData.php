@@ -21,6 +21,8 @@ final readonly class ShareFlatpackInertiaData
     {
         if (FlatpackRequest::matches($request)) {
             Inertia::share('flatpack', [
+                'logo' => config('flatpack.ui.logo', null),
+                'name' => config('flatpack.ui.name', 'Flatpack'),
                 'quickAction' => Flatpack::quickAction(),
                 'menu' => array_map(
                     static fn ($item): array => $item->toArray(),

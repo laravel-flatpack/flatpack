@@ -152,12 +152,8 @@ return [
     |
     */
     'ui' => [
-        'show_action_shortcut_hints' => env('FLATPACK_UI_SHOW_ACTION_SHORTCUT_HINTS', false),
-        /*
-        | When true, absolute http(s) URLs in YAML menu/header hrefs may point off-site.
-        | Sanitization still strips javascript:, data:, etc.
-        */
         'allow_external_navigation_urls' => env('FLATPACK_UI_ALLOW_EXTERNAL_NAVIGATION_URLS', false),
+        'show_action_shortcut_hints' => env('FLATPACK_UI_SHOW_ACTION_SHORTCUT_HINTS', false),
         /*
         | Sidebar navigation menu items. Here you can entirely override the default
         | navigation menu items derived from the filesystem.
@@ -167,10 +163,14 @@ return [
             'secondary_menu' => null,
             'bottom_menu' => null,
         ],
-        /*
-        | Quick action menu item. Visible at the top of the sidebar.
-        */
+        // Quick action menu item. Visible at the top of the sidebar.
         'quick_action' => null,
+        // Logo SVG icon URL. Supports theme colors with SVG masks.
+        'logo' => '/vendor/flatpack/logo.svg',
+        // Name to display in the sidebar.
+        'name' => 'Flatpack',
+        // Themes
+        'themes' => [],
     ],
 
     /*

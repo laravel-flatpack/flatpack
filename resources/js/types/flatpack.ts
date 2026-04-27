@@ -22,6 +22,8 @@ export type FlatpackBreadcrumb = {
 
 export type FlatpackPageProps = {
     flatpack: {
+        logo: string | null;
+        name: string;
         quickAction?: FlatpackMenuItem;
         menu: FlatpackMenuItem[] | null;
         secondaryMenu?: FlatpackSecondaryMenu;

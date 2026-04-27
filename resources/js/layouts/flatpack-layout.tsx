@@ -21,8 +21,16 @@ export default function FlatpackLayout({
         props: { flatpack },
         url,
     } = usePage<FlatpackPageProps>();
-    const { quickAction, menu, secondaryMenu, bottomMenu, user, breadcrumbs } =
-        flatpack;
+    const {
+        logo,
+        name: displayName,
+        quickAction,
+        menu,
+        secondaryMenu,
+        bottomMenu,
+        user,
+        breadcrumbs,
+    } = flatpack;
     const navigation = {
         quickAction,
         menu: Array.isArray(menu) ? menu : [],
@@ -53,6 +61,8 @@ export default function FlatpackLayout({
                         <TooltipProvider delayDuration={0}>
                             <AppSidebar
                                 variant="inset"
+                                logo={logo}
+                                displayName={displayName}
                                 navigation={navigation}
                                 currentPath={currentPath}
                             />
