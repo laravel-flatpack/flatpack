@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Flatpack\Http\Controllers\DashboardController;
-use Flatpack\Http\Controllers\EmbeddedTableColumnRelationOptionsController;
 use Flatpack\Http\Controllers\EntityActionController;
 use Flatpack\Http\Controllers\FormController;
 use Flatpack\Http\Controllers\ListController;
@@ -37,9 +36,7 @@ Route::middleware(['auth:' . config('flatpack.guard', 'web'), EnsureFlatpackAcce
     /** Executes a row-level action against a specific record. */
     Route::post('{entity}/{record}/action', [EntityActionController::class, 'rowAction'])->name('entities.row-action');
     /** Persists drag-and-drop record ordering in one request. */
-    Route::patch('{entity}/{record}/reorder', [EntityActionController::class, 'reorderRecord'])
-        ->middleware('throttle:60,1')
-        ->name('entities.row-reorder');
+    Route::patch('{entity}/{record}/reorder', [EntityActionController::class, 'reorderRecord'])->name('entities.row-reorder');
     /** Persists inline edits for a specific list record. */
     Route::patch('{entity}/{record}', [EntityActionController::class, 'updateRecord'])->name('entities.update');
 
@@ -51,11 +48,13 @@ Route::middleware(['auth:' . config('flatpack.guard', 'web'), EnsureFlatpackAcce
     /** Renders the edit form page for an existing record. */
     Route::get('{entity}/{record}/edit', [FormController::class, 'edit'])->name('entities.edit');
 
-    /** Returns paginated relation options for remote combobox fields. */
-    Route::get('{entity}/relation-options', RelationOptionsController::class)->name('entities.relation-options');
+    /** Returns paginated relation options for remote `type: combobox` fields. */
+    Route::get('{entity}/relation-options', [RelationOptionsController::class, 'field'])->name('entities.relation-options');
     /** Returns paginated options for a `type: relation` column inside an embedded `type: table` field. */
-    Route::get('{entity}/embedded-table-relation-options', EmbeddedTableColumnRelationOptionsController::class)->name('entities.embedded-table-relation-options');
+    Route::get('{entity}/embedded-table-relation-options', [RelationOptionsController::class, 'embeddedTableColumn'])->name('entities.embedded-table-relation-options');
 
     /** Renders the entity list page with schema-driven records. */
     Route::get('{entity}', [ListController::class, 'index'])->name('entities.index');
 });
+
+// ->middleware('throttle:60,1')
