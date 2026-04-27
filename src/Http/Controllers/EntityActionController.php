@@ -23,8 +23,6 @@ final readonly class EntityActionController
     use HandlesReorderRecord;
     use LoadsListComposition;
 
-    public function __construct() {}
-
     public function bulkAction(BulkActionRequest $request, string $entity): RedirectResponse
     {
         $list = $this->loadList($entity);
