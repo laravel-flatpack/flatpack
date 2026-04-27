@@ -10,6 +10,10 @@ use Illuminate\Contracts\Auth\Authenticatable;
 
 final class BulkRestoreHandler extends FlatpackBulkActionHandler
 {
+    public function __construct(
+        private readonly BulkRestoreService $bulkRestoreService,
+    ) {}
+
     public function authorize(Authenticatable $user, string $modelClass): bool
     {
         return $this->canPerformAction(
@@ -21,7 +25,7 @@ final class BulkRestoreHandler extends FlatpackBulkActionHandler
 
     public function handle(FlatpackBulkActionContext $context): int
     {
-        return app(BulkRestoreService::class)->restore(
+        return $this->bulkRestoreService->restore(
             modelClass: $context->modelClass,
             records: $context->records,
             schema: $context->schema,

@@ -10,6 +10,10 @@ use Illuminate\Contracts\Auth\Authenticatable;
 
 final class BulkDeleteHandler extends FlatpackBulkActionHandler
 {
+    public function __construct(
+        private readonly BulkDeleteService $bulkDeleteService,
+    ) {}
+
     public function authorize(Authenticatable $user, string $modelClass): bool
     {
         return $this->canPerformAction(
@@ -21,7 +25,7 @@ final class BulkDeleteHandler extends FlatpackBulkActionHandler
 
     public function handle(FlatpackBulkActionContext $context): int
     {
-        return app(BulkDeleteService::class)->delete(
+        return $this->bulkDeleteService->delete(
             modelClass: $context->modelClass,
             records: $context->records,
             schema: $context->schema,
