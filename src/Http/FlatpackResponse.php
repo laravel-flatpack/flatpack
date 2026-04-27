@@ -31,7 +31,7 @@ final class FlatpackResponse
 
     public static function compositionDebugContextForEntity(string $entity, string $fileName): string
     {
-        $configuredPath = (string) config('flatpack.path', 'flatpack');
+        $configuredPath = (string) config('flatpack.composition.path', 'flatpack');
         $normalizedPath = str_replace('\\', '/', $configuredPath);
         $segments = array_values(array_filter(explode('/', trim($normalizedPath, '/'))));
         $basePath = $segments !== [] ? end($segments) : 'flatpack';
@@ -41,7 +41,7 @@ final class FlatpackResponse
 
     public static function compositionDebugContextForDashboard(): string
     {
-        $slug = trim((string) config('flatpack.dashboard_entity', 'dashboard'));
+        $slug = trim((string) config('flatpack.composition.dashboard_entity', 'dashboard'));
 
         return self::compositionDebugContextForEntity($slug !== '' ? $slug : 'dashboard', 'list.yaml');
     }

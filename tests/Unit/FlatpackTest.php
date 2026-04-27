@@ -8,9 +8,9 @@ use Flatpack\Tests\TestCase;
 uses(TestCase::class);
 
 test('flatpack reads list pagination and route prefix from config', function () {
-    config()->set('flatpack.prefix', 'admin');
-    config()->set('flatpack.list.per_page', 25);
-    config()->set('flatpack.list.max_per_page', 50);
+    config()->set('flatpack.http.prefix', 'admin');
+    config()->set('flatpack.lists.per_page', 25);
+    config()->set('flatpack.lists.max_per_page', 50);
 
     expect(Flatpack::routePrefix())->toBe('admin');
     expect(Flatpack::defaultListPerPage())->toBe(25);
@@ -18,8 +18,8 @@ test('flatpack reads list pagination and route prefix from config', function () 
 });
 
 test('flatpack reads dashboard entity and auth guard from config', function () {
-    config()->set('flatpack.dashboard_entity', 'home');
-    config()->set('flatpack.guard', 'api');
+    config()->set('flatpack.composition.dashboard_entity', 'home');
+    config()->set('flatpack.security.guard', 'api');
 
     expect(Flatpack::dashboardEntity())->toBe('home');
     expect(Flatpack::authGuard())->toBe('api');

@@ -24,7 +24,7 @@ final readonly class FlatpackMenuBuilder implements MenuBuilder
 
     public function build(): array
     {
-        $override = $this->config->get('flatpack.menu');
+        $override = $this->config->get('flatpack.ui.navigation.menu');
 
         if ($override === null) {
             return $this->menuFromFilesystem();
@@ -44,7 +44,7 @@ final readonly class FlatpackMenuBuilder implements MenuBuilder
     private function menuFromConfig(array $items): array
     {
         $result = [];
-        $allowExternalOrigins = (bool) $this->config->get('flatpack.navigation.allow_external_origins', false);
+        $allowExternalOrigins = (bool) $this->config->get('flatpack.ui.allow_external_navigation_urls', false);
 
         foreach ($items as $slug => $entry) {
             if (! is_array($entry)) {
@@ -75,7 +75,7 @@ final readonly class FlatpackMenuBuilder implements MenuBuilder
      */
     private function menuFromFilesystem(): array
     {
-        $basePath = (string) $this->config->get('flatpack.path', base_path('flatpack'));
+        $basePath = (string) $this->config->get('flatpack.composition.path', base_path('flatpack'));
         $items = [];
 
         if (! is_dir($basePath)) {

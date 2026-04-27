@@ -66,7 +66,7 @@ final readonly class BreadcrumbsBuilder
 
     private function dashboardLabel(): string
     {
-        $slug = trim((string) $this->config->get('flatpack.dashboard_entity', 'dashboard'));
+        $slug = trim((string) $this->config->get('flatpack.composition.dashboard_entity', 'dashboard'));
         if ($slug === '') {
             $slug = 'dashboard';
         }

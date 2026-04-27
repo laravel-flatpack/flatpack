@@ -18,6 +18,6 @@
         </include>
     </source>
     <php>
-        <env name="FLATPACK_ENABLE_DEMO" value="true"/>
+        <env name="FLATPACK_FEATURES_DEMO" value="true"/>
     </php>
 </phpunit>

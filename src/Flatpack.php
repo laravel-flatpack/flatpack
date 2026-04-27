@@ -79,36 +79,36 @@ final readonly class Flatpack
 
     public function routePrefix(): string
     {
-        return trim((string) $this->config->get('flatpack.prefix', 'flatpack'), '/');
+        return trim((string) $this->config->get('flatpack.http.prefix', 'flatpack'), '/');
     }
 
     public function dashboardEntity(): string
     {
-        return (string) $this->config->get('flatpack.dashboard_entity', 'dashboard');
+        return (string) $this->config->get('flatpack.composition.dashboard_entity', 'dashboard');
     }
 
     /**
-     * Directory containing entity compositions (see `flatpack.path`). Prefer {@see YamlCompositionLoader}
+     * Directory containing entity compositions (see `flatpack.composition.path`). Prefer {@see YamlCompositionLoader}
      * construction from config when avoiding circular references with the menu stack.
      */
     public function compositionPath(): string
     {
-        return (string) $this->config->get('flatpack.path', base_path('flatpack'));
+        return (string) $this->config->get('flatpack.composition.path', base_path('flatpack'));
     }
 
     public function defaultListPerPage(): int
     {
-        return (int) $this->config->get('flatpack.list.per_page', 10);
+        return (int) $this->config->get('flatpack.lists.per_page', 10);
     }
 
     public function maxListPerPage(): int
     {
-        return (int) $this->config->get('flatpack.list.max_per_page', 100);
+        return (int) $this->config->get('flatpack.lists.max_per_page', 100);
     }
 
     public function authGuard(): string
     {
-        return (string) $this->config->get('flatpack.guard', 'web');
+        return (string) $this->config->get('flatpack.security.guard', 'web');
     }
 
     public function showActionShortcutHints(): bool
@@ -118,16 +118,16 @@ final readonly class Flatpack
 
     public function quickAction(): mixed
     {
-        return $this->config->get('flatpack.quick_action');
+        return $this->config->get('flatpack.ui.quick_action');
     }
 
     public function secondaryMenu(): mixed
     {
-        return $this->config->get('flatpack.secondary_menu');
+        return $this->config->get('flatpack.ui.navigation.secondary_menu');
     }
 
     public function bottomMenu(): mixed
     {
-        return $this->config->get('flatpack.bottom_menu');
+        return $this->config->get('flatpack.ui.navigation.bottom_menu');
     }
 }

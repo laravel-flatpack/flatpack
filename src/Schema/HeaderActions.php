@@ -31,7 +31,7 @@ final class HeaderActions
             return [];
         }
 
-        $allowExternalOrigins = (bool) config('flatpack.navigation.allow_external_origins', false);
+        $allowExternalOrigins = (bool) config('flatpack.ui.allow_external_navigation_urls', false);
         $out = [];
 
         foreach ($raw as $key => $definition) {

@@ -30,7 +30,7 @@ columns:
   id:
     label: ID
 YAML);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
 
         /** @var User $user */
         $user = User::factory()->createOne();

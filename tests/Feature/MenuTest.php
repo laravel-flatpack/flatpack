@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Gate;
 uses(TestCase::class, RefreshDatabase::class);
 
 test('flatpack shares menu from config override', function () {
-    config()->set('flatpack.menu', [
+    config()->set('flatpack.ui.navigation.menu', [
         'posts' => [
             'name' => 'Posts',
             'url' => 'flatpack.posts.index',
@@ -38,8 +38,8 @@ test('flatpack builds default menu from filesystem path when menu override is nu
     try {
         File::ensureDirectoryExists($tempPath . '/posts');
         File::ensureDirectoryExists($tempPath . '/categories');
-        config()->set('flatpack.path', $tempPath);
-        config()->set('flatpack.menu', null);
+        config()->set('flatpack.composition.path', $tempPath);
+        config()->set('flatpack.ui.navigation.menu', null);
 
         $user = User::factory()->create();
 
@@ -60,7 +60,7 @@ test('flatpack builds default menu from filesystem path when menu override is nu
 });
 
 test('flatpack supports an explicit empty menu override', function () {
-    config()->set('flatpack.menu', []);
+    config()->set('flatpack.ui.navigation.menu', []);
 
     $user = User::factory()->create();
 
@@ -73,7 +73,7 @@ test('flatpack supports an explicit empty menu override', function () {
 
 test('flatpack filters unsafe menu routes from config override', function () {
     config()->set('app.url', 'https://app.test');
-    config()->set('flatpack.menu', [
+    config()->set('flatpack.ui.navigation.menu', [
         'safe-relative' => [
             'name' => 'Safe Relative',
             'url' => '/flatpack/posts',
@@ -128,8 +128,8 @@ YAML);
 name: Categories
 model: Flatpack\Tests\Models\PostBySlug
 YAML);
-        config()->set('flatpack.path', $tempPath);
-        config()->set('flatpack.menu', null);
+        config()->set('flatpack.composition.path', $tempPath);
+        config()->set('flatpack.ui.navigation.menu', null);
         Gate::policy(Flatpack\Tests\Models\Post::class, DenyViewPostPolicy::class);
 
         $user = User::factory()->create();

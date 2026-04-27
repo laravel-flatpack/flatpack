@@ -33,7 +33,7 @@ columns:
   title:
     label: Title
 YAML);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
 
         Post::factory()->create(['title' => 'Listed post']);
 
@@ -81,7 +81,7 @@ tabs:
     label: Draft
     scope: draftOnly
 YAML);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
 
         Post::factory()->create(['title' => 'Live one', 'status' => 'active']);
         Post::factory()->create(['title' => 'Draft one', 'status' => 'draft']);
@@ -135,7 +135,7 @@ tabs:
     label: Drafts
     scope: missingScope
 YAML);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
 
         /** @var User $user */
         $user = User::factory()->createOne();
@@ -174,7 +174,7 @@ tabs:
         label: Status
         type: text
 YAML);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
 
         Post::factory()->create(['title' => 'Scoped title', 'status' => 'draft']);
 
@@ -241,7 +241,7 @@ tabs:
         label: Delete selected drafts
         action: delete
 YAML);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
 
         Post::factory()->create(['title' => 'D1', 'status' => 'draft']);
 
@@ -297,7 +297,7 @@ tabs:
     label: Drafts
     scope: draftOnly
 YAML);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
 
         Post::factory()->create(['title' => 'D1', 'status' => 'draft']);
 
@@ -379,7 +379,7 @@ tabs:
     icon: file-text
     scope: draft
 YAML);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
 
         /** @var User $user */
         $user = User::factory()->createOne();
@@ -412,7 +412,7 @@ columns:
   id:
     label: ID
 YAML);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
         Gate::policy(Post::class, DenyViewPostPolicy::class);
 
         /** @var User $user */
@@ -438,7 +438,7 @@ columns:
   title:
     label: Title
 YAML);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
 
         /** @var User $user */
         $user = User::factory()->createOne();
@@ -490,7 +490,7 @@ columns:
   title:
     label: Title
 YAML);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
 
         /** @var User $user */
         $user = User::factory()->createOne();
@@ -541,7 +541,7 @@ columns:
     label: Title
     searchable: true
 YAML);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
 
         Post::factory()->create(['title' => 'Alpha post']);
         Post::factory()->create(['title' => 'Beta target']);
@@ -582,7 +582,7 @@ columns:
   id:
     label: ID
 YAML);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
 
         /** @var User $user */
         $user = User::factory()->createOne();
@@ -614,7 +614,7 @@ columns:
   id:
     label: ID
 YAML);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
         config()->set('flatpack.actions', [
             'edit' => Flatpack\Actions\Handlers\EditRecordHandler::class,
             'save' => Flatpack\Actions\Handlers\SaveRecordHandler::class,
@@ -654,7 +654,7 @@ columns:
     type: textarea
     editable: true
 YAML);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
 
         /** @var Post $post */
         $post = Post::factory()->create([
@@ -704,7 +704,7 @@ columns:
       draft: Draft
       active: Active
 YAML);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
 
         /** @var Post $post */
         $post = Post::factory()->create([
@@ -747,7 +747,7 @@ columns:
     type: text
     editable: true
 YAML);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
 
         Gate::policy(Post::class, DenyUpdatePostPolicy::class);
 
@@ -790,7 +790,7 @@ columns:
     type: text
     editable: true
 YAML);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
 
         /** @var Post $post */
         $post = Post::factory()->create([
@@ -834,7 +834,7 @@ columns:
   title:
     label: Title
 YAML);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
 
         /** @var Post $first */
         $first = Post::factory()->create(['title' => 'First', 'sort_order' => 1]);
@@ -882,7 +882,7 @@ columns:
   title:
     label: Title
 YAML);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
 
         /** @var Post $first */
         $first = Post::factory()->create(['title' => 'First', 'sort_order' => 1]);
@@ -934,7 +934,7 @@ columns:
   title:
     label: Title
 YAML);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
 
         /** @var Post $first */
         $first = Post::factory()->create(['title' => 'First']);
@@ -964,7 +964,7 @@ test('flatpack entity reorder returns validation error when list schema is missi
 
     try {
         File::ensureDirectoryExists($tempPath);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
 
         /** @var User $user */
         $user = User::factory()->createOne();
@@ -1001,7 +1001,7 @@ columns:
   title:
     label: Title
 YAML);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
         Gate::policy(Post::class, DenyUpdatePostPolicy::class);
 
         /** @var Post $first */
@@ -1037,7 +1037,7 @@ columns:
     label: Title
     type: text
 YAML);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
 
         Gate::policy(Post::class, DenyDeletePostPolicy::class);
 
@@ -1076,7 +1076,7 @@ columns:
   title:
     label: Title
 YAML);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
 
         Gate::policy(Post::class, DenyDeletePostPolicy::class);
 
@@ -1126,7 +1126,7 @@ filters:
     placeholder: Select status
     type: select
 YAML);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
 
         Post::factory()->create(['title' => 'Draft post', 'status' => 'draft']);
         Post::factory()->create(['title' => 'Active post', 'status' => 'active']);
@@ -1179,7 +1179,7 @@ filters:
   status:
     multiple: true
 YAML);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
 
         Post::factory()->create(['title' => 'Draft post', 'status' => 'draft']);
         Post::factory()->create(['title' => 'Active post', 'status' => 'active']);
@@ -1233,7 +1233,7 @@ filters:
     type: date
     mode: from
 YAML);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
 
         $older = Post::factory()->create(['title' => 'Older post']);
         $older->created_at = '2024-01-10 08:00:00';
@@ -1312,7 +1312,7 @@ filters:
     type: date
     mode: from
 YAML);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
 
         $older = Post::factory()->create(['title' => 'Older post']);
         $older->created_at = '2024-01-10 08:00:00';
@@ -1371,7 +1371,7 @@ filters:
       active: Active
       inactive: Inactive
 YAML);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
 
         Post::factory()->create([
             'title' => 'Active post',
@@ -1478,7 +1478,7 @@ columns:
     type: date
     sortable: true
 YAML);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
 
         $older = Post::factory()->create(['title' => 'Older post']);
         $older->created_at = '2024-01-10 08:00:00';
@@ -1532,7 +1532,7 @@ columns:
   title:
     label: Title
 YAML);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
 
         Post::factory()->create(['title' => 'Second', 'sort_order' => 2]);
         Post::factory()->create(['title' => 'First', 'sort_order' => 1]);
@@ -1578,7 +1578,7 @@ columns:
   title:
     label: Title
 YAML);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
 
         Post::factory()->create(['title' => 'Second', 'priority' => 2]);
         Post::factory()->create(['title' => 'First', 'priority' => 1]);
@@ -1624,7 +1624,7 @@ columns:
   title:
     label: Title
 YAML);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
 
         Post::factory()->create(['title' => 'Second', 'priority' => 2]);
         Post::factory()->create(['title' => 'First', 'priority' => 1]);
@@ -1669,7 +1669,7 @@ columns:
   title:
     label: Title
 YAML);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
 
         $keep = Post::factory()->create(['title' => 'Keep me']);
         $deleteA = Post::factory()->create(['title' => 'Delete me A']);
@@ -1708,8 +1708,8 @@ columns:
   slug:
     label: Slug
 YAML);
-        config()->set('flatpack.path', $tempPath);
-        config()->set('flatpack.authorization.allow_when_policy_missing', false);
+        config()->set('flatpack.composition.path', $tempPath);
+        config()->set('flatpack.security.authorization.allow_when_policy_missing', false);
 
         Post::factory()->create(['slug' => 'one', 'title' => 'Keep me']);
 
@@ -1758,7 +1758,7 @@ columns:
   title:
     label: Title
 YAML);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
 
         /** @var User $user */
         $user = User::factory()->createOne();
@@ -1798,7 +1798,7 @@ columns:
   title:
     label: Title
 YAML);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
         Gate::policy(Post::class, AllowRestoreForceDeletePostPolicy::class);
 
         /** @var Post $post */
@@ -1835,7 +1835,7 @@ columns:
   title:
     label: Title
 YAML);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
         Gate::policy(Post::class, AllowRestoreForceDeletePostPolicy::class);
 
         /** @var Post $post */
@@ -1872,7 +1872,7 @@ columns:
   title:
     label: Title
 YAML);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
         Gate::policy(Post::class, AllowRestoreForceDeletePostPolicy::class);
 
         /** @var Post $restoreA */
@@ -1913,7 +1913,7 @@ columns:
   title:
     label: Title
 YAML);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
         Gate::policy(Post::class, AllowRestoreForceDeletePostPolicy::class);
 
         /** @var Post $deleteA */
@@ -1966,7 +1966,7 @@ filters:
   status:
     type: select
 YAML);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
 
         Post::factory()->create(['title' => 'Delete active alpha', 'status' => 'active']);
         Post::factory()->create(['title' => 'Delete active beta', 'status' => 'active']);
@@ -2010,7 +2010,7 @@ columns:
   title:
     label: Title
 YAML);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
 
         $allowed = Post::factory()->create(['title' => 'delete me']);
         $denied = Post::factory()->create(['title' => 'protected row']);

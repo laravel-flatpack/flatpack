@@ -17,80 +17,75 @@ use Flatpack\Http\Controllers\SessionController;
 return [
     /*
     |--------------------------------------------------------------------------
-    | Composition files path
+    | Composition (YAML entities)
     |--------------------------------------------------------------------------
     |
-    | Directory containing entity folders (each with form.yaml / list.yaml).
+    | Directory containing one folder per entity (`form.yaml`, `list.yaml`).
+    | Override with FLATPACK_COMPOSITION_PATH (absolute path or path relative to
+    | the application root, as resolved by your host).
     |
     */
-    'path' => base_path('flatpack'),
-
-    /*
-    |--------------------------------------------------------------------------
-    | Dashboard routes prefix
-    |--------------------------------------------------------------------------
-    |
-    | The prefix for the Flatpack dashboard routes. Default: 'flatpack'.
-    |
-    */
-    'prefix' => env('FLATPACK_PREFIX', 'flatpack'),
-
-    /*
-    |--------------------------------------------------------------------------
-    | Dashboard entity name
-    |--------------------------------------------------------------------------
-    |
-    | The entity name for the dashboard page. Default: 'dashboard'.
-    | This is the name of the folder in the flatpack path that contains the
-    | dashboard list.yaml file.
-    |
-    */
-    'dashboard_entity' => env('FLATPACK_DASHBOARD_ENTITY', 'dashboard'),
-
-    /*
-    |--------------------------------------------------------------------------
-    | Entity list pagination
-    |--------------------------------------------------------------------------
-    |
-    | Default page size and upper bound for ?per_page= on list routes.
-    |
-    */
-    'list' => [
-        'per_page' => 10,
-        'max_per_page' => 100,
+    'composition' => [
+        'path' => env('FLATPACK_COMPOSITION_PATH', base_path('flatpack')),
+        'dashboard_entity' => env('FLATPACK_COMPOSITION_DASHBOARD_ENTITY', 'dashboard'),
     ],
 
     /*
     |--------------------------------------------------------------------------
-    | Form configuration
+    | HTTP (routing surface)
     |--------------------------------------------------------------------------
     |
+    | URL prefix for all Flatpack dashboard routes, middleware stack for the route
+    | group, login POST target, and optional JSON exception-handler registration
+    | for redirecting unauthenticated Inertia/XHR requests to the login route.
+    |
     */
-    'forms' => [
-        /*
-        |--------------------------------------------------------------------------
-        | Relation-backed table fields (`type: table` + `relation`)
-        |--------------------------------------------------------------------------
-        |
-        | Caps how many related rows are hydrated on edit to avoid huge payloads.
-        | Per-field YAML `limit` may further reduce the count (never exceed hard_max_rows).
-        |
-        */
-        'enforce_relation_table_limit' => env('FLATPACK_ENFORCE_RELATION_TABLE_LIMIT', true),
-        'relation_table_default_limit' => (int) env('FLATPACK_RELATION_TABLE_DEFAULT_LIMIT', 100),
-        'relation_table_hard_max_rows' => (int) env('FLATPACK_RELATION_TABLE_HARD_MAX', 500),
+    'http' => [
+        'prefix' => env('FLATPACK_HTTP_PREFIX', 'flatpack'),
+        'middleware' => ['web'],
+        'login' => [
+            /*
+            | "store" handles credentials (session auth by default). 
+            | Point to Fortify's AuthenticatedSessionController@store 
+            | or any [Controller::class, 'method'].
+            */
+            'store' => [SessionController::class, 'store'],
+            'throttle' => env('FLATPACK_HTTP_LOGIN_THROTTLE', 'throttle:5,1'),
+        ],
+        'register_json_exception_handler' => env('FLATPACK_HTTP_REGISTER_JSON_EXCEPTION_HANDLER', true),
     ],
 
     /*
     |--------------------------------------------------------------------------
-    | Flatpack actions
+    | Security
     |--------------------------------------------------------------------------
     |
-    | Handler map for form submits (`POST {prefix}/{entity}/submit`) and row/list
-    | actions. The request body must include a string `action` key matching a key here.
-    | Default handlers include `save`, `delete`, `restore`, and `force_delete`.
-    | Add your own keys with classes that
-    | implement `Flatpack\Contracts\Actions\FlatpackAction`.
+    | Guard name for auth / guest middleware (e.g. web, sanctum). Authorization
+    | defaults when no policy is registered for a model.
+    |
+    */
+    'security' => [
+        'guard' => env('FLATPACK_SECURITY_GUARD', 'web'),
+        'authorization' => [
+            'allow_when_policy_missing' => value(function (): bool {
+                $raw = env('FLATPACK_SECURITY_ALLOW_WHEN_POLICY_MISSING');
+                if ($raw === null || trim((string) $raw) === '') {
+                    return true;
+                }
+
+                return filter_var($raw, FILTER_VALIDATE_BOOLEAN);
+            }),
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Record & row actions
+    |--------------------------------------------------------------------------
+    |
+    | Handler map for form submit and row/list actions. 
+    | Form actions and row actions must include `action` matching a key here.
+    | Implements Flatpack\Contracts\Actions\FlatpackAction.
     |
     */
     'actions' => [
@@ -105,13 +100,12 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Flatpack bulk actions
+    | List bulk actions
     |--------------------------------------------------------------------------
     |
-    | Handlers for list-level bulk actions. Override these classes to customize
-    | behavior (for example, soft-delete policy, auditing, queues, etc).
-    | You can add your own bulk actions by adding a class that implements
-    | the Flatpack\Contracts\Actions\FlatpackBulkAction interface.
+    | Handlers for POST bulk operations on selected rows.
+    | List bulkactions must include `action` matching a key here.
+    | Implements Flatpack\Contracts\Actions\FlatpackBulkAction.
     |
     */
     'bulk_actions' => [
@@ -122,205 +116,85 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Authentication guard
+    | Entity list pagination
     |--------------------------------------------------------------------------
     |
-    | Used for Flatpack "guest" / "auth" route middleware (e.g. guest:web, auth:web).
+    | Defaults for list pages and the upper bound for ?per_page= on list routes.
     |
     */
-    'guard' => env('FLATPACK_AUTH_GUARD', 'web'),
-
-    /*
-    |--------------------------------------------------------------------------
-    | Authorization defaults
-    |--------------------------------------------------------------------------
-    |
-    | When no policy is registered for a model, {@see PolicyAwareAuthorizer}
-    | allows mutating actions only if this flag is true (default) and the user
-    | passes {@code canAccessFlatpack()}. Set {@code FLATPACK_ALLOW_WHEN_POLICY_MISSING=false}
-    | for fail-closed behavior when no policy exists.
-    |
-    */
-    'authorization' => [
-        'allow_when_policy_missing' => value(function (): bool {
-            $raw = env('FLATPACK_ALLOW_WHEN_POLICY_MISSING');
-            if ($raw === null || trim((string) $raw) === '') {
-                return true;
-            }
-
-            return filter_var($raw, FILTER_VALIDATE_BOOLEAN);
-        }),
+    'lists' => [
+        'per_page' => (int) env('FLATPACK_LISTS_PER_PAGE', 10),
+        'max_per_page' => (int) env('FLATPACK_LISTS_MAX_PER_PAGE', 100),
     ],
 
     /*
     |--------------------------------------------------------------------------
-    | Login route configuration
+    | Forms (relation-backed table fields)
     |--------------------------------------------------------------------------
     |
-    | "store" is the action that processes credentials. By default Flatpack uses
-    | session authentication (Auth::attempt). Point this to Fortify's
-    | AuthenticatedSessionController@store if you use Fortify, or any invokable
-    | [Controller::class, 'method'] your app provides.
+    | Limits for hydrating related rows on embedded `type: table` fields.
+    | Per-field YAML `limit` may reduce further (never above hard_max_rows).
     |
     */
-    'login' => [
-        'store' => [SessionController::class, 'store'],
-        'throttle' => env('FLATPACK_LOGIN_THROTTLE', 'throttle:5,1'),
+    'forms' => [
+        'enforce_relation_table_limit' => env('FLATPACK_FORMS_ENFORCE_RELATION_TABLE_LIMIT', true),
+        'relation_table_default_limit' => (int) env('FLATPACK_FORMS_RELATION_TABLE_DEFAULT_LIMIT', 100),
+        'relation_table_hard_max_rows' => (int) env('FLATPACK_FORMS_RELATION_TABLE_HARD_MAX', 500),
     ],
 
     /*
     |--------------------------------------------------------------------------
-    | Unauthenticated Inertia / XHR behaviour
+    | UI / shell
     |--------------------------------------------------------------------------
     |
-    | When true, registers exception-handler rules so AuthenticationException on
-    | Flatpack routes yields an HTML redirect (not JSON 401 / empty 401): a
-    | shouldRenderJsonWhen callback plus a renderable redirect to flatpack.login.
-    | Disable if you customize these yourself and merge Flatpack rules.
-    |
-    */
-    'register_json_exception_handler' => env('FLATPACK_REGISTER_JSON_EXCEPTION_HANDLER', true),
-
-    /*
-    |--------------------------------------------------------------------------
-    | Vite compiled assets
-    |--------------------------------------------------------------------------
-    |
-    | After `cd flatpack-package && npm install && npm run build`, the manifest
-    | lives at public/vendor/flatpack/build on the host. The build script also
-    | copies output into flatpack-package/public/build so you can commit it;
-    | on boot, that copy is synced to the host when the manifest is missing.
-    |
-    | The host app should override Inertia's HandleInertiaRequests::rootView() to
-    | return `flatpack::app` when FlatpackRequest::matches($request), so the
-    | Blade layout uses @vite(..., 'vendor/flatpack/build') (middleware order alone
-    | is not reliable).
-    |
-    */
-    'sync_compiled_assets_from_package' => env('FLATPACK_SYNC_COMPILED_ASSETS', true),
-
-    /*
-    |--------------------------------------------------------------------------
-    | Middleware
-    |--------------------------------------------------------------------------
-    |
-    | Applied to all Flatpack HTTP routes. Add auth middleware in the host app.
-    |
-    */
-    'middleware' => ['web'],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Dashboard UI
-    |--------------------------------------------------------------------------
-    |
-    | Controls shell chrome behavior. When show_action_shortcut_hints is false
-    | (default), shortcut hints are hidden on header action buttons; shortcuts
-    | remain active and appear in the Keyboard shortcuts dialog from the user menu.
+    | Presentation toggles and sidebar overrides. When menu entries are null,
+    | Flatpack derives navigation from the composition filesystem.
     |
     */
     'ui' => [
-        'show_action_shortcut_hints' => env('FLATPACK_SHOW_ACTION_SHORTCUT_HINTS', false),
+        'show_action_shortcut_hints' => env('FLATPACK_UI_SHOW_ACTION_SHORTCUT_HINTS', false),
+        /*
+        | When true, absolute http(s) URLs in YAML menu/header hrefs may point off-site.
+        | Sanitization still strips javascript:, data:, etc.
+        */
+        'allow_external_navigation_urls' => env('FLATPACK_UI_ALLOW_EXTERNAL_NAVIGATION_URLS', false),
+        /*
+        | Sidebar navigation menu items. Here you can entirely override the default 
+        | navigation menu items derived from the filesystem.
+        */
+        'navigation' => [
+            'menu' => null,
+            'secondary_menu' => null,
+            'bottom_menu' => null,
+        ],
+        /*
+        | Quick action menu item. Visible at the top of the sidebar.
+        */
+        'quick_action' => null,
     ],
 
     /*
     |--------------------------------------------------------------------------
-    | Navigation URL policy
+    | Compiled assets
     |--------------------------------------------------------------------------
     |
-    | Controls whether menu/action links may point to external origins.
-    | Unsafe URL schemes like javascript:, data:, and protocol-relative URLs
-    | are always rejected.
+    | When true and the host lacks vendor/flatpack/build/manifest.json, Flatpack
+    | copies the committed package build into public/vendor/flatpack/build on boot.
     |
     */
-    'navigation' => [
-        'allow_external_origins' => env('FLATPACK_ALLOW_EXTERNAL_ORIGINS', false),
+    'assets' => [
+        'sync_from_package' => env('FLATPACK_ASSETS_SYNC_FROM_PACKAGE', true),
     ],
 
     /*
     |--------------------------------------------------------------------------
-    | Quick action
+    | Features
     |--------------------------------------------------------------------------
     |
-    | You can define the quick action button at the top of the sidebar.
-    | Set it to null to disable it.
-    |
-    | Example:
-    | 'quick_action' => [
-    |     'name' => 'Create Post',
-    |     'url' => '/flatpack/posts/create',
-    |     'icon' => 'plus'
-    | ],
+    | Optional package features (demo catalog route, etc.).
     |
     */
-    'quick_action' => null,
-
-    /*
-    |--------------------------------------------------------------------------
-    | Menu override
-    |--------------------------------------------------------------------------
-    |
-    | Set to null to use filesystem-derived menu.
-    |
-    | When set, replaces filesystem-derived menu.
-    | Example:
-    | 'menu' => [
-    |     ['name' => 'Page Name', 'url' => '/path/to/page', 'icon' => 'book'],
-    |     ['name' => 'Page Name 2', 'url' => '/path/to/page-2', 'icon' => 'folder'],
-    | ],
-    |
-    */
-    'menu' => null,
-
-    /*
-    |--------------------------------------------------------------------------
-    | Secondary menu
-    |--------------------------------------------------------------------------
-    |
-    | You can define a secondary menu with a label and a list of items.
-    | This menu is displayed in the sidebar below the main menu.
-    |
-    | Example:
-    | 'secondary_menu' => [
-    |     'label' => 'Secondary Menu',
-    |     'items' => [
-    |         ['name' => 'Item 1', 'url' => '/path/to/page-1', 'icon' => 'book'],
-    |         ['name' => 'Item 2', 'url' => '/path/to/page-2', 'icon' => 'folder'],
-    |     ],
-    | ],
-    |
-    */
-    'secondary_menu' => null,
-
-    /*
-    |--------------------------------------------------------------------------
-    | Bottom menu
-    |--------------------------------------------------------------------------
-    |
-    | You can define a bottom menu with a list of items.
-    | This menu is displayed in the sidebar at the bottom.
-    |
-    | Example:
-    | 'bottom_menu' => [
-    |     'label' => 'Settings',
-    |     'items' => [
-    |         ['name' => 'Item 1', 'url' => '/path/to/page-1', 'icon' => 'settings'],
-    |         ['name' => 'Item 2', 'url' => '/path/to/page-2', 'icon' => 'user'],
-    |     ],
-    | ],
-    |
-    */
-    'bottom_menu' => null,
-
-    /*
-    |--------------------------------------------------------------------------
-    | Enable demo page
-    |--------------------------------------------------------------------------
-    |
-    | Whether to enable the demo page. Default: false.
-    | The demo page displays all the components and their props in a table.
-    |
-    */
-    'enable_demo' => env('FLATPACK_ENABLE_DEMO', false),
-
+    'features' => [
+        'demo' => env('FLATPACK_FEATURES_DEMO', false),
+    ],
 ];

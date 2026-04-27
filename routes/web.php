@@ -22,7 +22,7 @@ require __DIR__ . '/guest.php';
 | This file contains the authenticated routes for the Flatpack dashboard.
 |
 */
-Route::middleware(['auth:' . config('flatpack.guard', 'web'), EnsureFlatpackAccess::class])->group(function () {
+Route::middleware(['auth:' . config('flatpack.security.guard', 'web'), EnsureFlatpackAccess::class])->group(function () {
     /** Ends the current authenticated Flatpack session. */
     Route::post('logout', [SessionController::class, 'destroy'])->name('logout');
 

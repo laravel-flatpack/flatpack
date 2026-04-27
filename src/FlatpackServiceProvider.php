@@ -81,7 +81,7 @@ final class FlatpackServiceProvider extends ServiceProvider
     {
         $this->app->singleton(CompositionLoader::class, fn ($app): YamlCompositionLoader => new YamlCompositionLoader(
             $app->make('files'),
-            (string) $app['config']->get('flatpack.path', base_path('flatpack')),
+            (string) $app['config']->get('flatpack.composition.path', base_path('flatpack')),
         ));
 
         $this->app->singleton(CompositionQuery::class, fn ($app): DefaultCompositionQuery => new DefaultCompositionQuery(
@@ -154,7 +154,7 @@ final class FlatpackServiceProvider extends ServiceProvider
 
     protected function shouldSyncCompiledAssets(string $packageBuild): bool
     {
-        if (! config('flatpack.sync_compiled_assets_from_package', true)) {
+        if (! config('flatpack.assets.sync_from_package', true)) {
             return false;
         }
 
@@ -191,8 +191,8 @@ final class FlatpackServiceProvider extends ServiceProvider
 
     protected function registerRoutes(): void
     {
-        Route::middleware((array) config('flatpack.middleware', ['web']))
-            ->prefix((string) config('flatpack.prefix', 'flatpack'))
+        Route::middleware((array) config('flatpack.http.middleware', ['web']))
+            ->prefix((string) config('flatpack.http.prefix', 'flatpack'))
             ->name('flatpack.')
             ->group(dirname(__DIR__) . '/routes/web.php');
     }
@@ -210,7 +210,7 @@ final class FlatpackServiceProvider extends ServiceProvider
      */
     protected function registerJsonExceptionHandling(): void
     {
-        if (! config('flatpack.register_json_exception_handler', true)) {
+        if (! config('flatpack.http.register_json_exception_handler', true)) {
             return;
         }
 

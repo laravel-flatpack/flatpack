@@ -29,7 +29,7 @@ function withTempFormSchema(string $yaml, callable $callback): void
     try {
         File::ensureDirectoryExists($tempPath . '/posts');
         File::put($tempPath . '/posts/form.yaml', $yaml);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
 
         $callback();
     } finally {

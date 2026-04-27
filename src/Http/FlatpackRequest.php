@@ -13,7 +13,7 @@ final class FlatpackRequest
 {
     public static function matches(Request $request): bool
     {
-        $prefix = trim((string) config('flatpack.prefix', 'flatpack'), '/');
+        $prefix = trim((string) config('flatpack.http.prefix', 'flatpack'), '/');
         $path = trim($request->path(), '/');
         $underPrefix = $path === $prefix || str_starts_with($path, $prefix . '/');
 

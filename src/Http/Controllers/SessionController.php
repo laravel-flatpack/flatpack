@@ -33,7 +33,7 @@ final class SessionController
     /**
      * Attempt session authentication for Flatpack (Laravel auth; no Fortify required).
      *
-     * To use Fortify or another package, set config `flatpack.login.store` to your controller action.
+     * To use Fortify or another package, set config `flatpack.http.login.store` to your controller action.
      */
     public function store(Request $request): RedirectResponse
     {

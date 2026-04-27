@@ -36,7 +36,7 @@ test('flatpack dashboard returns JSON schema when json query is true and dashboa
 name: Overview
 widgets: []
 YAML);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
 
         /** @var User $user */
         $user = User::factory()->createOne();
@@ -64,7 +64,7 @@ test('flatpack entity list returns JSON schema when json query is true', functio
 name: Posts
 model: Flatpack\Tests\Models\Post
 YAML);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
 
         /** @var User $user */
         $user = User::factory()->createOne();
@@ -93,7 +93,7 @@ name: Post
 model: Flatpack\Tests\Models\Post
 fields: []
 YAML);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
 
         /** @var User $user */
         $user = User::factory()->createOne();
@@ -122,7 +122,7 @@ name: Post
 model: Flatpack\Tests\Models\Post
 fields: []
 YAML);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
 
         /** @var User $user */
         $user = User::factory()->createOne();
@@ -153,7 +153,7 @@ name: Post
 model: Flatpack\Tests\Models\Post
 fields: []
 YAML);
-        config()->set('flatpack.path', $tempPath);
+        config()->set('flatpack.composition.path', $tempPath);
 
         /** @var User $user */
         $user = User::factory()->createOne();

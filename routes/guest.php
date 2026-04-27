@@ -5,8 +5,8 @@ declare(strict_types=1);
 use Flatpack\Http\Controllers\SessionController;
 use Illuminate\Support\Facades\Route;
 
-$loginStore = config('flatpack.login.store');
-$throttle = config('flatpack.login.throttle');
+$loginStore = config('flatpack.http.login.store');
+$throttle = config('flatpack.http.login.throttle');
 
 /*
 |--------------------------------------------------------------------------
@@ -17,7 +17,7 @@ $throttle = config('flatpack.login.throttle');
 | such as the login route and the login store route.
 |
 */
-Route::middleware('guest:' . config('flatpack.guard', 'web'))->group(function () use ($loginStore, $throttle) {
+Route::middleware('guest:' . config('flatpack.security.guard', 'web'))->group(function () use ($loginStore, $throttle) {
     /** Renders the Flatpack login page for guest users. */
     Route::get('login', [SessionController::class, 'create'])->name('login');
 
