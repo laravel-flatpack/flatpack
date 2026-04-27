@@ -33,6 +33,7 @@ final class BulkRestoreHandler extends FlatpackBulkActionHandler
             modelClass: $context->modelClass,
             records: $context->records,
             schema: $context->schema,
+            user: $context->user,
             search: $context->search,
             filters: $context->filters,
         );

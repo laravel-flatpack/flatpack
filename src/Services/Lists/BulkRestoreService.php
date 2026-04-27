@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Flatpack\Services\Lists;
 
 use Flatpack\Contracts\Authorization\FlatpackAuthorizer;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Auth;
 
 final readonly class BulkRestoreService
 {
@@ -25,6 +25,7 @@ final readonly class BulkRestoreService
         string $modelClass,
         array|string $records,
         ?array $schema,
+        Authenticatable $user,
         string $search = '',
         array $filters = [],
     ): int {
@@ -48,11 +49,6 @@ final readonly class BulkRestoreService
             $search,
             $filters,
         )) {
-            return 0;
-        }
-
-        $user = Auth::user();
-        if ($user === null) {
             return 0;
         }
 

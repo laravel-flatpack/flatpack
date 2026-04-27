@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Flatpack\Actions;
 
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
 
 final readonly class FlatpackBulkActionContext
@@ -15,6 +16,7 @@ final readonly class FlatpackBulkActionContext
      */
     public function __construct(
         public Request $request,
+        public Authenticatable $user,
         public string $entity,
         public string $modelClass,
         public array|string $records,
@@ -28,6 +30,7 @@ final readonly class FlatpackBulkActionContext
      */
     public static function fromRequest(
         Request $request,
+        Authenticatable $user,
         string $entity,
         string $modelClass,
         ?array $schema = null,
@@ -43,6 +46,7 @@ final readonly class FlatpackBulkActionContext
 
         return new self(
             request: $request,
+            user: $user,
             entity: $entity,
             modelClass: trim($modelClass),
             records: $selection === 'all' ? 'all' : $selection,

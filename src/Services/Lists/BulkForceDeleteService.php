@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Flatpack\Services\Lists;
 
 use Flatpack\Contracts\Authorization\FlatpackAuthorizer;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Illuminate\Support\Facades\Auth;
 
 final readonly class BulkForceDeleteService
 {
@@ -26,6 +26,7 @@ final readonly class BulkForceDeleteService
         string $modelClass,
         array|string $records,
         ?array $schema,
+        Authenticatable $user,
         string $search = '',
         array $filters = [],
     ): int {
@@ -46,11 +47,6 @@ final readonly class BulkForceDeleteService
             $search,
             $filters,
         )) {
-            return 0;
-        }
-
-        $user = Auth::user();
-        if ($user === null) {
             return 0;
         }
 

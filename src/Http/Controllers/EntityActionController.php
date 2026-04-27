@@ -40,6 +40,7 @@ final readonly class EntityActionController
         $this->actionRuntime()->ensureBulkActionAuthorized($handler, $user, $listModelClass);
         $result = $handler->handle(FlatpackBulkActionContext::fromRequest(
             request: $request,
+            user: $user,
             entity: $entity,
             modelClass: $listModelClass,
             schema: $schema,
