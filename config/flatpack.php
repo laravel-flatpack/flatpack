@@ -67,14 +67,7 @@ return [
     'security' => [
         'guard' => env('FLATPACK_SECURITY_GUARD', 'web'),
         'authorization' => [
-            'allow_when_policy_missing' => value(function (): bool {
-                $raw = env('FLATPACK_SECURITY_ALLOW_WHEN_POLICY_MISSING');
-                if ($raw === null || trim((string) $raw) === '') {
-                    return true;
-                }
-
-                return filter_var($raw, FILTER_VALIDATE_BOOLEAN);
-            }),
+            'allow_when_policy_missing' => env('FLATPACK_SECURITY_ALLOW_WHEN_POLICY_MISSING', true),
         ],
     ],
 
