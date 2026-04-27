@@ -34,19 +34,11 @@
             ],
             "description": "Enable drag-and-drop row reordering: true for default column, or pass the column name."
         },
-        "row_click_edit": {
-            "oneOf": [
-                {
-                    "type": "boolean",
-                    "description": "When false, row clicks do not open the edit page. When true, use the default record key (same as omitting this property)."
-                },
-                {
-                    "type": "string",
-                    "minLength": 1,
-                    "description": "Row field whose value identifies the record for the edit URL (defaults to the model primary key / `id` when omitted or true)."
-                }
-            ],
-            "description": "Whether clicking a table row navigates to that record’s edit page. Omit or set true for default click-to-edit; set false to disable; use a string to choose which row field supplies the record id."
+        "row_click": {
+            "type": "string",
+            "enum": ["none", "edit_page", "edit_modal", "edit_drawer"],
+            "default": "none",
+            "description": "List row click behavior. `none` disables row click handling (default). `edit_page` navigates to the edit page. `edit_modal` and `edit_drawer` are reserved for future UI modes."
         },
         "columns": {
             "oneOf": [
@@ -119,6 +111,11 @@
                             "description": "Optional tab-level reorder column id override."
                         }
                     ]
+                },
+                "row_click": {
+                    "type": "string",
+                    "enum": ["none", "edit_page", "edit_modal", "edit_drawer"],
+                    "description": "Optional tab-level override for row click behavior."
                 },
                 "columns": {
                     "description": "Optional tab-only column set. When omitted, this tab uses root-level `columns`.",

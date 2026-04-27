@@ -296,12 +296,12 @@ describe('FlatpackListPage', () => {
         ).not.toBeInTheDocument();
     });
 
-    it('navigates to edit route when row_click_edit is true', () => {
+    it('navigates to edit route when row_click is edit_page', () => {
         render(
             <FlatpackListPage
                 entity="posts"
                 schema={{
-                    row_click_edit: true,
+                    row_click: 'edit_page',
                     columns: {
                         id: { label: 'ID' },
                         title: { label: 'Title' },
@@ -316,18 +316,19 @@ describe('FlatpackListPage', () => {
         expect(routerGet).toHaveBeenCalledWith('/flatpack/posts/1234567/edit');
     });
 
-    it('navigates to edit route using configured key when row_click_edit is string', () => {
+    it('uses model_key for edit route record when row_click is edit_page', () => {
         render(
             <FlatpackListPage
                 entity="posts"
+                model_key="uuid"
                 schema={{
-                    row_click_edit: 'uuid',
+                    row_click: 'edit_page',
                     columns: {
                         id: { label: 'ID' },
                         title: { label: 'Title' },
                     },
                 }}
-                records={[{ id: 1, uuid: 'abc-123', title: 'Hello' }]}
+                records={[{ uuid: 'abc-123', title: 'Hello' }]}
             />,
         );
 
@@ -336,7 +337,7 @@ describe('FlatpackListPage', () => {
         expect(routerGet).toHaveBeenCalledWith('/flatpack/posts/abc-123/edit');
     });
 
-    it('defaults row click edit to id when row_click_edit is omitted', () => {
+    it('does not navigate on row click when row_click is omitted', () => {
         render(
             <FlatpackListPage
                 entity="posts"
@@ -352,34 +353,15 @@ describe('FlatpackListPage', () => {
 
         fireEvent.click(screen.getByRole('cell', { name: 'Hello' }));
 
-        expect(routerGet).toHaveBeenCalledWith('/flatpack/posts/42/edit');
+        expect(routerGet).not.toHaveBeenCalled();
     });
 
-    it('defaults row click edit key to model_key when row_click_edit is omitted', () => {
-        render(
-            <FlatpackListPage
-                entity="posts"
-                model_key="uuid"
-                schema={{
-                    columns: {
-                        title: { label: 'Title' },
-                    },
-                }}
-                records={[{ uuid: 'abc-123', title: 'Hello' }]}
-            />,
-        );
-
-        fireEvent.click(screen.getByRole('cell', { name: 'Hello' }));
-
-        expect(routerGet).toHaveBeenCalledWith('/flatpack/posts/abc-123/edit');
-    });
-
-    it('does not navigate on row click when row_click_edit is false', () => {
+    it('does not navigate on row click when row_click is none', () => {
         render(
             <FlatpackListPage
                 entity="posts"
                 schema={{
-                    row_click_edit: false,
+                    row_click: 'none',
                     columns: {
                         id: { label: 'ID' },
                         title: { label: 'Title' },

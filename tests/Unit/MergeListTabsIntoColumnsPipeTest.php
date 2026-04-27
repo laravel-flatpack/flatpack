@@ -144,6 +144,7 @@ it('keeps tab filters and bulk action overrides in tab_panels metadata', functio
                 'label' => 'Drafts',
                 'scope' => 'draft',
                 'reorderable' => false,
+                'row_click' => 'none',
                 'filters' => [
                     'status' => [
                         'type' => 'select',
@@ -166,6 +167,7 @@ it('keeps tab filters and bulk action overrides in tab_panels metadata', functio
 
     expect($state->schema['tab_panels'][0]['scope'])->toBe('draft')
         ->and($state->schema['tab_panels'][0]['reorderable'])->toBeFalse()
+        ->and($state->schema['tab_panels'][0]['row_click'])->toBe('none')
         ->and($state->schema['tab_panels'][0])->toHaveKey('filters')
         ->and($state->schema['tab_panels'][0])->toHaveKey('bulk_actions');
 });

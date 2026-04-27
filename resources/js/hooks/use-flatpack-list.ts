@@ -182,12 +182,9 @@ export function useFlatpackList({
         typeof schema?.reorderable === 'string'
             ? schema.reorderable
             : schema?.reorderable === true;
-    const rowClickEditKey =
-        typeof schema?.row_click_edit === 'string'
-            ? schema.row_click_edit
-            : schema?.row_click_edit === false
-              ? null
-              : modelKey || 'id';
+    const rowClickBehavior = schema?.row_click ?? 'none';
+    const isRowClickEditPage = rowClickBehavior === 'edit_page';
+    const rowClickRecordKey = modelKey || 'id';
 
     const [pendingListConfirm, setPendingListConfirm] = useState<
         (FlatpackListHeaderAction & { action: string }) | null
@@ -202,10 +199,10 @@ export function useFlatpackList({
 
     const handleRowClick = useCallback(
         (row: Record<string, unknown>) => {
-            if (rowClickEditKey === null) {
+            if (!isRowClickEditPage) {
                 return;
             }
-            const record = row[rowClickEditKey];
+            const record = row[rowClickRecordKey];
             if (record == null || record === '') {
                 return;
             }
@@ -216,7 +213,7 @@ export function useFlatpackList({
                 }),
             );
         },
-        [entity, rowClickEditKey],
+        [entity, isRowClickEditPage, rowClickRecordKey],
     );
 
     const handleServerPaginationChange = useCallback(
@@ -471,7 +468,7 @@ export function useFlatpackList({
         handleListTabChange,
         filterDefinitions,
         reorderable,
-        rowClickEditKey,
+        isRowClickEditPage,
         pendingListConfirm,
         pendingRowActionConfirm,
         setPendingListConfirm,

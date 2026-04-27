@@ -42,7 +42,7 @@ final class CompositionSchemaKeys
         'name' => 'name',
         'nav_order' => 'nav_order',
         'reorderable' => 'reorderable',
-        'row_click_edit' => 'row_click_edit',
+        'row_click' => 'row_click',
         'tabs' => 'tabs',
     ];
 
@@ -67,7 +67,7 @@ final class CompositionSchemaKeys
         'name',
         'nav_order',
         'reorderable',
-        'row_click_edit',
+        'row_click',
         'tabs',
     ];
 

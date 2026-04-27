@@ -32,7 +32,7 @@ export default function FlatpackListPage(props: FlatpackListPageProps) {
         handleListTabChange,
         filterDefinitions,
         reorderable,
-        rowClickEditKey,
+        isRowClickEditPage,
         pendingListConfirm,
         pendingRowActionConfirm,
         setPendingListConfirm,
@@ -160,7 +160,7 @@ export default function FlatpackListPage(props: FlatpackListPageProps) {
                             bulkActions={bulkActions}
                             reorderable={reorderable}
                             onRowClick={
-                                rowClickEditKey !== null
+                                isRowClickEditPage
                                     ? handleRowClick
                                     : undefined
                             }

@@ -240,6 +240,7 @@ describe('list composition schema (resources/schema/list.json)', function () {
                     'label' => 'Drafts',
                     'scope' => 'draftOnly',
                     'reorderable' => false,
+                    'row_click' => 'none',
                     'filters' => [
                         'status' => [
                             'type' => 'select',
@@ -547,7 +548,7 @@ describe('list composition schema (resources/schema/list.json)', function () {
         expect($errors)->not->toBeEmpty();
     });
 
-    it('accepts row_click_edit false, true, or a column name string', function () {
+    it('accepts row_click enum values', function () {
         $minimalColumns = [
             [
                 'id' => 'title',
@@ -557,17 +558,22 @@ describe('list composition schema (resources/schema/list.json)', function () {
         ];
 
         expect(CompositionSchemaAsserter::validateList([
-            'row_click_edit' => false,
+            'row_click' => 'none',
             'columns' => $minimalColumns,
         ]))->toBeEmpty();
 
         expect(CompositionSchemaAsserter::validateList([
-            'row_click_edit' => true,
+            'row_click' => 'edit_page',
             'columns' => $minimalColumns,
         ]))->toBeEmpty();
 
         expect(CompositionSchemaAsserter::validateList([
-            'row_click_edit' => 'uuid',
+            'row_click' => 'edit_modal',
+            'columns' => $minimalColumns,
+        ]))->toBeEmpty();
+
+        expect(CompositionSchemaAsserter::validateList([
+            'row_click' => 'edit_drawer',
             'columns' => $minimalColumns,
         ]))->toBeEmpty();
     });

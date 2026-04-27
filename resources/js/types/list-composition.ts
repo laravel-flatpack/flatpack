@@ -184,6 +184,7 @@ export type FlatpackListCompositionTabPanelYaml = {
     icon?: string;
     scope?: string;
     reorderable?: boolean | string;
+    row_click?: 'none' | 'edit_page' | 'edit_modal' | 'edit_drawer';
     columns?: FlatpackListCompositionColumnsYaml;
     filters?: FlatpackListCompositionFiltersYaml;
     bulk_actions?: FlatpackListCompositionBulkActionsYaml;
@@ -202,6 +203,7 @@ export type FlatpackListTabPanelLayout = {
     icon?: string;
     scope?: string;
     reorderable?: boolean | string;
+    row_click?: 'none' | 'edit_page' | 'edit_modal' | 'edit_drawer';
     columns?: FlatpackListCompositionColumnsYaml;
     filters?: FlatpackListCompositionFiltersYaml;
     bulk_actions?: FlatpackListCompositionBulkActionsYaml;
@@ -215,8 +217,8 @@ export type FlatpackListCompositionSchema = {
     icon?: string;
     nav_order?: number;
     reorderable?: boolean | string;
-    /** When false, rows do not open the edit page. When a string, names the row field used as the record id in the edit URL. Omit or true: default (server `model_key`, else `id`). */
-    row_click_edit?: boolean | string;
+    /** Row click behavior. Default `none`; `edit_page` navigates to edit route. */
+    row_click?: 'none' | 'edit_page' | 'edit_modal' | 'edit_drawer';
     columns?: FlatpackListCompositionColumnsYaml;
     tabs?: FlatpackListCompositionTabsYaml;
     tab_panels?: FlatpackListTabPanelLayout[];

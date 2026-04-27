@@ -205,6 +205,7 @@ test('flatpack list tabs can override filters and bulk actions', function () {
 name: Posts
 model: Flatpack\Tests\Models\Post
 reorderable: true
+row_click: edit_page
 columns:
   title:
     label: Title
@@ -226,6 +227,7 @@ tabs:
     label: Drafts
     scope: draftOnly
     reorderable: false
+    row_click: none
     filters:
       status:
         type: select
@@ -255,6 +257,7 @@ YAML);
 
         expect($payload['active_tab'])->toBe('drafts')
             ->and($payload['schema']['reorderable'])->toBeFalse()
+            ->and($payload['schema']['row_click'])->toBe('none')
             ->and($payload['filters'][0]['id'])->toBe('status')
             ->and($payload['bulk_actions'])->toHaveCount(1)
             ->and($payload['bulk_actions'][0]['action'])->toBe('delete');

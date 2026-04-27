@@ -84,7 +84,7 @@ final readonly class MergeListTabsIntoColumnsPipe
         /** @var list<string> $rootColumnIds */
         $rootColumnIds = $mergedOrder;
 
-        /** @var list<array{id: string, label: string, icon?: string, scope?: string, reorderable?: bool|string, columns?: mixed, filters?: mixed, bulk_actions?: mixed, column_ids: list<string>}> $tabPanels */
+        /** @var list<array{id: string, label: string, icon?: string, scope?: string, reorderable?: bool|string, row_click?: string, columns?: mixed, filters?: mixed, bulk_actions?: mixed, column_ids: list<string>}> $tabPanels */
         $tabPanels = [];
 
         foreach ($tabs as $tabId => $panel) {
@@ -113,6 +113,11 @@ final readonly class MergeListTabsIntoColumnsPipe
                 $reorderable = $panel['reorderable'];
             } elseif (is_string($panel['reorderable'] ?? null) && trim($panel['reorderable']) !== '') {
                 $reorderable = trim($panel['reorderable']);
+            }
+            $rowClick = null;
+            $rowClickValue = $panel['row_click'] ?? null;
+            if (is_string($rowClickValue) && in_array($rowClickValue, ['none', 'edit_page', 'edit_modal', 'edit_drawer'], true)) {
+                $rowClick = $rowClickValue;
             }
 
             $tabColumns = $panel['columns'] ?? null;
@@ -167,6 +172,9 @@ final readonly class MergeListTabsIntoColumnsPipe
             }
             if ($reorderable !== null) {
                 $entry['reorderable'] = $reorderable;
+            }
+            if ($rowClick !== null) {
+                $entry['row_click'] = $rowClick;
             }
             if (is_array($tabColumns) && $tabColumns !== []) {
                 $entry['columns'] = $tabColumns;
