@@ -9,7 +9,7 @@ export function useCompositionDebugLog(messages: string[] | undefined): void {
             return;
         }
         for (const msg of messages) {
-            console.warn(`[FLATPACK]${msg}`);
+            console.warn(`📦 ${msg}`);
         }
     }, [messages]);
 }

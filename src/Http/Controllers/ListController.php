@@ -10,6 +10,7 @@ use Flatpack\Http\Controllers\Concerns\LoadsListComposition;
 use Flatpack\Http\Controllers\Concerns\LoadsListRecords;
 use Flatpack\Http\Controllers\Concerns\ResolvesListQuery;
 use Flatpack\Http\FlatpackResponse;
+use Flatpack\Http\FlatpackResponseOptions;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -43,15 +44,24 @@ final readonly class ListController
             $query,
             $activeTab['scope'] ?? null,
         );
+        $debugContext = FlatpackResponse::compositionDebugContextForEntity($entity, 'list.yaml');
+        $debugLog = FlatpackResponse::compositionDebugLog($debugContext);
 
-        return FlatpackResponse::inertia('list', $this->listPageProps(
-            $entity,
-            $list,
-            $effectiveSchema,
-            $result,
-            $query['searchTerm'],
-            $activeTab['id'] ?? null,
-        ));
+        return FlatpackResponse::inertia(
+            'list',
+            $this->listPageProps(
+                $entity,
+                $list,
+                $effectiveSchema,
+                $result,
+                $query['searchTerm'],
+                $activeTab['id'] ?? null,
+                $debugLog,
+            ),
+            new FlatpackResponseOptions(
+                compositionDebugLog: $debugLog,
+            ),
+        );
     }
 
     /**

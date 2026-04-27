@@ -6,6 +6,7 @@ namespace Flatpack\Http\Controllers\Concerns;
 
 use Flatpack\Composition\FormComposition;
 use Flatpack\Schema\HeaderActions;
+use Flatpack\Support\CompositionDebugLog;
 use Illuminate\Support\MessageBag;
 use Illuminate\Support\ViewErrorBag;
 
@@ -25,6 +26,7 @@ trait BuildsFormPageProps
         string $mode,
         ?string $record,
         array $values,
+        ?CompositionDebugLog $debugLog = null,
     ): array {
         $oldValues = old('values');
         if ($this->hasFlashedValidationErrors() && is_array($oldValues)) {
@@ -40,7 +42,7 @@ trait BuildsFormPageProps
             'mode' => $mode,
             'schema' => $schema,
             'values' => $values,
-            'form_actions' => HeaderActions::fromSchema($schema),
+            'form_actions' => HeaderActions::fromSchema($schema, $debugLog),
         ];
     }
 

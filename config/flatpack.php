@@ -3,10 +3,14 @@
 declare(strict_types=1);
 
 use Flatpack\Actions\Handlers\BulkDeleteHandler;
+use Flatpack\Actions\Handlers\BulkForceDeleteHandler;
+use Flatpack\Actions\Handlers\BulkRestoreHandler;
 use Flatpack\Actions\Handlers\CreateRecordHandler;
 use Flatpack\Actions\Handlers\DeleteRecordHandler;
 use Flatpack\Actions\Handlers\EditRecordHandler;
+use Flatpack\Actions\Handlers\ForceDeleteRecordHandler;
 use Flatpack\Actions\Handlers\ReorderActionHandler;
+use Flatpack\Actions\Handlers\RestoreRecordHandler;
 use Flatpack\Actions\Handlers\SaveRecordHandler;
 use Flatpack\Http\Controllers\SessionController;
 
@@ -84,7 +88,8 @@ return [
     |
     | Handler map for form submits (`POST {prefix}/{entity}/submit`) and row/list
     | actions. The request body must include a string `action` key matching a key here.
-    | Default handlers include `save` and `delete`. Add your own keys with classes that
+    | Default handlers include `save`, `delete`, `restore`, and `force_delete`.
+    | Add your own keys with classes that
     | implement `Flatpack\Contracts\Actions\FlatpackAction`.
     |
     */
@@ -93,6 +98,8 @@ return [
         'edit' => EditRecordHandler::class,
         'save' => SaveRecordHandler::class,
         'delete' => DeleteRecordHandler::class,
+        'restore' => RestoreRecordHandler::class,
+        'force_delete' => ForceDeleteRecordHandler::class,
         'reorder' => ReorderActionHandler::class,
     ],
 
@@ -109,6 +116,8 @@ return [
     */
     'bulk_actions' => [
         'delete' => BulkDeleteHandler::class,
+        'restore' => BulkRestoreHandler::class,
+        'force_delete' => BulkForceDeleteHandler::class,
     ],
 
     /*

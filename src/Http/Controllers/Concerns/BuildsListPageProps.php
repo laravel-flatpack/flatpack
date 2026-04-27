@@ -7,6 +7,7 @@ namespace Flatpack\Http\Controllers\Concerns;
 use Flatpack\Composition\ListComposition;
 use Flatpack\Schema\HeaderActions;
 use Flatpack\Schema\Lists\BulkActions;
+use Flatpack\Support\CompositionDebugLog;
 use Flatpack\Support\ModelKeyResolver;
 
 /**
@@ -26,6 +27,7 @@ trait BuildsListPageProps
         array $result,
         string $searchTerm,
         ?string $activeTabId = null,
+        ?CompositionDebugLog $debugLog = null,
     ): array {
         return [
             'entity' => $entity,
@@ -42,8 +44,8 @@ trait BuildsListPageProps
             'filters' => $result['filters'],
             'filter_values' => $result['filter_values'],
             'sorting' => $result['sorting'],
-            'list_actions' => HeaderActions::fromSchema($schema),
-            'bulk_actions' => BulkActions::fromSchema($schema),
+            'list_actions' => HeaderActions::fromSchema($schema, $debugLog),
+            'bulk_actions' => BulkActions::fromSchema($schema, $debugLog),
         ];
     }
 

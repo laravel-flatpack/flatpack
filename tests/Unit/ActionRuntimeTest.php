@@ -18,6 +18,15 @@ test('resolveRecordActionHandler throws runtime exception when action is missing
         ->toThrow(ActionRuntimeException::class, 'Flatpack action "create" is not configured.');
 });
 
+test('resolveBulkActionHandler throws runtime exception when action is missing', function () {
+    config()->set('flatpack.bulk_actions', [
+        'delete' => Flatpack\Actions\Handlers\BulkDeleteHandler::class,
+    ]);
+
+    expect(fn () => app(ActionRuntime::class)->resolveBulkActionHandler('restore'))
+        ->toThrow(ActionRuntimeException::class, 'Flatpack bulk action "restore" is not configured.');
+});
+
 test('resolveRecordModel throws runtime exception when model class is invalid', function () {
     expect(fn () => app(ActionRuntime::class)->resolveRecordModel('Invalid\\MissingModel', '1', 'form'))
         ->toThrow(ActionRuntimeException::class, 'Flatpack form model is not configured.');

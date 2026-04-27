@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Flatpack\Schema\Lists;
 
 use Flatpack\Schema\Generated\CompositionSchemaKeys;
+use Flatpack\Support\CompositionDebugLog;
 use Flatpack\Support\SuccessRedirect;
 
 final class BulkActions
@@ -13,7 +14,7 @@ final class BulkActions
      * @param  array<string, mixed>|null  $schema
      * @return list<array{id: string, label: string, action: string, icon: string, variant: string, success_message?: string, confirm?: bool, success_redirect?: string, enabled_if?: array{all?: list<array<string, mixed>>, any?: list<array<string, mixed>>, message?: string}, visible_if?: array{all?: list<array<string, mixed>>, any?: list<array<string, mixed>>, message?: string}}>
      */
-    public static function fromSchema(?array $schema): array
+    public static function fromSchema(?array $schema, ?CompositionDebugLog $debug = null): array
     {
         if ($schema === null) {
             return [];
@@ -40,6 +41,13 @@ final class BulkActions
             }
 
             if (! self::isConfiguredAction($action)) {
+                $id = is_string($key) && $key !== '' ? $key : (string) count($out);
+                $debug?->add(sprintf(
+                    'Action "%s" in bulk_actions.%s.action is not configured in flatpack.bulk_actions (omitted from UI).',
+                    $action,
+                    $id,
+                ));
+
                 continue;
             }
 

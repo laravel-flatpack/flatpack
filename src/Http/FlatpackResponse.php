@@ -29,6 +29,23 @@ final class FlatpackResponse
         return config('app.debug') ? new CompositionDebugLog($context) : null;
     }
 
+    public static function compositionDebugContextForEntity(string $entity, string $fileName): string
+    {
+        $configuredPath = (string) config('flatpack.path', 'flatpack');
+        $normalizedPath = str_replace('\\', '/', $configuredPath);
+        $segments = array_values(array_filter(explode('/', trim($normalizedPath, '/'))));
+        $basePath = $segments !== [] ? end($segments) : 'flatpack';
+
+        return ($basePath !== '' ? $basePath . '/' : '') . trim($entity, '/') . '/' . ltrim($fileName, '/');
+    }
+
+    public static function compositionDebugContextForDashboard(): string
+    {
+        $slug = trim((string) config('flatpack.dashboard_entity', 'dashboard'));
+
+        return self::compositionDebugContextForEntity($slug !== '' ? $slug : 'dashboard', 'list.yaml');
+    }
+
     /**
      * @param  array<string, mixed>  $data
      */
@@ -114,15 +131,12 @@ final class FlatpackResponse
             return null;
         }
 
-        return $entity . '/' . $fileName;
+        return self::compositionDebugContextForEntity($entity, $fileName);
     }
 
     private static function contextForDashboardComposition(): string
     {
-        $slug = (string) config('flatpack.dashboard_entity', 'dashboard');
-        $slug = trim($slug);
-
-        return ($slug !== '' ? $slug : 'dashboard') . '/list.yaml';
+        return self::compositionDebugContextForDashboard();
     }
 
     /**

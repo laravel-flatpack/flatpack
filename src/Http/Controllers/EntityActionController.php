@@ -109,7 +109,11 @@ final readonly class EntityActionController
         $user = $this->requireUserOrAbort($request);
 
         [$listModelClass, $schema] = $this->listModelAndSchema($entity);
-        $model = $this->resolveListRecordModelOrAbort($listModelClass, $record);
+        $model = $this->resolveListRecordModelOrAbort(
+            $listModelClass,
+            $record,
+            in_array($action, ['restore', 'force_delete'], true),
+        );
         $handler = $this->resolveRecordActionHandlerOrAbort($action);
         $this->actionRuntime()->ensureRecordActionAuthorized($handler, $user, $listModelClass, $model);
         $result = $this->executeRecordActionContext(

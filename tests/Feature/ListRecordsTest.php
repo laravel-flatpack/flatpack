@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Flatpack\Tests\Models\Post;
 use Flatpack\Tests\Models\User;
+use Flatpack\Tests\Policies\AllowRestoreForceDeletePostPolicy;
 use Flatpack\Tests\Policies\DenyDeletePostPolicy;
 use Flatpack\Tests\Policies\DenyUpdatePostPolicy;
 use Flatpack\Tests\Policies\DenyViewPostPolicy;
@@ -473,6 +474,9 @@ actions:
   docs:
     label: Docs
     href: /docs/posts
+  publish:
+    label: Publish
+    action: publish
   invalid:
     label: Invalid
     action: create
@@ -1777,6 +1781,162 @@ YAML);
                 'success_redirect' => 'list',
             ],
         ]);
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
+test('flatpack entity row restore action restores a soft deleted record', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-list-row-restore-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+columns:
+  title:
+    label: Title
+YAML);
+        config()->set('flatpack.path', $tempPath);
+        Gate::policy(Post::class, AllowRestoreForceDeletePostPolicy::class);
+
+        /** @var Post $post */
+        $post = Post::factory()->create(['title' => 'Restore me']);
+        $post->delete();
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        actingAs($user)
+            ->post(route('flatpack.entities.row-action', [
+                'entity' => 'posts',
+                'record' => (string) $post->getKey(),
+            ]), [
+                'action' => 'restore',
+            ])
+            ->assertStatus(303);
+
+        expect(Post::query()->withTrashed()->find($post->getKey())?->trashed())->toBeFalse();
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
+test('flatpack entity row force_delete action permanently removes a soft deleted record', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-list-row-force-delete-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+columns:
+  title:
+    label: Title
+YAML);
+        config()->set('flatpack.path', $tempPath);
+        Gate::policy(Post::class, AllowRestoreForceDeletePostPolicy::class);
+
+        /** @var Post $post */
+        $post = Post::factory()->create(['title' => 'Permanently remove me']);
+        $post->delete();
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        actingAs($user)
+            ->post(route('flatpack.entities.row-action', [
+                'entity' => 'posts',
+                'record' => (string) $post->getKey(),
+            ]), [
+                'action' => 'force_delete',
+            ])
+            ->assertStatus(303);
+
+        expect(Post::query()->withTrashed()->find($post->getKey()))->toBeNull();
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
+test('flatpack entity bulk restore action restores selected soft deleted records', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-list-bulk-restore-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+columns:
+  title:
+    label: Title
+YAML);
+        config()->set('flatpack.path', $tempPath);
+        Gate::policy(Post::class, AllowRestoreForceDeletePostPolicy::class);
+
+        /** @var Post $restoreA */
+        $restoreA = Post::factory()->create(['title' => 'Restore A']);
+        /** @var Post $restoreB */
+        $restoreB = Post::factory()->create(['title' => 'Restore B']);
+        $restoreA->delete();
+        $restoreB->delete();
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        actingAs($user)
+            ->post(route('flatpack.entities.bulk-action', [
+                'entity' => 'posts',
+            ]), [
+                'action' => 'restore',
+                'selection' => [(string) $restoreA->getKey(), (string) $restoreB->getKey()],
+            ])
+            ->assertStatus(303);
+
+        expect(Post::query()->withTrashed()->find($restoreA->getKey())?->trashed())->toBeFalse();
+        expect(Post::query()->withTrashed()->find($restoreB->getKey())?->trashed())->toBeFalse();
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
+test('flatpack entity bulk force_delete action permanently removes selected soft deleted records', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-list-bulk-force-delete-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+columns:
+  title:
+    label: Title
+YAML);
+        config()->set('flatpack.path', $tempPath);
+        Gate::policy(Post::class, AllowRestoreForceDeletePostPolicy::class);
+
+        /** @var Post $deleteA */
+        $deleteA = Post::factory()->create(['title' => 'Delete A']);
+        /** @var Post $deleteB */
+        $deleteB = Post::factory()->create(['title' => 'Delete B']);
+        $deleteA->delete();
+        $deleteB->delete();
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        actingAs($user)
+            ->post(route('flatpack.entities.bulk-action', [
+                'entity' => 'posts',
+            ]), [
+                'action' => 'force_delete',
+                'selection' => [(string) $deleteA->getKey(), (string) $deleteB->getKey()],
+            ])
+            ->assertStatus(303);
+
+        expect(Post::query()->withTrashed()->find($deleteA->getKey()))->toBeNull();
+        expect(Post::query()->withTrashed()->find($deleteB->getKey()))->toBeNull();
     } finally {
         File::deleteDirectory($tempPath);
     }

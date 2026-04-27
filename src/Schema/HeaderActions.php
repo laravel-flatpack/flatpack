@@ -6,6 +6,7 @@ namespace Flatpack\Schema;
 
 use Flatpack\Schema\Generated\CompositionSchemaKeys;
 use Flatpack\Services\Navigation\NavigationUrl;
+use Flatpack\Support\CompositionDebugLog;
 use Flatpack\Support\SuccessRedirect;
 
 /**
@@ -19,7 +20,7 @@ final class HeaderActions
      * @param  array<string, mixed>|null  $schema
      * @return list<array{id: string, label: string, icon: string, variant: string, primary?: true, href?: string, action?: string, submit?: bool, success_message?: string, confirm?: bool, success_redirect?: string, enabled_if?: array{all?: list<array<string, mixed>>, any?: list<array<string, mixed>>, message?: string}, visible_if?: array{all?: list<array<string, mixed>>, any?: list<array<string, mixed>>, message?: string}, shortcut?: string}>
      */
-    public static function fromSchema(?array $schema): array
+    public static function fromSchema(?array $schema, ?CompositionDebugLog $debug = null): array
     {
         if ($schema === null) {
             return [];
@@ -67,6 +68,15 @@ final class HeaderActions
                 $normalized['primary'] = true;
             }
             if ($action !== '') {
+                if (! self::isConfiguredRecordAction($action)) {
+                    $debug?->add(sprintf(
+                        'Action "%s" in actions.%s.action is not configured in flatpack.actions (omitted from UI).',
+                        $action,
+                        $id,
+                    ));
+
+                    continue;
+                }
                 $normalized['action'] = $action;
                 if (($definition['submit'] ?? null) === true) {
                     $normalized['submit'] = true;
@@ -151,6 +161,13 @@ final class HeaderActions
         }
 
         return 'outline';
+    }
+
+    private static function isConfiguredRecordAction(string $action): bool
+    {
+        $handlerClass = config("flatpack.actions.{$action}");
+
+        return is_string($handlerClass) && trim($handlerClass) !== '';
     }
 
     /**

@@ -57,6 +57,7 @@ fields:
     type: text
     label: Slug
 YAML, function (): void {
+        config()->set('app.debug', true);
         /** @var User $user */
         $user = User::factory()->createOne();
 
@@ -94,6 +95,7 @@ fields:
     type: text
     label: Slug
 YAML, function (): void {
+        config()->set('app.debug', true);
         /** @var User $user */
         $user = User::factory()->createOne();
 
@@ -394,6 +396,9 @@ actions:
     success_message: Post saved successfully
     confirm: true
     success_redirect: list
+  publish:
+    label: Publish
+    action: publish
 fields:
   published_at:
     type: date

@@ -3,6 +3,10 @@
 declare(strict_types=1);
 
 use Flatpack\Schema\HeaderActions;
+use Flatpack\Support\CompositionDebugLog;
+use Flatpack\Tests\TestCase;
+
+uses(TestCase::class);
 
 test('prefixedUrl joins flatpack prefix and path', function () {
     expect(HeaderActions::prefixedUrl('/posts/create', 'flatpack'))
@@ -49,4 +53,27 @@ test('sanitizeHref rejects unsafe or external URLs by default', function () {
 test('sanitizeHref allows external URLs when explicitly enabled', function () {
     expect(HeaderActions::sanitizeHref('https://evil.example/p', true))
         ->toBe('https://evil.example/p');
+});
+
+test('fromSchema omits unconfigured action handlers and logs a debug warning', function () {
+    $debug = new CompositionDebugLog('posts/form.yaml');
+
+    $actions = HeaderActions::fromSchema([
+        'actions' => [
+            'save' => [
+                'label' => 'Save',
+                'action' => 'save',
+            ],
+            'publish' => [
+                'label' => 'Publish',
+                'action' => 'publish',
+            ],
+        ],
+    ], $debug);
+
+    expect($actions)->toHaveCount(1)
+        ->and($actions[0]['id'])->toBe('save')
+        ->and($debug->all())->toContain(
+            '[posts/form.yaml] Action "publish" in actions.publish.action is not configured in flatpack.actions (omitted from UI).'
+        );
 });

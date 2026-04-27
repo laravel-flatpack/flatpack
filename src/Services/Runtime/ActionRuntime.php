@@ -12,6 +12,7 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\MassAssignmentException;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Database\QueryException;
 use Illuminate\Validation\ValidationException;
 use Throwable;
@@ -132,6 +133,31 @@ final readonly class ActionRuntime
         return $modelClass::query()
             ->where($keyName, $record)
             ->first();
+    }
+
+    public function resolveRecordModelWithTrashed(
+        string $modelClass,
+        string $record,
+        string $context = 'record',
+    ): Model {
+        if ($modelClass === '' || ! class_exists($modelClass)) {
+            throw new ActionRuntimeException(404, sprintf('Flatpack %s model is not configured.', $context));
+        }
+        if (! is_subclass_of($modelClass, Model::class)) {
+            throw new ActionRuntimeException(404, sprintf('Flatpack %s model class is invalid.', $context));
+        }
+
+        /** @var class-string<Model> $modelClass */
+        $model = new $modelClass();
+        $keyName = $model->getKeyName();
+        $query = $modelClass::query();
+        if (method_exists($model, 'trashed')) {
+            $query = $query->withoutGlobalScope(SoftDeletingScope::class);
+        }
+
+        return $query
+            ->where($keyName, $record)
+            ->firstOrFail();
     }
 
     public function toUserFacingValidationException(

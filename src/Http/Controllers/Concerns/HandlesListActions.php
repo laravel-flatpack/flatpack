@@ -44,9 +44,16 @@ trait HandlesListActions
         }
     }
 
-    private function resolveListRecordModelOrAbort(string $modelClass, string $record): Model
-    {
+    private function resolveListRecordModelOrAbort(
+        string $modelClass,
+        string $record,
+        bool $includeTrashed = false,
+    ): Model {
         try {
+            if ($includeTrashed) {
+                return $this->actionRuntime()->resolveRecordModelWithTrashed($modelClass, $record, 'list');
+            }
+
             return $this->actionRuntime()->resolveRecordModel($modelClass, $record, 'list');
         } catch (ActionRuntimeException $exception) {
             abort($exception->statusCode(), $exception->getMessage());

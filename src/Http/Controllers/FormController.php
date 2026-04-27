@@ -50,7 +50,7 @@ final readonly class FormController
 
         return FlatpackResponse::inertia(
             view: 'form',
-            data: $this->formPageProps($entity, $form, $normalized->schema, 'create', null, []),
+            data: $this->formPageProps($entity, $form, $normalized->schema, 'create', null, [], $normalized->debugLog),
             options: new FlatpackResponseOptions(
                 compositionDebugLog: $normalized->debugLog,
                 skipFormSchemaNormalize: true,
@@ -68,10 +68,14 @@ final readonly class FormController
         $modelClass = $this->formModelClass($form);
 
         if (! $this->hasRenderableFields($schema)) {
+            $debugContext = FlatpackResponse::compositionDebugContextForEntity($entity, 'form.yaml');
+            $debugLog = FlatpackResponse::compositionDebugLog($debugContext);
+
             return FlatpackResponse::inertia(
                 view: 'form',
-                data: $this->formPageProps($entity, $form, $schema, 'edit', $record, []),
+                data: $this->formPageProps($entity, $form, $schema, 'edit', $record, [], $debugLog),
                 options: new FlatpackResponseOptions(
+                    compositionDebugLog: $debugLog,
                     skipFormSchemaNormalize: true,
                 ),
             );
@@ -97,7 +101,7 @@ final readonly class FormController
 
         return FlatpackResponse::inertia(
             view: 'form',
-            data: $this->formPageProps($entity, $form, $normalized->schema, 'edit', $record, $values),
+            data: $this->formPageProps($entity, $form, $normalized->schema, 'edit', $record, $values, $normalized->debugLog),
             options: new FlatpackResponseOptions(
                 compositionDebugLog: $normalized->debugLog,
                 skipFormSchemaNormalize: true,

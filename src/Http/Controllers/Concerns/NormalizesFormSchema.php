@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Flatpack\Http\Controllers\Concerns;
 
+use Flatpack\Http\FlatpackResponse;
 use Flatpack\Schema\Forms\FormSchemaNormalizationResult;
 use Flatpack\Schema\Forms\FormSchemaNormalizer;
 use Illuminate\Database\Eloquent\Model;
@@ -57,7 +58,7 @@ trait NormalizesFormSchema
     ): FormSchemaNormalizationResult {
         return $this->formSchemaNormalizer()->normalizeForFormPage(
             $schema,
-            $entity . '/form.yaml',
+            FlatpackResponse::compositionDebugContextForEntity($entity, 'form.yaml'),
             $modelClass !== '' ? $modelClass : null,
             $model,
         );
