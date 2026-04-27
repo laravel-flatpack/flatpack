@@ -146,7 +146,6 @@ final class SchemaController
     }
 
     /**
-     * @param  mixed  $value
      * @return list<string>
      */
     private function normalizeEnumValues(mixed $value): array
@@ -252,9 +251,6 @@ final class SchemaController
         return 'mixed';
     }
 
-    /**
-     * @param  mixed  $value
-     */
     private function stringifyValue(mixed $value): string
     {
         if ($value === null) {
