@@ -243,7 +243,7 @@ export function useFlatpackList({
             : typeof schema?.reorderable === 'string'
               ? schema.reorderable
               : schema?.reorderable === true;
-    const rowClickBehavior = schema?.row_click ?? 'none';
+    const rowClickBehavior = schema?.row_click ?? 'edit_page';
     const isRowClickEditPage = rowClickBehavior === 'edit_page';
     const rowClickRecordKey = modelKey || 'id';
 

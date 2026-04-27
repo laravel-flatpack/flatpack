@@ -443,7 +443,7 @@ describe('FlatpackListPage', () => {
         });
     });
 
-    it('does not navigate on row click when row_click is omitted', () => {
+    it('navigates to edit route when row_click is omitted (defaults to edit_page)', () => {
         render(
             <FlatpackListPage
                 entity="posts"
@@ -459,7 +459,7 @@ describe('FlatpackListPage', () => {
 
         fireEvent.click(screen.getByRole('cell', { name: 'Hello' }));
 
-        expect(routerGet).not.toHaveBeenCalled();
+        expect(routerGet).toHaveBeenCalledWith('/flatpack/posts/42/edit');
     });
 
     it('does not navigate on row click when row_click is none', () => {

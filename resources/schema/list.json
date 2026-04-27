@@ -43,8 +43,8 @@
         "row_click": {
             "type": "string",
             "enum": ["none", "edit_page", "edit_modal", "edit_drawer"],
-            "default": "none",
-            "description": "List row click behavior. `none` disables row click handling (default). `edit_page` navigates to the edit page. `edit_modal` and `edit_drawer` are reserved for future UI modes."
+            "default": "edit_page",
+            "description": "List row click behavior. Default `edit_page` navigates to the edit page. `none` disables row click handling. `edit_modal` and `edit_drawer` are reserved for future UI modes."
         },
         "columns": {
             "oneOf": [

@@ -46,7 +46,7 @@ bulk_actions:
 | `icon` | `string` | No | Lucide icon name. |
 | `nav_order` | `integer` | No | Sidebar ordering weight. |
 | `reorderable` | `boolean \| string` | No | Enables drag reorder (`true` default column, or custom column name). |
-| `row_click` | `none \| edit_page \| edit_modal \| edit_drawer` | No | Row click behavior. |
+| `row_click` | `none \| edit_page \| edit_modal \| edit_drawer` | No | Row click behavior. Defaults to `edit_page` when omitted (open edit in full page). Set `none` to disable. |
 | `columns` | `array \| object` | No | Column definitions (root set). |
 | `tabs` | `object` | No | Tab panels keyed by tab id. |
 | `filters` | `object` | No | Filter overrides/definitions keyed by column id. |
