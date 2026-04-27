@@ -3,10 +3,10 @@ export const DATA_TABLE_DRAG_COLUMN_HEAD_CLASS = 'w-8 min-w-8 max-w-8 px-1';
 export const DATA_TABLE_DRAG_COLUMN_CELL_CLASS = 'w-8 min-w-8 max-w-8 p-1';
 
 export const DATA_TABLE_SELECT_COLUMN_HEAD_CLASS =
-    'w-10 min-w-10 max-w-10 px-2';
+    'w-8 min-w-8 max-w-8 pl-4 pr-2';
 
 export const DATA_TABLE_SELECT_COLUMN_CELL_CLASS =
-    'w-10 min-w-10 max-w-10 px-2';
+    'w-8 min-w-8 max-w-8 pl-4 pr-2';
 
 export const DASHBOARD_TABLE_INPUT_CLASS =
     'h-8 min-w-0 w-full max-w-full border-transparent bg-transparent text-sm shadow-none hover:bg-input/30 focus-visible:border focus-visible:bg-background dark:bg-transparent dark:hover:bg-input/30 dark:focus-visible:bg-input/30';
