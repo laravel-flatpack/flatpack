@@ -56,5 +56,3 @@ Route::middleware(['auth:' . config('flatpack.guard', 'web'), EnsureFlatpackAcce
     /** Renders the entity list page with schema-driven records. */
     Route::get('{entity}', [ListController::class, 'index'])->name('entities.index');
 });
-
-// ->middleware('throttle:60,1')
