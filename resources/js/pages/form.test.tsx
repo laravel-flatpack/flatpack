@@ -288,6 +288,7 @@ describe('FlatpackFormPage', () => {
                         id: 'save',
                         label: 'Save',
                         action: 'save',
+                        submit: true,
                         variant: 'default',
                     },
                 ]}
@@ -329,6 +330,7 @@ describe('FlatpackFormPage', () => {
                         id: 'save',
                         label: 'Save',
                         action: 'save',
+                        submit: true,
                         variant: 'default',
                     },
                 ]}
@@ -389,6 +391,7 @@ describe('FlatpackFormPage', () => {
                         id: 'save',
                         label: 'Save',
                         action: 'save',
+                        submit: true,
                         variant: 'default',
                     },
                 ]}
@@ -452,6 +455,7 @@ describe('FlatpackFormPage', () => {
                         id: 'save',
                         label: 'Save',
                         action: 'save',
+                        submit: true,
                         variant: 'default',
                     },
                 ]}
@@ -524,6 +528,7 @@ describe('FlatpackFormPage', () => {
                         id: 'save',
                         label: 'Save',
                         action: 'save',
+                        submit: true,
                         variant: 'default',
                     },
                 ]}
@@ -570,6 +575,7 @@ describe('FlatpackFormPage', () => {
                         id: 'save',
                         label: 'Save',
                         action: 'save',
+                        submit: true,
                         variant: 'default',
                     },
                 ]}
@@ -622,6 +628,7 @@ describe('FlatpackFormPage', () => {
                         id: 'save',
                         label: 'Save',
                         action: 'save',
+                        submit: true,
                         variant: 'default',
                     },
                 ]}
@@ -665,7 +672,7 @@ describe('FlatpackFormPage', () => {
         ).not.toBeInTheDocument();
     });
 
-    it('submits non-save yaml actions through the form submit route in edit mode', async () => {
+    it('runs non-submit yaml actions through the row action route in edit mode', async () => {
         const user = userEvent.setup();
 
         renderFlatpackFormPage(
@@ -699,16 +706,13 @@ describe('FlatpackFormPage', () => {
 
         await waitFor(() => {
             expect(hoisted.post).toHaveBeenCalledWith(
-                '/flatpack/posts/submit',
+                '/flatpack/posts/7/action',
                 {
-                    values: { title: 'Existing title' },
                     action: 'delete',
-                    form_action_id: 'delete',
-                    record: '7',
                 },
                 expect.objectContaining({
                     preserveScroll: true,
-                    preserveState: 'errors',
+                    preserveState: true,
                     onSuccess: expect.any(Function),
                     onError: expect.any(Function),
                 }),
@@ -749,6 +753,7 @@ describe('FlatpackFormPage', () => {
                         id: 'save',
                         label: 'Save',
                         action: 'save',
+                        submit: true,
                         variant: 'default',
                         success_message: 'Post saved successfully',
                     },
@@ -792,6 +797,7 @@ describe('FlatpackFormPage', () => {
                         id: 'save',
                         label: 'Save',
                         action: 'save',
+                        submit: true,
                         variant: 'default',
                         enabled_if: {
                             all: [{ 'form.dirty': true }],
@@ -855,16 +861,13 @@ describe('FlatpackFormPage', () => {
 
         await waitFor(() => {
             expect(hoisted.post).toHaveBeenCalledWith(
-                '/flatpack/posts/submit',
+                '/flatpack/posts/7/action',
                 {
-                    values: { title: 'Existing title' },
                     action: 'delete',
-                    form_action_id: 'delete',
-                    record: '7',
                 },
                 expect.objectContaining({
                     preserveScroll: true,
-                    preserveState: 'errors',
+                    preserveState: true,
                     onSuccess: expect.any(Function),
                     onError: expect.any(Function),
                 }),
@@ -932,6 +935,7 @@ describe('FlatpackFormPage', () => {
                         id: 'save',
                         label: 'Save',
                         action: 'save',
+                        submit: true,
                         variant: 'default',
                         confirm: true,
                     },

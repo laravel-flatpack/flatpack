@@ -104,6 +104,10 @@
                     "type": "boolean",
                     "description": "When true, this action is the default for implicit form submit (Enter / primary CTA). If multiple are primary, the first in YAML order wins."
                 },
+                "submit": {
+                    "type": "boolean",
+                    "description": "When true, clicking this action submits current form values to the form submit endpoint. When false or omitted, it runs as a record action without posting form values."
+                },
                 "shortcut": {
                     "type": "string"
                 }

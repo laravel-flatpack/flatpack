@@ -17,7 +17,7 @@ final class HeaderActions
 {
     /**
      * @param  array<string, mixed>|null  $schema
-     * @return list<array{id: string, label: string, icon: string, variant: string, primary?: true, href?: string, action?: string, success_message?: string, confirm?: bool, success_redirect?: string, enabled_if?: array{all?: list<array<string, mixed>>, any?: list<array<string, mixed>>, message?: string}, visible_if?: array{all?: list<array<string, mixed>>, any?: list<array<string, mixed>>, message?: string}, shortcut?: string}>
+     * @return list<array{id: string, label: string, icon: string, variant: string, primary?: true, href?: string, action?: string, submit?: bool, success_message?: string, confirm?: bool, success_redirect?: string, enabled_if?: array{all?: list<array<string, mixed>>, any?: list<array<string, mixed>>, message?: string}, visible_if?: array{all?: list<array<string, mixed>>, any?: list<array<string, mixed>>, message?: string}, shortcut?: string}>
      */
     public static function fromSchema(?array $schema): array
     {
@@ -68,6 +68,9 @@ final class HeaderActions
             }
             if ($action !== '') {
                 $normalized['action'] = $action;
+                if (($definition['submit'] ?? null) === true) {
+                    $normalized['submit'] = true;
+                }
             }
             if ($href !== '') {
                 $normalized['href'] = $href;

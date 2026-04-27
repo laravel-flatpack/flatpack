@@ -105,6 +105,7 @@ final class CompositionSchemaKeys
         'label',
         'primary',
         'shortcut',
+        'submit',
         'success_message',
         'success_redirect',
         'variant',

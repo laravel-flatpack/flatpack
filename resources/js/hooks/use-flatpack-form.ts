@@ -1,5 +1,5 @@
 import type { FormDataConvertible } from '@inertiajs/core';
-import { useForm } from '@inertiajs/react';
+import { router, useForm } from '@inertiajs/react';
 import type { FormEvent } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
@@ -35,7 +35,8 @@ function defaultFormSubmitIntent(
         (a): a is FlatpackListHeaderAction & { action: string } =>
             'action' in a &&
             typeof (a as { action?: string }).action === 'string' &&
-            (a as { action: string }).action !== '',
+            (a as { action: string }).action !== '' &&
+            a.submit === true,
     );
     const primary = withAction.find((a) => a.primary === true);
     if (primary) {
@@ -160,6 +161,7 @@ export function useFlatpackForm({
 
     const [pendingConfirm, setPendingConfirm] =
         useState<FlatpackFormPendingConfirm | null>(null);
+    const [actionProcessing, setActionProcessing] = useState(false);
 
     useEffect(() => {
         const f = formRef.current;
@@ -217,6 +219,10 @@ export function useFlatpackForm({
         form.clearErrors();
 
         const intent = pendingSubmitIntentRef.current;
+        if (intent.id === '' || intent.action.trim() === '') {
+            toast.error('No submit action is configured for this form');
+            return;
+        }
 
         form.transform((data) => {
             const payload: Record<string, unknown> = {
@@ -232,6 +238,7 @@ export function useFlatpackForm({
             return payload;
         });
 
+        setActionProcessing(true);
         const options = {
             preserveScroll: true,
             preserveState: 'errors' as const,
@@ -249,10 +256,53 @@ export function useFlatpackForm({
                     firstErrorMessage(errors) ?? 'Form submission failed',
                 );
             },
+            onFinish: () => {
+                setActionProcessing(false);
+            },
         };
 
         form.post(submitUrl, options);
     }, [entity, fields, form, formActions, mode, record]);
+
+    const runAction = useCallback(
+        (config: FlatpackListHeaderAction & { action: string }) => {
+            if (config.submit === true) {
+                prepareFormSubmit(config);
+                runSubmit();
+                return;
+            }
+            if (mode !== 'edit' || record == null || record === '') {
+                toast.error('This action requires an existing record');
+                return;
+            }
+            setActionProcessing(true);
+            router.post(
+                route('flatpack.entities.row-action', {
+                    entity,
+                    record: String(record),
+                }),
+                { action: config.action },
+                {
+                    preserveState: true,
+                    preserveScroll: true,
+                    onSuccess: () => {
+                        if (config.success_message) {
+                            toast.success(config.success_message);
+                        }
+                    },
+                    onError: (errors: Record<string, unknown>) => {
+                        toast.error(
+                            firstErrorMessage(errors) ?? 'Action failed',
+                        );
+                    },
+                    onFinish: () => {
+                        setActionProcessing(false);
+                    },
+                },
+            );
+        },
+        [entity, mode, prepareFormSubmit, record, runSubmit],
+    );
 
     const handleSubmit = useCallback(
         (event: FormEvent<HTMLFormElement>) => {
@@ -277,5 +327,7 @@ export function useFlatpackForm({
         setFieldValue,
         handleSubmit,
         runSubmit,
+        runAction,
+        formProcessing: form.processing || actionProcessing,
     };
 }

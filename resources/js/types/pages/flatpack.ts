@@ -23,6 +23,8 @@ export type FlatpackListHeaderAction = {
     primary?: boolean;
     success_message?: string;
     confirm?: boolean;
+    /** Form-page only: submit current form values when true (default false). */
+    submit?: boolean;
     success_redirect?: FlatpackSuccessRedirect;
     enabled_if?: FlatpackActionCondition;
     visible_if?: FlatpackActionCondition;

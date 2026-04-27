@@ -65,6 +65,42 @@ These are widely shared across field types.
 - `checked` / `unchecked`
 - `value[<literal>]`
 
+## Form Header Actions: `submit`
+
+Form page header actions (YAML top-level `actions`) can either submit form values or run as direct record actions.
+
+### `submit` behavior
+
+- `submit: true` -> posts to `flatpack.entities.form.submit` and sends current `values`.
+- `submit: false` (or omitted) -> runs `flatpack.entities.row-action` without sending form `values`.
+- Default is `false`.
+
+Direct record actions (`submit: false`) require edit mode (an existing record). Use this for command-like actions (delete, resend email, regenerate key, sync) that should not validate or submit unsaved form values.
+
+### Example
+
+```yaml
+actions:
+  save:
+    label: Save
+    action: save
+    submit: true
+    variant: primary
+    enabled_if:
+      all:
+        - form.dirty: true
+      message: No changes to save
+
+  delete:
+    label: Delete
+    action: delete
+    variant: destructive
+    confirm: true
+    visible_if:
+      all:
+        - form.mode_in: [edit]
+```
+
 ## 1) `text`
 
 ```yaml

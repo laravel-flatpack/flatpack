@@ -29,7 +29,13 @@ type FlatpackFormActionsProps = {
     /** Sets which YAML row / handler name is sent on the next {@code POST …/submit}. */
     onFormSubmitIntent: (action: FlatpackListSubmitAction) => void;
     /** Opens confirm dialog for toolbar rows with {@code confirm: true}. */
-    onFormSubmitConfirmClick: (action: FlatpackListSubmitAction) => void;
+    onFormSubmitConfirmClick: (
+        action: FlatpackListHeaderAction & { action: string },
+    ) => void;
+    /** Runs the selected toolbar action immediately (submit or non-submit path). */
+    onRunAction: (
+        action: FlatpackListHeaderAction & { action: string },
+    ) => void;
 };
 
 export function FlatpackFormActions({
@@ -41,6 +47,7 @@ export function FlatpackFormActions({
     fieldsLength,
     onFormSubmitIntent,
     onFormSubmitConfirmClick,
+    onRunAction,
 }: FlatpackFormActionsProps) {
     const {
         props: { flatpack },
@@ -91,6 +98,7 @@ export function FlatpackFormActions({
                     }
                     onFormSubmitConfirmClick={onFormSubmitConfirmClick}
                     onFormSubmitIntent={onFormSubmitIntent}
+                    onRunAction={onRunAction}
                     activeSubmittingActionId={activeSubmittingActionId}
                     setActiveSubmittingActionId={setActiveSubmittingActionId}
                 />
@@ -110,6 +118,7 @@ type FlatpackFormActionProps = {
     shortcut?: ParsedFlatpackShortcut;
     onFormSubmitIntent: FlatpackFormActionsProps['onFormSubmitIntent'];
     onFormSubmitConfirmClick: FlatpackFormActionsProps['onFormSubmitConfirmClick'];
+    onRunAction: FlatpackFormActionsProps['onRunAction'];
     activeSubmittingActionId: string | null;
     setActiveSubmittingActionId: (actionId: string) => void;
 };
@@ -125,6 +134,7 @@ function FlatpackFormAction({
     shortcut,
     onFormSubmitConfirmClick,
     onFormSubmitIntent,
+    onRunAction,
     activeSubmittingActionId,
     setActiveSubmittingActionId,
 }: FlatpackFormActionProps) {
@@ -191,15 +201,23 @@ function FlatpackFormAction({
         return null;
     }
 
-    const submitRow = action;
+    const actionRow = action;
+    const isSubmitAction = action.submit === true;
     const inactiveState = flatpackActionEnabledState(action, {
         formIsDirty,
         formMode,
     });
     const disabled =
-        formProcessing || fieldsLength === 0 || inactiveState.inactive;
+        formProcessing ||
+        inactiveState.inactive ||
+        (isSubmitAction && fieldsLength === 0) ||
+        (!isSubmitAction && formMode !== 'edit');
     const showInactiveTooltip =
-        inactiveState.inactive && !formProcessing && fieldsLength > 0;
+        inactiveState.inactive &&
+        !formProcessing &&
+        (isSubmitAction ? fieldsLength > 0 : true);
+    const submitType = action.confirm || !isSubmitAction ? 'button' : 'submit';
+    const submitFormId = action.confirm || !isSubmitAction ? undefined : formId;
 
     return (
         <FlatpackActionInactiveTooltip
@@ -207,8 +225,8 @@ function FlatpackFormAction({
             message={inactiveState.message}
         >
             <Button
-                type={action.confirm ? 'button' : 'submit'}
-                form={action.confirm ? undefined : formId}
+                type={submitType}
+                form={submitFormId}
                 size="lg"
                 variant={variant}
                 disabled={disabled}
@@ -218,12 +236,18 @@ function FlatpackFormAction({
                     action.confirm
                         ? () => {
                               setActiveSubmittingActionId(action.id);
-                              onFormSubmitIntent(submitRow);
-                              onFormSubmitConfirmClick(submitRow);
+                              if (isSubmitAction) {
+                                  onFormSubmitIntent(actionRow);
+                              }
+                              onFormSubmitConfirmClick(actionRow);
                           }
                         : () => {
                               setActiveSubmittingActionId(action.id);
-                              onFormSubmitIntent(submitRow);
+                              if (isSubmitAction) {
+                                  onFormSubmitIntent(actionRow);
+                                  return;
+                              }
+                              onRunAction(actionRow);
                           }
                 }
             >

@@ -220,6 +220,10 @@
                     "type": "boolean",
                     "description": "When true, this list header action is treated as the primary CTA where that matters for defaults."
                 },
+                "submit": {
+                    "type": "boolean",
+                    "description": "Reserved for parity with form actions; list actions are always non-form submissions."
+                },
                 "shortcut": {
                     "type": "string"
                 }

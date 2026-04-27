@@ -88,6 +88,7 @@ export const HEADER_ACTION_ENTRY_KEYS = [
     'label',
     'primary',
     'shortcut',
+    'submit',
     'success_message',
     'success_redirect',
     'variant',

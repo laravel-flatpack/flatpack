@@ -35,7 +35,8 @@ export default function FlatpackFormPage(props: FlatpackFormPageProps) {
         setPendingConfirm,
         setFieldValue,
         handleSubmit,
-        runSubmit,
+        runAction,
+        formProcessing,
     } = useFlatpackForm(props);
 
     const displayName = name ?? entity;
@@ -65,8 +66,7 @@ export default function FlatpackFormPage(props: FlatpackFormPageProps) {
                     if (pending === null) {
                         return;
                     }
-                    prepareFormSubmit(pending.config);
-                    runSubmit();
+                    runAction(pending.config);
                 }}
             />
             <div className="flex flex-col gap-2">
@@ -76,7 +76,7 @@ export default function FlatpackFormPage(props: FlatpackFormPageProps) {
                         <FlatpackFormActions
                             formActions={formActions}
                             formId={formId}
-                            formProcessing={form.processing}
+                            formProcessing={formProcessing}
                             formIsDirty={isDirty}
                             formMode={mode}
                             fieldsLength={fields.length}
@@ -84,6 +84,7 @@ export default function FlatpackFormPage(props: FlatpackFormPageProps) {
                             onFormSubmitConfirmClick={(action) =>
                                 setPendingConfirm({ config: action })
                             }
+                            onRunAction={runAction}
                         />
                     }
                 />
