@@ -106,3 +106,18 @@ it('resolves reorderableColumn in normalized list schema', function (): void {
         ->and($schema)->toHaveKey('reorderableColumn')
         ->and($schema['reorderableColumn'])->toBe('sorting_order');
 });
+
+it('coerces invalid list menu to main and logs when debug log is present', function (): void {
+    $log = new CompositionDebugLog('posts/list.yaml');
+    $normalizer = new ListSchemaNormalizer;
+
+    $schema = $normalizer->normalizedListSchema([
+        'name' => 'Posts',
+        'menu' => 'sidebar',
+        'columns' => [],
+    ], $log);
+
+    expect($schema)->toBeArray()
+        ->and($schema['menu'])->toBe('main')
+        ->and(implode(' ', $log->all()))->toContain('Invalid list `menu`');
+});

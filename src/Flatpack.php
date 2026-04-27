@@ -58,7 +58,7 @@ final readonly class Flatpack
      */
     public function menu(): array
     {
-        return $this->menuBuilder->build();
+        return $this->sharedNavigation()['main'];
     }
 
     /**
@@ -123,11 +123,19 @@ final readonly class Flatpack
 
     public function secondaryMenu(): mixed
     {
-        return $this->config->get('flatpack.ui.navigation.secondary_menu');
+        return $this->sharedNavigation()['secondary'];
     }
 
     public function bottomMenu(): mixed
     {
-        return $this->config->get('flatpack.ui.navigation.bottom_menu');
+        return $this->sharedNavigation()['bottom'];
+    }
+
+    /**
+     * @return array{main: list<MenuItem>, secondary: mixed, bottom: mixed}
+     */
+    private function sharedNavigation(): array
+    {
+        return once(fn (): array => $this->menuBuilder->resolveSharedNavigation());
     }
 }

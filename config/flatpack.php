@@ -147,8 +147,9 @@ return [
     | UI / shell
     |--------------------------------------------------------------------------
     |
-    | Presentation toggles and sidebar overrides. When menu entries are null,
-    | Flatpack derives navigation from the composition filesystem.
+    | Presentation toggles and sidebar overrides. When each navigation override
+    | (`main`, `secondary`, `bottom`) is null, Flatpack derives that group from
+    | compositions (lists use optional `menu` for placement).
     |
     */
     'ui' => [
@@ -159,9 +160,9 @@ return [
         | navigation menu items derived from the filesystem.
         */
         'navigation' => [
-            'menu' => null,
-            'secondary_menu' => null,
-            'bottom_menu' => null,
+            'main' => null,
+            'secondary' => null,
+            'bottom' => null,
         ],
         // Quick action menu item. Visible at the top of the sidebar.
         'quick_action' => null,

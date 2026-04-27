@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Gate;
 uses(TestCase::class, RefreshDatabase::class);
 
 test('flatpack shares menu from config override', function () {
-    config()->set('flatpack.ui.navigation.menu', [
+    config()->set('flatpack.ui.navigation.main', [
         'posts' => [
             'name' => 'Posts',
             'url' => 'flatpack.posts.index',
@@ -39,7 +39,7 @@ test('flatpack builds default menu from filesystem path when menu override is nu
         File::ensureDirectoryExists($tempPath . '/posts');
         File::ensureDirectoryExists($tempPath . '/categories');
         config()->set('flatpack.composition.path', $tempPath);
-        config()->set('flatpack.ui.navigation.menu', null);
+        config()->set('flatpack.ui.navigation.main', null);
 
         $user = User::factory()->create();
 
@@ -60,7 +60,7 @@ test('flatpack builds default menu from filesystem path when menu override is nu
 });
 
 test('flatpack supports an explicit empty menu override', function () {
-    config()->set('flatpack.ui.navigation.menu', []);
+    config()->set('flatpack.ui.navigation.main', []);
 
     $user = User::factory()->create();
 
@@ -73,7 +73,7 @@ test('flatpack supports an explicit empty menu override', function () {
 
 test('flatpack filters unsafe menu routes from config override', function () {
     config()->set('app.url', 'https://app.test');
-    config()->set('flatpack.ui.navigation.menu', [
+    config()->set('flatpack.ui.navigation.main', [
         'safe-relative' => [
             'name' => 'Safe Relative',
             'url' => '/flatpack/posts',
@@ -129,7 +129,7 @@ name: Categories
 model: Flatpack\Tests\Models\PostBySlug
 YAML);
         config()->set('flatpack.composition.path', $tempPath);
-        config()->set('flatpack.ui.navigation.menu', null);
+        config()->set('flatpack.ui.navigation.main', null);
         Gate::policy(Flatpack\Tests\Models\Post::class, DenyViewPostPolicy::class);
 
         $user = User::factory()->create();
@@ -143,4 +143,124 @@ YAML);
     } finally {
         File::deleteDirectory($tempPath);
     }
+});
+
+test('flatpack routes list yaml menu option to secondary navigation group', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-menu-placement-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::ensureDirectoryExists($tempPath . '/categories');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+menu: secondary
+YAML);
+        File::put($tempPath . '/categories/list.yaml', <<<'YAML'
+name: Categories
+model: Flatpack\Tests\Models\PostBySlug
+YAML);
+        config()->set('flatpack.composition.path', $tempPath);
+        config()->set('flatpack.ui.navigation.main', null);
+        config()->set('flatpack.ui.navigation.secondary', null);
+        config()->set('flatpack.ui.navigation.bottom', null);
+
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get(route('flatpack.dashboard'))
+            ->assertInertia(fn ($page) => $page
+                ->has('flatpack.menu', 1)
+                ->where('flatpack.menu.0.slug', 'categories')
+                ->where('flatpack.secondaryMenu.items.0.slug', 'posts')
+                ->where('flatpack.secondaryMenu.items.0.name', 'Posts')
+            );
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
+test('flatpack applies secondary group label when items are derived from compositions', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-menu-secondary-label-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::ensureDirectoryExists($tempPath . '/categories');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+menu: secondary
+YAML);
+        File::put($tempPath . '/categories/list.yaml', <<<'YAML'
+name: Categories
+model: Flatpack\Tests\Models\PostBySlug
+YAML);
+        config()->set('flatpack.composition.path', $tempPath);
+        config()->set('flatpack.ui.navigation.main', null);
+        config()->set('flatpack.ui.navigation.secondary', [
+            'label' => 'Workspace',
+            'items' => null,
+        ]);
+
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get(route('flatpack.dashboard'))
+            ->assertInertia(fn ($page) => $page
+                ->where('flatpack.secondaryMenu.label', 'Workspace')
+                ->where('flatpack.secondaryMenu.items.0.slug', 'posts')
+            );
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
+test('flatpack treats secondary label plus omitted items as derived filesystem links', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-menu-secondary-label-omit-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+menu: secondary
+YAML);
+        config()->set('flatpack.composition.path', $tempPath);
+        config()->set('flatpack.ui.navigation.main', null);
+        config()->set('flatpack.ui.navigation.secondary', [
+            'label' => 'Tools',
+        ]);
+
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get(route('flatpack.dashboard'))
+            ->assertInertia(fn ($page) => $page
+                ->where('flatpack.secondaryMenu.label', 'Tools')
+                ->has('flatpack.secondaryMenu.items', 1)
+            );
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
+test('flatpack resolves slug keyed secondary override without wrapper keys', function () {
+    config()->set('flatpack.ui.navigation.main', null);
+    config()->set('flatpack.ui.navigation.secondary', [
+        'posts' => [
+            'name' => 'Posts',
+            'url' => 'flatpack.posts.index',
+            'icon' => 'book-open',
+        ],
+    ]);
+
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->get(route('flatpack.dashboard'))
+        ->assertInertia(fn ($page) => $page
+            ->missing('flatpack.secondaryMenu.label')
+            ->where('flatpack.secondaryMenu.items.0.slug', 'posts')
+            ->where('flatpack.secondaryMenu.items.0.name', 'Posts')
+        );
 });

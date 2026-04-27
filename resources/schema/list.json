@@ -20,6 +20,12 @@
             "type": "integer",
             "description": "Sidebar menu ordering weight (lower appears first)."
         },
+        "menu": {
+            "type": "string",
+            "enum": ["main", "secondary", "bottom"],
+            "default": "main",
+            "description": "Which sidebar navigation group receives this list link: primary (`main`), mid sidebar (`secondary`), or footer (`bottom`). Invalid values are ignored at runtime (treated as `main`) and recorded in composition debug when debug mode is on."
+        },
         "reorderable": {
             "oneOf": [
                 {

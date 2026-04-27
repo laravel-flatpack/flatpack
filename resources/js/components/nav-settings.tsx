@@ -10,6 +10,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { isEntityListNavActive } from '@/lib/utils';
 import type { FlatpackMenuItem } from '@/types/flatpack';
 import { LucideIconByName } from './icons';
 
@@ -35,7 +36,14 @@ export function NavSettings({
                     <SidebarMenu>
                         {items.map((item) => (
                             <SidebarMenuItem key={item.url}>
-                                <SidebarMenuButton asChild>
+                                <SidebarMenuButton
+                                    tooltip={item.name}
+                                    asChild
+                                    isActive={isEntityListNavActive(
+                                        currentPath,
+                                        item.url,
+                                    )}
+                                >
                                     <Link href={item.url}>
                                         <LucideIconByName name={item.icon} />
                                         <span>{item.name}</span>

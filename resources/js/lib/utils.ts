@@ -2,6 +2,8 @@ import type { ClassValue } from 'clsx';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
+import { route } from '@/lib/route';
+
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
@@ -25,6 +27,27 @@ function normalizePathname(value: string): string {
 }
 
 /**
+ * Menu `url` values may be absolute URLs, root-relative paths, or Ziggy route names (config overrides).
+ */
+function resolveNavListPathname(listRoute: string): string {
+    const trimmed = listRoute.trim();
+    if (trimmed === '') {
+        return '/';
+    }
+    if (trimmed.startsWith('/') || /^https?:\/\//i.test(trimmed)) {
+        return normalizePathname(trimmed);
+    }
+
+    try {
+        const resolved = route(trimmed);
+
+        return normalizePathname(typeof resolved === 'string' ? resolved : String(resolved));
+    } catch {
+        return normalizePathname(trimmed);
+    }
+}
+
+/**
  * Sidebar items link to the entity list. Mark active on list, create, and edit routes.
  */
 export function isEntityListNavActive(
@@ -32,7 +55,7 @@ export function isEntityListNavActive(
     listRoute: string,
 ): boolean {
     const path = normalizePathname(currentPath);
-    const list = normalizePathname(listRoute);
+    const list = resolveNavListPathname(listRoute);
 
     if (path === list) {
         return true;

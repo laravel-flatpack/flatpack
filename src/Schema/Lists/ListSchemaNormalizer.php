@@ -7,6 +7,7 @@ namespace Flatpack\Schema\Lists;
 use Flatpack\Schema\Lists\Normalization\ListSchemaPipelineState;
 use Flatpack\Schema\Lists\Normalization\Pipes\LogUnknownListRootKeysPipe;
 use Flatpack\Schema\Lists\Normalization\Pipes\MergeListTabsIntoColumnsPipe;
+use Flatpack\Schema\Lists\Normalization\Pipes\WarnInvalidListMenuPipe;
 use Flatpack\Schema\Lists\Normalization\Pipes\WarnUnknownListBulkActionsNestedKeysPipe;
 use Flatpack\Schema\Lists\Normalization\Pipes\WarnUnknownListColumnActionButtonsNestedKeysPipe;
 use Flatpack\Schema\Lists\Normalization\Pipes\WarnUnknownListHeaderActionsNestedKeysPipe;
@@ -40,6 +41,7 @@ final readonly class ListSchemaNormalizer
             ->send($state)
             ->through([
                 MergeListTabsIntoColumnsPipe::class,
+                WarnInvalidListMenuPipe::class,
                 LogUnknownListRootKeysPipe::class,
                 WarnUnknownListHeaderActionsNestedKeysPipe::class,
                 WarnUnknownListBulkActionsNestedKeysPipe::class,

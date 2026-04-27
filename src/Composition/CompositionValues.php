@@ -79,4 +79,32 @@ final readonly class CompositionValues
 
         return 99;
     }
+
+    /**
+     * Sidebar navigation group for this list (`main`, `secondary`, or `bottom`). Invalid or missing values default to `main`.
+     *
+     * @param  array<string, mixed>|null  $data
+     */
+    public function listNavigationMenu(?array $data): string
+    {
+        if ($data === null) {
+            return 'main';
+        }
+
+        $key = CompositionSchemaKeys::LIST_ROOT['menu'];
+        if (! isset($data[$key]) || ! is_string($data[$key])) {
+            return 'main';
+        }
+
+        $trimmed = trim($data[$key]);
+        if ($trimmed === '') {
+            return 'main';
+        }
+
+        if (in_array($trimmed, ['main', 'secondary', 'bottom'], true)) {
+            return $trimmed;
+        }
+
+        return 'main';
+    }
 }

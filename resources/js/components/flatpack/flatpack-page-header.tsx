@@ -18,7 +18,7 @@ export function FlatpackPageHeader({
                     <h1 className="min-w-0 flex-1 text-2xl font-semibold tracking-tight">
                         {title}
                     </h1>
-                    <div className="h-6 w-full">{subtitle}</div>
+                    {subtitle && <div className="h-6 w-full">{subtitle}</div>}
                 </div>
                 {actions ?? null}
             </div>

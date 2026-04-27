@@ -22,19 +22,35 @@ final readonly class FlatpackMenuBuilder implements MenuBuilder
         private FlatpackAuthorizer $authorizer,
     ) {}
 
-    public function build(): array
+    /**
+     * @return array{main: list<MenuItem>, secondary: mixed, bottom: mixed}
+     */
+    public function resolveSharedNavigation(): array
     {
-        $override = $this->config->get('flatpack.ui.navigation.menu');
+        $buckets = $this->collectFilesystemBuckets();
 
-        if ($override === null) {
-            return $this->menuFromFilesystem();
-        }
+        $mainOverride = $this->config->get('flatpack.ui.navigation.main');
+        $main = match (true) {
+            $mainOverride === null => $buckets['main'],
+            is_array($mainOverride) => $this->menuFromConfig($mainOverride),
+            default => $buckets['main'],
+        };
 
-        if (is_array($override)) {
-            return $this->menuFromConfig($override);
-        }
+        $secondaryRaw = $this->config->get('flatpack.ui.navigation.secondary');
+        $secondary = is_array($secondaryRaw)
+            ? $this->resolveSidebarGroup($secondaryRaw, $buckets['secondary'])
+            : $this->sidebarGroupFromItems($buckets['secondary']);
 
-        return $this->menuFromFilesystem();
+        $bottomRaw = $this->config->get('flatpack.ui.navigation.bottom');
+        $bottom = is_array($bottomRaw)
+            ? $this->resolveSidebarGroup($bottomRaw, $buckets['bottom'])
+            : $this->sidebarGroupFromItems($buckets['bottom']);
+
+        return [
+            'main' => $main,
+            'secondary' => $secondary,
+            'bottom' => $bottom,
+        ];
     }
 
     /**
@@ -62,8 +78,8 @@ final readonly class FlatpackMenuBuilder implements MenuBuilder
             $result[] = new MenuItem(
                 slug: $key,
                 name: $name,
-                icon: $icon,
                 url: $url,
+                icon: $icon,
             );
         }
 
@@ -71,15 +87,19 @@ final readonly class FlatpackMenuBuilder implements MenuBuilder
     }
 
     /**
-     * @return list<MenuItem>
+     * @return array{main: list<MenuItem>, secondary: list<MenuItem>, bottom: list<MenuItem>}
      */
-    private function menuFromFilesystem(): array
+    private function collectFilesystemBuckets(): array
     {
         $basePath = (string) $this->config->get('flatpack.composition.path', base_path('flatpack'));
-        $items = [];
+        $buckets = [
+            'main' => [],
+            'secondary' => [],
+            'bottom' => [],
+        ];
 
         if (! is_dir($basePath)) {
-            return [];
+            return $buckets;
         }
 
         foreach (scandir($basePath) ?: [] as $entry) {
@@ -97,24 +117,111 @@ final readonly class FlatpackMenuBuilder implements MenuBuilder
             if (! $this->canIncludeListInMenu($list)) {
                 continue;
             }
+
+            $placement = $this->compositionValues->listNavigationMenu($list);
+
             $displayName = $this->compositionValues->displayName($list);
             $icon = $this->compositionValues->icon($list);
             $navOrder = $this->compositionValues->navOrder($list);
 
-            $items[] = new MenuItem(
+            $menuItem = new MenuItem(
                 slug: $entry,
                 name: $displayName ?? Str::of($entry)
                     ->replace(['-', '_'], ' ')
                     ->title()
                     ->plural()
                     ->toString(),
-                icon: $icon ?? 'folder',
                 url: action([ListController::class, 'index'], ['entity' => $entry]),
+                icon: $icon ?? 'folder',
                 navOrder: $navOrder,
             );
+
+            $buckets[$placement][] = $menuItem;
         }
 
-        return $this->sortMenuItems($items);
+        foreach (array_keys($buckets) as $key) {
+            $buckets[$key] = $this->sortMenuItems($buckets[$key]);
+        }
+
+        return $buckets;
+    }
+
+    /**
+     * @param  array<string, mixed>  $override
+     * @param  list<MenuItem>  $filesystemItems
+     */
+    private function resolveSidebarGroup(array $override, array $filesystemItems): ?array
+    {
+        $isWrapper = array_key_exists('items', $override) || array_key_exists('label', $override);
+
+        if (! $isWrapper) {
+            $built = $this->menuFromConfig($override);
+            if ($built === []) {
+                return null;
+            }
+
+            return [
+                'items' => array_map(
+                    static fn (MenuItem $item): array => $item->toArray(),
+                    $built,
+                ),
+            ];
+        }
+
+        $label = null;
+        if (isset($override['label']) && is_string($override['label']) && trim($override['label']) !== '') {
+            $label = trim($override['label']);
+        }
+
+        $itemsConfig = $override['items'] ?? null;
+
+        if ($itemsConfig === null) {
+            return $this->sidebarGroupFromItems($filesystemItems, $label);
+        }
+
+        if (! is_array($itemsConfig)) {
+            return $this->sidebarGroupFromItems($filesystemItems, $label);
+        }
+
+        $built = $this->menuFromConfig($itemsConfig);
+        $serialized = array_map(
+            static fn (MenuItem $item): array => $item->toArray(),
+            $built,
+        );
+
+        if ($serialized === [] && $label === null) {
+            return null;
+        }
+
+        $out = ['items' => $serialized];
+        if ($label !== null) {
+            $out['label'] = $label;
+        }
+
+        return $out;
+    }
+
+    /**
+     * @param  list<MenuItem>  $items
+     * @return array{label?: string, items: list<array<string, string>>}|null
+     */
+    private function sidebarGroupFromItems(array $items, ?string $label = null): ?array
+    {
+        if ($items === []) {
+            return $label === null ? null : ['label' => $label, 'items' => []];
+        }
+
+        $out = [
+            'items' => array_map(
+                static fn (MenuItem $item): array => $item->toArray(),
+                $items,
+            ),
+        ];
+        if ($label !== null) {
+            $out['label'] = $label;
+        }
+
+        return $out;
     }
 
     /**

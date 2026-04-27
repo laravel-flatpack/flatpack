@@ -7,7 +7,7 @@ namespace Flatpack\Services\Navigation;
 interface MenuBuilder
 {
     /**
-     * @return list<MenuItem>
+     * @return array{main: list<MenuItem>, secondary: mixed, bottom: mixed}
      */
-    public function build(): array;
+    public function resolveSharedNavigation(): array;
 }
