@@ -1,7 +1,6 @@
 import type { ClassValue } from 'clsx';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-
 import { route } from '@/lib/route';
 
 export function cn(...inputs: ClassValue[]) {
@@ -41,7 +40,9 @@ function resolveNavListPathname(listRoute: string): string {
     try {
         const resolved = route(trimmed);
 
-        return normalizePathname(typeof resolved === 'string' ? resolved : String(resolved));
+        return normalizePathname(
+            typeof resolved === 'string' ? resolved : String(resolved),
+        );
     } catch {
         return normalizePathname(trimmed);
     }
