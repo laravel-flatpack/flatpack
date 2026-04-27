@@ -206,6 +206,26 @@ it('records unknown top-level form keys in debug log', function (): void {
     expect(implode(' ', $log->all()))->toContain('Unknown top-level form key');
 });
 
+it('does not log normalized tab_panels as unknown root keys', function (): void {
+    $log = new CompositionDebugLog('posts/form.yaml');
+    $normalizer = new FormSchemaNormalizer;
+    $normalizer->normalizedFormSchema([
+        'fields' => [
+            'title' => ['type' => 'text', 'label' => 'Title'],
+        ],
+        'tabs' => [
+            'main' => [
+                'label' => 'Main',
+                'fields' => [
+                    'body' => ['type' => 'textarea', 'label' => 'Body'],
+                ],
+            ],
+        ],
+    ], $log);
+
+    expect(implode(' ', $log->all()))->not->toContain('tab_panels');
+});
+
 it('records wrong-type preset removal in debug log', function (): void {
     $log = new CompositionDebugLog('posts/form.yaml');
     $normalizer = new FormSchemaNormalizer;

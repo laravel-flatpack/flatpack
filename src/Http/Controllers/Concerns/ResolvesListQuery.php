@@ -18,6 +18,7 @@ trait ResolvesListQuery
      *     perPage: int,
      *     searchTerm: string,
      *     filters: array<array-key, mixed>,
+     *     tab: string,
      *     sortBy: string,
      *     sortDirection: string
      * }
@@ -31,6 +32,7 @@ trait ResolvesListQuery
         $searchTerm = trim((string) $request->query('search', ''));
         $filters = $request->query('filters', []);
         $filters = is_array($filters) ? $filters : [];
+        $tab = trim((string) $request->query('tab', ''));
         $sortBy = trim((string) $request->query('sort_by', ''));
         $sortDirection = mb_strtolower(trim((string) $request->query('sort_direction', '')));
 
@@ -43,6 +45,7 @@ trait ResolvesListQuery
             'perPage' => $perPage,
             'searchTerm' => $searchTerm,
             'filters' => $filters,
+            'tab' => $tab,
             'sortBy' => $sortBy,
             'sortDirection' => $sortDirection,
         ];

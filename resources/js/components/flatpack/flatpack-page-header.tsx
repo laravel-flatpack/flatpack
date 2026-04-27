@@ -12,7 +12,7 @@ export function FlatpackPageHeader({
     actions,
 }: FlatpackPageHeaderProps) {
     return (
-        <div className="mb-4 flex w-full flex-col gap-2">
+        <div className="flex w-full flex-col gap-2">
             <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
                 <div className="flex w-full flex-col gap-0">
                     <h1 className="min-w-0 flex-1 text-2xl font-semibold tracking-tight">

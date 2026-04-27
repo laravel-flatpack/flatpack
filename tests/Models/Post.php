@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Flatpack\Tests\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -72,6 +73,18 @@ final class Post extends Model
     public function meta(): HasOne
     {
         return $this->hasOne(PostMeta::class, 'post_id');
+    }
+
+    public function scopeDraftOnly(Builder $query): Builder
+    {
+        return $query->where('status', 'draft');
+    }
+
+    public function scopeTrashed(Builder $query): Builder
+    {
+        return $query
+            ->withoutGlobalScopes()
+            ->whereNotNull($this->qualifyColumn('deleted_at'));
     }
 
     // public function tags(): BelongsToMany

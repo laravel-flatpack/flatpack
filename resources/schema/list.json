@@ -67,7 +67,7 @@
         "tabs": {
             "type": "object",
             "minProperties": 1,
-            "description": "Keyed tab panels (tab id → panel). Each panel nests `columns` the same shapes as top-level `columns`; runtime merges into one column list.",
+            "description": "Keyed tab panels (tab id → panel). Tabs can apply query scopes and optionally override table columns for that tab.",
             "additionalProperties": {
                 "$ref": "#/$defs/listTabPanel"
             }
@@ -93,7 +93,7 @@
     "$defs": {
         "listTabPanel": {
             "type": "object",
-            "required": ["label", "columns"],
+            "required": ["label"],
             "properties": {
                 "label": {
                     "type": "string",
@@ -102,7 +102,26 @@
                 "icon": {
                     "type": "string"
                 },
+                "scope": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Optional model query scope for this tab (e.g. `trashed`, `draftOnly`)."
+                },
+                "reorderable": {
+                    "oneOf": [
+                        {
+                            "type": "boolean",
+                            "description": "Optional tab-level override for drag-and-drop row reordering."
+                        },
+                        {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Optional tab-level reorder column id override."
+                        }
+                    ]
+                },
                 "columns": {
+                    "description": "Optional tab-only column set. When omitted, this tab uses root-level `columns`.",
                     "oneOf": [
                         {
                             "type": "array",
@@ -119,6 +138,27 @@
                             }
                         }
                     ]
+                },
+                "filters": {
+                    "type": "object",
+                    "description": "Optional tab-only filter overrides. When set, replaces root-level `filters` for this tab.",
+                    "additionalProperties": {
+                        "$ref": "#/$defs/filterDefinition"
+                    }
+                },
+                "bulk_actions": {
+                    "type": "object",
+                    "description": "Optional tab-only bulk actions (`snake_case`). When set, replaces root-level `bulk_actions` for this tab.",
+                    "additionalProperties": {
+                        "$ref": "#/$defs/bulkActionDefinition"
+                    }
+                },
+                "bulkActions": {
+                    "type": "object",
+                    "description": "Optional tab-only bulk actions (`camelCase` alias of `bulk_actions`).",
+                    "additionalProperties": {
+                        "$ref": "#/$defs/bulkActionDefinition"
+                    }
                 }
             },
             "additionalProperties": false

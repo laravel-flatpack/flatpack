@@ -199,6 +199,68 @@ describe('list composition schema (resources/schema/list.json)', function () {
         expect($errors)->toBeEmpty();
     });
 
+    it('accepts tabs with scope and without tab-level columns', function () {
+        $errors = CompositionSchemaAsserter::validateList([
+            'name' => 'Posts',
+            'model' => 'Flatpack\\Tests\\Models\\Post',
+            'columns' => [
+                [
+                    'id' => 'title',
+                    'type' => 'text',
+                    'label' => 'Title',
+                ],
+            ],
+            'tabs' => [
+                'all' => [
+                    'label' => 'All',
+                ],
+                'trashed' => [
+                    'label' => 'Trash',
+                    'scope' => 'trashed',
+                ],
+            ],
+        ]);
+
+        expect($errors)->toBeEmpty();
+    });
+
+    it('accepts tabs with filter and bulk action overrides', function () {
+        $errors = CompositionSchemaAsserter::validateList([
+            'name' => 'Posts',
+            'model' => 'Flatpack\\Tests\\Models\\Post',
+            'columns' => [
+                [
+                    'id' => 'title',
+                    'type' => 'text',
+                    'label' => 'Title',
+                ],
+            ],
+            'tabs' => [
+                'drafts' => [
+                    'label' => 'Drafts',
+                    'scope' => 'draftOnly',
+                    'reorderable' => false,
+                    'filters' => [
+                        'status' => [
+                            'type' => 'select',
+                            'options' => [
+                                ['value' => 'draft', 'label' => 'Draft'],
+                            ],
+                        ],
+                    ],
+                    'bulkActions' => [
+                        'publish' => [
+                            'label' => 'Publish',
+                            'action' => 'publish',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        expect($errors)->toBeEmpty();
+    });
+
     it('accepts columns as a list with select and options', function () {
         $errors = CompositionSchemaAsserter::validateList([
             'name' => 'Posts',

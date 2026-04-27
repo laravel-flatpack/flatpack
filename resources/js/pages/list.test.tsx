@@ -177,6 +177,40 @@ describe('FlatpackListPage', () => {
         expect(screen.getByRole('cell', { name: 'Hello' })).toBeInTheDocument();
     });
 
+    it('renders list tab triggers when schema includes tab_panels', () => {
+        render(
+            <FlatpackListPage
+                entity="posts"
+                name="Posts"
+                active_tab="records"
+                schema={{
+                    columns: {
+                        id: { label: 'ID' },
+                        title: { label: 'Title' },
+                    },
+                    tab_panels: [
+                        {
+                            id: 'records',
+                            label: 'All records',
+                            column_ids: ['id', 'title'],
+                        },
+                        {
+                            id: 'trash',
+                            label: 'Trash',
+                            column_ids: ['id', 'title'],
+                        },
+                    ],
+                }}
+                records={[{ id: 1, title: 'Hello' }]}
+            />,
+        );
+
+        expect(
+            screen.getByRole('tab', { name: 'All records' }),
+        ).toBeInTheDocument();
+        expect(screen.getByRole('tab', { name: 'Trash' })).toBeInTheDocument();
+    });
+
     it('shows row and header selection checkboxes when bulk actions are present', () => {
         render(
             <FlatpackListPage

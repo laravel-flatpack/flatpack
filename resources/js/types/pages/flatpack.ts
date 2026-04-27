@@ -45,6 +45,7 @@ export type FlatpackListPageProps = {
     records?: Record<string, unknown>[];
     pagination?: FlatpackListServerPagination;
     search_term?: string;
+    active_tab?: string | null;
     filters?: FlatpackDataTableFilter[];
     filter_values?: FlatpackDataTableServerFiltersState;
     sorting?: FlatpackListServerSorting;

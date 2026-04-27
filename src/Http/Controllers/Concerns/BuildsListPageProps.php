@@ -25,6 +25,7 @@ trait BuildsListPageProps
         ?array $schema,
         array $result,
         string $searchTerm,
+        ?string $activeTabId = null,
     ): array {
         return [
             'entity' => $entity,
@@ -37,6 +38,7 @@ trait BuildsListPageProps
             'records' => $result['records'],
             'pagination' => $result['pagination'],
             'search_term' => $searchTerm,
+            'active_tab' => $activeTabId,
             'filters' => $result['filters'],
             'filter_values' => $result['filter_values'],
             'sorting' => $result['sorting'],

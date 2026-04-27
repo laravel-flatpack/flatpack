@@ -18,13 +18,18 @@ trait LoadsListRecords
      *     perPage: int,
      *     searchTerm: string,
      *     filters: array<array-key, mixed>,
+     *     tab: string,
      *     sortBy: string,
      *     sortDirection: string
      * }  $query
      * @return array<string, mixed>
      */
-    private function loadRecordsForList(?string $modelClass, ?array $schema, array $query): array
-    {
+    private function loadRecordsForList(
+        ?string $modelClass,
+        ?array $schema,
+        array $query,
+        ?string $scope = null,
+    ): array {
         return $this->listRecordsLoader()->load(
             $modelClass,
             $schema,
@@ -34,6 +39,7 @@ trait LoadsListRecords
             $query['filters'],
             $query['sortBy'],
             $query['sortDirection'],
+            $scope,
         );
     }
 

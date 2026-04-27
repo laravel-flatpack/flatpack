@@ -69,6 +69,7 @@ export function DataTable(props: DataTableProps) {
                 onSetSingleFilter={c.setSingleServerFilter}
                 onToggleMultiFilterValue={c.toggleMultiServerFilterValue}
                 onSetDateFilter={c.setDateServerFilter}
+                toolbarStart={tableProps.toolbarStart}
             />
             {c.tableAndFooter}
             {c.rowDetailDrawer &&

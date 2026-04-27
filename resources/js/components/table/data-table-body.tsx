@@ -8,6 +8,8 @@ import type * as React from 'react';
 import {
     DATA_TABLE_DRAG_COLUMN_HEAD_CLASS,
     DATA_TABLE_EMPTY_RESULTS_LABEL,
+    DATA_TABLE_SELECT_COLUMN_CELL_CLASS,
+    DATA_TABLE_SELECT_COLUMN_HEAD_CLASS,
 } from '@/components/table/data-table-constants';
 import { DataTableDraggableRow } from '@/components/table/data-table-draggable-row';
 import {
@@ -55,6 +57,8 @@ export function DataTableBody({
                                 className={cn(
                                     header.column.id === 'drag' &&
                                         DATA_TABLE_DRAG_COLUMN_HEAD_CLASS,
+                                    header.column.id === 'select' &&
+                                        DATA_TABLE_SELECT_COLUMN_HEAD_CLASS,
                                 )}
                             >
                                 {header.isPlaceholder
@@ -113,7 +117,13 @@ export function DataTableBody({
                                     }
                                 >
                                     {visibleCells.map((cell, cellIndex) => (
-                                        <TableCell key={cell.id}>
+                                        <TableCell
+                                            key={cell.id}
+                                            className={cn(
+                                                cell.column.id === 'select' &&
+                                                    DATA_TABLE_SELECT_COLUMN_CELL_CLASS,
+                                            )}
+                                        >
                                             <div className="flex items-center gap-2">
                                                 {flexRender(
                                                     cell.column.columnDef.cell,

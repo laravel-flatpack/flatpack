@@ -10,6 +10,9 @@ use Flatpack\Schema\Lists\Normalization\ListSchemaPipelineState;
 
 final class LogUnknownListRootKeysPipe
 {
+    /** @var list<string> */
+    private const array INTERNAL_NORMALIZED_KEYS = ['tab_panels'];
+
     public function handle(ListSchemaPipelineState $state, Closure $next): mixed
     {
         if ($state->log === null) {
@@ -20,7 +23,10 @@ final class LogUnknownListRootKeysPipe
         sort($keys, SORT_STRING);
 
         foreach ($keys as $key) {
-            if (! in_array($key, CompositionSchemaKeys::LIST_ROOT_PROPERTY_KEYS, true)) {
+            if (
+                ! in_array($key, CompositionSchemaKeys::LIST_ROOT_PROPERTY_KEYS, true)
+                && ! in_array($key, self::INTERNAL_NORMALIZED_KEYS, true)
+            ) {
                 $state->log->add(sprintf('Unknown top-level list key "%s" (ignored at runtime).', $key));
             }
         }

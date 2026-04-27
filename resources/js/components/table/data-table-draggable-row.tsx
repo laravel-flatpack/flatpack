@@ -2,7 +2,10 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { flexRender, type Row } from '@tanstack/react-table';
 import { AlertCircleIcon, GripVerticalIcon } from 'lucide-react';
-import { DATA_TABLE_DRAG_COLUMN_CELL_CLASS } from '@/components/table/data-table-constants';
+import {
+    DATA_TABLE_DRAG_COLUMN_CELL_CLASS,
+    DATA_TABLE_SELECT_COLUMN_CELL_CLASS,
+} from '@/components/table/data-table-constants';
 import { Button } from '@/components/ui/button';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
@@ -56,6 +59,8 @@ export function DataTableDraggableRow({
                     className={cn(
                         cell.column.id === 'drag' &&
                             DATA_TABLE_DRAG_COLUMN_CELL_CLASS,
+                        cell.column.id === 'select' &&
+                            DATA_TABLE_SELECT_COLUMN_CELL_CLASS,
                     )}
                 >
                     <div className="flex items-center gap-2">

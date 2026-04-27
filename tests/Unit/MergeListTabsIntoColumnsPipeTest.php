@@ -71,3 +71,101 @@ it('merges root columns then tab-only columns', function (): void {
 
     expect($state->schema['columns'])->toHaveCount(2);
 });
+
+it('uses root columns when a tab omits columns and keeps scope metadata', function (): void {
+    $pipe = new MergeListTabsIntoColumnsPipe;
+    $state = new ListSchemaPipelineState([
+        'columns' => [
+            [
+                'id' => 'title',
+                'type' => 'text',
+                'label' => 'Title',
+            ],
+        ],
+        'tabs' => [
+            'records' => [
+                'label' => 'Records',
+            ],
+            'trashed' => [
+                'label' => 'Trash',
+                'scope' => 'trashed',
+            ],
+        ],
+    ], null);
+
+    $pipe->handle($state, fn ($s) => $s);
+
+    expect($state->schema['tab_panels'][0]['column_ids'])->toBe(['title'])
+        ->and($state->schema['tab_panels'][1]['column_ids'])->toBe(['title'])
+        ->and($state->schema['tab_panels'][1]['scope'])->toBe('trashed');
+});
+
+it('preserves inferred ids when map-shaped columns are flattened to a list', function (): void {
+    $pipe = new MergeListTabsIntoColumnsPipe;
+    $state = new ListSchemaPipelineState([
+        'columns' => [
+            'title' => [
+                'label' => 'Title',
+                'type' => 'text',
+            ],
+        ],
+        'tabs' => [
+            'trash' => [
+                'label' => 'Trash',
+                'columns' => [
+                    'deleted_at' => [
+                        'label' => 'Deleted At',
+                        'type' => 'date',
+                    ],
+                ],
+            ],
+        ],
+    ], null);
+
+    $pipe->handle($state, fn ($s) => $s);
+
+    expect($state->schema['columns'])->toHaveCount(2)
+        ->and($state->schema['columns'][0]['id'])->toBe('title')
+        ->and($state->schema['columns'][1]['id'])->toBe('deleted_at')
+        ->and($state->schema['tab_panels'][0]['column_ids'])->toBe(['deleted_at']);
+});
+
+it('keeps tab filters and bulk action overrides in tab_panels metadata', function (): void {
+    $pipe = new MergeListTabsIntoColumnsPipe;
+    $state = new ListSchemaPipelineState([
+        'columns' => [
+            'title' => [
+                'label' => 'Title',
+                'type' => 'text',
+            ],
+        ],
+        'tabs' => [
+            'drafts' => [
+                'label' => 'Drafts',
+                'scope' => 'draft',
+                'reorderable' => false,
+                'filters' => [
+                    'status' => [
+                        'type' => 'select',
+                        'options' => [
+                            ['value' => 'draft', 'label' => 'Draft'],
+                        ],
+                    ],
+                ],
+                'bulk_actions' => [
+                    'publish' => [
+                        'label' => 'Publish',
+                        'action' => 'publish',
+                    ],
+                ],
+            ],
+        ],
+    ], null);
+
+    $pipe->handle($state, fn ($s) => $s);
+
+    expect($state->schema['tab_panels'][0]['scope'])->toBe('draft')
+        ->and($state->schema['tab_panels'][0]['reorderable'])->toBeFalse()
+        ->and($state->schema['tab_panels'][0])->toHaveKey('filters')
+        ->and($state->schema['tab_panels'][0])->toHaveKey('bulk_actions');
+});

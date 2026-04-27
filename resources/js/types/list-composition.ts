@@ -182,7 +182,12 @@ export type FlatpackListCompositionBulkActionsYaml = Record<
 export type FlatpackListCompositionTabPanelYaml = {
     label: string;
     icon?: string;
-    columns: FlatpackListCompositionColumnsYaml;
+    scope?: string;
+    reorderable?: boolean | string;
+    columns?: FlatpackListCompositionColumnsYaml;
+    filters?: FlatpackListCompositionFiltersYaml;
+    bulk_actions?: FlatpackListCompositionBulkActionsYaml;
+    bulkActions?: FlatpackListCompositionBulkActionsYaml;
 };
 
 export type FlatpackListCompositionTabsYaml = Record<
@@ -195,6 +200,11 @@ export type FlatpackListTabPanelLayout = {
     id: string;
     label: string;
     icon?: string;
+    scope?: string;
+    reorderable?: boolean | string;
+    columns?: FlatpackListCompositionColumnsYaml;
+    filters?: FlatpackListCompositionFiltersYaml;
+    bulk_actions?: FlatpackListCompositionBulkActionsYaml;
     column_ids: string[];
 };
 

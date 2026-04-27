@@ -54,6 +54,347 @@ YAML);
     }
 });
 
+test('flatpack list tabs apply model scopes and expose active tab id', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-list-tabs-scope-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+columns:
+  id:
+    label: ID
+  title:
+    label: Title
+  status:
+    label: Status
+tabs:
+  records:
+    label: Records
+  trashed:
+    label: Trashed
+    scope: trashed
+  draft:
+    label: Draft
+    scope: draftOnly
+YAML);
+        config()->set('flatpack.path', $tempPath);
+
+        Post::factory()->create(['title' => 'Live one', 'status' => 'active']);
+        Post::factory()->create(['title' => 'Draft one', 'status' => 'draft']);
+        $deleted = Post::factory()->create(['title' => 'Deleted one', 'status' => 'active']);
+        $deleted->delete();
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        actingAs($user)
+            ->getJson(route('flatpack.entities.index', [
+                'entity' => 'posts',
+                'json' => true,
+                'tab' => 'trashed',
+            ]))
+            ->assertOk()
+            ->assertJsonPath('active_tab', 'trashed')
+            ->assertJsonCount(1, 'records')
+            ->assertJsonPath('records.0.title', 'Deleted one');
+
+        actingAs($user)
+            ->getJson(route('flatpack.entities.index', [
+                'entity' => 'posts',
+                'json' => true,
+                'tab' => 'draft',
+            ]))
+            ->assertOk()
+            ->assertJsonPath('active_tab', 'draft')
+            ->assertJsonCount(1, 'records')
+            ->assertJsonPath('records.0.title', 'Draft one');
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
+test('flatpack list tab with missing scope returns validation error', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-list-tabs-invalid-scope-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+columns:
+  id:
+    label: ID
+tabs:
+  records:
+    label: Records
+  drafts:
+    label: Drafts
+    scope: missingScope
+YAML);
+        config()->set('flatpack.path', $tempPath);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        actingAs($user)
+            ->getJson(route('flatpack.entities.index', [
+                'entity' => 'posts',
+                'json' => true,
+                'tab' => 'drafts',
+            ]))
+            ->assertStatus(422)
+            ->assertJsonPath('errors.flatpack.0', 'Tab "drafts" references missing scope "missingScope" on Flatpack\\Tests\\Models\\Post.');
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
+test('flatpack list tabs can override root columns for the selected tab', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-list-tabs-columns-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+columns:
+  title:
+    label: Title
+tabs:
+  records:
+    label: Records
+  status_only:
+    label: Status only
+    columns:
+      status:
+        label: Status
+        type: text
+YAML);
+        config()->set('flatpack.path', $tempPath);
+
+        Post::factory()->create(['title' => 'Scoped title', 'status' => 'draft']);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        $payload = actingAs($user)
+            ->getJson(route('flatpack.entities.index', [
+                'entity' => 'posts',
+                'json' => true,
+                'tab' => 'status_only',
+            ]))
+            ->assertOk()
+            ->assertJsonPath('active_tab', 'status_only')
+            ->json();
+
+        expect($payload['records'][0])->toHaveKey('status');
+        expect($payload['records'][0])->not->toHaveKey('title');
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
+test('flatpack list tabs can override filters and bulk actions', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-list-tabs-filters-bulk-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+reorderable: true
+columns:
+  title:
+    label: Title
+    type: text
+filters:
+  status:
+    type: select
+    options:
+      - value: draft
+        label: Draft
+bulk_actions:
+  delete:
+    label: Delete
+    action: delete
+tabs:
+  records:
+    label: Records
+  drafts:
+    label: Drafts
+    scope: draftOnly
+    reorderable: false
+    filters:
+      status:
+        type: select
+        options:
+          - value: draft
+            label: Draft
+    bulkActions:
+      delete:
+        label: Delete selected drafts
+        action: delete
+YAML);
+        config()->set('flatpack.path', $tempPath);
+
+        Post::factory()->create(['title' => 'D1', 'status' => 'draft']);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        $payload = actingAs($user)
+            ->getJson(route('flatpack.entities.index', [
+                'entity' => 'posts',
+                'json' => true,
+                'tab' => 'drafts',
+            ]))
+            ->assertOk()
+            ->json();
+
+        expect($payload['active_tab'])->toBe('drafts')
+            ->and($payload['schema']['reorderable'])->toBeFalse()
+            ->and($payload['filters'][0]['id'])->toBe('status')
+            ->and($payload['bulk_actions'])->toHaveCount(1)
+            ->and($payload['bulk_actions'][0]['action'])->toBe('delete');
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
+test('scoped tabs default to empty filters and bulk actions while unscoped tabs inherit root', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-list-tabs-default-filters-bulk-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+columns:
+  title:
+    label: Title
+    type: text
+filters:
+  status:
+    type: select
+    options:
+      - value: draft
+        label: Draft
+bulk_actions:
+  delete:
+    label: Delete
+    action: delete
+tabs:
+  records:
+    label: Records
+  drafts:
+    label: Drafts
+    scope: draftOnly
+YAML);
+        config()->set('flatpack.path', $tempPath);
+
+        Post::factory()->create(['title' => 'D1', 'status' => 'draft']);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        $recordsPayload = actingAs($user)
+            ->getJson(route('flatpack.entities.index', [
+                'entity' => 'posts',
+                'json' => true,
+                'tab' => 'records',
+            ]))
+            ->assertOk()
+            ->json();
+
+        expect($recordsPayload['active_tab'])->toBe('records')
+            ->and($recordsPayload['filters'])->toHaveCount(1)
+            ->and($recordsPayload['bulk_actions'])->toHaveCount(1);
+
+        $draftsPayload = actingAs($user)
+            ->getJson(route('flatpack.entities.index', [
+                'entity' => 'posts',
+                'json' => true,
+                'tab' => 'drafts',
+            ]))
+            ->assertOk()
+            ->json();
+
+        expect($draftsPayload['active_tab'])->toBe('drafts')
+            ->and($draftsPayload['filters'])->toBe([])
+            ->and($draftsPayload['bulk_actions'])->toBe([]);
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
+test('flatpack list with scope tabs and root columns still renders normalized columns', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-list-tabs-root-columns-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+reorderable: true
+columns:
+  title:
+    label: Title
+    type: text
+    sortable: true
+  content:
+    label: Content
+    type: textarea
+    sortable: true
+  actions:
+    label: Actions
+    type: actions
+    actions:
+      - label: Edit
+        action: edit
+tabs:
+  records:
+    label: All records
+    icon: list
+  trash:
+    label: Trash
+    icon: trash
+    scope: trashed
+    columns:
+      title:
+        label: Title
+        sortable: true
+      deleted_at:
+        label: Deleted At
+        type: date
+        sortable: true
+  drafts:
+    label: Drafts
+    icon: file-text
+    scope: draft
+YAML);
+        config()->set('flatpack.path', $tempPath);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        $payload = actingAs($user)
+            ->getJson(route('flatpack.entities.index', [
+                'entity' => 'posts',
+                'json' => true,
+            ]))
+            ->assertOk()
+            ->json();
+
+        expect($payload['schema']['columns'])->not->toBeEmpty()
+            ->and($payload['schema']['tab_panels'])->toHaveCount(3)
+            ->and($payload['schema']['tab_panels'][0]['column_ids'])->toBe(['title', 'content', 'actions']);
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
 test('flatpack entity list JSON rejects users when policy denies viewAny', function () {
     $tempPath = sys_get_temp_dir() . '/flatpack-list-viewany-deny-' . uniqid('', true);
 

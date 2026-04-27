@@ -12,7 +12,10 @@ import type {
     DataTableRowActionPayload,
     FlatpackActionVariant,
 } from '@/types/data-table';
-import type { FlatpackListTabPanelLayout } from '@/types/list-composition';
+import type {
+    FlatpackListCompositionColumnsYaml,
+    FlatpackListTabPanelLayout,
+} from '@/types/list-composition';
 import type {
     FlatpackListHeaderAction,
     FlatpackListPageProps,
@@ -33,6 +36,14 @@ function isListTabPanel(value: unknown): value is FlatpackListTabPanelLayout {
     return Array.isArray(o.column_ids);
 }
 
+function isColumnsYaml(
+    value: unknown,
+): value is FlatpackListCompositionColumnsYaml {
+    return (
+        Array.isArray(value) || (value !== null && typeof value === 'object')
+    );
+}
+
 export function useFlatpackList({
     entity,
     name,
@@ -41,6 +52,7 @@ export function useFlatpackList({
     records = [],
     pagination,
     search_term: searchTerm = '',
+    active_tab: serverActiveTab = null,
     filters: serverFilters = [],
     filter_values: serverFilterValues = {},
     sorting: serverSorting = { sort_by: null, sort_direction: null },
@@ -63,9 +75,25 @@ export function useFlatpackList({
         return raw.filter(isListTabPanel);
     }, [schema]);
 
-    const [listActiveTabId, setListActiveTabId] = useState<string | null>(null);
+    const [listActiveTabId, setListActiveTabId] = useState<string | null>(
+        serverActiveTab,
+    );
 
     useEffect(() => {
+        if (listTabPanels.length === 0) {
+            if (listActiveTabId !== null) {
+                setListActiveTabId(null);
+            }
+            return;
+        }
+        if (
+            serverActiveTab !== null &&
+            listTabPanels.some((p) => p.id === serverActiveTab) &&
+            serverActiveTab !== listActiveTabId
+        ) {
+            setListActiveTabId(serverActiveTab);
+            return;
+        }
         if (listTabPanels.length > 0) {
             if (
                 listActiveTabId === null ||
@@ -73,10 +101,8 @@ export function useFlatpackList({
             ) {
                 setListActiveTabId(listTabPanels[0].id);
             }
-        } else if (listActiveTabId !== null) {
-            setListActiveTabId(null);
         }
-    }, [listActiveTabId, listTabPanels]);
+    }, [listActiveTabId, listTabPanels, serverActiveTab]);
 
     const columns = useMemo(() => {
         if (listTabPanels.length === 0) {
@@ -87,9 +113,59 @@ export function useFlatpackList({
         if (panel === undefined) {
             return allColumns;
         }
+        if (
+            isColumnsYaml(panel.columns) &&
+            (Array.isArray(panel.columns)
+                ? panel.columns.length > 0
+                : Object.keys(panel.columns).length > 0)
+        ) {
+            return listYamlColumnsToDataTableColumns(panel.columns);
+        }
         const allowed = new Set(panel.column_ids);
         return allColumns.filter((c) => allowed.has(c.id));
     }, [allColumns, listActiveTabId, listTabPanels]);
+
+    const handleListTabChange = useCallback(
+        (tabId: string) => {
+            if (tabId === '') {
+                return;
+            }
+            setListActiveTabId(tabId);
+            router.get(
+                route('flatpack.entities.index', { entity }),
+                {
+                    page: 1,
+                    per_page: pagination?.per_page ?? 10,
+                    search: searchTerm,
+                    filters: serverFilterValues,
+                    sort_by: serverSorting.sort_by ?? null,
+                    sort_direction: serverSorting.sort_direction ?? null,
+                    tab: tabId,
+                },
+                {
+                    preserveState: true,
+                    preserveScroll: true,
+                    onError: (errors) => {
+                        toast.error(
+                            firstErrorMessage(errors) ?? 'Invalid tab scope',
+                        );
+                        setListActiveTabId(
+                            serverActiveTab ?? listTabPanels[0]?.id ?? null,
+                        );
+                    },
+                },
+            );
+        },
+        [
+            entity,
+            listTabPanels,
+            pagination?.per_page,
+            searchTerm,
+            serverActiveTab,
+            serverFilterValues,
+            serverSorting,
+        ],
+    );
 
     const filterDefinitions = useMemo(
         () =>
@@ -163,6 +239,7 @@ export function useFlatpackList({
                     filters,
                     sort_by: sorting?.sort_by ?? null,
                     sort_direction: sorting?.sort_direction ?? null,
+                    tab: listActiveTabId,
                 },
                 {
                     preserveState: true,
@@ -170,7 +247,7 @@ export function useFlatpackList({
                 },
             );
         },
-        [entity],
+        [entity, listActiveTabId],
     );
 
     const handleBulkAction = useCallback(
@@ -391,7 +468,7 @@ export function useFlatpackList({
         allColumns,
         listTabPanels,
         listActiveTabId,
-        setListActiveTabId,
+        handleListTabChange,
         filterDefinitions,
         reorderable,
         rowClickEditKey,

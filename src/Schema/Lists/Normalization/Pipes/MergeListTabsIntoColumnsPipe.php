@@ -73,7 +73,7 @@ final readonly class MergeListTabsIntoColumnsPipe
 
                     continue;
                 }
-                $mergedById[$id] = $item;
+                $mergedById[$id] = array_merge(['id' => $id], $item);
                 $mergedOrder[] = $id;
             }
         };
@@ -81,7 +81,10 @@ final readonly class MergeListTabsIntoColumnsPipe
         $rootColumns = $state->schema['columns'] ?? null;
         $appendColumns($rootColumns);
 
-        /** @var list<array{id: string, label: string, icon?: string, column_ids: list<string>}> $tabPanels */
+        /** @var list<string> $rootColumnIds */
+        $rootColumnIds = $mergedOrder;
+
+        /** @var list<array{id: string, label: string, icon?: string, scope?: string, reorderable?: bool|string, columns?: mixed, filters?: mixed, bulk_actions?: mixed, column_ids: list<string>}> $tabPanels */
         $tabPanels = [];
 
         foreach ($tabs as $tabId => $panel) {
@@ -100,6 +103,16 @@ final readonly class MergeListTabsIntoColumnsPipe
             $icon = null;
             if (isset($panel['icon']) && is_string($panel['icon']) && trim($panel['icon']) !== '') {
                 $icon = trim($panel['icon']);
+            }
+            $scope = null;
+            if (isset($panel['scope']) && is_string($panel['scope']) && trim($panel['scope']) !== '') {
+                $scope = trim($panel['scope']);
+            }
+            $reorderable = null;
+            if (is_bool($panel['reorderable'] ?? null)) {
+                $reorderable = $panel['reorderable'];
+            } elseif (is_string($panel['reorderable'] ?? null) && trim($panel['reorderable']) !== '') {
+                $reorderable = trim($panel['reorderable']);
             }
 
             $tabColumns = $panel['columns'] ?? null;
@@ -132,11 +145,13 @@ final readonly class MergeListTabsIntoColumnsPipe
                         }
                         $columnIdsOrdered[] = $id;
                         if (! isset($mergedById[$id])) {
-                            $mergedById[$id] = $item;
+                            $mergedById[$id] = array_merge(['id' => $id], $item);
                             $mergedOrder[] = $id;
                         }
                     }
                 }
+            } else {
+                $columnIdsOrdered = $rootColumnIds;
             }
 
             $entry = [
@@ -146,6 +161,22 @@ final readonly class MergeListTabsIntoColumnsPipe
             ];
             if ($icon !== null) {
                 $entry['icon'] = $icon;
+            }
+            if ($scope !== null) {
+                $entry['scope'] = $scope;
+            }
+            if ($reorderable !== null) {
+                $entry['reorderable'] = $reorderable;
+            }
+            if (is_array($tabColumns) && $tabColumns !== []) {
+                $entry['columns'] = $tabColumns;
+            }
+            if (isset($panel['filters']) && is_array($panel['filters'])) {
+                $entry['filters'] = $panel['filters'];
+            }
+            $tabBulkActions = $panel['bulk_actions'] ?? $panel['bulkActions'] ?? null;
+            if (is_array($tabBulkActions)) {
+                $entry['bulk_actions'] = $tabBulkActions;
             }
             $tabPanels[] = $entry;
         }

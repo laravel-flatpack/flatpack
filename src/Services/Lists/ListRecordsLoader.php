@@ -12,6 +12,7 @@ use Flatpack\Schema\Lists\RelationSerializer;
 use Flatpack\Schema\Lists\SchemaInspector;
 use Flatpack\Schema\Lists\SearchApplier;
 use Flatpack\Schema\Lists\SortingProcessor;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 
@@ -62,6 +63,7 @@ final readonly class ListRecordsLoader
         array $filters = [],
         ?string $sortBy = null,
         string $sortDirection = 'desc',
+        ?string $scope = null,
     ): array {
         $perPage ??= Flatpack::defaultListPerPage();
         $maxPerPage = Flatpack::maxListPerPage();
@@ -111,6 +113,7 @@ final readonly class ListRecordsLoader
         if ($eagerRelations !== []) {
             $query->with($eagerRelations);
         }
+        $this->applyTabScope($query, $model, $scope);
 
         $searchTerm = trim((string) $search);
         if ($searchTerm !== '') {
@@ -160,6 +163,20 @@ final readonly class ListRecordsLoader
             'filter_values' => $normalizedFilterValues,
             'sorting' => $normalizedSorting,
         ];
+    }
+
+    private function applyTabScope(Builder $query, Model $model, ?string $scope): void
+    {
+        $scopeName = trim((string) $scope);
+        if ($scopeName === '') {
+            return;
+        }
+
+        $scopeMethod = 'scope' . ucfirst($scopeName);
+        if (! method_exists($model, $scopeMethod)) {
+            return;
+        }
+        $query->{$scopeName}();
     }
 
     /**

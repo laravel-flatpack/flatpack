@@ -29,7 +29,7 @@ export default function FlatpackListPage(props: FlatpackListPageProps) {
         allColumns,
         listTabPanels,
         listActiveTabId,
-        setListActiveTabId,
+        handleListTabChange,
         filterDefinitions,
         reorderable,
         rowClickEditKey,
@@ -60,34 +60,40 @@ export default function FlatpackListPage(props: FlatpackListPageProps) {
         listTabPanels.length > 0 ? (
             <Tabs
                 value={listActiveTabId ?? listTabPanels[0].id}
-                onValueChange={(value) => setListActiveTabId(value)}
-                className="w-full max-w-full"
+                onValueChange={handleListTabChange}
+                className="w-full"
             >
-                <TabsList
-                    variant="line"
-                    className="w-full max-w-full flex-wrap"
-                >
-                    {listTabPanels.map((panel) => {
-                        const Icon =
-                            panel.icon != null &&
-                            panel.icon in flatpackMenuIcons
-                                ? flatpackMenuIcons[
-                                      panel.icon as FlatpackMenuIconName
-                                  ]
-                                : null;
-                        return (
-                            <TabsTrigger key={panel.id} value={panel.id}>
-                                {Icon != null ? (
-                                    <Icon
-                                        data-icon="inline-start"
-                                        className="size-4"
-                                    />
-                                ) : null}
-                                {panel.label}
-                            </TabsTrigger>
-                        );
-                    })}
-                </TabsList>
+                <div className="w-full overflow-x-auto">
+                    <TabsList
+                        variant="line"
+                        className="inline-flex w-max min-w-max flex-nowrap justify-start"
+                    >
+                        {listTabPanels.map((panel) => {
+                            const Icon =
+                                panel.icon != null &&
+                                panel.icon in flatpackMenuIcons
+                                    ? flatpackMenuIcons[
+                                          panel.icon as FlatpackMenuIconName
+                                      ]
+                                    : null;
+                            return (
+                                <TabsTrigger
+                                    key={panel.id}
+                                    value={panel.id}
+                                    className="flex-none"
+                                >
+                                    {Icon != null ? (
+                                        <Icon
+                                            data-icon="inline-start"
+                                            className="size-4"
+                                        />
+                                    ) : null}
+                                    {panel.label}
+                                </TabsTrigger>
+                            );
+                        })}
+                    </TabsList>
+                </div>
             </Tabs>
         ) : undefined;
 

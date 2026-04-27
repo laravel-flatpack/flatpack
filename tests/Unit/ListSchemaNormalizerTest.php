@@ -66,3 +66,24 @@ it('records unknown top-level list keys in debug log', function (): void {
     expect(implode(' ', $log->all()))->toContain('asdasdasd');
     expect(implode(' ', $log->all()))->toContain('Unknown top-level list key');
 });
+
+it('does not log normalized tab_panels as unknown root keys', function (): void {
+    $log = new CompositionDebugLog('posts/list.yaml');
+    $normalizer = new ListSchemaNormalizer;
+    $normalizer->normalizedListSchema([
+        'name' => 'Posts',
+        'columns' => [
+            'title' => [
+                'label' => 'Title',
+                'type' => 'text',
+            ],
+        ],
+        'tabs' => [
+            'records' => [
+                'label' => 'Records',
+            ],
+        ],
+    ], $log);
+
+    expect(implode(' ', $log->all()))->not->toContain('tab_panels');
+});
