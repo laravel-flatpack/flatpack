@@ -68,6 +68,8 @@ final class SortingProcessor
         $column = $sortBy === $modelKeyName
             ? $qualifiedModelKeyName
             : $sortBy;
-        $query->orderBy($column, $sortDirection);
+        $grammar = $query->getQuery()->getGrammar();
+        $direction = $sortDirection === 'asc' ? 'ASC' : 'DESC';
+        $query->orderByRaw($grammar->wrap($column) . ' ' . $direction);
     }
 }
