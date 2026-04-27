@@ -160,9 +160,7 @@ export default function FlatpackListPage(props: FlatpackListPageProps) {
                             bulkActions={bulkActions}
                             reorderable={reorderable}
                             onRowClick={
-                                isRowClickEditPage
-                                    ? handleRowClick
-                                    : undefined
+                                isRowClickEditPage ? handleRowClick : undefined
                             }
                             columns={columns}
                             data={records}
