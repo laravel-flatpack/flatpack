@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Flatpack\Actions\Handlers;
 
-use Exception;
 use Flatpack\Actions\FlatpackActionContext;
 use Flatpack\Contracts\Authorization\FlatpackAuthorizer;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 final class EditRecordHandler extends FlatpackActionHandler
 {
@@ -30,7 +30,7 @@ final class EditRecordHandler extends FlatpackActionHandler
     public function handle(FlatpackActionContext $context): mixed
     {
         if ($context->model === null) {
-            throw new Exception('Model not found');
+            throw new ModelNotFoundException();
         }
 
         return redirect()->route('flatpack.entities.edit', [
