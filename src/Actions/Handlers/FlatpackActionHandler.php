@@ -11,7 +11,7 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Base for record-level actions: provides canPerformAction() and modelExists().
+ * Base for record-level actions: provides {@see canPerformAction()}.
  * Concrete handlers implement authorize() and handle().
  */
 abstract class FlatpackActionHandler implements FlatpackAction
@@ -32,11 +32,6 @@ abstract class FlatpackActionHandler implements FlatpackAction
             modelClass: $modelClass,
             model: $model,
         );
-    }
-
-    protected function modelExists(?Model $model): bool
-    {
-        return $model instanceof Model && $model->exists;
     }
 
     protected function resolveModel(FlatpackActionContext $context): ?Model
