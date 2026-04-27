@@ -84,7 +84,7 @@ final readonly class BulkRestoreService
             return 0;
         }
 
-        $authorizedIds = [];
+        $authorizedRecords = [];
         foreach ($baseQuery->get() as $record) {
             if (! $record instanceof Model) {
                 continue;
@@ -93,21 +93,16 @@ final readonly class BulkRestoreService
                 continue;
             }
             if ($this->authorizer->allows($user, 'restore', $modelClass, $record)) {
-                $authorizedIds[] = (string) $record->getKey();
+                $authorizedRecords[] = $record;
             }
         }
-        if ($authorizedIds === []) {
+        if ($authorizedRecords === []) {
             return 0;
         }
 
         $restored = 0;
-        foreach (
-            $modelClass::query()
-                ->withoutGlobalScope(SoftDeletingScope::class)
-                ->whereIn($keyName, $authorizedIds)
-                ->get() as $record
-        ) {
-            if (! $record instanceof Model || ! method_exists($record, 'restore')) {
+        foreach ($authorizedRecords as $record) {
+            if (! method_exists($record, 'restore')) {
                 continue;
             }
             if ($record->restore()) {
