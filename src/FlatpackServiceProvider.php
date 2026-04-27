@@ -6,13 +6,11 @@ namespace Flatpack;
 
 use Closure;
 use Flatpack\Actions\ActionModelClassResolver;
-use Flatpack\Actions\DefaultActionResolver;
 use Flatpack\Composition\CompositionValues;
 use Flatpack\Composition\DefaultCompositionQuery;
 use Flatpack\Composition\EntityComposition;
 use Flatpack\Composition\YamlCompositionLoader;
 use Flatpack\Console\Commands\GenerateCompositionSchemaKeysCommand;
-use Flatpack\Contracts\Actions\ActionResolver;
 use Flatpack\Contracts\Authorization\FlatpackAuthorizer;
 use Flatpack\Contracts\Composition\CompositionLoader;
 use Flatpack\Contracts\Composition\CompositionQuery;
@@ -110,7 +108,6 @@ final class FlatpackServiceProvider extends ServiceProvider
     protected function registerContractBindings(): void
     {
         $this->app->singleton(FlatpackAuthorizer::class, PolicyAwareAuthorizer::class);
-        $this->app->singleton(ActionResolver::class, DefaultActionResolver::class);
     }
 
     protected function registerFlatpackSingleton(): void
