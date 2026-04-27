@@ -5,17 +5,14 @@ declare(strict_types=1);
 namespace Flatpack\Services\Lists;
 
 use Flatpack\Contracts\Authorization\FlatpackAuthorizer;
-use Flatpack\Schema\Lists\FilterProcessor;
-use Flatpack\Schema\Lists\SchemaInspector;
-use Flatpack\Schema\Lists\SearchApplier;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
-use InvalidArgumentException;
 
 final readonly class BulkDeleteService
 {
     public function __construct(
         private FlatpackAuthorizer $authorizer,
+        private BulkQueryBuilder $bulkQueryBuilder,
     ) {}
 
     /**
@@ -31,48 +28,24 @@ final readonly class BulkDeleteService
         string $search = '',
         array $filters = [],
     ): int {
-        if ($modelClass === '' || ! class_exists($modelClass)) {
-            throw new InvalidArgumentException('Invalid model class for bulk delete.');
-        }
-        if (! is_subclass_of($modelClass, Model::class)) {
-            throw new InvalidArgumentException('Bulk delete model must extend Eloquent Model.');
-        }
+        $this->bulkQueryBuilder->assertValidEloquentModel(
+            $modelClass,
+            'Invalid model class for bulk delete.',
+            'Bulk delete model must extend Eloquent Model.',
+        );
 
-        /** @var class-string<Model> $modelClass */
-        $model = new $modelClass();
-        $baseQuery = $model->newQuery();
-        $keyName = $model->getKeyName();
-        $selectAll = $records === 'all';
-
-        if ($selectAll) {
-            $searchTerm = trim($search);
-            if ($searchTerm !== '') {
-                SearchApplier::apply(
-                    $baseQuery,
-                    SchemaInspector::searchableColumnDefinitions($schema),
-                    $searchTerm,
-                );
-            }
-
-            $filterDefinitions = SchemaInspector::filterDefinitions($schema);
-            $normalizedFilters = FilterProcessor::normalizeValues(
-                $filterDefinitions,
-                $filters,
-            );
-            FilterProcessor::applyToQuery(
-                $baseQuery,
-                $filterDefinitions,
-                $normalizedFilters,
-            );
-        } else {
-            $ids = array_values(array_unique(array_filter(
-                array_map(static fn (mixed $id): string => trim((string) $id), $records),
-                static fn (string $id): bool => $id !== '',
-            )));
-            if ($ids === []) {
-                return 0;
-            }
-            $baseQuery->whereIn($keyName, $ids);
+        $selection = $this->bulkQueryBuilder->beginSelectionQuery(
+            $modelClass,
+            BulkSelectionQueryStrategy::Delete,
+        );
+        if (! $this->bulkQueryBuilder->constrainToSelection(
+            $selection,
+            $records,
+            $schema,
+            $search,
+            $filters,
+        )) {
+            return 0;
         }
 
         $user = Auth::user();
@@ -80,8 +53,9 @@ final readonly class BulkDeleteService
             return 0;
         }
 
+        $keyName = $selection->model->getKeyName();
         $authorizedIds = [];
-        foreach ($baseQuery->get() as $record) {
+        foreach ($selection->query->get() as $record) {
             if (! $record instanceof Model) {
                 continue;
             }
