@@ -184,3 +184,43 @@ test('flatpack demo returns JSON catalog when json query is true', function () {
         ->assertJsonStructure(['catalog'])
         ->assertJsonPath('catalog.0.id', 'text');
 });
+
+test('flatpack schema form docs return normalized JSON when json query is true', function () {
+    /** @var User $user */
+    $user = User::factory()->createOne();
+
+    actingAs($user)
+        ->getJson(route('flatpack.schema.form', ['json' => true]))
+        ->assertOk()
+        ->assertJsonPath('schemaType', 'form')
+        ->assertJsonPath('document.id', 'form')
+        ->assertJsonPath('document.root.key', 'root')
+        ->assertJsonStructure([
+            'document' => [
+                'title',
+                'meta' => ['propertyCount', 'definitionCount'],
+                'root' => ['properties'],
+                'definitions',
+            ],
+        ]);
+});
+
+test('flatpack schema list docs return normalized JSON when json query is true', function () {
+    /** @var User $user */
+    $user = User::factory()->createOne();
+
+    actingAs($user)
+        ->getJson(route('flatpack.schema.list', ['json' => true]))
+        ->assertOk()
+        ->assertJsonPath('schemaType', 'list')
+        ->assertJsonPath('document.id', 'list')
+        ->assertJsonPath('document.root.key', 'root')
+        ->assertJsonStructure([
+            'document' => [
+                'title',
+                'meta' => ['propertyCount', 'definitionCount'],
+                'root' => ['properties'],
+                'definitions',
+            ],
+        ]);
+});
