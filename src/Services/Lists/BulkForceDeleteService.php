@@ -7,6 +7,7 @@ namespace Flatpack\Services\Lists;
 use Flatpack\Contracts\Authorization\FlatpackAuthorizer;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 final readonly class BulkForceDeleteService
@@ -65,7 +66,7 @@ final readonly class BulkForceDeleteService
             return 0;
         }
 
-        if (method_exists($model, 'forceDelete')) {
+        if (in_array(SoftDeletes::class, class_uses_recursive($modelClass), true)) {
             return $modelClass::query()
                 ->withoutGlobalScope(SoftDeletingScope::class)
                 ->whereIn($keyName, $authorizedIds)
