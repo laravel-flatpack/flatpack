@@ -84,6 +84,7 @@ final readonly class BulkQueryBuilder
                 $query,
                 $filterDefinitions,
                 $normalizedFilters,
+                $schema,
             );
 
             return true;

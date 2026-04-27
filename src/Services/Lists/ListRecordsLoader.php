@@ -127,7 +127,7 @@ final readonly class ListRecordsLoader
             $filterDefinitions,
             $filters,
         );
-        FilterProcessor::applyToQuery($query, $filterDefinitions, $normalizedFilterValues);
+        FilterProcessor::applyToQuery($query, $filterDefinitions, $normalizedFilterValues, $schema);
         $defaultSortBy = $this->defaultSortColumnFromSchema($schema);
         $defaultSortDirection = $defaultSortBy === null ? 'desc' : 'asc';
         $sortableColumns = SchemaInspector::sortableColumnIds($schema);

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Flatpack\Schema\Lists;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 
 final class FilterProcessor
 {
@@ -72,11 +73,24 @@ final class FilterProcessor
     /**
      * @param  list<FilterDefinition>  $definitions
      * @param  array<string, string|list<string>|null>  $values
+     * @param  array<string, mixed>|null  $schema  Used to validate filter column ids against the list schema.
      */
-    public static function applyToQuery(Builder $query, array $definitions, array $values): void
-    {
+    public static function applyToQuery(
+        Builder $query,
+        array $definitions,
+        array $values,
+        ?array $schema = null,
+    ): void {
+        $grammar = $query->getQuery()->getGrammar();
+        $allowedColumns = self::allowedFilterColumnIds($query, $schema, $definitions);
+
         foreach ($definitions as $def) {
             $id = $def->id;
+            if (! in_array($id, $allowedColumns, true)) {
+                continue;
+            }
+
+            $wrapped = DB::raw($grammar->wrap($id));
             $value = $values[$id] ?? null;
             if ($value === null) {
                 continue;
@@ -85,13 +99,13 @@ final class FilterProcessor
             if ($def->isSelect()) {
                 if ($def->multiple && is_array($value)) {
                     if ($value !== []) {
-                        $query->whereIn($id, $value);
+                        $query->whereIn($wrapped, $value);
                     }
 
                     continue;
                 }
                 if (is_string($value) && $value !== '') {
-                    $query->where($id, $value);
+                    $query->where($wrapped, '=', $value);
                 }
 
                 continue;
@@ -101,10 +115,36 @@ final class FilterProcessor
                 continue;
             }
             if (($def->mode ?? 'exact') === 'from') {
-                $query->whereDate($id, '>=', $value);
+                $query->whereDate($wrapped, '>=', $value);
             } else {
-                $query->whereDate($id, $value);
+                $query->whereDate($wrapped, '=', $value);
             }
         }
+    }
+
+    /**
+     * Column ids must appear on the schema column map and/or be declared by a built-in filter
+     * definition (filters-only keys such as {@code created_at} without a columns entry).
+     *
+     * @param  list<FilterDefinition>  $definitions
+     * @return list<string>
+     */
+    private static function allowedFilterColumnIds(
+        Builder $query,
+        ?array $schema,
+        array $definitions,
+    ): array {
+        $fromColumns = SchemaInspector::columnKeys($schema);
+        $fromDefinitions = array_map(
+            static fn (FilterDefinition $def): string => $def->id,
+            $definitions,
+        );
+        $allowed = array_values(array_unique(array_merge($fromColumns, $fromDefinitions)));
+        $keyName = $query->getModel()->getKeyName();
+        if ($keyName !== '' && ! in_array($keyName, $allowed, true)) {
+            return array_merge([$keyName], $allowed);
+        }
+
+        return $allowed;
     }
 }
