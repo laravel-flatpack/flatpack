@@ -20,7 +20,7 @@ test('fromFormSchema reads actions.save.success_redirect', function () {
     ]))->toBeNull();
 });
 
-test('successRedirectForFormSave uses YAML action key when form_action_id matches', function () {
+test('successRedirectForFormSubmit uses YAML action key when form_action_id matches', function () {
     $schema = [
         'actions' => [
             'save' => [
@@ -35,9 +35,9 @@ test('successRedirectForFormSave uses YAML action key when form_action_id matche
         ],
     ];
 
-    expect(SuccessRedirect::successRedirectForFormSave($schema, 'save_and_quit'))->toBe('list');
-    expect(SuccessRedirect::successRedirectForFormSave($schema, null))->toBeNull();
-    expect(SuccessRedirect::successRedirectForFormSave($schema, ''))->toBeNull();
+    expect(SuccessRedirect::successRedirectForFormSubmit($schema, 'save_and_quit', 'save'))->toBe('list');
+    expect(SuccessRedirect::successRedirectForFormSubmit($schema, null, 'save'))->toBeNull();
+    expect(SuccessRedirect::successRedirectForFormSubmit($schema, '', 'save'))->toBeNull();
 });
 
 test('normalize accepts allowed enum strings', function () {
@@ -59,7 +59,7 @@ test('normalize rejects unknown or empty values', function () {
     expect(SuccessRedirect::normalize(null))->toBeNull();
 });
 
-test('successRedirectForFormSave falls back to actions.save when keyed block omits redirect', function () {
+test('successRedirectForFormSubmit falls back to actions.save when keyed block omits redirect', function () {
     $schema = [
         'actions' => [
             'save' => [
@@ -73,10 +73,10 @@ test('successRedirectForFormSave falls back to actions.save when keyed block omi
         ],
     ];
 
-    expect(SuccessRedirect::successRedirectForFormSave($schema, 'save_secondary'))->toBe('list');
+    expect(SuccessRedirect::successRedirectForFormSubmit($schema, 'save_secondary', 'save'))->toBe('list');
 });
 
-test('successRedirectForFormSave resolves boolean true on keyed header action', function () {
+test('successRedirectForFormSubmit resolves boolean true on keyed header action', function () {
     $schema = [
         'actions' => [
             'publish' => [
@@ -86,5 +86,5 @@ test('successRedirectForFormSave resolves boolean true on keyed header action', 
         ],
     ];
 
-    expect(SuccessRedirect::successRedirectForFormSave($schema, 'publish'))->toBe('list');
+    expect(SuccessRedirect::successRedirectForFormSubmit($schema, 'publish', 'publish'))->toBe('list');
 });

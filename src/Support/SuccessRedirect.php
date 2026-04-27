@@ -123,14 +123,6 @@ final class SuccessRedirect
     }
 
     /**
-     * @deprecated Use {@see successRedirectForFormSubmit} with the submitted action name.
-     */
-    public static function successRedirectForFormSave(?array $schema, ?string $formActionId): ?string
-    {
-        return self::successRedirectForFormSubmit($schema, $formActionId, 'save');
-    }
-
-    /**
      * After a form save (create or edit). {@code $savedKey} is the persisted model key as string.
      * "current"/"stay" keep the user on the saved record edit page.
      */
