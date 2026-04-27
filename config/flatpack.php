@@ -45,8 +45,8 @@ return [
         'middleware' => ['web'],
         'login' => [
             /*
-            | "store" handles credentials (session auth by default). 
-            | Point to Fortify's AuthenticatedSessionController@store 
+            | "store" handles credentials (session auth by default).
+            | Point to Fortify's AuthenticatedSessionController@store
             | or any [Controller::class, 'method'].
             */
             'store' => [SessionController::class, 'store'],
@@ -83,7 +83,7 @@ return [
     | Record & row actions
     |--------------------------------------------------------------------------
     |
-    | Handler map for form submit and row/list actions. 
+    | Handler map for form submit and row/list actions.
     | Form actions and row actions must include `action` matching a key here.
     | Implements Flatpack\Contracts\Actions\FlatpackAction.
     |
@@ -159,7 +159,7 @@ return [
         */
         'allow_external_navigation_urls' => env('FLATPACK_UI_ALLOW_EXTERNAL_NAVIGATION_URLS', false),
         /*
-        | Sidebar navigation menu items. Here you can entirely override the default 
+        | Sidebar navigation menu items. Here you can entirely override the default
         | navigation menu items derived from the filesystem.
         */
         'navigation' => [
