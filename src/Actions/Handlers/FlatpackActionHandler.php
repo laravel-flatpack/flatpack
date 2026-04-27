@@ -11,15 +11,14 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Base for record-level actions: provides authorizer(), canPerformAction(), and modelExists().
+ * Base for record-level actions: provides canPerformAction() and modelExists().
  * Concrete handlers implement authorize() and handle().
  */
 abstract class FlatpackActionHandler implements FlatpackAction
 {
-    protected function authorizer(): FlatpackAuthorizer
-    {
-        return app(FlatpackAuthorizer::class);
-    }
+    public function __construct(
+        protected readonly FlatpackAuthorizer $authorizer,
+    ) {}
 
     protected function canPerformAction(
         Authenticatable $user,
@@ -27,7 +26,7 @@ abstract class FlatpackActionHandler implements FlatpackAction
         string $modelClass,
         ?object $model = null,
     ): bool {
-        return $this->authorizer()->allows(
+        return $this->authorizer->allows(
             user: $user,
             ability: $ability,
             modelClass: $modelClass,

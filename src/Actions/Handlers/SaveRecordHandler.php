@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Flatpack\Actions\Handlers;
 
 use Flatpack\Actions\FlatpackActionContext;
+use Flatpack\Contracts\Authorization\FlatpackAuthorizer;
 use Flatpack\Services\SaveRecord\SaveRecordService;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
@@ -12,8 +13,11 @@ use Illuminate\Database\Eloquent\Model;
 final class SaveRecordHandler extends FlatpackActionHandler
 {
     public function __construct(
+        FlatpackAuthorizer $authorizer,
         private readonly SaveRecordService $saveRecordService,
-    ) {}
+    ) {
+        parent::__construct($authorizer);
+    }
 
     public function authorize(Authenticatable $user, string $modelClass, ?Model $model): bool
     {

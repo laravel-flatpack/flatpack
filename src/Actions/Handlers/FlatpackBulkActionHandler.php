@@ -9,15 +9,14 @@ use Flatpack\Contracts\Authorization\FlatpackAuthorizer;
 use Illuminate\Contracts\Auth\Authenticatable;
 
 /**
- * Base for bulk actions: provides authorizer() and canPerformAction().
+ * Base for bulk actions: provides canPerformAction().
  * Concrete handlers implement authorize() and handle().
  */
 abstract class FlatpackBulkActionHandler implements FlatpackBulkAction
 {
-    protected function authorizer(): FlatpackAuthorizer
-    {
-        return app(FlatpackAuthorizer::class);
-    }
+    public function __construct(
+        protected readonly FlatpackAuthorizer $authorizer,
+    ) {}
 
     protected function canPerformAction(
         Authenticatable $user,
@@ -25,7 +24,7 @@ abstract class FlatpackBulkActionHandler implements FlatpackBulkAction
         string $modelClass,
         ?object $model = null,
     ): bool {
-        return $this->authorizer()->allows(
+        return $this->authorizer->allows(
             user: $user,
             ability: $ability,
             modelClass: $modelClass,
