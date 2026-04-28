@@ -1,7 +1,6 @@
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import { ChevronDown } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { route } from 'ziggy-js';
 import { Badge } from '@/components/ui/badge';
 import {
     Card,
@@ -16,7 +15,6 @@ import {
     CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import DemoLayout from '@/layouts/demo-layout';
 import DocsLayout from '@/layouts/docs-layout';
 import type {
     SchemaNodeDoc,
