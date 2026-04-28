@@ -1,24 +1,24 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "title": "Flatpack form composition",
-    "description": "Structural contract for entity form.yaml (decoded to JSON). Each field is a discriminated union on type: only the options valid for that type are allowed (additionalProperties: false). Runtime still normalizes aliases (e.g. date → date-picker). Use top-level `fields` and/or `tabs` together or separately: root `fields` and every `tabs.*.fields` map are merged into one flat `fields` map (single `values` payload for validation and submit). On the form page, fields that only appear at the top level render above the tab strip; fields listed under `tabs` render inside their panel.",
+    "description": "Contract for `form.yaml` (JSON-decoded). Defines form layout, action payloads, and field unions used by normalization and UI rendering.",
     "type": "object",
     "properties": {
         "name": {
             "type": "string",
-            "description": "Display name of the entity"
+            "description": "Display name for the entity."
         },
         "model": {
             "type": "string",
-            "description": "Fully-qualified Eloquent model class name"
+            "description": "Fully qualified Eloquent model class name."
         },
         "icon": {
             "type": "string",
-            "description": "Icon name from Lucide icon library: https://lucide.dev/icons/"
+            "description": "Lucide icon name for navigation and headers."
         },
         "fields": {
             "type": "object",
-            "description": "Optional alongside `tabs`. Field ids that only appear here (not under any `tabs.*.fields`) render above the tab strip on the form page after normalization.",
+            "description": "Top-level field map. Fields only defined here render above tabs when tabs are present.",
             "additionalProperties": {
                 "$ref": "#/$defs/fieldDefinition"
             }
@@ -26,27 +26,31 @@
         "tabs": {
             "type": "object",
             "minProperties": 1,
-            "description": "Keyed tab panels (tab id → panel). Each panel nests `fields` the same shape as top-level `fields`. May coexist with top-level `fields`; runtime merges all into one values object.",
+            "description": "Tab panel map keyed by tab id. Tab fields merge with root fields into one values payload.",
             "additionalProperties": {
                 "$ref": "#/$defs/formTabPanel"
             }
         },
         "actions": {
-            "$ref": "#/$defs/formActionsBlock"
+            "$ref": "#/$defs/formActionsBlock",
+            "description": "Top-level form actions map keyed by action id."
         }
     },
     "additionalProperties": false,
     "$defs": {
         "formActionsBlock": {
             "type": "object",
-            "description": "Named actions (e.g. save). Merged with header-style action entries by loaders.",
+            "description": "Named form actions map keyed by action id.",
             "additionalProperties": {
                 "$ref": "#/$defs/headerActionDefinition"
             }
         },
         "formTabPanel": {
             "type": "object",
-            "required": ["label", "fields"],
+            "required": [
+                "label",
+                "fields"
+            ],
             "properties": {
                 "label": {
                     "type": "string",
@@ -63,11 +67,14 @@
                     }
                 }
             },
-            "additionalProperties": false
+            "additionalProperties": false,
+            "description": "Form tab panel definition with label, optional icon, and field map."
         },
         "headerActionDefinition": {
             "type": "object",
-            "required": ["label"],
+            "required": [
+                "label"
+            ],
             "properties": {
                 "label": {
                     "type": "string",
@@ -114,19 +121,28 @@
             },
             "oneOf": [
                 {
-                    "required": ["action"],
+                    "required": [
+                        "action"
+                    ],
                     "not": {
-                        "required": ["href"]
+                        "required": [
+                            "href"
+                        ]
                     }
                 },
                 {
-                    "required": ["href"],
+                    "required": [
+                        "href"
+                    ],
                     "not": {
-                        "required": ["action"]
+                        "required": [
+                            "action"
+                        ]
                     }
                 }
             ],
-            "additionalProperties": false
+            "additionalProperties": false,
+            "description": "Header action definition for form pages. Requires exactly one of `action` or `href`."
         },
         "buttonVariant": {
             "type": "string",
@@ -139,7 +155,7 @@
                 "link",
                 "primary"
             ],
-            "description": "primary is accepted in YAML and normalized to default in UI code"
+            "description": "Supported button style variants. `primary` is accepted and normalized to `default` in UI code."
         },
         "successRedirect": {
             "oneOf": [
@@ -158,14 +174,17 @@
                 },
                 {
                     "type": "boolean",
-                    "enum": [true],
+                    "enum": [
+                        true
+                    ],
                     "description": "Alias for list (redirect to entity index after success)."
                 }
-            ]
+            ],
+            "description": "Post-action redirect target keyword, or `true` as alias for `list`."
         },
         "actionInactiveUntil": {
             "type": "object",
-            "description": "Disables the action until one or more predicates become true.",
+            "description": "Action gating definition that disables actions until predicates pass.",
             "properties": {
                 "all": {
                     "type": "array",
@@ -187,8 +206,16 @@
                 }
             },
             "anyOf": [
-                { "required": ["all"] },
-                { "required": ["any"] }
+                {
+                    "required": [
+                        "all"
+                    ]
+                },
+                {
+                    "required": [
+                        "any"
+                    ]
+                }
             ],
             "additionalProperties": false
         },
@@ -196,7 +223,9 @@
             "oneOf": [
                 {
                     "type": "object",
-                    "required": ["form.dirty"],
+                    "required": [
+                        "form.dirty"
+                    ],
                     "properties": {
                         "form.dirty": {
                             "type": "boolean"
@@ -206,14 +235,19 @@
                 },
                 {
                     "type": "object",
-                    "required": ["form.mode_in"],
+                    "required": [
+                        "form.mode_in"
+                    ],
                     "properties": {
                         "form.mode_in": {
                             "type": "array",
                             "minItems": 1,
                             "items": {
                                 "type": "string",
-                                "enum": ["create", "edit"]
+                                "enum": [
+                                    "create",
+                                    "edit"
+                                ]
                             }
                         }
                     },
@@ -221,7 +255,9 @@
                 },
                 {
                     "type": "object",
-                    "required": ["list.selection.min"],
+                    "required": [
+                        "list.selection.min"
+                    ],
                     "properties": {
                         "list.selection.min": {
                             "type": "integer",
@@ -232,7 +268,9 @@
                 },
                 {
                     "type": "object",
-                    "required": ["list.search_present"],
+                    "required": [
+                        "list.search_present"
+                    ],
                     "properties": {
                         "list.search_present": {
                             "type": "boolean"
@@ -242,7 +280,9 @@
                 },
                 {
                     "type": "object",
-                    "required": ["list.filters_applied"],
+                    "required": [
+                        "list.filters_applied"
+                    ],
                     "properties": {
                         "list.filters_applied": {
                             "type": "boolean"
@@ -250,11 +290,12 @@
                     },
                     "additionalProperties": false
                 }
-            ]
+            ],
+            "description": "Single predicate used by `enabled_if` or `visible_if` gating rules."
         },
         "yamlFormFieldType": {
             "type": "string",
-            "description": "YAML type before/after FormFieldType::normalizeYamlType. date is normalized to date-picker. Use type combobox with relation for remote relation pickers (like type table with relation).",
+            "description": "Raw YAML field types before normalization. `date` is normalized to `date-picker`.",
             "enum": [
                 "text",
                 "textarea",
@@ -273,7 +314,10 @@
         },
         "selectOption": {
             "type": "object",
-            "required": ["value", "label"],
+            "required": [
+                "value",
+                "label"
+            ],
             "properties": {
                 "value": {
                     "type": "string",
@@ -290,11 +334,19 @@
                     "type": "string"
                 }
             },
-            "additionalProperties": false
+            "additionalProperties": false,
+            "description": "Select option object with value, label, and optional status or icon."
         },
         "optionStatus": {
             "type": "string",
-            "enum": ["success", "pending", "warning", "error", "info"]
+            "enum": [
+                "success",
+                "pending",
+                "warning",
+                "error",
+                "info"
+            ],
+            "description": "Status token used by option badges and chips."
         },
         "selectOptions": {
             "oneOf": [
@@ -311,7 +363,8 @@
                         "type": "string"
                     }
                 }
-            ]
+            ],
+            "description": "Select options as an array of option objects or keyed map form."
         },
         "validationRules": {
             "oneOf": [
@@ -324,11 +377,15 @@
                         "type": "string"
                     }
                 }
-            ]
+            ],
+            "description": "Laravel validation rules as a pipe-delimited string or string array."
         },
         "preset": {
             "type": "object",
-            "required": ["field", "type"],
+            "required": [
+                "field",
+                "type"
+            ],
             "properties": {
                 "field": {
                     "type": "string",
@@ -337,27 +394,51 @@
                 },
                 "type": {
                     "type": "string",
-                    "enum": ["exact", "slug", "url", "camel", "file"]
+                    "enum": [
+                        "exact",
+                        "slug",
+                        "url",
+                        "camel",
+                        "file"
+                    ]
                 }
             },
-            "additionalProperties": false
+            "additionalProperties": false,
+            "description": "Preset source definition for copying values from another field."
         },
         "fieldTriggerCondition": {
             "oneOf": [
-                { "type": "string", "enum": ["checked", "unchecked"] },
+                {
+                    "type": "string",
+                    "enum": [
+                        "checked",
+                        "unchecked"
+                    ]
+                },
                 {
                     "type": "string",
                     "pattern": "^value\\[[^\\]]+\\]$"
                 }
-            ]
+            ],
+            "description": "Condition expression used by dynamic field trigger rules."
         },
         "fieldTrigger": {
             "type": "object",
-            "required": ["action", "field", "condition"],
+            "required": [
+                "action",
+                "field",
+                "condition"
+            ],
             "properties": {
                 "action": {
                     "type": "string",
-                    "enum": ["show", "hide", "enable", "disable", "empty"]
+                    "enum": [
+                        "show",
+                        "hide",
+                        "enable",
+                        "disable",
+                        "empty"
+                    ]
                 },
                 "field": {
                     "type": "string",
@@ -367,96 +448,223 @@
                     "$ref": "#/$defs/fieldTriggerCondition"
                 }
             },
-            "additionalProperties": false
+            "additionalProperties": false,
+            "description": "Trigger rule definition for conditional field behavior."
         },
         "fieldDefinition": {
-            "description": "Discriminated union on type. Only keys valid for that field type are permitted.",
+            "description": "Discriminated field union keyed by `type`.",
             "oneOf": [
-                { "$ref": "#/$defs/fieldText" },
-                { "$ref": "#/$defs/fieldTextarea" },
-                { "$ref": "#/$defs/fieldSelect" },
-                { "$ref": "#/$defs/fieldCombobox" },
-                { "$ref": "#/$defs/fieldDate" },
-                { "$ref": "#/$defs/fieldDatePicker" },
-                { "$ref": "#/$defs/fieldDateRangePicker" },
-                { "$ref": "#/$defs/fieldTimePicker" },
-                { "$ref": "#/$defs/fieldCheckbox" },
-                { "$ref": "#/$defs/fieldSwitch" },
-                { "$ref": "#/$defs/fieldRichText" },
-                { "$ref": "#/$defs/fieldBlockEditor" },
-                { "$ref": "#/$defs/fieldTable" }
+                {
+                    "$ref": "#/$defs/fieldText"
+                },
+                {
+                    "$ref": "#/$defs/fieldTextarea"
+                },
+                {
+                    "$ref": "#/$defs/fieldSelect"
+                },
+                {
+                    "$ref": "#/$defs/fieldCombobox"
+                },
+                {
+                    "$ref": "#/$defs/fieldDate"
+                },
+                {
+                    "$ref": "#/$defs/fieldDatePicker"
+                },
+                {
+                    "$ref": "#/$defs/fieldDateRangePicker"
+                },
+                {
+                    "$ref": "#/$defs/fieldTimePicker"
+                },
+                {
+                    "$ref": "#/$defs/fieldCheckbox"
+                },
+                {
+                    "$ref": "#/$defs/fieldSwitch"
+                },
+                {
+                    "$ref": "#/$defs/fieldRichText"
+                },
+                {
+                    "$ref": "#/$defs/fieldBlockEditor"
+                },
+                {
+                    "$ref": "#/$defs/fieldTable"
+                }
             ]
         },
         "fieldText": {
             "type": "object",
-            "required": ["type", "label"],
+            "required": [
+                "type",
+                "label"
+            ],
             "properties": {
-                "type": { "const": "text" },
-                "id": { "type": "string" },
-                "label": { "type": "string", "minLength": 1 },
-                "helperText": { "type": "string" },
-                "placeholder": { "type": "string" },
-                "required": { "type": "boolean" },
-                "rules": { "$ref": "#/$defs/validationRules" },
+                "type": {
+                    "const": "text"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "helperText": {
+                    "type": "string"
+                },
+                "placeholder": {
+                    "type": "string"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "rules": {
+                    "$ref": "#/$defs/validationRules"
+                },
                 "value": {},
-                "preset": { "$ref": "#/$defs/preset" },
+                "preset": {
+                    "$ref": "#/$defs/preset"
+                },
                 "format": {
                     "type": "string",
-                    "enum": ["slug", "url", "camel", "file"]
+                    "enum": [
+                        "slug",
+                        "url",
+                        "camel",
+                        "file"
+                    ]
                 },
-                "trigger": { "$ref": "#/$defs/fieldTrigger" }
+                "trigger": {
+                    "$ref": "#/$defs/fieldTrigger"
+                }
             },
-            "additionalProperties": false
+            "additionalProperties": false,
+            "description": "Text input field definition."
         },
         "fieldTextarea": {
             "type": "object",
-            "required": ["type", "label"],
+            "required": [
+                "type",
+                "label"
+            ],
             "properties": {
-                "type": { "const": "textarea" },
-                "id": { "type": "string" },
-                "label": { "type": "string", "minLength": 1 },
-                "helperText": { "type": "string" },
-                "placeholder": { "type": "string" },
-                "required": { "type": "boolean" },
-                "rules": { "$ref": "#/$defs/validationRules" },
+                "type": {
+                    "const": "textarea"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "helperText": {
+                    "type": "string"
+                },
+                "placeholder": {
+                    "type": "string"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "rules": {
+                    "$ref": "#/$defs/validationRules"
+                },
                 "value": {},
-                "rows": { "type": "integer", "minimum": 1 },
-                "preset": { "$ref": "#/$defs/preset" },
-                "trigger": { "$ref": "#/$defs/fieldTrigger" }
+                "rows": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "preset": {
+                    "$ref": "#/$defs/preset"
+                },
+                "trigger": {
+                    "$ref": "#/$defs/fieldTrigger"
+                }
             },
-            "additionalProperties": false
+            "additionalProperties": false,
+            "description": "Textarea field definition."
         },
         "fieldSelect": {
             "type": "object",
-            "required": ["type", "label", "options"],
+            "required": [
+                "type",
+                "label",
+                "options"
+            ],
             "properties": {
-                "type": { "const": "select" },
-                "id": { "type": "string" },
-                "label": { "type": "string", "minLength": 1 },
-                "helperText": { "type": "string" },
-                "placeholder": { "type": "string" },
-                "required": { "type": "boolean" },
-                "rules": { "$ref": "#/$defs/validationRules" },
+                "type": {
+                    "const": "select"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "helperText": {
+                    "type": "string"
+                },
+                "placeholder": {
+                    "type": "string"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "rules": {
+                    "$ref": "#/$defs/validationRules"
+                },
                 "value": {},
-                "options": { "$ref": "#/$defs/selectOptions" },
-                "trigger": { "$ref": "#/$defs/fieldTrigger" }
+                "options": {
+                    "$ref": "#/$defs/selectOptions"
+                },
+                "trigger": {
+                    "$ref": "#/$defs/fieldTrigger"
+                }
             },
-            "additionalProperties": false
+            "additionalProperties": false,
+            "description": "Select field definition with static or relation-backed options."
         },
         "fieldCombobox": {
             "type": "object",
-            "required": ["type", "label"],
+            "required": [
+                "type",
+                "label"
+            ],
             "properties": {
-                "type": { "const": "combobox" },
-                "id": { "type": "string" },
-                "label": { "type": "string", "minLength": 1 },
-                "helperText": { "type": "string" },
-                "placeholder": { "type": "string" },
-                "required": { "type": "boolean" },
-                "rules": { "$ref": "#/$defs/validationRules" },
+                "type": {
+                    "const": "combobox"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "helperText": {
+                    "type": "string"
+                },
+                "placeholder": {
+                    "type": "string"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "rules": {
+                    "$ref": "#/$defs/validationRules"
+                },
                 "value": {},
-                "options": { "$ref": "#/$defs/selectOptions" },
-                "multiple": { "type": "boolean" },
+                "options": {
+                    "$ref": "#/$defs/selectOptions"
+                },
+                "multiple": {
+                    "type": "boolean"
+                },
                 "relation": {
                     "type": "string",
                     "minLength": 1,
@@ -472,158 +680,353 @@
                     "minLength": 1,
                     "description": "Value column on related model (often id)"
                 },
-                "remote": { "type": "boolean" },
-                "trigger": { "$ref": "#/$defs/fieldTrigger" }
+                "remote": {
+                    "type": "boolean"
+                },
+                "trigger": {
+                    "$ref": "#/$defs/fieldTrigger"
+                }
             },
-            "additionalProperties": false
+            "additionalProperties": false,
+            "description": "Combobox field definition with optional relation-backed options."
         },
         "fieldDate": {
             "type": "object",
-            "required": ["type", "label"],
+            "required": [
+                "type",
+                "label"
+            ],
             "properties": {
-                "type": { "const": "date" },
-                "id": { "type": "string" },
-                "label": { "type": "string", "minLength": 1 },
-                "helperText": { "type": "string" },
-                "placeholder": { "type": "string" },
-                "required": { "type": "boolean" },
-                "rules": { "$ref": "#/$defs/validationRules" },
+                "type": {
+                    "const": "date"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "helperText": {
+                    "type": "string"
+                },
+                "placeholder": {
+                    "type": "string"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "rules": {
+                    "$ref": "#/$defs/validationRules"
+                },
                 "value": {},
-                "trigger": { "$ref": "#/$defs/fieldTrigger" }
+                "trigger": {
+                    "$ref": "#/$defs/fieldTrigger"
+                }
             },
-            "additionalProperties": false
+            "additionalProperties": false,
+            "description": "Legacy date field alias definition."
         },
         "fieldDatePicker": {
             "type": "object",
-            "required": ["type", "label"],
+            "required": [
+                "type",
+                "label"
+            ],
             "properties": {
-                "type": { "const": "date-picker" },
-                "id": { "type": "string" },
-                "label": { "type": "string", "minLength": 1 },
-                "helperText": { "type": "string" },
-                "placeholder": { "type": "string" },
-                "required": { "type": "boolean" },
-                "rules": { "$ref": "#/$defs/validationRules" },
+                "type": {
+                    "const": "date-picker"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "helperText": {
+                    "type": "string"
+                },
+                "placeholder": {
+                    "type": "string"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "rules": {
+                    "$ref": "#/$defs/validationRules"
+                },
                 "value": {},
-                "trigger": { "$ref": "#/$defs/fieldTrigger" }
+                "trigger": {
+                    "$ref": "#/$defs/fieldTrigger"
+                }
             },
-            "additionalProperties": false
+            "additionalProperties": false,
+            "description": "Date picker field definition."
         },
         "fieldDateRangePicker": {
             "type": "object",
-            "required": ["type", "label"],
+            "required": [
+                "type",
+                "label"
+            ],
             "properties": {
-                "type": { "const": "date-range-picker" },
-                "id": { "type": "string" },
-                "label": { "type": "string", "minLength": 1 },
-                "helperText": { "type": "string" },
-                "placeholder": { "type": "string" },
-                "required": { "type": "boolean" },
-                "rules": { "$ref": "#/$defs/validationRules" },
+                "type": {
+                    "const": "date-range-picker"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "helperText": {
+                    "type": "string"
+                },
+                "placeholder": {
+                    "type": "string"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "rules": {
+                    "$ref": "#/$defs/validationRules"
+                },
                 "value": {},
-                "trigger": { "$ref": "#/$defs/fieldTrigger" }
+                "trigger": {
+                    "$ref": "#/$defs/fieldTrigger"
+                }
             },
-            "additionalProperties": false
+            "additionalProperties": false,
+            "description": "Date range picker field definition."
         },
         "fieldTimePicker": {
             "type": "object",
-            "required": ["type", "label"],
+            "required": [
+                "type",
+                "label"
+            ],
             "properties": {
-                "type": { "const": "time-picker" },
-                "id": { "type": "string" },
-                "label": { "type": "string", "minLength": 1 },
-                "helperText": { "type": "string" },
-                "placeholder": { "type": "string" },
-                "required": { "type": "boolean" },
-                "rules": { "$ref": "#/$defs/validationRules" },
+                "type": {
+                    "const": "time-picker"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "helperText": {
+                    "type": "string"
+                },
+                "placeholder": {
+                    "type": "string"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "rules": {
+                    "$ref": "#/$defs/validationRules"
+                },
                 "value": {},
-                "dateLabel": { "type": "string" },
-                "datePlaceholder": { "type": "string" },
-                "timeLabel": { "type": "string" },
-                "timeDefaultValue": { "type": "string" },
-                "trigger": { "$ref": "#/$defs/fieldTrigger" }
+                "dateLabel": {
+                    "type": "string"
+                },
+                "datePlaceholder": {
+                    "type": "string"
+                },
+                "timeLabel": {
+                    "type": "string"
+                },
+                "timeDefaultValue": {
+                    "type": "string"
+                },
+                "trigger": {
+                    "$ref": "#/$defs/fieldTrigger"
+                }
             },
-            "additionalProperties": false
+            "additionalProperties": false,
+            "description": "Time picker field definition."
         },
         "fieldCheckbox": {
             "type": "object",
-            "required": ["type", "label"],
+            "required": [
+                "type",
+                "label"
+            ],
             "properties": {
-                "type": { "const": "checkbox" },
-                "id": { "type": "string" },
-                "label": { "type": "string", "minLength": 1 },
-                "helperText": { "type": "string" },
-                "required": { "type": "boolean" },
-                "rules": { "$ref": "#/$defs/validationRules" },
+                "type": {
+                    "const": "checkbox"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "helperText": {
+                    "type": "string"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "rules": {
+                    "$ref": "#/$defs/validationRules"
+                },
                 "value": {},
-                "defaultChecked": { "type": "boolean" },
-                "trigger": { "$ref": "#/$defs/fieldTrigger" }
+                "defaultChecked": {
+                    "type": "boolean"
+                },
+                "trigger": {
+                    "$ref": "#/$defs/fieldTrigger"
+                }
             },
-            "additionalProperties": false
+            "additionalProperties": false,
+            "description": "Checkbox field definition."
         },
         "fieldSwitch": {
             "type": "object",
-            "required": ["type", "label"],
+            "required": [
+                "type",
+                "label"
+            ],
             "properties": {
-                "type": { "const": "switch" },
-                "id": { "type": "string" },
-                "label": { "type": "string", "minLength": 1 },
-                "helperText": { "type": "string" },
-                "required": { "type": "boolean" },
-                "rules": { "$ref": "#/$defs/validationRules" },
+                "type": {
+                    "const": "switch"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "helperText": {
+                    "type": "string"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "rules": {
+                    "$ref": "#/$defs/validationRules"
+                },
                 "value": {},
-                "defaultChecked": { "type": "boolean" },
-                "trigger": { "$ref": "#/$defs/fieldTrigger" }
+                "defaultChecked": {
+                    "type": "boolean"
+                },
+                "trigger": {
+                    "$ref": "#/$defs/fieldTrigger"
+                }
             },
-            "additionalProperties": false
+            "additionalProperties": false,
+            "description": "Switch field definition."
         },
         "fieldRichText": {
             "type": "object",
-            "required": ["type", "label"],
+            "required": [
+                "type",
+                "label"
+            ],
             "properties": {
-                "type": { "const": "rich-text" },
-                "id": { "type": "string" },
-                "label": { "type": "string", "minLength": 1 },
-                "helperText": { "type": "string" },
-                "placeholder": { "type": "string" },
-                "required": { "type": "boolean" },
-                "rules": { "$ref": "#/$defs/validationRules" },
+                "type": {
+                    "const": "rich-text"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "helperText": {
+                    "type": "string"
+                },
+                "placeholder": {
+                    "type": "string"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "rules": {
+                    "$ref": "#/$defs/validationRules"
+                },
                 "value": {},
-                "showFixedToolbar": { "type": "boolean" },
-                "trigger": { "$ref": "#/$defs/fieldTrigger" }
+                "showFixedToolbar": {
+                    "type": "boolean"
+                },
+                "trigger": {
+                    "$ref": "#/$defs/fieldTrigger"
+                }
             },
-            "additionalProperties": false
+            "additionalProperties": false,
+            "description": "Rich text editor field definition."
         },
         "fieldBlockEditor": {
             "type": "object",
-            "required": ["type", "label"],
+            "required": [
+                "type",
+                "label"
+            ],
             "properties": {
-                "type": { "const": "block-editor" },
-                "id": { "type": "string" },
-                "label": { "type": "string", "minLength": 1 },
-                "helperText": { "type": "string" },
-                "placeholder": { "type": "string" },
-                "required": { "type": "boolean" },
-                "rules": { "$ref": "#/$defs/validationRules" },
+                "type": {
+                    "const": "block-editor"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "helperText": {
+                    "type": "string"
+                },
+                "placeholder": {
+                    "type": "string"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "rules": {
+                    "$ref": "#/$defs/validationRules"
+                },
                 "value": {},
-                "showFixedToolbar": { "type": "boolean" },
-                "trigger": { "$ref": "#/$defs/fieldTrigger" }
+                "showFixedToolbar": {
+                    "type": "boolean"
+                },
+                "trigger": {
+                    "$ref": "#/$defs/fieldTrigger"
+                }
             },
-            "additionalProperties": false
+            "additionalProperties": false,
+            "description": "Block editor field definition."
         },
         "fieldTableActionEntry": {
             "type": "object",
-            "description": "Single toolbar button above an embedded table field (distinct from column-level actions).",
-            "required": ["label", "action"],
+            "description": "Embedded table toolbar action definition.",
+            "required": [
+                "label",
+                "action"
+            ],
             "properties": {
-                "id": { "type": "string" },
-                "label": { "type": "string", "minLength": 1 },
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
                 "action": {
                     "type": "string",
                     "minLength": 1,
                     "description": "Built-in: `create` and `add` open a blank draft row in the row detail drawer (same UX path). Other values are custom and use host onToolbarAction when wired."
                 },
-                "icon": { "type": "string" },
+                "icon": {
+                    "type": "string"
+                },
                 "variant": {
                     "type": "string",
                     "enum": [
@@ -640,7 +1043,7 @@
             "additionalProperties": false
         },
         "fieldTableActions": {
-            "description": "Keyed map (action id → definition) or array of toolbar buttons.",
+            "description": "Embedded table toolbar actions as keyed map or ordered array.",
             "oneOf": [
                 {
                     "type": "array",
@@ -660,15 +1063,32 @@
         },
         "fieldTable": {
             "type": "object",
-            "required": ["type", "label", "columns"],
-            "description": "Inline table. When relation is set, rows are hydrated from that Eloquent relation on the parent model (RelationRow[] wire format); columns must declare at least one column for relation-backed tables.",
+            "required": [
+                "type",
+                "label",
+                "columns"
+            ],
+            "description": "Embedded table field definition with columns, row behavior, and optional relation hydration.",
             "properties": {
-                "type": { "const": "table" },
-                "id": { "type": "string" },
-                "label": { "type": "string", "minLength": 1 },
-                "helperText": { "type": "string" },
-                "required": { "type": "boolean" },
-                "rules": { "$ref": "#/$defs/validationRules" },
+                "type": {
+                    "const": "table"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "helperText": {
+                    "type": "string"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "rules": {
+                    "$ref": "#/$defs/validationRules"
+                },
                 "value": {},
                 "columns": {
                     "description": "Same shapes as list.yaml columns: array of column definitions, or map of columnId -> definition. Embedded table columns may set `edit_form_field` (full form-field shape) to override row-drawer rendering.",
@@ -689,8 +1109,12 @@
                         }
                     ]
                 },
-                "data": { "type": "array" },
-                "bulkActions": { "type": "array" },
+                "data": {
+                    "type": "array"
+                },
+                "bulkActions": {
+                    "type": "array"
+                },
                 "actions": {
                     "$ref": "#/$defs/fieldTableActions",
                     "description": "Toolbar buttons. If both `actions` and `toolbar` are set, `actions` is used."
@@ -709,8 +1133,12 @@
                 },
                 "reorderable": {
                     "oneOf": [
-                        { "type": "boolean" },
-                        { "type": "string" }
+                        {
+                            "type": "boolean"
+                        },
+                        {
+                            "type": "string"
+                        }
                     ]
                 },
                 "row_detail_drawer": {
@@ -744,13 +1172,17 @@
                     ],
                     "description": "Eloquent relation class for this table field, usually derived from the parent form model. Authors may set this in YAML to override auto-detection."
                 },
-                "trigger": { "$ref": "#/$defs/fieldTrigger" }
+                "trigger": {
+                    "$ref": "#/$defs/fieldTrigger"
+                }
             },
             "additionalProperties": false
         },
         "embeddedTableColumnEditFormFieldDefinition": {
             "type": "object",
-            "required": ["type"],
+            "required": [
+                "type"
+            ],
             "properties": {
                 "type": {
                     "type": "string",
@@ -770,43 +1202,105 @@
                     ]
                 }
             },
-            "additionalProperties": false
+            "additionalProperties": false,
+            "description": "Inline row-drawer edit field override for embedded table columns."
         },
         "embeddedTableColumnDefinition": {
             "type": "object",
-            "required": ["label"],
+            "required": [
+                "label"
+            ],
             "properties": {
-                "id": { "type": "string" },
+                "id": {
+                    "type": "string"
+                },
                 "type": {
                     "type": "string",
-                    "enum": ["text", "select", "date", "datetime", "actions", "badge", "status", "relation"]
+                    "enum": [
+                        "text",
+                        "select",
+                        "date",
+                        "datetime",
+                        "actions",
+                        "badge",
+                        "status",
+                        "relation"
+                    ]
                 },
-                "label": { "type": "string", "minLength": 1 },
-                "options": { "$ref": "#/$defs/selectOptions" },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "options": {
+                    "$ref": "#/$defs/selectOptions"
+                },
                 "actions": {
                     "type": "array",
                     "minItems": 1,
-                    "items": { "$ref": "#/$defs/fieldTableActionEntry" }
+                    "items": {
+                        "$ref": "#/$defs/fieldTableActionEntry"
+                    }
                 },
-                "relation": { "type": "string", "minLength": 1 },
-                "relation_name": { "type": "string", "minLength": 1 },
-                "relation_value": { "type": "string", "minLength": 1 },
-                "relationName": { "type": "string", "minLength": 1 },
-                "relationValue": { "type": "string", "minLength": 1 },
-                "format": { "type": "string" },
-                "timezone": { "type": "string" },
-                "sortable": { "type": "boolean" },
-                "searchable": { "type": "boolean" },
-                "editable": { "type": "boolean" },
-                "required": { "type": "boolean" },
-                "rules": { "$ref": "#/$defs/validationRules" },
-                "detailDrawer": { "type": "boolean" },
-                "invisible": { "type": "boolean" },
-                "truncate": { "type": "integer", "minimum": 1 },
-                "edit_form_field": { "$ref": "#/$defs/embeddedTableColumnEditFormFieldDefinition" },
-                "editFormField": { "$ref": "#/$defs/embeddedTableColumnEditFormFieldDefinition" }
+                "relation": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "relation_name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "relation_value": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "relationName": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "relationValue": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "format": {
+                    "type": "string"
+                },
+                "timezone": {
+                    "type": "string"
+                },
+                "sortable": {
+                    "type": "boolean"
+                },
+                "searchable": {
+                    "type": "boolean"
+                },
+                "editable": {
+                    "type": "boolean"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "rules": {
+                    "$ref": "#/$defs/validationRules"
+                },
+                "detailDrawer": {
+                    "type": "boolean"
+                },
+                "invisible": {
+                    "type": "boolean"
+                },
+                "truncate": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "edit_form_field": {
+                    "$ref": "#/$defs/embeddedTableColumnEditFormFieldDefinition"
+                },
+                "editFormField": {
+                    "$ref": "#/$defs/embeddedTableColumnEditFormFieldDefinition"
+                }
             },
-            "additionalProperties": false
+            "additionalProperties": false,
+            "description": "Embedded table column definition with optional edit field override."
         }
     }
 }

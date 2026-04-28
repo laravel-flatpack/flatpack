@@ -1,30 +1,34 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "title": "Flatpack list composition",
-    "description": "Structural contract for entity list.yaml (decoded to JSON). Columns are a discriminated union on type (or default text-like when type is omitted). Filters use oneOf so select/date options match their type. Use top-level `columns` and/or `tabs`; tabbed columns merge into one column set for the data table.",
+    "description": "Contract for `list.yaml` (JSON-decoded). Defines list columns, actions, filters, tabs, and normalized table behavior.",
     "type": "object",
     "properties": {
         "name": {
             "type": "string",
-			"description": "Display name of the entity"
+            "description": "Display name for the entity."
         },
         "model": {
             "type": "string",
-            "description": "Fully-qualified Eloquent model class name"
+            "description": "Fully qualified Eloquent model class name."
         },
         "icon": {
             "type": "string",
-			"description": "Icon name from Lucide icon library: https://lucide.dev/icons/"
+            "description": "Lucide icon name for navigation and headers."
         },
         "nav_order": {
             "type": "integer",
-            "description": "Sidebar menu ordering weight (lower appears first)."
+            "description": "Sidebar sort weight; lower values appear first."
         },
         "menu": {
             "type": "string",
-            "enum": ["main", "secondary", "bottom"],
+            "enum": [
+                "main",
+                "secondary",
+                "bottom"
+            ],
             "default": "main",
-            "description": "Which sidebar navigation group receives this list link: primary (`main`), mid sidebar (`secondary`), or footer (`bottom`). Invalid values are ignored at runtime (treated as `main`) and recorded in composition debug when debug mode is on."
+            "description": "Sidebar menu section for this list link (`main`, `secondary`, or `bottom`)."
         },
         "reorderable": {
             "oneOf": [
@@ -38,13 +42,18 @@
                     "description": "Database column name used for manual row order."
                 }
             ],
-            "description": "Enable drag-and-drop row reordering: true for default column, or pass the column name."
+            "description": "Drag-and-drop reorder configuration: `true` for default column or a column name string."
         },
         "row_click": {
             "type": "string",
-            "enum": ["none", "edit_page", "edit_modal", "edit_drawer"],
+            "enum": [
+                "none",
+                "edit_page",
+                "edit_modal",
+                "edit_drawer"
+            ],
             "default": "edit_page",
-            "description": "List row click behavior. Default `edit_page` navigates to the edit page. `none` disables row click handling. `edit_modal` and `edit_drawer` are reserved for future UI modes."
+            "description": "Row click behavior for list rows."
         },
         "columns": {
             "oneOf": [
@@ -65,23 +74,25 @@
         "tabs": {
             "type": "object",
             "minProperties": 1,
-            "description": "Keyed tab panels (tab id → panel). Tabs can apply query scopes and optionally override table columns for that tab.",
+            "description": "Tab panel map keyed by tab id with optional column and filter overrides.",
             "additionalProperties": {
                 "$ref": "#/$defs/listTabPanel"
             }
         },
         "filters": {
             "type": "object",
-            "description": "Keys are column ids; values override or define filter UI for that column.",
+            "description": "Filter map keyed by column id.",
             "additionalProperties": {
                 "$ref": "#/$defs/filterDefinition"
             }
         },
         "actions": {
-            "$ref": "#/$defs/listActionsBlock"
+            "$ref": "#/$defs/listActionsBlock",
+            "description": "Header toolbar actions map keyed by action id."
         },
         "bulk_actions": {
             "type": "object",
+            "description": "Bulk actions map keyed by action id.",
             "additionalProperties": {
                 "$ref": "#/$defs/bulkActionDefinition"
             }
@@ -91,7 +102,9 @@
     "$defs": {
         "listTabPanel": {
             "type": "object",
-            "required": ["label"],
+            "required": [
+                "label"
+            ],
             "properties": {
                 "label": {
                     "type": "string",
@@ -120,7 +133,12 @@
                 },
                 "row_click": {
                     "type": "string",
-                    "enum": ["none", "edit_page", "edit_modal", "edit_drawer"],
+                    "enum": [
+                        "none",
+                        "edit_page",
+                        "edit_modal",
+                        "edit_drawer"
+                    ],
                     "description": "Optional tab-level override for row click behavior."
                 },
                 "columns": {
@@ -164,10 +182,11 @@
                     }
                 }
             },
-            "additionalProperties": false
+            "additionalProperties": false,
+            "description": "List tab panel definition with optional scope, columns, filters, and bulk action overrides."
         },
         "validationRules": {
-            "description": "Laravel validation rules as a pipe-separated string or list of strings (same as form composition).",
+            "description": "Laravel validation rules as a pipe-delimited string or string array.",
             "oneOf": [
                 {
                     "type": "string"
@@ -182,14 +201,16 @@
         },
         "listActionsBlock": {
             "type": "object",
-            "description": "Header actions (list page toolbar). Each value is one button.",
+            "description": "Header toolbar actions map keyed by action id.",
             "additionalProperties": {
                 "$ref": "#/$defs/headerActionEntry"
             }
         },
         "headerActionEntry": {
             "type": "object",
-            "required": ["label"],
+            "required": [
+                "label"
+            ],
             "properties": {
                 "label": {
                     "type": "string",
@@ -236,23 +257,35 @@
             },
             "oneOf": [
                 {
-                    "required": ["action"],
+                    "required": [
+                        "action"
+                    ],
                     "not": {
-                        "required": ["href"]
+                        "required": [
+                            "href"
+                        ]
                     }
                 },
                 {
-                    "required": ["href"],
+                    "required": [
+                        "href"
+                    ],
                     "not": {
-                        "required": ["action"]
+                        "required": [
+                            "action"
+                        ]
                     }
                 }
             ],
-            "additionalProperties": false
+            "additionalProperties": false,
+            "description": "List header action definition. Requires exactly one of `action` or `href`."
         },
         "bulkActionDefinition": {
             "type": "object",
-            "required": ["label", "action"],
+            "required": [
+                "label",
+                "action"
+            ],
             "properties": {
                 "label": {
                     "type": "string",
@@ -284,11 +317,14 @@
                     "$ref": "#/$defs/actionInactiveUntil"
                 }
             },
-            "additionalProperties": false
+            "additionalProperties": false,
+            "description": "Bulk action definition for selected table rows."
         },
         "editFormFieldDefinition": {
             "type": "object",
-            "required": ["type"],
+            "required": [
+                "type"
+            ],
             "properties": {
                 "type": {
                     "type": "string",
@@ -308,7 +344,8 @@
                     ]
                 }
             },
-            "additionalProperties": false
+            "additionalProperties": false,
+            "description": "Embedded edit field type definition used by column edit forms."
         },
         "buttonVariant": {
             "type": "string",
@@ -320,7 +357,8 @@
                 "destructive",
                 "link",
                 "primary"
-            ]
+            ],
+            "description": "Supported button style variants."
         },
         "successRedirect": {
             "oneOf": [
@@ -339,14 +377,17 @@
                 },
                 {
                     "type": "boolean",
-                    "enum": [true],
+                    "enum": [
+                        true
+                    ],
                     "description": "Alias for list (redirect to entity index after success)."
                 }
-            ]
+            ],
+            "description": "Post-action redirect target keyword, or `true` as alias for `list`."
         },
         "actionInactiveUntil": {
             "type": "object",
-            "description": "Disables the action until one or more predicates become true.",
+            "description": "Action gating definition that disables actions until predicates pass.",
             "properties": {
                 "all": {
                     "type": "array",
@@ -368,8 +409,16 @@
                 }
             },
             "anyOf": [
-                { "required": ["all"] },
-                { "required": ["any"] }
+                {
+                    "required": [
+                        "all"
+                    ]
+                },
+                {
+                    "required": [
+                        "any"
+                    ]
+                }
             ],
             "additionalProperties": false
         },
@@ -377,7 +426,9 @@
             "oneOf": [
                 {
                     "type": "object",
-                    "required": ["form.dirty"],
+                    "required": [
+                        "form.dirty"
+                    ],
                     "properties": {
                         "form.dirty": {
                             "type": "boolean"
@@ -387,14 +438,19 @@
                 },
                 {
                     "type": "object",
-                    "required": ["form.mode_in"],
+                    "required": [
+                        "form.mode_in"
+                    ],
                     "properties": {
                         "form.mode_in": {
                             "type": "array",
                             "minItems": 1,
                             "items": {
                                 "type": "string",
-                                "enum": ["create", "edit"]
+                                "enum": [
+                                    "create",
+                                    "edit"
+                                ]
                             }
                         }
                     },
@@ -402,7 +458,9 @@
                 },
                 {
                     "type": "object",
-                    "required": ["list.selection.min"],
+                    "required": [
+                        "list.selection.min"
+                    ],
                     "properties": {
                         "list.selection.min": {
                             "type": "integer",
@@ -413,7 +471,9 @@
                 },
                 {
                     "type": "object",
-                    "required": ["list.search_present"],
+                    "required": [
+                        "list.search_present"
+                    ],
                     "properties": {
                         "list.search_present": {
                             "type": "boolean"
@@ -423,7 +483,9 @@
                 },
                 {
                     "type": "object",
-                    "required": ["list.filters_applied"],
+                    "required": [
+                        "list.filters_applied"
+                    ],
                     "properties": {
                         "list.filters_applied": {
                             "type": "boolean"
@@ -431,11 +493,12 @@
                     },
                     "additionalProperties": false
                 }
-            ]
+            ],
+            "description": "Single predicate used by `enabled_if` or `visible_if` gating rules."
         },
         "listColumnType": {
             "type": "string",
-            "description": "Raw YAML column types; date and datetime are normalized for data-table display and filters.",
+            "description": "Raw YAML column types before list-specific rendering and filter normalization.",
             "enum": [
                 "text",
                 "select",
@@ -449,7 +512,10 @@
         },
         "columnOption": {
             "type": "object",
-            "required": ["value", "label"],
+            "required": [
+                "value",
+                "label"
+            ],
             "properties": {
                 "value": {
                     "type": "string",
@@ -466,11 +532,19 @@
                     "type": "string"
                 }
             },
-            "additionalProperties": false
+            "additionalProperties": false,
+            "description": "Column option object with value, label, and optional status metadata."
         },
         "optionStatus": {
             "type": "string",
-            "enum": ["success", "pending", "warning", "error", "info"]
+            "enum": [
+                "success",
+                "pending",
+                "warning",
+                "error",
+                "info"
+            ],
+            "description": "Status token used by option badges and chips."
         },
         "columnOptions": {
             "oneOf": [
@@ -487,11 +561,14 @@
                         "type": "string"
                     }
                 }
-            ]
+            ],
+            "description": "Column options as an array of option objects or keyed map form."
         },
         "columnActionButton": {
             "type": "object",
-            "required": ["label"],
+            "required": [
+                "label"
+            ],
             "properties": {
                 "label": {
                     "type": "string",
@@ -523,111 +600,249 @@
             },
             "oneOf": [
                 {
-                    "required": ["action"],
+                    "required": [
+                        "action"
+                    ],
                     "not": {
-                        "required": ["href"]
+                        "required": [
+                            "href"
+                        ]
                     }
                 },
                 {
-                    "required": ["href"],
+                    "required": [
+                        "href"
+                    ],
                     "not": {
-                        "required": ["action"]
+                        "required": [
+                            "action"
+                        ]
                     }
                 }
             ],
-            "additionalProperties": false
+            "additionalProperties": false,
+            "description": "Per-row action button definition used in `actions` columns."
         },
         "columnSharedProps": {
             "type": "object",
             "properties": {
-                "id": { "type": "string" },
-                "label": { "type": "string", "minLength": 1 },
-                "sortable": { "type": "boolean" },
-                "searchable": { "type": "boolean" },
-                "editable": { "type": "boolean" },
-                "detailDrawer": { "type": "boolean" },
-                "invisible": { "type": "boolean" },
-                "truncate": { "type": "integer", "minimum": 1 }
-            }
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "sortable": {
+                    "type": "boolean"
+                },
+                "searchable": {
+                    "type": "boolean"
+                },
+                "editable": {
+                    "type": "boolean"
+                },
+                "detailDrawer": {
+                    "type": "boolean"
+                },
+                "invisible": {
+                    "type": "boolean"
+                },
+                "truncate": {
+                    "type": "integer",
+                    "minimum": 1
+                }
+            },
+            "description": "Shared column properties used across all column type variants."
         },
         "columnDefinition": {
-            "description": "Discriminated union: select/relation/actions/date have required keys; text/badge/status may omit type (defaults to text in runtime).",
+            "description": "Discriminated column union keyed by `type`, with text-like fallback when omitted.",
             "oneOf": [
-                { "$ref": "#/$defs/columnSelect" },
-                { "$ref": "#/$defs/columnRelation" },
-                { "$ref": "#/$defs/columnActions" },
-                { "$ref": "#/$defs/columnDate" },
-                { "$ref": "#/$defs/columnGeneric" }
+                {
+                    "$ref": "#/$defs/columnSelect"
+                },
+                {
+                    "$ref": "#/$defs/columnRelation"
+                },
+                {
+                    "$ref": "#/$defs/columnActions"
+                },
+                {
+                    "$ref": "#/$defs/columnDate"
+                },
+                {
+                    "$ref": "#/$defs/columnGeneric"
+                }
             ]
         },
         "columnSelect": {
             "type": "object",
-            "required": ["type", "label", "options"],
+            "required": [
+                "type",
+                "label",
+                "options"
+            ],
             "properties": {
-                "id": { "type": "string" },
-                "type": { "const": "select" },
-                "label": { "type": "string", "minLength": 1 },
-                "options": { "$ref": "#/$defs/columnOptions" },
-                "sortable": { "type": "boolean" },
-                "searchable": { "type": "boolean" },
-                "editable": { "type": "boolean" },
-                "required": { "type": "boolean" },
-                "rules": { "$ref": "#/$defs/validationRules" },
-                "detailDrawer": { "type": "boolean" },
-                "invisible": { "type": "boolean" },
-                "truncate": { "type": "integer", "minimum": 1 }
-                ,
-                "edit_form_field": { "$ref": "#/$defs/editFormFieldDefinition" },
-                "editFormField": { "$ref": "#/$defs/editFormFieldDefinition" }
+                "id": {
+                    "type": "string"
+                },
+                "type": {
+                    "const": "select"
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "options": {
+                    "$ref": "#/$defs/columnOptions"
+                },
+                "sortable": {
+                    "type": "boolean"
+                },
+                "searchable": {
+                    "type": "boolean"
+                },
+                "editable": {
+                    "type": "boolean"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "rules": {
+                    "$ref": "#/$defs/validationRules"
+                },
+                "detailDrawer": {
+                    "type": "boolean"
+                },
+                "invisible": {
+                    "type": "boolean"
+                },
+                "truncate": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "edit_form_field": {
+                    "$ref": "#/$defs/editFormFieldDefinition"
+                },
+                "editFormField": {
+                    "$ref": "#/$defs/editFormFieldDefinition"
+                }
             },
-            "additionalProperties": false
+            "additionalProperties": false,
+            "description": "Select-style column definition with options and optional relation metadata."
         },
         "columnRelation": {
             "type": "object",
-            "required": ["type", "label", "relation"],
+            "required": [
+                "type",
+                "label",
+                "relation"
+            ],
             "properties": {
-                "id": { "type": "string" },
-                "type": { "const": "relation" },
-                "label": { "type": "string", "minLength": 1 },
-                "relation": { "type": "string", "minLength": 1 },
-                "relation_name": { "type": "string", "minLength": 1 },
-                "relationName": { "type": "string", "minLength": 1 },
-                "relation_value": { "type": "string", "minLength": 1 },
-                "relationValue": { "type": "string", "minLength": 1 },
-                "options": { "$ref": "#/$defs/columnOptions" },
-                "sortable": { "type": "boolean" },
-                "searchable": { "type": "boolean" },
-                "editable": { "type": "boolean" },
-                "required": { "type": "boolean" },
-                "rules": { "$ref": "#/$defs/validationRules" },
-                "detailDrawer": { "type": "boolean" },
-                "invisible": { "type": "boolean" },
-                "truncate": { "type": "integer", "minimum": 1 }
-                ,
-                "edit_form_field": { "$ref": "#/$defs/editFormFieldDefinition" },
-                "editFormField": { "$ref": "#/$defs/editFormFieldDefinition" }
+                "id": {
+                    "type": "string"
+                },
+                "type": {
+                    "const": "relation"
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "relation": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "relation_name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "relationName": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "relation_value": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "relationValue": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "options": {
+                    "$ref": "#/$defs/columnOptions"
+                },
+                "sortable": {
+                    "type": "boolean"
+                },
+                "searchable": {
+                    "type": "boolean"
+                },
+                "editable": {
+                    "type": "boolean"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "rules": {
+                    "$ref": "#/$defs/validationRules"
+                },
+                "detailDrawer": {
+                    "type": "boolean"
+                },
+                "invisible": {
+                    "type": "boolean"
+                },
+                "truncate": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "edit_form_field": {
+                    "$ref": "#/$defs/editFormFieldDefinition"
+                },
+                "editFormField": {
+                    "$ref": "#/$defs/editFormFieldDefinition"
+                }
             },
             "allOf": [
                 {
                     "anyOf": [
                         {
-                            "required": ["relation_name", "relation_value"]
+                            "required": [
+                                "relation_name",
+                                "relation_value"
+                            ]
                         },
                         {
-                            "required": ["relationName", "relationValue"]
+                            "required": [
+                                "relationName",
+                                "relationValue"
+                            ]
                         }
                     ]
                 }
             ],
-            "additionalProperties": false
+            "additionalProperties": false,
+            "description": "Relation column definition for displaying related model values."
         },
         "columnActions": {
             "type": "object",
-            "required": ["type", "label", "actions"],
+            "required": [
+                "type",
+                "label",
+                "actions"
+            ],
             "properties": {
-                "id": { "type": "string" },
-                "type": { "const": "actions" },
-                "label": { "type": "string", "minLength": 1 },
+                "id": {
+                    "type": "string"
+                },
+                "type": {
+                    "const": "actions"
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
                 "actions": {
                     "type": "array",
                     "minItems": 1,
@@ -635,118 +850,247 @@
                         "$ref": "#/$defs/columnActionButton"
                     }
                 },
-                "sortable": { "type": "boolean" },
-                "searchable": { "type": "boolean" },
-                "editable": { "type": "boolean" },
-                "required": { "type": "boolean" },
-                "rules": { "$ref": "#/$defs/validationRules" },
-                "detailDrawer": { "type": "boolean" },
-                "invisible": { "type": "boolean" },
-                "truncate": { "type": "integer", "minimum": 1 }
-                ,
-                "edit_form_field": { "$ref": "#/$defs/editFormFieldDefinition" },
-                "editFormField": { "$ref": "#/$defs/editFormFieldDefinition" }
+                "sortable": {
+                    "type": "boolean"
+                },
+                "searchable": {
+                    "type": "boolean"
+                },
+                "editable": {
+                    "type": "boolean"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "rules": {
+                    "$ref": "#/$defs/validationRules"
+                },
+                "detailDrawer": {
+                    "type": "boolean"
+                },
+                "invisible": {
+                    "type": "boolean"
+                },
+                "truncate": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "edit_form_field": {
+                    "$ref": "#/$defs/editFormFieldDefinition"
+                },
+                "editFormField": {
+                    "$ref": "#/$defs/editFormFieldDefinition"
+                }
             },
-            "additionalProperties": false
+            "additionalProperties": false,
+            "description": "Actions column definition containing one or more row action buttons."
         },
         "columnDate": {
             "type": "object",
-            "required": ["type", "label"],
+            "required": [
+                "type",
+                "label"
+            ],
             "properties": {
-                "id": { "type": "string" },
+                "id": {
+                    "type": "string"
+                },
                 "type": {
                     "type": "string",
-                    "enum": ["date", "datetime"]
+                    "enum": [
+                        "date",
+                        "datetime"
+                    ]
                 },
-                "label": { "type": "string", "minLength": 1 },
-                "format": { "type": "string" },
-                "timezone": { "type": "string" },
-                "sortable": { "type": "boolean" },
-                "searchable": { "type": "boolean" },
-                "editable": { "type": "boolean" },
-                "required": { "type": "boolean" },
-                "rules": { "$ref": "#/$defs/validationRules" },
-                "detailDrawer": { "type": "boolean" },
-                "invisible": { "type": "boolean" },
-                "truncate": { "type": "integer", "minimum": 1 }
-                ,
-                "edit_form_field": { "$ref": "#/$defs/editFormFieldDefinition" },
-                "editFormField": { "$ref": "#/$defs/editFormFieldDefinition" }
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "format": {
+                    "type": "string"
+                },
+                "timezone": {
+                    "type": "string"
+                },
+                "sortable": {
+                    "type": "boolean"
+                },
+                "searchable": {
+                    "type": "boolean"
+                },
+                "editable": {
+                    "type": "boolean"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "rules": {
+                    "$ref": "#/$defs/validationRules"
+                },
+                "detailDrawer": {
+                    "type": "boolean"
+                },
+                "invisible": {
+                    "type": "boolean"
+                },
+                "truncate": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "edit_form_field": {
+                    "$ref": "#/$defs/editFormFieldDefinition"
+                },
+                "editFormField": {
+                    "$ref": "#/$defs/editFormFieldDefinition"
+                }
             },
-            "additionalProperties": false
+            "additionalProperties": false,
+            "description": "Date or datetime column definition with format and range filtering options."
         },
         "columnGeneric": {
             "type": "object",
-            "required": ["label"],
+            "required": [
+                "label"
+            ],
             "properties": {
-                "id": { "type": "string" },
+                "id": {
+                    "type": "string"
+                },
                 "type": {
                     "type": "string",
-                    "enum": ["text", "badge", "status"]
+                    "enum": [
+                        "text",
+                        "badge",
+                        "status"
+                    ]
                 },
-                "label": { "type": "string", "minLength": 1 },
-                "format": { "type": "string" },
-                "timezone": { "type": "string" },
-                "sortable": { "type": "boolean" },
-                "searchable": { "type": "boolean" },
-                "editable": { "type": "boolean" },
-                "required": { "type": "boolean" },
-                "rules": { "$ref": "#/$defs/validationRules" },
-                "detailDrawer": { "type": "boolean" },
-                "invisible": { "type": "boolean" },
-                "truncate": { "type": "integer", "minimum": 1 }
-                ,
-                "edit_form_field": { "$ref": "#/$defs/editFormFieldDefinition" },
-                "editFormField": { "$ref": "#/$defs/editFormFieldDefinition" }
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "format": {
+                    "type": "string"
+                },
+                "timezone": {
+                    "type": "string"
+                },
+                "sortable": {
+                    "type": "boolean"
+                },
+                "searchable": {
+                    "type": "boolean"
+                },
+                "editable": {
+                    "type": "boolean"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "rules": {
+                    "$ref": "#/$defs/validationRules"
+                },
+                "detailDrawer": {
+                    "type": "boolean"
+                },
+                "invisible": {
+                    "type": "boolean"
+                },
+                "truncate": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "edit_form_field": {
+                    "$ref": "#/$defs/editFormFieldDefinition"
+                },
+                "editFormField": {
+                    "$ref": "#/$defs/editFormFieldDefinition"
+                }
             },
-            "additionalProperties": false
+            "additionalProperties": false,
+            "description": "Generic text-like column definition for text, badge, status, and similar display types."
         },
         "filterDefinition": {
             "oneOf": [
-                { "$ref": "#/$defs/filterSelect" },
-                { "$ref": "#/$defs/filterDate" },
-                { "$ref": "#/$defs/filterOverrides" }
-            ]
+                {
+                    "$ref": "#/$defs/filterSelect"
+                },
+                {
+                    "$ref": "#/$defs/filterDate"
+                },
+                {
+                    "$ref": "#/$defs/filterOverrides"
+                }
+            ],
+            "description": "Discriminated filter union keyed by `type`."
         },
         "filterSelect": {
             "type": "object",
-            "required": ["type"],
+            "required": [
+                "type"
+            ],
             "properties": {
-                "type": { "const": "select" },
-                "label": { "type": "string" },
-                "placeholder": { "type": "string" },
-                "multiple": { "type": "boolean" },
+                "type": {
+                    "const": "select"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "placeholder": {
+                    "type": "string"
+                },
+                "multiple": {
+                    "type": "boolean"
+                },
                 "options": {
                     "$ref": "#/$defs/columnOptions",
                     "description": "Optional filter-level options. When provided, these override column options."
                 }
             },
-            "additionalProperties": false
+            "additionalProperties": false,
+            "description": "Select filter definition with optional option overrides."
         },
         "filterDate": {
             "type": "object",
-            "required": ["type"],
+            "required": [
+                "type"
+            ],
             "properties": {
-                "type": { "const": "date" },
-                "label": { "type": "string" },
-                "placeholder": { "type": "string" },
+                "type": {
+                    "const": "date"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "placeholder": {
+                    "type": "string"
+                },
                 "mode": {
                     "type": "string",
-                    "enum": ["exact", "from"]
+                    "enum": [
+                        "exact",
+                        "from"
+                    ]
                 }
             },
-            "additionalProperties": false
+            "additionalProperties": false,
+            "description": "Date filter definition with optional min and max boundaries."
         },
         "filterOverrides": {
             "type": "object",
-            "description": "Label/placeholder overrides when filter type is inherited from the column (no type key).",
+            "description": "Label and placeholder overrides for inherited filter definitions.",
             "properties": {
-                "label": { "type": "string" },
-                "placeholder": { "type": "string" }
+                "label": {
+                    "type": "string"
+                },
+                "placeholder": {
+                    "type": "string"
+                }
             },
             "additionalProperties": false,
             "not": {
-                "required": ["type"]
+                "required": [
+                    "type"
+                ]
             }
         }
     }
