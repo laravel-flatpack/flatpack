@@ -7,6 +7,7 @@ import { FlatpackFormFields } from '@/components/flatpack-form/flatpack-form-fie
 import { FlatpackFormTopErrors } from '@/components/flatpack-form/flatpack-form-top-errors';
 import { useCompositionDebugLog } from '@/hooks/use-composition-debug-log';
 import { useFlatpackForm } from '@/hooks/use-flatpack-form';
+import { useInertiaLeaveGuard } from '@/hooks/use-inertia-leave-guard';
 import FlatpackLayout from '@/layouts/flatpack-layout';
 import type { FlatpackFormPageProps } from '@/types/pages/flatpack';
 
@@ -39,6 +40,9 @@ export default function FlatpackFormPage(props: FlatpackFormPageProps) {
         formProcessing,
     } = useFlatpackForm(props);
 
+    const { leaveGuardOpen, confirmLeave, cancelLeave } =
+        useInertiaLeaveGuard(isDirty);
+
     const displayName = name ?? entity;
     const pageTitle =
         mode === 'create' ? `Create ${displayName}` : `Edit ${displayName}`;
@@ -69,6 +73,19 @@ export default function FlatpackFormPage(props: FlatpackFormPageProps) {
                     runAction(pending.config);
                 }}
             />
+            <FlatpackConfirmDialog
+                open={leaveGuardOpen}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        cancelLeave();
+                    }
+                }}
+                title="Discard unsaved changes?"
+                description="You have unsaved changes. If you leave this page now, they will not be saved."
+                continueLabel="Leave page"
+                continueVariant="default"
+                onContinue={confirmLeave}
+            />
             <div className="flex flex-col gap-2">
                 <FlatpackPageHeader
                     title={pageTitle}
@@ -91,7 +108,7 @@ export default function FlatpackFormPage(props: FlatpackFormPageProps) {
 
                 <form
                     id={formId}
-                    className="flex flex-col gap-6 py-2 px-2"
+                    className="flex flex-col gap-6"
                     noValidate
                     onSubmit={handleSubmit}
                 >

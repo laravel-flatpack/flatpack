@@ -287,7 +287,7 @@ export function FlatpackFormFields({
                     <TabsContent
                         key={block.panelId}
                         value={block.panelId}
-                        className="flex flex-col gap-6 pt-4"
+                        className="flex flex-col gap-6 pt-4 px-2"
                     >
                         {renderFields(block.entries)}
                     </TabsContent>

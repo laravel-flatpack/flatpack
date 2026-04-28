@@ -33,6 +33,8 @@ vi.mock('@inertiajs/react', () => ({
     router: {
         post: hoisted.post,
         patch: hoisted.patch,
+        on: vi.fn(() => vi.fn()),
+        visit: vi.fn(),
     },
     usePage: () => ({
         props: {

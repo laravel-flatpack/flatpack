@@ -4,6 +4,7 @@ import type { FormEvent } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useFormFieldPresets } from '@/hooks/use-form-field-presets';
+import { bypassNextInertiaLeaveGuard } from '@/hooks/use-inertia-leave-guard';
 import { loadField } from '@/lib/form';
 import { firstErrorMessage } from '@/lib/form-errors';
 import {
@@ -261,6 +262,7 @@ export function useFlatpackForm({
             },
         };
 
+        bypassNextInertiaLeaveGuard();
         form.post(submitUrl, options);
     }, [entity, fields, form, formActions, mode, record]);
 
@@ -276,6 +278,7 @@ export function useFlatpackForm({
                 return;
             }
             setActionProcessing(true);
+            bypassNextInertiaLeaveGuard();
             router.post(
                 route('flatpack.entities.row-action', {
                     entity,
