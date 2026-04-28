@@ -11,6 +11,7 @@ use Flatpack\Composition\DefaultCompositionQuery;
 use Flatpack\Composition\EntityComposition;
 use Flatpack\Composition\YamlCompositionLoader;
 use Flatpack\Console\Commands\GenerateCompositionSchemaKeysCommand;
+use Flatpack\Console\Commands\MakeCompositionCommand;
 use Flatpack\Contracts\Authorization\FlatpackAuthorizer;
 use Flatpack\Contracts\Composition\CompositionLoader;
 use Flatpack\Contracts\Composition\CompositionQuery;
@@ -186,6 +187,7 @@ final class FlatpackServiceProvider extends ServiceProvider
     {
         $this->commands([
             GenerateCompositionSchemaKeysCommand::class,
+            MakeCompositionCommand::class,
         ]);
     }
 

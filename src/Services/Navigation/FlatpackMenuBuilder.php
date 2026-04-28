@@ -54,6 +54,37 @@ final readonly class FlatpackMenuBuilder implements MenuBuilder
     }
 
     /**
+     * @return array{main: list<MenuItem>, secondary: list<MenuItem>, bottom: list<MenuItem>}
+     */
+    public function resolveMenuItemsByBucket(bool $applyAuthorization = true): array
+    {
+        $buckets = $this->collectFilesystemBuckets($applyAuthorization);
+
+        $mainOverride = $this->config->get('flatpack.ui.navigation.main');
+        $main = match (true) {
+            $mainOverride === null => $buckets['main'],
+            is_array($mainOverride) => $this->menuFromConfig($mainOverride),
+            default => $buckets['main'],
+        };
+
+        $secondary = $this->resolveSidebarItems(
+            $this->config->get('flatpack.ui.navigation.secondary'),
+            $buckets['secondary'],
+        );
+
+        $bottom = $this->resolveSidebarItems(
+            $this->config->get('flatpack.ui.navigation.bottom'),
+            $buckets['bottom'],
+        );
+
+        return [
+            'main' => $this->sortMenuItems($main),
+            'secondary' => $this->sortMenuItems($secondary),
+            'bottom' => $this->sortMenuItems($bottom),
+        ];
+    }
+
+    /**
      * @param  array<int|string, mixed>  $items
      * @return list<MenuItem>
      */
@@ -89,7 +120,7 @@ final readonly class FlatpackMenuBuilder implements MenuBuilder
     /**
      * @return array{main: list<MenuItem>, secondary: list<MenuItem>, bottom: list<MenuItem>}
      */
-    private function collectFilesystemBuckets(): array
+    private function collectFilesystemBuckets(bool $applyAuthorization = true): array
     {
         $basePath = (string) $this->config->get('flatpack.composition.path', base_path('flatpack'));
         $buckets = [
@@ -114,7 +145,7 @@ final readonly class FlatpackMenuBuilder implements MenuBuilder
             }
 
             $list = $this->compositions->optional($entry, 'list');
-            if (! $this->canIncludeListInMenu($list)) {
+            if (! $this->canIncludeListInMenu($list, $applyAuthorization)) {
                 continue;
             }
 
@@ -202,6 +233,29 @@ final readonly class FlatpackMenuBuilder implements MenuBuilder
     }
 
     /**
+     * @param  list<MenuItem>  $filesystemItems
+     * @return list<MenuItem>
+     */
+    private function resolveSidebarItems(mixed $override, array $filesystemItems): array
+    {
+        if (! is_array($override)) {
+            return $filesystemItems;
+        }
+
+        $isWrapper = array_key_exists('items', $override) || array_key_exists('label', $override);
+        if (! $isWrapper) {
+            return $this->menuFromConfig($override);
+        }
+
+        $itemsConfig = $override['items'] ?? null;
+        if ($itemsConfig === null || ! is_array($itemsConfig)) {
+            return $filesystemItems;
+        }
+
+        return $this->menuFromConfig($itemsConfig);
+    }
+
+    /**
      * @param  list<MenuItem>  $items
      * @return array{label?: string, items: list<array<string, string>>}|null
      */
@@ -242,8 +296,12 @@ final readonly class FlatpackMenuBuilder implements MenuBuilder
     /**
      * @param  array<string, mixed>|null  $list
      */
-    private function canIncludeListInMenu(?array $list): bool
+    private function canIncludeListInMenu(?array $list, bool $applyAuthorization = true): bool
     {
+        if (! $applyAuthorization) {
+            return true;
+        }
+
         $modelClass = $this->compositionValues->modelClass($list);
         if (! is_string($modelClass) || trim($modelClass) === '') {
             return true;
