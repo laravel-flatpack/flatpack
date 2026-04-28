@@ -12,6 +12,7 @@ use Flatpack\Http\Requests\BulkActionRequest;
 use Flatpack\Http\Requests\ListActionRequest;
 use Flatpack\Http\Requests\ListRecordUpdateRequest;
 use Flatpack\Http\Requests\ReorderRequest;
+use Flatpack\Services\Lists\ActiveTabResolver;
 use Flatpack\Support\SuccessRedirect;
 use Flatpack\Support\SuccessRedirectSchema;
 use Illuminate\Http\JsonResponse;
@@ -22,6 +23,10 @@ final readonly class EntityActionController
     use HandlesListActions;
     use HandlesReorderRecord;
     use LoadsListComposition;
+
+    public function __construct(
+        private ActiveTabResolver $activeTabResolver,
+    ) {}
 
     public function bulkAction(BulkActionRequest $request, string $entity): RedirectResponse
     {
@@ -175,8 +180,12 @@ final readonly class EntityActionController
         string $record,
     ): JsonResponse {
         [$fallbackModelClass, $schema] = $this->listModelAndSchema($entity);
+        $requestedTabId = trim((string) $request->query('tab', ''));
+        $activeTab = $this->activeTabResolver->resolve($schema, $requestedTabId);
+        $effectiveSchema = $this->activeTabResolver->schemaForTab($schema, $activeTab);
+        $scope = trim((string) ($activeTab['scope'] ?? ''));
         $resolved = $this->resolveReorderSchemaAndModelClass(
-            schema: $schema,
+            schema: $effectiveSchema,
             fallbackModelClass: $fallbackModelClass,
         );
         if ($resolved instanceof JsonResponse) {
@@ -213,6 +222,7 @@ final readonly class EntityActionController
             modelClass: $modelClass,
             schema: $schema,
             model: $model,
+            scope: $scope !== '' ? $scope : null,
         );
         if ($reordered instanceof JsonResponse) {
             return $reordered;

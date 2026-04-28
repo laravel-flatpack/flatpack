@@ -79,6 +79,7 @@ trait HandlesReorderRecord
         string $modelClass,
         array $schema,
         Model $model,
+        ?string $scope = null,
     ): Model|JsonResponse {
         try {
             $reordered = $handler->handle(new FlatpackActionContext(
@@ -88,6 +89,7 @@ trait HandlesReorderRecord
                 modelClass: $modelClass,
                 record: $record,
                 compositionType: 'list',
+                scope: $scope,
                 schema: $schema,
                 model: $model,
             ));

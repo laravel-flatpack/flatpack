@@ -8,6 +8,8 @@ use Flatpack\Actions\FlatpackActionContext;
 use Flatpack\Contracts\Authorization\FlatpackAuthorizer;
 use Flatpack\Support\ReorderColumnResolver;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
@@ -61,37 +63,85 @@ final class ReorderActionHandler extends FlatpackActionHandler
             ));
         }
 
-        return DB::transaction(function () use ($column, $id, $modelClass, $newPosition): Model {
+        $scope = trim((string) ($context->scope ?? ''));
+
+        return DB::transaction(function () use ($column, $id, $modelClass, $newPosition, $scope): Model {
+            $scopedQuery = $this->applyScope($modelClass::query(), $modelClass, $scope);
+
             /** @var Model $record */
-            $record = $modelClass::query()
+            $record = (clone $scopedQuery)
                 ->lockForUpdate()
                 ->findOrFail($id);
 
-            $oldPosition = (int) $record->getAttribute($column);
-            $count = (int) $modelClass::query()->lockForUpdate()->count();
-            $newPosition = max(1, min($count, $newPosition));
+            /** @var EloquentCollection<int, Model> $lockedRows */
+            $lockedRows = (clone $scopedQuery)
+                ->lockForUpdate()
+                ->orderByRaw(
+                    '(CASE WHEN '
+                    . DB::connection()->getQueryGrammar()->wrap($column)
+                    . ' IS NULL THEN 1 ELSE 0 END) ASC'
+                )
+                ->orderBy($column, 'asc')
+                ->orderBy($record->getKeyName(), 'asc')
+                ->get();
 
-            if ($oldPosition === $newPosition) {
+            $orderedIds = $lockedRows
+                ->map(static fn (Model $row): string => (string) $row->getKey())
+                ->values()
+                ->all();
+            $oldIndex = array_search($id, $orderedIds, true);
+            if ($oldIndex === false) {
+                throw new ModelNotFoundException('Cannot reorder records: scoped record is missing.');
+            }
+            $count = count($orderedIds);
+            $targetIndex = max(0, min($count - 1, $newPosition - 1));
+            if ($oldIndex === $targetIndex) {
                 return $record;
             }
 
-            $quotedColumn = DB::connection()->getQueryGrammar()->wrap($column);
+            $movedId = $orderedIds[$oldIndex];
+            if ($movedId === null) {
+                throw new ModelNotFoundException('Cannot reorder records: record id is missing from ordered set.');
+            }
+            array_splice($orderedIds, $oldIndex, 1);
+            array_splice($orderedIds, $targetIndex, 0, [$movedId]);
 
-            if ($oldPosition < $newPosition) {
-                $modelClass::query()
-                    ->whereBetween($column, [$oldPosition + 1, $newPosition])
-                    ->update([$column => DB::raw($quotedColumn . ' - 1')]);
-            } else {
-                $modelClass::query()
-                    ->whereBetween($column, [$newPosition, $oldPosition - 1])
-                    ->update([$column => DB::raw($quotedColumn . ' + 1')]);
+            $idToPosition = [];
+            foreach ($orderedIds as $index => $orderedId) {
+                $idToPosition[$orderedId] = $index + 1;
             }
 
-            $record->setAttribute($column, $newPosition);
-            $record->save();
+            foreach ($lockedRows as $row) {
+                $rowId = (string) $row->getKey();
+                $nextPosition = $idToPosition[$rowId] ?? null;
+                if ($nextPosition === null) {
+                    continue;
+                }
+                if ((int) $row->getAttribute($column) === $nextPosition) {
+                    continue;
+                }
+                $row->setAttribute($column, $nextPosition);
+                $row->save();
+            }
 
             return $record->refresh();
         }, 3);
+    }
+
+    private function applyScope(Builder $query, string $modelClass, string $scope): Builder
+    {
+        if ($scope === '') {
+            return $query;
+        }
+
+        $scopeMethod = 'scope' . ucfirst($scope);
+        if (! method_exists($modelClass, $scopeMethod)) {
+            return $query;
+        }
+
+        $query->{$scope}();
+
+        return $query;
     }
 
     private function resolveReorderColumn(FlatpackActionContext $context): string

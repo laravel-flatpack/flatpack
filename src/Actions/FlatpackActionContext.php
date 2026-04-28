@@ -18,6 +18,7 @@ final readonly class FlatpackActionContext
         public string $modelClass,
         public ?string $record,
         public string $compositionType,
+        public ?string $scope = null,
         public ?array $schema = null,
         public ?object $model = null,
     ) {}

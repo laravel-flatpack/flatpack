@@ -921,6 +921,71 @@ YAML);
     }
 });
 
+test('flatpack entity reorder applies within active tab scope', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-list-reorder-tab-scope-' . uniqid('', true);
+
+    try {
+        Schema::table('posts', static function ($table): void {
+            $table->unsignedInteger('sort_order')->nullable();
+        });
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+reorderable: true
+columns:
+  id:
+    label: ID
+  title:
+    label: Title
+tabs:
+  records:
+    label: Records
+  drafts:
+    label: Drafts
+    scope: draftOnly
+YAML);
+        config()->set('flatpack.composition.path', $tempPath);
+
+        /** @var Post $active */
+        $active = Post::factory()->create(['title' => 'Active', 'status' => 'active', 'sort_order' => 1]);
+        /** @var Post $draftA */
+        $draftA = Post::factory()->create(['title' => 'Draft A', 'status' => 'draft', 'sort_order' => 2]);
+        /** @var Post $draftB */
+        $draftB = Post::factory()->create(['title' => 'Draft B', 'status' => 'draft', 'sort_order' => 3]);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        actingAs($user)
+            ->patch(route('flatpack.entities.row-reorder', [
+                'entity' => 'posts',
+                'record' => (string) $draftB->getKey(),
+                'tab' => 'drafts',
+            ]), [
+                'position' => 1,
+            ])
+            ->assertOk();
+
+        $payload = actingAs($user)
+            ->getJson(route('flatpack.entities.index', [
+                'entity' => 'posts',
+                'json' => true,
+                'tab' => 'drafts',
+            ]))
+            ->assertOk()
+            ->json();
+
+        expect(array_column($payload['records'], 'title'))->toBe([
+            'Draft B',
+            'Draft A',
+        ]);
+        expect((int) (Post::query()->find($active->getKey())?->sort_order ?? 0))->toBe(1);
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
 test('flatpack entity reorder returns validation error when reorder column is missing', function () {
     $tempPath = sys_get_temp_dir() . '/flatpack-list-reorder-missing-column-' . uniqid('', true);
 

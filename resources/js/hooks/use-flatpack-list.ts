@@ -517,12 +517,18 @@ export function useFlatpackList({
             if (record == null || record === '') {
                 return '';
             }
-            return route('flatpack.entities.row-reorder', {
+            const endpoint = route('flatpack.entities.row-reorder', {
                 entity,
                 record: String(record),
             });
+            const tab = listActiveTabId?.trim() ?? '';
+            if (tab === '') {
+                return endpoint;
+            }
+
+            return `${endpoint}?tab=${encodeURIComponent(tab)}`;
         },
-        [entity, modelKey],
+        [entity, listActiveTabId, modelKey],
     );
 
     const handleReorderError = useCallback(() => {

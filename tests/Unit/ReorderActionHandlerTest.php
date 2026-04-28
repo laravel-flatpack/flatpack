@@ -76,6 +76,21 @@ test('reorder action clamps target position to row count bounds', function () {
     expect((int) (Post::query()->find($third->getKey())?->sort_order ?? 0))->toBe(2);
 });
 
+test('reorder action normalizes sparse sort values before moving rows', function () {
+    $first = Post::factory()->create(['title' => 'First', 'sort_order' => 10]);
+    $second = Post::factory()->create(['title' => 'Second', 'sort_order' => 20]);
+    $third = Post::factory()->create(['title' => 'Third', 'sort_order' => 50]);
+
+    $record = app(ReorderActionHandler::class)->handle(reorderContext(
+        record: (string) $second->getKey(),
+        position: 1,
+    ));
+
+    expect((int) $record->sort_order)->toBe(1);
+    expect((int) (Post::query()->find($first->getKey())?->sort_order ?? 0))->toBe(2);
+    expect((int) (Post::query()->find($third->getKey())?->sort_order ?? 0))->toBe(3);
+});
+
 test('reorder action throws on unknown sort column', function () {
     Post::factory()->create(['title' => 'First', 'sort_order' => 1]);
 
