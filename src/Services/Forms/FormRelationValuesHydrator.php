@@ -374,9 +374,6 @@ final class FormRelationValuesHydrator
         }
 
         $cap = $fromYaml ?? $default;
-        if (config('flatpack.forms.enforce_relation_table_limit', true) !== true) {
-            return min($cap, $hard);
-        }
 
         return min($cap, $hard);
     }

@@ -137,19 +137,15 @@ final readonly class ListRecordsLoader
         ) {
             $sortableColumns[] = $defaultSortBy;
         }
-        $normalizedSorting = SortingProcessor::normalize(
+        $normalizedSorting = SortingProcessor::normalizeAndApply(
+            $query,
             $sortBy,
             $sortDirection,
             $sortableColumns,
             $model->getKeyName(),
+            $model->getQualifiedKeyName(),
             $defaultSortBy,
             $defaultSortDirection,
-        );
-        SortingProcessor::applyToQuery(
-            $query,
-            $normalizedSorting,
-            $model->getKeyName(),
-            $model->getQualifiedKeyName(),
         );
 
         /** @var LengthAwarePaginator<int, Model> $paginator */

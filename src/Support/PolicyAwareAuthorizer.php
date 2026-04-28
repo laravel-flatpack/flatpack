@@ -7,6 +7,7 @@ namespace Flatpack\Support;
 use Flatpack\Contracts\Authorization\FlatpackAuthorizer;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 
 final class PolicyAwareAuthorizer implements FlatpackAuthorizer
 {
@@ -36,8 +37,15 @@ final class PolicyAwareAuthorizer implements FlatpackAuthorizer
         $target = $model ?? new $modelClass;
 
         if (Gate::getPolicyFor($target) === null) {
-            return (bool) config('flatpack.security.authorization.allow_when_policy_missing', true)
-                && $this->canAccessPanel($user);
+            $allowWhenMissing = (bool) config('flatpack.security.authorization.allow_when_policy_missing', true);
+            if ($allowWhenMissing && app()->isProduction()) {
+                Log::warning(sprintf(
+                    'Flatpack: no policy registered for [%s] and allow_when_policy_missing=true in production. Register a policy or set FLATPACK_SECURITY_ALLOW_WHEN_POLICY_MISSING=false.',
+                    $target::class,
+                ));
+            }
+
+            return $allowWhenMissing && $this->canAccessPanel($user);
         }
 
         return Gate::forUser($user)->check($ability, $target);

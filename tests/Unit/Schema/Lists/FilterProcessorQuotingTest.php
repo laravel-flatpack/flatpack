@@ -18,6 +18,28 @@ beforeEach(function (): void {
     });
 });
 
+test('applyToQuery skips filter definitions whose column id contains non-alphanumeric characters', function (): void {
+    $definitions = [
+        new FilterDefinition(
+            id: 'title; DROP TABLE posts--',
+            label: 'Injected',
+            placeholder: '',
+            type: 'select',
+            multiple: false,
+            options: [['value' => 'x', 'label' => 'X']],
+        ),
+    ];
+    $values = ['title; DROP TABLE posts--' => 'x'];
+
+    Post::factory()->create(['title' => 'Safe', 'slug' => 'safe']);
+
+    $query = Post::query();
+    FilterProcessor::applyToQuery($query, $definitions, $values);
+
+    expect($query->count())->toBe(1);
+    // Query executed without exception — the bad id was silently skipped.
+});
+
 test('applyToQuery wraps reserved-word column identifiers for filters', function (): void {
     $definitions = [
         new FilterDefinition(

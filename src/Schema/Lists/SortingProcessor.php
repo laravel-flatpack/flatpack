@@ -52,9 +52,36 @@ final class SortingProcessor
     }
 
     /**
+     * @param  list<string>  $sortableColumns
+     * @return array{sort_by: string|null, sort_direction: 'asc'|'desc'|null}
+     */
+    public static function normalizeAndApply(
+        Builder $query,
+        ?string $sortBy,
+        string $sortDirection,
+        array $sortableColumns,
+        string $modelKeyName,
+        string $qualifiedModelKeyName,
+        ?string $defaultSortBy = null,
+        string $defaultSortDirection = 'desc',
+    ): array {
+        $sorting = self::normalize(
+            $sortBy,
+            $sortDirection,
+            $sortableColumns,
+            $modelKeyName,
+            $defaultSortBy,
+            $defaultSortDirection,
+        );
+        self::applyToQuery($query, $sorting, $modelKeyName, $qualifiedModelKeyName);
+
+        return $sorting;
+    }
+
+    /**
      * @param  array{sort_by: string|null, sort_direction: 'asc'|'desc'|null}  $sorting
      */
-    public static function applyToQuery(
+    private static function applyToQuery(
         Builder $query,
         array $sorting,
         string $modelKeyName,

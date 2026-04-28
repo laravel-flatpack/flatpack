@@ -18,6 +18,9 @@ final class SearchApplier
         }
 
         $query->where(function (Builder $nested) use ($searchableDefs, $searchTerm): void {
+            // Escape LIKE wildcards using '!' as the escape character (cross-DB safe).
+            $escaped = str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $searchTerm);
+            $pattern = '%' . $escaped . '%';
             $hasCondition = false;
             foreach ($searchableDefs as $def) {
                 if ($def->kind === 'relation') {
@@ -27,12 +30,14 @@ final class SearchApplier
                         continue;
                     }
                     if ($hasCondition) {
-                        $nested->orWhereHas($relation, function (Builder $relationQuery) use ($relationName, $searchTerm): void {
-                            $relationQuery->where($relationName, 'like', '%' . $searchTerm . '%');
+                        $nested->orWhereHas($relation, function (Builder $relationQuery) use ($relationName, $pattern): void {
+                            $wrapped = $relationQuery->getQuery()->getGrammar()->wrap($relationName);
+                            $relationQuery->whereRaw("{$wrapped} LIKE ? ESCAPE '!'", [$pattern]);
                         });
                     } else {
-                        $nested->whereHas($relation, function (Builder $relationQuery) use ($relationName, $searchTerm): void {
-                            $relationQuery->where($relationName, 'like', '%' . $searchTerm . '%');
+                        $nested->whereHas($relation, function (Builder $relationQuery) use ($relationName, $pattern): void {
+                            $wrapped = $relationQuery->getQuery()->getGrammar()->wrap($relationName);
+                            $relationQuery->whereRaw("{$wrapped} LIKE ? ESCAPE '!'", [$pattern]);
                         });
                     }
                     $hasCondition = true;
@@ -44,10 +49,11 @@ final class SearchApplier
                 if ($column === '') {
                     continue;
                 }
+                $wrapped = $nested->getQuery()->getGrammar()->wrap($column);
                 if (! $hasCondition) {
-                    $nested->where($column, 'like', '%' . $searchTerm . '%');
+                    $nested->whereRaw("{$wrapped} LIKE ? ESCAPE '!'", [$pattern]);
                 } else {
-                    $nested->orWhere($column, 'like', '%' . $searchTerm . '%');
+                    $nested->orWhereRaw("{$wrapped} LIKE ? ESCAPE '!'", [$pattern]);
                 }
                 $hasCondition = true;
             }
