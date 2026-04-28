@@ -181,11 +181,9 @@ final readonly class EntityActionController
     ): JsonResponse {
         [$fallbackModelClass, $schema] = $this->listModelAndSchema($entity);
         $requestedTabId = trim((string) $request->query('tab', ''));
-        $activeTab = $this->activeTabResolver->resolve($schema, $requestedTabId);
-        $effectiveSchema = $this->activeTabResolver->schemaForTab($schema, $activeTab);
-        $scope = trim((string) ($activeTab['scope'] ?? ''));
+        $resolvedTab = $this->activeTabResolver->resolveWithSchema($schema, $requestedTabId);
         $resolved = $this->resolveReorderSchemaAndModelClass(
-            schema: $effectiveSchema,
+            schema: $resolvedTab['effectiveSchema'],
             fallbackModelClass: $fallbackModelClass,
         );
         if ($resolved instanceof JsonResponse) {
@@ -222,7 +220,7 @@ final readonly class EntityActionController
             modelClass: $modelClass,
             schema: $schema,
             model: $model,
-            scope: $scope !== '' ? $scope : null,
+            scope: $resolvedTab['scope'],
         );
         if ($reordered instanceof JsonResponse) {
             return $reordered;

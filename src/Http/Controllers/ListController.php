@@ -40,14 +40,15 @@ final readonly class ListController
         $modelClass = $this->listModelClass($list);
         $this->ensureModelAbility($request, $modelClass, 'viewAny');
         $query = $this->listQueryFromRequest($request);
-        $activeTab = $this->activeTabResolver->resolve($schema, $query['tab']);
+        $resolvedTab = $this->activeTabResolver->resolveWithSchema($schema, $query['tab']);
+        $activeTab = $resolvedTab['activeTab'];
         $this->assertValidTabScope($modelClass, $activeTab);
-        $effectiveSchema = $this->activeTabResolver->schemaForTab($schema, $activeTab);
+        $effectiveSchema = $resolvedTab['effectiveSchema'];
         $result = $this->loadRecordsForList(
             $modelClass,
             $effectiveSchema,
             $query,
-            $activeTab['scope'] ?? null,
+            $resolvedTab['scope'],
         );
         $debugContext = FlatpackResponse::compositionDebugContextForEntity($entity, 'list.yaml');
         $debugLog = FlatpackResponse::compositionDebugLog($debugContext);

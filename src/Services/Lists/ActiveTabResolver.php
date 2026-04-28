@@ -11,6 +11,27 @@ final readonly class ActiveTabResolver
 {
     /**
      * @param  array<string, mixed>|null  $schema
+     * @return array{
+     *     activeTab: array{id: string, scope?: string, reorderable?: bool|string, reorderableColumn?: string, row_click?: string, columns?: mixed, filters?: mixed, bulk_actions?: mixed}|null,
+     *     effectiveSchema: array<string, mixed>|null,
+     *     scope: string|null
+     * }
+     */
+    public function resolveWithSchema(?array $schema, string $requestedTabId): array
+    {
+        $activeTab = $this->resolve($schema, $requestedTabId);
+        $effectiveSchema = $this->schemaForTab($schema, $activeTab);
+        $scope = trim((string) ($activeTab['scope'] ?? ''));
+
+        return [
+            'activeTab' => $activeTab,
+            'effectiveSchema' => $effectiveSchema,
+            'scope' => $scope !== '' ? $scope : null,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $schema
      * @return array{id: string, scope?: string, reorderable?: bool|string, reorderableColumn?: string, row_click?: string, columns?: mixed, filters?: mixed, bulk_actions?: mixed}|null
      */
     public function resolve(?array $schema, string $requestedTabId): ?array

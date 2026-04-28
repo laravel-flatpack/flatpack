@@ -71,3 +71,26 @@ test('schemaForTab merges tab overrides onto base schema', function (): void {
     expect($out['columns'])->toHaveKey('title')
         ->and($out['filters'])->toBe([]);
 });
+
+test('resolveWithSchema returns active tab effective schema and scope', function (): void {
+    $resolver = new ActiveTabResolver();
+    $schema = [
+        'columns' => ['id' => ['label' => 'ID']],
+        'tabs' => [
+            'records' => ['label' => 'Records'],
+            'drafts' => [
+                'label' => 'Drafts',
+                'scope' => 'draftOnly',
+                'columns' => ['title' => ['label' => 'Title']],
+            ],
+        ],
+    ];
+
+    $resolved = $resolver->resolveWithSchema($schema, 'drafts');
+
+    expect($resolved['activeTab'])->not->toBeNull()
+        ->and($resolved['activeTab']['id'])->toBe('drafts')
+        ->and($resolved['scope'])->toBe('draftOnly')
+        ->and($resolved['effectiveSchema'])->toBeArray()
+        ->and($resolved['effectiveSchema']['columns'])->toHaveKey('title');
+});
