@@ -65,7 +65,7 @@ final class ReorderActionHandler extends FlatpackActionHandler
 
         $scope = trim((string) ($context->scope ?? ''));
 
-        return DB::transaction(function () use ($column, $id, $modelClass, $newPosition, $scope): Model {
+        return DB::transaction(function () use ($column, $id, $modelClass, $newPosition, $scope, $table): Model {
             $scopedQuery = $this->applyScope($modelClass::query(), $modelClass, $scope);
 
             /** @var Model $record */
@@ -111,17 +111,45 @@ final class ReorderActionHandler extends FlatpackActionHandler
                 $idToPosition[$orderedId] = $index + 1;
             }
 
+            $currentPositionById = [];
             foreach ($lockedRows as $row) {
                 $rowId = (string) $row->getKey();
-                $nextPosition = $idToPosition[$rowId] ?? null;
-                if ($nextPosition === null) {
+                $currentPositionById[$rowId] = (int) $row->getAttribute($column);
+            }
+
+            $changedIds = [];
+            $caseFragments = [];
+            $bindings = [];
+            foreach ($idToPosition as $rowId => $nextPosition) {
+                $currentPosition = $currentPositionById[$rowId] ?? null;
+                if ($currentPosition === null || $currentPosition === $nextPosition) {
                     continue;
                 }
-                if ((int) $row->getAttribute($column) === $nextPosition) {
-                    continue;
-                }
-                $row->setAttribute($column, $nextPosition);
-                $row->save();
+                $changedIds[] = $rowId;
+                $caseFragments[] = 'WHEN ? THEN ?';
+                $bindings[] = $rowId;
+                $bindings[] = $nextPosition;
+            }
+
+            if ($changedIds !== []) {
+                $connection = DB::connection();
+                $grammar = $connection->getQueryGrammar();
+                $keyColumn = $record->getKeyName();
+                $wrappedTable = $grammar->wrapTable($table);
+                $wrappedKey = $grammar->wrap($keyColumn);
+                $wrappedReorderColumn = $grammar->wrap($column);
+                $inPlaceholders = implode(', ', array_fill(0, count($changedIds), '?'));
+                $sql = sprintf(
+                    'UPDATE %s SET %s = CASE %s %s ELSE %s END WHERE %s IN (%s)',
+                    $wrappedTable,
+                    $wrappedReorderColumn,
+                    $wrappedKey,
+                    implode(' ', $caseFragments),
+                    $wrappedReorderColumn,
+                    $wrappedKey,
+                    $inPlaceholders,
+                );
+                $connection->update($sql, array_merge($bindings, $changedIds));
             }
 
             return $record->refresh();
