@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/collapsible';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import DemoLayout from '@/layouts/demo-layout';
+import DocsLayout from '@/layouts/docs-layout';
 import type {
     SchemaNodeDoc,
     SchemaPageProps,
@@ -185,11 +186,11 @@ function SchemaPage() {
     const { document } = usePage<SchemaPageProps>().props;
 
     return (
-        <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 p-4 md:p-6">
+        <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 py-6">
             <Head title={`Schema - ${document.id}`} />
             <div className="flex items-center justify-between gap-3">
                 <div className="flex flex-col gap-1">
-                    <h1 className="text-2xl font-semibold tracking-tight">
+                    <h1 className="text-2xl font-black tracking-tight mb-4">
                         {document.title}
                     </h1>
                     {document.description ? (
@@ -197,26 +198,6 @@ function SchemaPage() {
                             {document.description}
                         </p>
                     ) : null}
-                </div>
-                <div className="flex items-center gap-2">
-                    <Link href={route('flatpack.schema.form')}>
-                        <Badge
-                            variant={
-                                document.id === 'form' ? 'default' : 'outline'
-                            }
-                        >
-                            form schema
-                        </Badge>
-                    </Link>
-                    <Link href={route('flatpack.schema.list')}>
-                        <Badge
-                            variant={
-                                document.id === 'list' ? 'default' : 'outline'
-                            }
-                        >
-                            list schema
-                        </Badge>
-                    </Link>
                 </div>
             </div>
 
@@ -318,6 +299,6 @@ function SchemaPage() {
     );
 }
 
-SchemaPage.layout = (page: ReactNode) => <DemoLayout>{page}</DemoLayout>;
+SchemaPage.layout = (page: ReactNode) => <DocsLayout>{page}</DocsLayout>;
 
 export default SchemaPage;

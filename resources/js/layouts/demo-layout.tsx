@@ -1,8 +1,8 @@
 import { TooltipProvider } from '@/components/ui/tooltip';
 
 /**
- * Providers-only shell for the components demo (no sidebar, header, or other
- * Flatpack chrome). Add any shared providers here if demo fields need them.
+ * Providers-only shell for the components demo page.
+ * No sidebar, header, or other Flatpack chrome.
  */
 export default function DemoLayout({
     children,
