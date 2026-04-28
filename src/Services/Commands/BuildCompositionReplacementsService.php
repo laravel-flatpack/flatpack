@@ -19,7 +19,7 @@ final class BuildCompositionReplacementsService
 
         $attributes = ModelCompositionDefaults::findAttributes(new $input->modelClass());
         $fields = $input->includeAutoFields ? ModelCompositionDefaults::guessFormFields($attributes) : [];
-        $columns = $input->includeAutoColumns ? ModelCompositionDefaults::guessTableColumns($attributes) : [];
+        $columns = $input->includeAutoColumns ? $this->buildTablePageView($input, $attributes) : [];
 
         return [
             '{{ DummyModel }}' => $input->modelClass,
@@ -34,8 +34,48 @@ final class BuildCompositionReplacementsService
             '{{ DummyListActionsDefinition }}' => $this->listActionsDefinition($input, $entityLabel),
             '{{ DummyBulkActionsDefinition }}' => $this->bulkActionsDefinition($input, $entitiesLabel),
             '{{ DummyFieldsDefinition }}' => Yaml::dump(['fields' => $fields], PHP_INT_MAX, 2),
-            '{{ DummyColumnsDefinition }}' => Yaml::dump(['columns' => $columns], PHP_INT_MAX, 2),
+            '{{ DummyColumnsDefinition }}' => Yaml::dump($columns, PHP_INT_MAX, 2),
         ];
+    }
+
+    private function buildTablePageView(MakeCompositionInput $input, array $attributes): array
+    {
+        if ($input->includeSoftDeleteActions) {
+            return [
+                'columns' => ModelCompositionDefaults::guessTableColumns($attributes),
+                'tabs' => [
+                    'records' => [
+                        'label' => 'Records',
+                        'icon' => 'table',
+                    ],
+                    'trashed' => [
+                        'label' => 'Trashed',
+                        'icon' => 'trash',
+                        'scope' => 'onlyTrashed',
+                        'row_click' => 'none',
+                        'reorderable' => false,
+                        'bulk_actions' => [
+                            'restore' => [
+                                'label' => 'Restore',
+                                'action' => 'restore',
+                                'variant' => 'secondary',
+                                'icon' => 'refresh-cw',
+                                'confirm' => true,
+                            ],
+                            'force_delete' => [
+                                'label' => 'Force Delete',
+                                'action' => 'force_delete',
+                                'variant' => 'destructive',
+                                'icon' => 'trash',
+                                'confirm' => true,
+                            ],
+                        ]
+                    ],
+                ]
+            ];
+        }
+
+        return ['columns' => ModelCompositionDefaults::guessTableColumns($attributes)];
     }
 
     private function formActionsDefinition(MakeCompositionInput $input, string $entityLabel): string
@@ -94,25 +134,6 @@ final class BuildCompositionReplacementsService
                 'icon' => 'trash',
                 'confirm' => true,
                 'success_message' => "{$entitiesLabel} deleted",
-            ];
-        }
-
-        if ($input->includeSoftDeleteActions) {
-            $bulkActions['restore'] = [
-                'label' => 'Restore',
-                'action' => 'restore',
-                'variant' => 'secondary',
-                'icon' => 'refresh-cw',
-                'confirm' => true,
-                'success_message' => "{$entitiesLabel} restored",
-            ];
-            $bulkActions['force_delete'] = [
-                'label' => 'Force Delete',
-                'action' => 'force_delete',
-                'variant' => 'destructive',
-                'icon' => 'trash',
-                'confirm' => true,
-                'success_message' => "{$entitiesLabel} permanently deleted",
             ];
         }
 
