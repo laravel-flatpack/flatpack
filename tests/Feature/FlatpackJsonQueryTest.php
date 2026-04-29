@@ -23,6 +23,7 @@ test('flatpack dashboard returns minimal JSON resource when json query is true a
 
     expect($payload)->toBe([
         'schema' => null,
+        'widgets' => [],
         'composition_debug' => [],
     ]);
 });
@@ -181,8 +182,8 @@ test('flatpack demo returns JSON catalog when json query is true', function () {
     actingAs($user)
         ->getJson(route('flatpack.demo.components', ['json' => true]))
         ->assertOk()
-        ->assertJsonStructure(['catalog'])
-        ->assertJsonPath('catalog.0.id', 'text');
+        ->assertJsonStructure(['fieldsCatalog', 'widgetsCatalog'])
+        ->assertJsonPath('fieldsCatalog.0.id', 'text');
 });
 
 test('flatpack schema form docs return normalized JSON when json query is true', function () {

@@ -637,9 +637,16 @@ describe('list composition schema (resources/schema/list.json)', function () {
     });
 });
 
-describe('dashboard composition schema (resources/schema/dashboard.json)', function () {
-    it('accepts root-level widgets', function () {
-        $errors = CompositionSchemaAsserter::validateDashboard([
+describe('widget schema contracts', function () {
+    it('accepts root-level widgets in list composition', function () {
+        $errors = CompositionSchemaAsserter::validateList([
+            'columns' => [
+                [
+                    'id' => 'title',
+                    'type' => 'text',
+                    'label' => 'Title',
+                ],
+            ],
             'widgets' => [
                 'revenue' => [
                     'type' => 'metric',
@@ -659,22 +666,31 @@ describe('dashboard composition schema (resources/schema/dashboard.json)', funct
         expect($errors)->toBeEmpty();
     });
 
-    it('accepts tabs with nested widgets', function () {
-        $errors = CompositionSchemaAsserter::validateDashboard([
-            'tabs' => [
-                'overview' => [
-                    'label' => 'Overview',
-                    'widgets' => [
-                        'revenue' => [
+    it('accepts form widget field with nested widget map', function () {
+        $errors = CompositionSchemaAsserter::validateForm([
+            'fields' => [
+                'total_revenue_widget' => [
+                    'type' => 'widget',
+                    'label' => 'Total Revenue',
+                    'helperText' => 'Revenue for the last 6 months',
+                    'widget' => [
+                        'total_revenue' => [
                             'type' => 'metric',
-                            'provider' => 'total_revenue',
+                            'provider' => 'demo_total_revenue',
                             'label' => 'Total Revenue',
+                            'description' => 'Revenue trend for the last 6 months',
                             'value_format' => [
                                 'kind' => 'currency',
                                 'currency' => 'USD',
+                                'maximumFractionDigits' => 2,
                             ],
                             'period' => [
                                 'kind' => 'month',
+                                'lookback' => 6,
+                                'label' => 'this month',
+                            ],
+                            'trend' => [
+                                'precision' => 1,
                             ],
                         ],
                     ],
@@ -685,23 +701,25 @@ describe('dashboard composition schema (resources/schema/dashboard.json)', funct
         expect($errors)->toBeEmpty();
     });
 
-    it('rejects metric widget without provider', function () {
-        $errors = CompositionSchemaAsserter::validateDashboard([
-            'tabs' => [
-                'overview' => [
-                    'label' => 'Overview',
-                    'widgets' => [
-                        'revenue' => [
-                            'type' => 'metric',
-                            'label' => 'Total Revenue',
-                            'value_format' => [
-                                'kind' => 'currency',
-                                'currency' => 'USD',
-                            ],
-                            'period' => [
-                                'kind' => 'month',
-                            ],
-                        ],
+    it('rejects metric widget without provider in list widgets', function () {
+        $errors = CompositionSchemaAsserter::validateList([
+            'columns' => [
+                [
+                    'id' => 'title',
+                    'type' => 'text',
+                    'label' => 'Title',
+                ],
+            ],
+            'widgets' => [
+                'revenue' => [
+                    'type' => 'metric',
+                    'label' => 'Total Revenue',
+                    'value_format' => [
+                        'kind' => 'currency',
+                        'currency' => 'USD',
+                    ],
+                    'period' => [
+                        'kind' => 'month',
                     ],
                 ],
             ],

@@ -25,7 +25,7 @@ final class DemoController
     /**
      * Component docs widgets catalog for the `/demo` page.
      *
-     * @return array<string, array<string, mixed>>
+     * @return list<array<string, mixed>>
      */
     private function widgetsCatalog(): array
     {
@@ -60,7 +60,7 @@ final class DemoController
                             'comment' => 'Trending up this month',
                         ],
                     ],
-                ]
+                ],
             ],
             [
                 'id' => 'new_customers',
@@ -393,7 +393,7 @@ final class DemoController
                 ],
                 'showValue' => true,
                 'value' => array_map(
-                    static fn(): array => [
+                    static fn (): array => [
                         'id' => fake()->uuid(),
                         'name' => fake()->name(),
                         'email' => fake()->email(),

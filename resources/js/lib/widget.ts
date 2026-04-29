@@ -1,5 +1,5 @@
-import type { FlatpackMetricWidget } from '@/types/widgets-composition';
 import { WIDGET_STATUS_VALUES } from '@/lib/generated/composition-schema-keys';
+import type { FlatpackMetricWidget } from '@/types/widgets-composition';
 
 export function formatMetricValue(widget: FlatpackMetricWidget): string {
     const value = widget.data?.value ?? 0;
@@ -46,7 +46,8 @@ export function metricTrendComment(widget: FlatpackMetricWidget): string {
 
     const direction = widget.data?.trend?.direction ?? 'flat';
     const percent = Math.abs(widget.data?.trend?.percent ?? 0);
-    const periodLabel = widget.period.label?.trim() || `this ${widget.period.kind}`;
+    const periodLabel =
+        widget.period.label?.trim() || `this ${widget.period.kind}`;
 
     if (direction === 'up') {
         return `Up ${percent}% ${periodLabel}`;
@@ -58,7 +59,9 @@ export function metricTrendComment(widget: FlatpackMetricWidget): string {
     return `No change ${periodLabel}`;
 }
 
-export function normalizeWidgetStatus(raw: unknown): (typeof WIDGET_STATUS_VALUES)[number] {
+export function normalizeWidgetStatus(
+    raw: unknown,
+): (typeof WIDGET_STATUS_VALUES)[number] {
     if (typeof raw !== 'string') {
         return 'default';
     }

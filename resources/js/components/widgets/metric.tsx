@@ -1,8 +1,6 @@
 'use client';
 
 import { TrendingDownIcon, TrendingUpIcon } from 'lucide-react';
-import { formatMetricValue, formatTrendPercent, metricTrendComment } from '@/lib/widget';
-import type { FlatpackMetricWidget } from '@/types/widgets-composition';
 import { Badge } from '@/components/ui/badge';
 import {
     Card,
@@ -12,6 +10,12 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import {
+    formatMetricValue,
+    formatTrendPercent,
+    metricTrendComment,
+} from '@/lib/widget';
+import type { FlatpackMetricWidget } from '@/types/widgets-composition';
 
 type MetricCardProps = {
     widget: FlatpackMetricWidget;
@@ -30,7 +34,11 @@ export function MetricWidget({ widget }: MetricCardProps) {
                 </CardTitle>
                 <CardAction>
                     <Badge variant="outline">
-                        {isDown ? <TrendingDownIcon className="text-destructive" /> : <TrendingUpIcon className="text-success" />}
+                        {isDown ? (
+                            <TrendingDownIcon className="text-destructive" />
+                        ) : (
+                            <TrendingUpIcon className="text-success" />
+                        )}
                         {formatTrendPercent(widget)}
                     </Badge>
                 </CardAction>

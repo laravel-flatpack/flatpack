@@ -1,5 +1,8 @@
 import type { FormFieldProps } from '@/types/form-fields';
-import type { FlatpackMetricWidget, FlatpackCardWidget } from '@/types/widgets-composition';
+import type {
+    FlatpackCardWidget,
+    FlatpackMetricWidget,
+} from '@/types/widgets-composition';
 
 type DemoEntryBase = {
     id: string;

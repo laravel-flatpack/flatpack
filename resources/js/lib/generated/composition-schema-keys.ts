@@ -2,7 +2,7 @@
  * AUTO-GENERATED FILE — do not edit by hand.
  *
  * Regenerate with: `php artisan flatpack:generate-composition-schema-keys`
- * Source: resources/schema/form.json, resources/schema/list.json, resources/schema/dashboard.json
+ * Source: resources/schema/form.json, resources/schema/list.json
  *
  * Intentionally small so the client bundle does not embed full schema JSON.
  */
@@ -33,6 +33,7 @@ export const LIST_ROOT = {
     reorderable: 'reorderable',
     row_click: 'row_click',
     tabs: 'tabs',
+    widgets: 'widgets',
 } as const;
 
 export type ListRootKey = keyof typeof LIST_ROOT;
@@ -58,6 +59,7 @@ export const LIST_ROOT_PROPERTY_KEYS = [
     'reorderable',
     'row_click',
     'tabs',
+    'widgets',
 ] as const;
 
 /**
@@ -76,6 +78,7 @@ export const FORM_FIELD_TYPES_CANONICAL = [
     'text',
     'textarea',
     'time-picker',
+    'widget',
 ] as const;
 
 /**

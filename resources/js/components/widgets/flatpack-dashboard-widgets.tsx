@@ -5,8 +5,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { renderWidgetByType, widgetGridSpanClass } from '@/lib/widget-trigger';
 import type {
     FlatpackWidget,
-    FlatpackWidgetTabPanelLayout,
     FlatpackWidgetsCompositionSchema,
+    FlatpackWidgetTabPanelLayout,
 } from '@/types/widgets-composition';
 
 type FlatpackDashboardWidgetsProps = {
@@ -40,7 +40,10 @@ export function FlatpackDashboardWidgets({
         if (tabPanels === undefined || tabPanels.length === 0) {
             return {
                 unassignedEntries: entries,
-                tabBlocks: [] as Array<{ panelId: string; entries: WidgetEntry[] }>,
+                tabBlocks: [] as Array<{
+                    panelId: string;
+                    entries: WidgetEntry[];
+                }>,
             };
         }
 
@@ -52,12 +55,16 @@ export function FlatpackDashboardWidgets({
         }
 
         return {
-            unassignedEntries: entries.filter((entry) => !assigned.has(entry.id)),
+            unassignedEntries: entries.filter(
+                (entry) => !assigned.has(entry.id),
+            ),
             tabBlocks: tabPanels.map((panel) => ({
                 panelId: panel.id,
                 entries: panel.widget_ids
                     .map((widgetId) => entryById.get(widgetId))
-                    .filter((entry): entry is WidgetEntry => entry !== undefined),
+                    .filter(
+                        (entry): entry is WidgetEntry => entry !== undefined,
+                    ),
             })),
         };
     }, [entries, entryById, tabPanels]);
@@ -95,8 +102,14 @@ export function FlatpackDashboardWidgets({
 
     return (
         <div className="flex flex-col gap-6">
-            {unassignedEntries.length > 0 ? renderWidgetGrid(unassignedEntries) : null}
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            {unassignedEntries.length > 0
+                ? renderWidgetGrid(unassignedEntries)
+                : null}
+            <Tabs
+                value={activeTab}
+                onValueChange={setActiveTab}
+                className="w-full"
+            >
                 <div className="w-full overflow-x-auto">
                     <TabsList
                         variant="line"
@@ -104,7 +117,8 @@ export function FlatpackDashboardWidgets({
                     >
                         {tabPanels.map((panel) => {
                             const Icon =
-                                panel.icon != null && panel.icon in flatpackMenuIcons
+                                panel.icon != null &&
+                                panel.icon in flatpackMenuIcons
                                     ? flatpackMenuIcons[
                                           panel.icon as FlatpackMenuIconName
                                       ]

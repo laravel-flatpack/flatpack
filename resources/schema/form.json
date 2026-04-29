@@ -309,7 +309,8 @@
                 "switch",
                 "rich-text",
                 "block-editor",
-                "table"
+                "table",
+                "widget"
             ]
         },
         "selectOption": {
@@ -492,6 +493,9 @@
                 },
                 {
                     "$ref": "#/$defs/fieldTable"
+                },
+                {
+                    "$ref": "#/$defs/fieldWidget"
                 }
             ]
         },
@@ -1042,6 +1046,42 @@
             },
             "additionalProperties": false
         },
+        "fieldWidget": {
+            "type": "object",
+            "required": [
+                "type",
+                "label",
+                "widget"
+            ],
+            "properties": {
+                "type": {
+                    "const": "widget"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "helperText": {
+                    "type": "string"
+                },
+                "widget": {
+                    "type": "object",
+                    "minProperties": 1,
+                    "description": "Single-widget map keyed by widget id and resolved by widget runtime.",
+                    "additionalProperties": {
+                        "$ref": "#/$defs/widgetDefinition"
+                    }
+                },
+                "trigger": {
+                    "$ref": "#/$defs/fieldTrigger"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Read-only widget field definition rendered inside forms."
+        },
         "fieldTableActions": {
             "description": "Embedded table toolbar actions as keyed map or ordered array.",
             "oneOf": [
@@ -1301,6 +1341,192 @@
             },
             "additionalProperties": false,
             "description": "Embedded table column definition with optional edit field override."
+        },
+        "widgetDefinition": {
+            "description": "Discriminated widget union keyed by `type`.",
+            "oneOf": [
+                {
+                    "$ref": "#/$defs/metricWidget"
+                },
+                {
+                    "$ref": "#/$defs/cardWidget"
+                }
+            ]
+        },
+        "metricWidget": {
+            "type": "object",
+            "required": [
+                "type",
+                "provider",
+                "label",
+                "value_format",
+                "period"
+            ],
+            "properties": {
+                "type": {
+                    "const": "metric"
+                },
+                "provider": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Key in config `flatpack.widget_providers` used to resolve runtime data."
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "description": {
+                    "type": "string"
+                },
+                "value_format": {
+                    "$ref": "#/$defs/metricValueFormat"
+                },
+                "period": {
+                    "$ref": "#/$defs/metricPeriod"
+                },
+                "trend": {
+                    "$ref": "#/$defs/metricTrendOptions"
+                }
+            },
+            "additionalProperties": false
+        },
+        "cardWidget": {
+            "type": "object",
+            "required": [
+                "type",
+                "provider",
+                "label"
+            ],
+            "properties": {
+                "type": {
+                    "const": "card"
+                },
+                "provider": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "description": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/$defs/cardWidgetData"
+                }
+            },
+            "additionalProperties": false
+        },
+        "cardWidgetData": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "$ref": "#/$defs/widgetStatus"
+                },
+                "value": {
+                    "oneOf": [
+                        {
+                            "type": "number"
+                        },
+                        {
+                            "type": "string"
+                        }
+                    ]
+                },
+                "context": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false
+        },
+        "widgetStatus": {
+            "type": "string",
+            "enum": [
+                "default",
+                "error",
+                "info",
+                "success",
+                "warning"
+            ],
+            "description": "Card widget status token used by status badges."
+        },
+        "metricValueFormat": {
+            "type": "object",
+            "required": [
+                "kind"
+            ],
+            "properties": {
+                "kind": {
+                    "type": "string",
+                    "enum": [
+                        "number",
+                        "currency",
+                        "percentage"
+                    ]
+                },
+                "currency": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 3
+                },
+                "minimumFractionDigits": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 6
+                },
+                "maximumFractionDigits": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 6
+                }
+            },
+            "additionalProperties": false
+        },
+        "metricPeriod": {
+            "type": "object",
+            "required": [
+                "kind"
+            ],
+            "properties": {
+                "kind": {
+                    "type": "string",
+                    "enum": [
+                        "day",
+                        "week",
+                        "month",
+                        "quarter",
+                        "year",
+                        "custom"
+                    ]
+                },
+                "lookback": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "additionalProperties": false
+        },
+        "metricTrendOptions": {
+            "type": "object",
+            "properties": {
+                "precision": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4
+                }
+            },
+            "additionalProperties": false
         }
     }
 }

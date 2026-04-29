@@ -3,7 +3,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 /**
  * Lazy field Suspense fallback — matches {@link FlatpackFormFields}.
  */
-export function WidgetLoading(props: { type: 'metric' | 'card', label: string }) {
+export function WidgetLoading(props: {
+    type: 'metric' | 'card';
+    label: string;
+}) {
     return (
         <>
             {props.label ? (

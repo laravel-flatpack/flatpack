@@ -70,7 +70,7 @@ test('resolveData returns provider payload', function () {
 
 final class TestWidgetProvider implements WidgetDataProvider
 {
-    public function authorize(\Illuminate\Contracts\Auth\Authenticatable $user, WidgetDataContext $context): bool
+    public function authorize(Illuminate\Contracts\Auth\Authenticatable $user, WidgetDataContext $context): bool
     {
         return true;
     }
@@ -90,7 +90,7 @@ final class TestWidgetProvider implements WidgetDataProvider
 
 final class DeniedWidgetProvider implements WidgetDataProvider
 {
-    public function authorize(\Illuminate\Contracts\Auth\Authenticatable $user, WidgetDataContext $context): bool
+    public function authorize(Illuminate\Contracts\Auth\Authenticatable $user, WidgetDataContext $context): bool
     {
         return false;
     }

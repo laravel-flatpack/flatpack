@@ -6,7 +6,9 @@ import {
 } from '@/lib/widget';
 import type { FlatpackMetricWidget } from '@/types/widgets-composition';
 
-function metricWidget(overrides: Partial<FlatpackMetricWidget> = {}): FlatpackMetricWidget {
+function metricWidget(
+    overrides: Partial<FlatpackMetricWidget> = {},
+): FlatpackMetricWidget {
     return {
         type: 'metric',
         provider: 'total_revenue',
@@ -46,7 +48,9 @@ describe('metric-widget', () => {
     });
 
     it('uses provided trend comment first', () => {
-        expect(metricTrendComment(metricWidget())).toBe('Trending up this month');
+        expect(metricTrendComment(metricWidget())).toBe(
+            'Trending up this month',
+        );
     });
 
     it('builds fallback comment when comment is missing', () => {

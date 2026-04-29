@@ -8,7 +8,7 @@ namespace Flatpack\Schema\Generated;
  * AUTO-GENERATED FILE — do not edit by hand.
  *
  * Regenerate with: `php artisan flatpack:generate-composition-schema-keys`
- * Source: resources/schema/form.json, resources/schema/list.json, resources/schema/dashboard.json
+ * Source: resources/schema/form.json, resources/schema/list.json
  */
 final class CompositionSchemaKeys
 {
@@ -45,6 +45,7 @@ final class CompositionSchemaKeys
         'reorderable' => 'reorderable',
         'row_click' => 'row_click',
         'tabs' => 'tabs',
+        'widgets' => 'widgets',
     ];
 
     /**
@@ -71,6 +72,7 @@ final class CompositionSchemaKeys
         'reorderable',
         'row_click',
         'tabs',
+        'widgets',
     ];
 
     /**
@@ -91,6 +93,7 @@ final class CompositionSchemaKeys
         'text',
         'textarea',
         'time-picker',
+        'widget',
     ];
 
     /**
@@ -276,7 +279,7 @@ final class CompositionSchemaKeys
     ];
 
     /**
-     * dashboard.json `$defs.widgetStatus` enum (card widget badge status).
+     * form.json / list.json `$defs.widgetStatus` enum (card widget badge status).
      *
      * @var list<string>
      */

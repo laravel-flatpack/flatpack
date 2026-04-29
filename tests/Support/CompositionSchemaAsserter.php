@@ -27,11 +27,6 @@ final class CompositionSchemaAsserter
         return self::packageRoot() . '/resources/schema/list.json';
     }
 
-    public static function dashboardSchemaPath(): string
-    {
-        return self::packageRoot() . '/resources/schema/dashboard.json';
-    }
-
     /**
      * @param  array<string, mixed>  $data
      * @return list<array<string, mixed>>
@@ -71,14 +66,5 @@ final class CompositionSchemaAsserter
     public static function validateList(array $data): array
     {
         return self::validateAgainstSchema(self::listSchemaPath(), $data);
-    }
-
-    /**
-     * @param  array<string, mixed>  $data
-     * @return list<array<string, mixed>>
-     */
-    public static function validateDashboard(array $data): array
-    {
-        return self::validateAgainstSchema(self::dashboardSchemaPath(), $data);
     }
 }

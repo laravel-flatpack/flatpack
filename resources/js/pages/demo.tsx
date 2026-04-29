@@ -21,6 +21,7 @@ import {
     CollapsibleContent,
     CollapsibleTrigger,
 } from '@/components/ui/collapsible';
+import { WidgetLoading } from '@/components/widget-loading';
 import { CardWidget } from '@/components/widgets/card';
 import { MetricWidget } from '@/components/widgets/metric';
 import DemoLayout from '@/layouts/demo-layout';
@@ -36,7 +37,6 @@ import type {
     DemoComponentsInertiaProps,
     DemoComponentWidgetEntry,
 } from '@/types/demo';
-import { WidgetLoading } from '@/components/widget-loading';
 
 function formatDemoLiveValue(value: unknown): string {
     return JSON.stringify(
@@ -120,11 +120,7 @@ function DemoFieldPreview({
     );
 }
 
-function DemoWidgetPreview({
-    entry,
-}: {
-    entry: DemoComponentWidgetEntry;
-}) {
+function DemoWidgetPreview({ entry }: { entry: DemoComponentWidgetEntry }) {
     return (
         <div className="flex flex-col gap-4">
             <Suspense fallback={<WidgetLoading {...entry.props} />}>
@@ -136,7 +132,7 @@ function DemoWidgetPreview({
             </Suspense>
         </div>
     );
-}   
+}
 
 function DemoComponents() {
     const inertiaPage = usePage<DemoComponentsInertiaProps>();
@@ -205,22 +201,25 @@ function DemoComponents() {
     ).trim();
     const selectorNormalized = selectorRaw.toLowerCase();
     const selectedWidgetEntry =
-        selectorNormalized !== '' ? widgetsByType[selectorNormalized] : undefined;
+        selectorNormalized !== ''
+            ? widgetsByType[selectorNormalized]
+            : undefined;
     const selectedFieldEntry =
-        selectorNormalized !== '' ? catalogDerived.byType[selectorNormalized] : undefined;
+        selectorNormalized !== ''
+            ? catalogDerived.byType[selectorNormalized]
+            : undefined;
     const requestedUnknown =
-        selectorNormalized !== '' && (
-            lookupCatalog === 'widgets'
-                ? selectedWidgetEntry === undefined
-                : selectedFieldEntry === undefined
-        );
+        selectorNormalized !== '' &&
+        (lookupCatalog === 'widgets'
+            ? selectedWidgetEntry === undefined
+            : selectedFieldEntry === undefined);
 
     const headTitle =
         lookupCatalog === 'widgets' && selectedWidgetEntry !== undefined
             ? `${selectedWidgetEntry.title} — Widgets`
             : selectedFieldEntry !== undefined
-                ? `${selectedFieldEntry.title} — Components`
-            : 'Components';
+              ? `${selectedFieldEntry.title} — Components`
+              : 'Components';
 
     if (requestedUnknown) {
         return (
@@ -278,7 +277,7 @@ function DemoComponents() {
                     lazyByType={catalogDerived.lazyByType}
                 />
             </div>
-        );  
+        );
     }
 
     return (
@@ -326,8 +325,8 @@ function DemoComponents() {
                             <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">
                                 ?demo=text
                             </code>
-                            ) to show one field. Optional query keys override catalog
-                            props (for example{' '}
+                            ) to show one field. Optional query keys override
+                            catalog props (for example{' '}
                             <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">
                                 placeholder
                             </code>
@@ -351,7 +350,8 @@ function DemoComponents() {
                         </p>
                     </div>
                 </div>
-                {(selectedCatalog === 'all' || selectedCatalog === 'fields') && (
+                {(selectedCatalog === 'all' ||
+                    selectedCatalog === 'fields') && (
                     <div className="flex flex-col gap-12">
                         {catalogDerived.orderedTypes.map((key) => (
                             <section
@@ -380,10 +380,11 @@ function DemoComponents() {
                         ))}
                     </div>
                 )}
-                {(selectedCatalog === 'all' || selectedCatalog === 'widgets') && (
+                {(selectedCatalog === 'all' ||
+                    selectedCatalog === 'widgets') && (
                     <div className="flex flex-col gap-12">
                         {widgets.map((entry) => (
-                            <section 
+                            <section
                                 key={entry.id}
                                 id={`demo-${entry.id}`}
                                 className="flex flex-col gap-4 scroll-mt-6"

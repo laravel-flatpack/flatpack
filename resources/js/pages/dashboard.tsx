@@ -1,7 +1,7 @@
 import { Head } from '@inertiajs/react';
 import { lazy, Suspense } from 'react';
-import { FlatpackDashboardWidgets } from '@/components/widgets/flatpack-dashboard-widgets';
 import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
+import { FlatpackDashboardWidgets } from '@/components/widgets/flatpack-dashboard-widgets';
 import data from '@/data/data.json';
 import { useCompositionDebugLog } from '@/hooks/use-composition-debug-log';
 import FlatpackLayout from '@/layouts/flatpack-layout';

@@ -30,12 +30,11 @@ final class GenerateCompositionSchemaKeysCommand extends Command
         $root = dirname(__DIR__, 3);
         $formPath = $root . '/resources/schema/form.json';
         $listPath = $root . '/resources/schema/list.json';
-        $dashboardPath = $root . '/resources/schema/dashboard.json';
         $outPhp = $root . '/' . self::OUTPUT_PHP_RELATIVE;
         $outTs = $root . '/' . self::OUTPUT_TS_RELATIVE;
 
-        if (! is_file($formPath) || ! is_file($listPath) || ! is_file($dashboardPath)) {
-            $this->error('Schema JSON files are missing (expected resources/schema/form.json, list.json, and dashboard.json).');
+        if (! is_file($formPath) || ! is_file($listPath)) {
+            $this->error('Schema JSON files are missing (expected resources/schema/form.json and list.json).');
 
             return self::FAILURE;
         }
@@ -43,14 +42,13 @@ final class GenerateCompositionSchemaKeysCommand extends Command
         try {
             $form = $this->decodeJsonFile($formPath);
             $list = $this->decodeJsonFile($listPath);
-            $dashboard = $this->decodeJsonFile($dashboardPath);
         } catch (Throwable $e) {
             $this->error('Failed to read schema JSON: ' . $e->getMessage());
 
             return self::FAILURE;
         }
 
-        $expected = $generator->extractKeySets($form, $list, $dashboard);
+        $expected = $generator->extractKeySets($form, $list);
 
         if ($this->option('check')) {
             if (! $this->generatedPhpMatches($expected)) {
@@ -60,7 +58,7 @@ final class GenerateCompositionSchemaKeysCommand extends Command
             }
             $tsContent = $this->formatTypeScriptWithBiomeIfPossible(
                 $root,
-                $generator->generateTypeScriptModule($form, $list, $dashboard),
+                $generator->generateTypeScriptModule($form, $list),
             );
             $existingTs = is_file($outTs) ? File::get($outTs) : null;
             if ($existingTs !== $tsContent) {
@@ -75,14 +73,14 @@ final class GenerateCompositionSchemaKeysCommand extends Command
             return self::SUCCESS;
         }
 
-        $content = $generator->generate($form, $list, $dashboard);
+        $content = $generator->generate($form, $list);
         File::ensureDirectoryExists(dirname($outPhp));
         File::put($outPhp, $content);
         $this->maybeRunPint($root, $outPhp);
 
         $tsOut = $this->formatTypeScriptWithBiomeIfPossible(
             $root,
-            $generator->generateTypeScriptModule($form, $list, $dashboard),
+            $generator->generateTypeScriptModule($form, $list),
         );
         File::ensureDirectoryExists(dirname($outTs));
         File::put($outTs, $tsOut);
@@ -97,7 +95,6 @@ final class GenerateCompositionSchemaKeysCommand extends Command
      * @param  array{
      *     formRootPropertyKeys: list<string>,
      *     listRootPropertyKeys: list<string>,
-     *     dashboardRootPropertyKeys: list<string>,
      *     formFieldTypesCanonical: list<string>,
      *     headerActionEntryKeys: list<string>,
      *     listBulkActionEntryKeys: list<string>,

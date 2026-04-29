@@ -14,12 +14,10 @@ it('keeps generated CompositionSchemaKeys aligned with the JSON schema files', f
     $generator = new CompositionSchemaKeysGenerator;
     $form = json_decode(File::get($root . '/resources/schema/form.json'), true, flags: JSON_THROW_ON_ERROR);
     $list = json_decode(File::get($root . '/resources/schema/list.json'), true, flags: JSON_THROW_ON_ERROR);
-    $dashboard = json_decode(File::get($root . '/resources/schema/dashboard.json'), true, flags: JSON_THROW_ON_ERROR);
     assert(is_array($form));
     assert(is_array($list));
-    assert(is_array($dashboard));
 
-    $sets = $generator->extractKeySets($form, $list, $dashboard);
+    $sets = $generator->extractKeySets($form, $list);
 
     expect($sets['formRootPropertyKeys'])->toBe(CompositionSchemaKeys::FORM_ROOT_PROPERTY_KEYS)
         ->and($sets['listRootPropertyKeys'])->toBe(CompositionSchemaKeys::LIST_ROOT_PROPERTY_KEYS)

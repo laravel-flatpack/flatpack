@@ -34,12 +34,8 @@ final readonly class DashboardController
             Flatpack::dashboardEntity(),
             'list'
         );
-        /** @var array<string, mixed>|null $widgets */
-        $widgets = $this->compositions->optional(
-            Flatpack::dashboardEntity(),
-            'widgets'
-        );
-        $normalizedWidgets = $this->widgetSchemaNormalizer->normalize($widgets, $debugLog);
+
+        $normalizedWidgets = $this->widgetSchemaNormalizer->normalize($schema, $debugLog);
         $resolvedWidgets = $this->resolveWidgetData(
             $request,
             Flatpack::dashboardEntity(),
@@ -50,7 +46,6 @@ final readonly class DashboardController
         return FlatpackResponse::inertia('dashboard', [
             'schema' => $schema,
             'widgets' => $resolvedWidgets,
-            'widgets_schema' => $normalizedWidgets,
             'composition_debug' => $debugLog?->all() ?? [],
         ]);
     }
@@ -75,6 +70,7 @@ final readonly class DashboardController
             $providerKey = trim((string) ($definition['provider'] ?? ''));
             if ($providerKey === '') {
                 $debugLog?->add(sprintf('widgets.%s ignored: missing provider.', $widgetId));
+
                 continue;
             }
 
@@ -108,7 +104,6 @@ final readonly class DashboardController
 
     /**
      * @param  array<string, mixed>  $definition
-     * @param  mixed  $rawData
      * @return array<string, mixed>
      */
     private function normalizeResolvedWidgetData(array $definition, mixed $rawData): array

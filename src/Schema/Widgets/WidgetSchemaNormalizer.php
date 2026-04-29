@@ -36,16 +36,19 @@ final class WidgetSchemaNormalizer
             foreach ($tabs as $tabId => $tabDefinition) {
                 if (! is_string($tabId) || $tabId === '' || ! is_array($tabDefinition)) {
                     $debug?->add(sprintf('tabs.%s ignored: expected object definition.', (string) $tabId));
+
                     continue;
                 }
                 $label = trim((string) ($tabDefinition['label'] ?? ''));
                 if ($label === '') {
                     $debug?->add(sprintf('tabs.%s ignored: requires non-empty label.', $tabId));
+
                     continue;
                 }
                 $tabWidgets = $tabDefinition['widgets'] ?? null;
                 if (! is_array($tabWidgets)) {
                     $debug?->add(sprintf('tabs.%s ignored: requires widgets map.', $tabId));
+
                     continue;
                 }
 
@@ -72,12 +75,14 @@ final class WidgetSchemaNormalizer
             foreach ($widgets as $widgetId => $definition) {
                 if (! is_string($widgetId) || $widgetId === '' || ! is_array($definition)) {
                     $debug?->add(sprintf('widgets.%s ignored: expected object definition.', (string) $widgetId));
+
                     continue;
                 }
 
                 $type = trim((string) ($definition['type'] ?? ''));
                 if (! in_array($type, ['metric', 'card'], true)) {
                     $debug?->add(sprintf('widgets.%s ignored: unsupported type "%s".', $widgetId, $type));
+
                     continue;
                 }
 
@@ -85,6 +90,7 @@ final class WidgetSchemaNormalizer
                 $label = trim((string) ($definition['label'] ?? ''));
                 if ($provider === '' || $label === '') {
                     $debug?->add(sprintf('widgets.%s ignored: requires non-empty provider and label.', $widgetId));
+
                     continue;
                 }
 
@@ -98,6 +104,7 @@ final class WidgetSchemaNormalizer
                         'period' => is_array($definition['period']) ? $definition['period'] : ['kind' => 'custom'],
                         'trend' => is_array($definition['trend']) ? $definition['trend'] : null,
                     ];
+
                     continue;
                 }
 

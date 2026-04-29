@@ -13,12 +13,10 @@ it('keeps generated TypeScript composition schema keys aligned with schema files
     $generator = new CompositionSchemaKeysGenerator;
     $form = json_decode(File::get($root . '/resources/schema/form.json'), true, flags: JSON_THROW_ON_ERROR);
     $list = json_decode(File::get($root . '/resources/schema/list.json'), true, flags: JSON_THROW_ON_ERROR);
-    $dashboard = json_decode(File::get($root . '/resources/schema/dashboard.json'), true, flags: JSON_THROW_ON_ERROR);
     assert(is_array($form));
     assert(is_array($list));
-    assert(is_array($dashboard));
 
-    $sets = $generator->extractKeySets($form, $list, $dashboard);
+    $sets = $generator->extractKeySets($form, $list);
     $actual = File::get($root . '/resources/js/lib/generated/composition-schema-keys.ts');
 
     $extractTuple = static function (string $name) use ($actual): array {

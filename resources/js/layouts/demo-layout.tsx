@@ -9,9 +9,5 @@ export default function DemoLayout({
 }: {
     children: React.ReactNode;
 }) {
-    return (
-        <TooltipProvider delayDuration={0}>
-            {children}
-        </TooltipProvider>
-    );
+    return <TooltipProvider delayDuration={0}>{children}</TooltipProvider>;
 }

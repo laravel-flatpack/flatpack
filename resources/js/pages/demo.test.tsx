@@ -10,11 +10,31 @@ import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DemoComponentCatalogEntry } from '@/types/demo';
 
-const usePage = vi.fn();
+const { routeMock, usePage } = vi.hoisted(() => ({
+    routeMock: vi.fn(() => '/components'),
+    usePage: vi.fn(),
+}));
 
 vi.mock('@inertiajs/react', () => ({
     usePage: () => usePage(),
     Head: ({ title }: { title: string }) => <title>{title}</title>,
+    Link: ({
+        children,
+        href,
+        className,
+    }: {
+        children: React.ReactNode;
+        href: string;
+        className?: string;
+    }) => (
+        <a href={href} className={className}>
+            {children}
+        </a>
+    ),
+}));
+
+vi.mock('@/lib/route', () => ({
+    route: routeMock,
 }));
 
 vi.mock('@/lib/form', () => ({
@@ -52,6 +72,11 @@ function textEntry(
 }
 
 describe('DemoPage', () => {
+    const pageProps = {
+        query: {},
+        widgetsCatalog: [],
+    };
+
     beforeEach(() => {
         usePage.mockReset();
     });
@@ -63,8 +88,8 @@ describe('DemoPage', () => {
     it('shows unknown component message for invalid type', () => {
         usePage.mockReturnValue({
             props: {
-                query: {},
-                catalog: [textEntry()],
+                ...pageProps,
+                fieldsCatalog: [textEntry()],
             },
             url: '/components?type=not-real',
         });
@@ -78,8 +103,8 @@ describe('DemoPage', () => {
     it('lists all components when no selector is set', async () => {
         usePage.mockReturnValue({
             props: {
-                query: {},
-                catalog: [
+                ...pageProps,
+                fieldsCatalog: [
                     textEntry({ title: 'Alpha' }),
                     textEntry({
                         id: 'e-ta',
@@ -115,8 +140,8 @@ describe('DemoPage', () => {
         const user = userEvent.setup();
         usePage.mockReturnValue({
             props: {
-                query: {},
-                catalog: [textEntry()],
+                ...pageProps,
+                fieldsCatalog: [textEntry()],
             },
             url: '/components?type=text',
         });
@@ -131,7 +156,7 @@ describe('DemoPage', () => {
         const root = document.querySelector(
             '[data-slot="demo-components-single"]',
         ) as HTMLElement;
-        expect(root).toHaveAttribute('data-demo-component', 'text');
+        expect(root).toHaveAttribute('data-demo-component', 'e-text');
 
         const scoped = within(root);
         await waitFor(() => {
@@ -151,8 +176,8 @@ describe('DemoPage', () => {
     it('hides live value when showValue=false in query', async () => {
         usePage.mockReturnValue({
             props: {
-                query: {},
-                catalog: [textEntry()],
+                ...pageProps,
+                fieldsCatalog: [textEntry()],
             },
             url: '/components?type=text&showValue=false',
         });
