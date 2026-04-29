@@ -56,6 +56,38 @@ YAML);
     }
 });
 
+test('flatpack dashboard forwards widget normalizer debug messages when app debug is enabled', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-json-dashboard-debug-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/dashboard');
+        File::put($tempPath . '/dashboard/list.yaml', <<<'YAML'
+name: Overview
+widgets:
+  health_check:
+    type: card
+    label: Health Check
+YAML);
+        config()->set('flatpack.composition.path', $tempPath);
+        config()->set('app.debug', true);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        $payload = actingAs($user)
+            ->getJson(route('flatpack.dashboard', ['json' => true]))
+            ->assertOk()
+            ->assertJsonPath('widgets', [])
+            ->json();
+
+        expect($payload['composition_debug'][0] ?? '')->toContain(
+            'widgets.health_check ignored: requires non-empty provider and label.',
+        );
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
 test('flatpack entity list returns JSON schema when json query is true', function () {
     $tempPath = sys_get_temp_dir() . '/flatpack-json-' . uniqid('', true);
 

@@ -28,7 +28,7 @@ export function MetricWidget({ widget }: MetricCardProps) {
     return (
         <Card className="@container/card">
             <CardHeader>
-                <CardDescription>{widget.label}</CardDescription>
+                <CardDescription className="truncate">{widget.label}</CardDescription>
                 <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
                     {formatMetricValue(widget)}
                 </CardTitle>
@@ -52,7 +52,7 @@ export function MetricWidget({ widget }: MetricCardProps) {
                         <TrendingUpIcon className="size-4 text-success" />
                     )}
                 </div>
-                <div className="text-muted-foreground">
+                <div className="w-full truncate text-muted-foreground">
                     {widget.description ?? widget.data?.description ?? ''}
                 </div>
             </CardFooter>

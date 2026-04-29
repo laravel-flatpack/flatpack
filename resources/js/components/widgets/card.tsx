@@ -1,10 +1,11 @@
 'use client';
 
-import { CircleIcon } from 'lucide-react';
+import { CircleIcon, ClockIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
     Card,
     CardDescription,
+    CardFooter,
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
@@ -74,18 +75,23 @@ export function CardWidget({ widget }: CardWidgetProps) {
                         <BadgeContent />
                     )}
                 </div>
-                <CardTitle className="text-xl font-semibold @[250px]/card:text-2xl">
+                <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
                     {widget.data?.value ?? '—'}
                 </CardTitle>
                 <CardDescription>
                     {widget.data?.context ?? widget.data?.description ?? ''}
                 </CardDescription>
-                {widget.data?.updated_at ? (
-                    <CardDescription>
-                        Updated {widget.data.updated_at}
-                    </CardDescription>
-                ) : null}
             </CardHeader>
+            <CardFooter className="flex-col items-start gap-1.5 text-sm">
+                <div className="line-clamp-1 flex gap-2 font-medium">
+                {widget.data?.updated_at && (
+                    <div className="w-full truncate text-muted-foreground">
+                        <ClockIcon className="size-4" />
+                        Updated {widget.data.updated_at}
+                    </div>
+                )}
+                </div>
+            </CardFooter>
         </Card>
     );
 }

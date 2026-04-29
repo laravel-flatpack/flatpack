@@ -7,6 +7,7 @@ namespace Flatpack\Http\Controllers;
 use Flatpack\Contracts\Composition\CompositionQuery;
 use Flatpack\Facades\Flatpack;
 use Flatpack\Http\FlatpackResponse;
+use Flatpack\Http\FlatpackResponseOptions;
 use Flatpack\Schema\Generated\CompositionSchemaKeys;
 use Flatpack\Schema\Widgets\WidgetSchemaNormalizer;
 use Flatpack\Services\Runtime\WidgetRuntime;
@@ -43,11 +44,14 @@ final readonly class DashboardController
             $debugLog,
         );
 
-        return FlatpackResponse::inertia('dashboard', [
-            'schema' => $schema,
-            'widgets' => $resolvedWidgets,
-            'composition_debug' => $debugLog?->all() ?? [],
-        ]);
+        return FlatpackResponse::inertia(
+            'dashboard',
+            [
+                'schema' => $schema,
+                'widgets' => $resolvedWidgets,
+            ],
+            new FlatpackResponseOptions(compositionDebugLog: $debugLog),
+        );
     }
 
     /**

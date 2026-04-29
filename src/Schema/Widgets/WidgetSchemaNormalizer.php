@@ -100,9 +100,9 @@ final class WidgetSchemaNormalizer
                         'provider' => $provider,
                         'label' => $label,
                         'description' => isset($definition['description']) ? (string) $definition['description'] : null,
-                        'value_format' => is_array($definition['value_format']) ? $definition['value_format'] : ['kind' => 'number'],
-                        'period' => is_array($definition['period']) ? $definition['period'] : ['kind' => 'custom'],
-                        'trend' => is_array($definition['trend']) ? $definition['trend'] : null,
+                        'value_format' => is_array($definition['value_format'] ?? null) ? $definition['value_format'] : ['kind' => 'number'],
+                        'period' => is_array($definition['period'] ?? null) ? $definition['period'] : ['kind' => 'custom'],
+                        'trend' => is_array($definition['trend'] ?? null) ? $definition['trend'] : null,
                     ];
 
                     continue;
