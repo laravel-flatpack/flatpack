@@ -18,8 +18,8 @@ final class BuildCompositionReplacementsService
         $entitiesLabel = Str::headline($input->entities);
 
         $attributes = ModelCompositionDefaults::findAttributes(new $input->modelClass());
-        $fields = $input->includeAutoFields ? ModelCompositionDefaults::guessFormFields($attributes) : [];
-        $columns = $input->includeAutoColumns ? $this->buildTablePageView($input, $attributes) : [];
+        $formPageView = $this->buildFormPageView($input, $attributes);
+        $tablePageView = $this->buildTablePageView($input, $attributes);
 
         return [
             '{{ DummyModel }}' => $input->modelClass,
@@ -33,13 +33,26 @@ final class BuildCompositionReplacementsService
             '{{ DummyFormActionsDefinition }}' => $this->formActionsDefinition($input, $entityLabel),
             '{{ DummyListActionsDefinition }}' => $this->listActionsDefinition($input, $entityLabel),
             '{{ DummyBulkActionsDefinition }}' => $this->bulkActionsDefinition($input, $entitiesLabel),
-            '{{ DummyFieldsDefinition }}' => Yaml::dump(['fields' => $fields], PHP_INT_MAX, 2),
-            '{{ DummyColumnsDefinition }}' => Yaml::dump($columns, PHP_INT_MAX, 2),
+            '{{ DummyFieldsDefinition }}' => Yaml::dump($formPageView, PHP_INT_MAX, 2),
+            '{{ DummyColumnsDefinition }}' => Yaml::dump($tablePageView, PHP_INT_MAX, 2),
         ];
+    }
+
+    private function buildFormPageView(MakeCompositionInput $input, array $attributes): array
+    {
+        if (! $input->includeAutoFields) {
+            return ['fields' => []];
+        }
+
+        return ['fields' => ModelCompositionDefaults::guessFormFields($attributes)];
     }
 
     private function buildTablePageView(MakeCompositionInput $input, array $attributes): array
     {
+        if (! $input->includeAutoColumns) {
+            return ['columns' => []];
+        }
+
         if ($input->includeSoftDeleteActions) {
             return [
                 'columns' => ModelCompositionDefaults::guessTableColumns($attributes),
@@ -69,9 +82,9 @@ final class BuildCompositionReplacementsService
                                 'icon' => 'trash',
                                 'confirm' => true,
                             ],
-                        ]
+                        ],
                     ],
-                ]
+                ],
             ];
         }
 
@@ -139,4 +152,5 @@ final class BuildCompositionReplacementsService
 
         return Yaml::dump(['bulk_actions' => $bulkActions], PHP_INT_MAX, 2);
     }
+
 }
