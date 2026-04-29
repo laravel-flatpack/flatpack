@@ -152,5 +152,4 @@ final class BuildCompositionReplacementsService
 
         return Yaml::dump(['bulk_actions' => $bulkActions], PHP_INT_MAX, 2);
     }
-
 }
