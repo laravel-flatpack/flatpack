@@ -2,22 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Flatpack\Contracts\Widgets;
+namespace Flatpack\Widgets\Contracts;
 
-use Flatpack\Widgets\WidgetDataContext;
+use Flatpack\Widgets\WidgetContext;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Contracts\Support\Arrayable;
 
 interface WidgetDataProvider
 {
     /**
      * Whether the user may resolve this widget's data.
      */
-    public function authorize(Authenticatable $user, WidgetDataContext $context): bool;
+    public function authorize(Authenticatable $user, WidgetContext $context): bool;
 
     /**
      * Returns resolved widget data payload for frontend rendering.
-     *
-     * @return array<string, mixed>
      */
-    public function handle(WidgetDataContext $context): array;
+    public function handle(WidgetContext $context): Arrayable|array;
 }

@@ -129,12 +129,12 @@ return [
     |
     | Provider map for dashboard widgets that require backend data resolution.
     | Widgets in list.yaml/form.yaml reference these keys via `provider`.
-    | Implement Flatpack\Contracts\Widgets\WidgetDataProvider directly, or
-    | extend FlatpackMetricWidget / FlatpackCardWidget for a normalized shape.
+    |
+    | Must implement Flatpack\Widgets\Contracts\WidgetDataProvider.
     |
     | Example:
-    | 'total_revenue' => \App\Flatpack\Widgets\TotalRevenueWidget::class, // extends FlatpackMetricWidget
-    | 'health_check' => \App\Flatpack\Widgets\HealthCheckWidget::class, // extends FlatpackCardWidget
+    | 'total_revenue' => \App\Flatpack\Widgets\TotalRevenueWidget::class,
+    | 'health_check' => \App\Flatpack\Widgets\HealthCheckWidget::class,
     |
     */
     'widget_providers' => [],

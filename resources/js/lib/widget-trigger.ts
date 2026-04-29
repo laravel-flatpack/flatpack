@@ -1,16 +1,15 @@
 import { createElement } from 'react';
 import { CardWidget } from '@/components/widgets/card';
 import { MetricWidget } from '@/components/widgets/metric';
+import { StatusWidget } from '@/components/widgets/status';
 import type { FlatpackWidget } from '@/types/widgets-composition';
 
 export function widgetGridSpanClass(widget: FlatpackWidget): string {
     switch (widget.type) {
-        case 'metric':
-            return 'col-span-1';
-        case 'card':
-            return 'col-span-1 md:col-span-2';
+        // case 'chart':
+        //    return 'col-span-2';
         default:
-            return '';
+            return 'col-span-1';
     }
 }
 
@@ -20,6 +19,8 @@ export function renderWidgetByType(widget: FlatpackWidget): React.ReactNode {
             return createElement(MetricWidget, { widget });
         case 'card':
             return createElement(CardWidget, { widget });
+        case 'status':
+            return createElement(StatusWidget, { widget });
         default:
             return null;
     }

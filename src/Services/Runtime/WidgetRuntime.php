@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Flatpack\Services\Runtime;
 
-use Flatpack\Contracts\Widgets\WidgetDataProvider;
 use Flatpack\Support\Exceptions\WidgetRuntimeException;
-use Flatpack\Widgets\WidgetDataContext;
+use Flatpack\Widgets\Contracts\WidgetDataProvider;
+use Flatpack\Widgets\WidgetContext;
 use Illuminate\Auth\Access\AuthorizationException;
 
 final readonly class WidgetRuntime
@@ -33,7 +33,7 @@ final readonly class WidgetRuntime
     /**
      * @return array<string, mixed>
      */
-    public function resolveData(WidgetDataProvider $provider, WidgetDataContext $context): array
+    public function resolveData(WidgetDataProvider $provider, WidgetContext $context): array
     {
         $user = $context->request->user();
         if ($user === null) {
@@ -44,6 +44,8 @@ final readonly class WidgetRuntime
             throw new AuthorizationException('This widget is not authorized.');
         }
 
-        return $provider->handle($context);
+        $data = $provider->handle($context);
+
+        return is_array($data) ? $data : $data->toArray();
     }
 }

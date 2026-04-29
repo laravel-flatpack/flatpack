@@ -26,6 +26,17 @@ export type FlatpackCardWidgetResolvedData = {
     description?: string;
 };
 
+export type FlatpackStatusWidgetStatus =
+    typeof import('@/lib/generated/composition-schema-keys').WIDGET_STATUS_VALUES[number];
+
+export type FlatpackStatusWidgetResolvedData = {
+    status?: FlatpackStatusWidgetStatus;
+    value?: number | string;
+    context?: string;
+    updated_at?: string;
+    description?: string;
+};
+
 export type FlatpackMetricWidgetResolvedData = {
     value?: number;
     trend?: {
@@ -51,10 +62,25 @@ export type FlatpackCardWidget = {
     type: 'card';
     provider: string;
     label: string;
-    data?: FlatpackCardWidgetResolvedData;
+    data?: {
+        value?: number | string;
+        context?: string;
+        footer?: string;
+    };
 };
 
-export type FlatpackWidget = FlatpackMetricWidget | FlatpackCardWidget;
+export type FlatpackStatusWidget = {
+    type: 'status';
+    provider: string;
+    label: string;
+    description?: string | null;
+    data?: FlatpackStatusWidgetResolvedData;
+};
+
+export type FlatpackWidget =
+    | FlatpackMetricWidget
+    | FlatpackCardWidget
+    | FlatpackStatusWidget;
 
 export type FlatpackWidgetTabPanelLayout = {
     id: string;

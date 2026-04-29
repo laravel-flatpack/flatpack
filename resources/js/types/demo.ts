@@ -2,6 +2,7 @@ import type { FormFieldProps } from '@/types/form-fields';
 import type {
     FlatpackCardWidget,
     FlatpackMetricWidget,
+    FlatpackStatusWidget,
 } from '@/types/widgets-composition';
 
 type DemoEntryBase = {
@@ -19,7 +20,7 @@ export type DemoComponentCatalogEntry = DemoEntryBase & {
 export type DemoComponentType = FormFieldProps['type'];
 
 export type DemoComponentWidgetEntry = DemoEntryBase & {
-    props: FlatpackMetricWidget | FlatpackCardWidget;
+    props: FlatpackMetricWidget | FlatpackCardWidget | FlatpackStatusWidget;
 };
 
 export type DemoComponentsInertiaProps = {

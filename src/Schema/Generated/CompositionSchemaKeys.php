@@ -279,7 +279,7 @@ final class CompositionSchemaKeys
     ];
 
     /**
-     * form.json / list.json `$defs.widgetStatus` enum (card widget badge status).
+     * form.json / list.json `$defs.widgetStatus` enum (status widget badge status).
      *
      * @var list<string>
      */

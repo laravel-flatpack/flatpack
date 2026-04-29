@@ -1,20 +1,14 @@
 'use client';
 
-import { CircleIcon, ClockIcon } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 import {
     Card,
+    CardContent,
     CardDescription,
     CardFooter,
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipTrigger,
-} from '@/components/ui/tooltip';
-import { normalizeWidgetStatus } from '@/lib/widget';
+import { formatAsRelativeTime } from '@/lib/relative-time';
 import type { FlatpackCardWidget } from '@/types/widgets-composition';
 
 type CardWidgetProps = {
@@ -22,75 +16,20 @@ type CardWidgetProps = {
 };
 
 export function CardWidget({ widget }: CardWidgetProps) {
-    const status = normalizeWidgetStatus(widget.data?.status);
-    const statusMeta = {
-        default: {
-            className: 'text-muted-foreground',
-            label: 'Neutral',
-        },
-        info: {
-            className:
-                'border-blue-500/40 bg-blue-500/10 text-blue-700 dark:text-blue-300',
-            label: 'Info',
-        },
-        success: {
-            className:
-                'border-green-500/40 bg-green-500/10 text-green-700 dark:text-green-300',
-            label: 'Success',
-        },
-        warning: {
-            className:
-                'border-yellow-500/40 bg-yellow-500/10 text-yellow-700 dark:text-yellow-300',
-            label: 'Warning',
-        },
-        error: {
-            className:
-                'border-red-500/40 bg-red-500/10 text-red-700 dark:text-red-300',
-            label: 'Error',
-        },
-    }[status];
-
-    const badgeTooltip = widget.data?.description?.trim() ?? '';
-
-    const BadgeContent = () => (
-        <Badge variant="outline" className={statusMeta.className}>
-            <CircleIcon className="size-4 fill-current" />
-            {statusMeta.label}
-        </Badge>
-    );
+    const context = widget.data?.context ?? '';
+    const footer = widget.data?.footer ?? '';
 
     return (
-        <Card className="@container/card md:col-span-2">
+        <Card className="@container/card">
             <CardHeader>
-                <div className="flex items-center justify-between gap-2">
-                    <CardDescription>{widget.label}</CardDescription>
-                    {badgeTooltip !== '' ? (
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <BadgeContent />
-                            </TooltipTrigger>
-                            <TooltipContent>{badgeTooltip}</TooltipContent>
-                        </Tooltip>
-                    ) : (
-                        <BadgeContent />
-                    )}
-                </div>
+                <CardDescription>{widget.label}</CardDescription>
                 <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
                     {widget.data?.value ?? '—'}
                 </CardTitle>
-                <CardDescription>
-                    {widget.data?.context ?? widget.data?.description ?? ''}
-                </CardDescription>
             </CardHeader>
             <CardFooter className="flex-col items-start gap-1.5 text-sm">
-                <div className="line-clamp-1 flex gap-2 font-medium">
-                {widget.data?.updated_at && (
-                    <div className="w-full truncate text-muted-foreground">
-                        <ClockIcon className="size-4" />
-                        Updated {widget.data.updated_at}
-                    </div>
-                )}
-                </div>
+                {context && <CardDescription>{context}</CardDescription>}
+                {footer ? <CardDescription>{footer}</CardDescription> : null}
             </CardFooter>
         </Card>
     );

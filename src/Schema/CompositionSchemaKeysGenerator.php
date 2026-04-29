@@ -199,7 +199,7 @@ PHP;
         $body .= self::constBlock('form.json `$defs.buttonVariant` enum (includes YAML alias `primary`).', 'BUTTON_VARIANT_VALUES', $buttonVariantValues);
         $body .= self::constBlock('Button variants after normalizing `primary` → `default` (shadcn / runtime output).', 'BUTTON_VARIANT_UI_VALUES', $buttonVariantUiValues);
         $body .= self::constBlock('form.json `$defs.optionStatus` enum (select/column option status).', 'OPTION_STATUS_VALUES', $optionStatusValues);
-        $body .= self::constBlock('form.json / list.json `$defs.widgetStatus` enum (card widget badge status).', 'WIDGET_STATUS_VALUES', $widgetStatusValues);
+        $body .= self::constBlock('form.json / list.json `$defs.widgetStatus` enum (status widget badge status).', 'WIDGET_STATUS_VALUES', $widgetStatusValues);
         $body .= self::constBlock('list.json filterSelect / filterDate `type` const values.', 'LIST_FILTER_TYPES', $listFilterTypes);
         $body .= self::constBlock('list.json `$defs.filterDate.properties.mode` enum.', 'LIST_FILTER_DATE_MODES', $listFilterDateModes);
 

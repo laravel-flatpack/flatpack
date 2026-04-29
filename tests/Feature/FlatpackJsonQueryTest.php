@@ -65,7 +65,7 @@ test('flatpack dashboard forwards widget normalizer debug messages when app debu
 name: Overview
 widgets:
   health_check:
-    type: card
+    type: status
     label: Health Check
 YAML);
         config()->set('flatpack.composition.path', $tempPath);

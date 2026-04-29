@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+    formatAsRelativeTime,
+    setRelativeTimeLocale,
+} from '@/lib/relative-time';
+import {
     formatMetricValue,
     formatTrendPercent,
     metricTrendComment,
@@ -39,6 +43,37 @@ function metricWidget(
 }
 
 describe('metric-widget', () => {
+    it('formats updated_at as relative minutes', () => {
+        expect(
+            formatAsRelativeTime(
+                '2026-04-29 18:05:18',
+                new Date(2026, 3, 29, 18, 9, 18),
+            ),
+        ).toBe('4 minutes ago');
+    });
+
+    it('formats updated_at as yesterday when previous day', () => {
+        expect(
+            formatAsRelativeTime(
+                '2026-04-29 18:05:18',
+                new Date(2026, 3, 30, 9, 0, 0),
+            ),
+        ).toBe('yesterday');
+    });
+
+    it('formats updated_at as relative year', () => {
+        expect(
+            formatAsRelativeTime(
+                '2025-04-29 18:05:18',
+                new Date(2026, 3, 29, 18, 5, 18),
+            ),
+        ).toBe('a year ago');
+    });
+
+    it('falls back to raw value when date cannot be parsed', () => {
+        expect(formatAsRelativeTime('not-a-date')).toBe('not-a-date');
+    });
+
     it('formats currency value from resolved data', () => {
         expect(formatMetricValue(metricWidget())).toContain('1,250');
     });
@@ -65,5 +100,11 @@ describe('metric-widget', () => {
         });
 
         expect(metricTrendComment(widget)).toBe('Down 20% this month');
+    });
+});
+
+describe('relative-time locale', () => {
+    it('supports explicit locale configuration hook', () => {
+        expect(() => setRelativeTimeLocale('en')).not.toThrow();
     });
 });

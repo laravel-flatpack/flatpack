@@ -4,15 +4,12 @@ import { Skeleton } from '@/components/ui/skeleton';
  * Lazy field Suspense fallback — matches {@link FlatpackFormFields}.
  */
 export function WidgetLoading(props: {
-    type: 'metric' | 'card';
+    type: 'metric' | 'card' | 'status';
     label: string;
 }) {
     return (
         <>
-            {props.label ? (
-                <Skeleton className="mb-4 h-4 w-32 rounded-full" />
-            ) : null}
-            {['metric', 'card'].includes(props.type) ? (
+            {['metric', 'card', 'status'].includes(props.type) ? (
                 <Skeleton className="h-25 w-full rounded-3xl" />
             ) : (
                 <Skeleton className="h-9 rounded-3xl" />

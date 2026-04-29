@@ -2,14 +2,17 @@
 
 declare(strict_types=1);
 
-use Flatpack\Contracts\Widgets\WidgetDataProvider;
 use Flatpack\Services\Runtime\WidgetRuntime;
 use Flatpack\Support\Exceptions\WidgetRuntimeException;
 use Flatpack\Tests\Models\User;
 use Flatpack\Tests\TestCase;
-use Flatpack\Widgets\WidgetDataContext;
+use Flatpack\Widgets\Contracts\WidgetDataProvider;
+use Flatpack\Widgets\Data\MetricTrend;
+use Flatpack\Widgets\Payloads\MetricWidgetData;
+use Flatpack\Widgets\WidgetContext;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Fluent;
 
 uses(TestCase::class);
 
@@ -34,7 +37,7 @@ test('resolveData throws authorization exception when provider denies access', f
 
     expect(fn () => app(WidgetRuntime::class)->resolveData(
         $provider,
-        new WidgetDataContext(
+        new WidgetContext(
             request: $request,
             entity: 'dashboard',
             widgetId: 'revenue',
@@ -55,7 +58,7 @@ test('resolveData returns provider payload', function () {
 
     $data = app(WidgetRuntime::class)->resolveData(
         $provider,
-        new WidgetDataContext(
+        new WidgetContext(
             request: $request,
             entity: 'dashboard',
             widgetId: 'revenue',
@@ -70,33 +73,34 @@ test('resolveData returns provider payload', function () {
 
 final class TestWidgetProvider implements WidgetDataProvider
 {
-    public function authorize(Illuminate\Contracts\Auth\Authenticatable $user, WidgetDataContext $context): bool
+    public function authorize(Illuminate\Contracts\Auth\Authenticatable $user, WidgetContext $context): bool
     {
         return true;
     }
 
-    public function handle(WidgetDataContext $context): array
+    public function handle(WidgetContext $context): Illuminate\Contracts\Support\Arrayable
     {
-        return [
-            'value' => 1250.0,
-            'trend' => [
-                'percent' => 12.5,
-                'direction' => 'up',
-                'comment' => 'Revenue is up this month',
-            ],
-        ];
+        return new MetricWidgetData(
+            value: 1250.0,
+            trend: new MetricTrend(
+                direction: 'up',
+                percent: 12.5,
+                comment: 'Revenue is up this month',
+            ),
+            description: 'Revenue trend',
+        );
     }
 }
 
 final class DeniedWidgetProvider implements WidgetDataProvider
 {
-    public function authorize(Illuminate\Contracts\Auth\Authenticatable $user, WidgetDataContext $context): bool
+    public function authorize(Illuminate\Contracts\Auth\Authenticatable $user, WidgetContext $context): bool
     {
         return false;
     }
 
-    public function handle(WidgetDataContext $context): array
+    public function handle(WidgetContext $context): Illuminate\Contracts\Support\Arrayable
     {
-        return [];
+        return new Fluent([]);
     }
 }

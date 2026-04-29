@@ -33,7 +33,7 @@ final class DemoController
             [
                 'id' => 'total_revenue',
                 'title' => 'Metric card (currency format)',
-                'description' => 'Metric card widget with a currency value format and a monthly period.',
+                'description' => 'Metric widget with a currency value format and a monthly period.',
                 'props' => [
                     'type' => 'metric',
                     'provider' => 'demo_total_revenue',
@@ -65,7 +65,7 @@ final class DemoController
             [
                 'id' => 'new_customers',
                 'title' => 'Metric card (number format)',
-                'description' => 'Metric card widget with a number value format and a monthly period.',
+                'description' => 'Metric widget with a number value format and a monthly period.',
                 'props' => [
                     'type' => 'metric',
                     'provider' => 'demo_new_customers',
@@ -98,7 +98,7 @@ final class DemoController
                 'title' => 'Status card',
                 'description' => 'Operational status card with state, key value, and last update.',
                 'props' => [
-                    'type' => 'card',
+                    'type' => 'status',
                     'provider' => 'demo_status_card',
                     'label' => 'API Gateway',
                     'data' => [
@@ -115,7 +115,7 @@ final class DemoController
                 'title' => 'Status card',
                 'description' => 'Operational status card with state, key value, and last update.',
                 'props' => [
-                    'type' => 'card',
+                    'type' => 'status',
                     'provider' => 'demo_status_card',
                     'label' => 'Health Check',
                     'data' => [

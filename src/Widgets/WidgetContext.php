@@ -6,7 +6,7 @@ namespace Flatpack\Widgets;
 
 use Illuminate\Http\Request;
 
-final readonly class WidgetDataContext
+final readonly class WidgetContext
 {
     /**
      * @param  array<string, mixed>  $definition

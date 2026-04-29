@@ -80,7 +80,7 @@ final class WidgetSchemaNormalizer
                 }
 
                 $type = trim((string) ($definition['type'] ?? ''));
-                if (! in_array($type, ['metric', 'card'], true)) {
+                if (! in_array($type, ['metric', 'card', 'status'], true)) {
                     $debug?->add(sprintf('widgets.%s ignored: unsupported type "%s".', $widgetId, $type));
 
                     continue;
@@ -108,12 +108,24 @@ final class WidgetSchemaNormalizer
                     continue;
                 }
 
+                if ($type === 'card') {
+                    $normalizedWidgets[$widgetId] = [
+                        'type' => 'card',
+                        'provider' => $provider,
+                        'label' => $label,
+                        'description' => isset($definition['description']) ? (string) $definition['description'] : null,
+                        'data' => $this->normalizeStatusWidgetData($definition['data'] ?? null),
+                    ];
+
+                    continue;
+                }
+
                 $normalizedWidgets[$widgetId] = [
-                    'type' => 'card',
+                    'type' => 'status',
                     'provider' => $provider,
                     'label' => $label,
                     'description' => isset($definition['description']) ? (string) $definition['description'] : null,
-                    'data' => $this->normalizeCardWidgetData($definition['data'] ?? null),
+                    'data' => $this->normalizeStatusWidgetData($definition['data'] ?? null),
                 ];
             }
         }
@@ -126,7 +138,7 @@ final class WidgetSchemaNormalizer
     /**
      * @return array<string, mixed>|null
      */
-    private function normalizeCardWidgetData(mixed $raw): ?array
+    private function normalizeStatusWidgetData(mixed $raw): ?array
     {
         if (! is_array($raw)) {
             return null;

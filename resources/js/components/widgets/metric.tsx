@@ -23,32 +23,37 @@ type MetricCardProps = {
 
 export function MetricWidget({ widget }: MetricCardProps) {
     const direction = widget.data?.trend?.direction ?? 'flat';
-    const isDown = direction === 'down';
 
     return (
         <Card className="@container/card">
             <CardHeader>
-                <CardDescription className="truncate">{widget.label}</CardDescription>
+                <CardDescription className="truncate">
+                    {widget.label}
+                </CardDescription>
                 <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
                     {formatMetricValue(widget)}
                 </CardTitle>
                 <CardAction>
-                    <Badge variant="outline">
-                        {isDown ? (
-                            <TrendingDownIcon className="text-destructive" />
-                        ) : (
-                            <TrendingUpIcon className="text-success" />
-                        )}
-                        {formatTrendPercent(widget)}
-                    </Badge>
+                    {direction ? (
+                        <Badge variant="outline">
+                            {direction === 'down' && (
+                                <TrendingDownIcon className="text-destructive" />
+                            )}
+                            {direction === 'up' && (
+                                <TrendingUpIcon className="text-success" />
+                            )}
+                            {formatTrendPercent(widget)}
+                        </Badge>
+                    ) : null}
                 </CardAction>
             </CardHeader>
             <CardFooter className="flex-col items-start gap-1.5 text-sm">
                 <div className="line-clamp-1 flex gap-2 font-medium">
                     {metricTrendComment(widget)}{' '}
-                    {isDown ? (
+                    {direction === 'down' && (
                         <TrendingDownIcon className="size-4 text-destructive" />
-                    ) : (
+                    )}
+                    {direction === 'up' && (
                         <TrendingUpIcon className="size-4 text-success" />
                     )}
                 </div>

@@ -12,7 +12,7 @@ use Flatpack\Schema\Generated\CompositionSchemaKeys;
 use Flatpack\Schema\Widgets\WidgetSchemaNormalizer;
 use Flatpack\Services\Runtime\WidgetRuntime;
 use Flatpack\Support\Exceptions\WidgetRuntimeException;
-use Flatpack\Widgets\WidgetDataContext;
+use Flatpack\Widgets\WidgetContext;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -82,7 +82,7 @@ final readonly class DashboardController
                 $provider = $this->widgetRuntime->resolveProvider($providerKey);
                 $data = $this->widgetRuntime->resolveData(
                     $provider,
-                    new WidgetDataContext(
+                    new WidgetContext(
                         request: $request,
                         entity: $entity,
                         widgetId: $widgetId,
@@ -114,7 +114,7 @@ final readonly class DashboardController
     {
         $data = is_array($rawData) ? $rawData : [];
         $type = isset($definition['type']) ? trim((string) $definition['type']) : '';
-        if ($type !== 'card') {
+        if ($type !== 'status') {
             return $data;
         }
 

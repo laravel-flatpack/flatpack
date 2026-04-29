@@ -24,6 +24,7 @@ import {
 import { WidgetLoading } from '@/components/widget-loading';
 import { CardWidget } from '@/components/widgets/card';
 import { MetricWidget } from '@/components/widgets/metric';
+import { StatusWidget } from '@/components/widgets/status';
 import DemoLayout from '@/layouts/demo-layout';
 import {
     buildDemoFieldRenderProps,
@@ -124,11 +125,15 @@ function DemoWidgetPreview({ entry }: { entry: DemoComponentWidgetEntry }) {
     return (
         <div className="flex flex-col gap-4">
             <Suspense fallback={<WidgetLoading {...entry.props} />}>
-                {entry.props.type === 'metric' ? (
+                {entry.props.type === 'metric' && (
                     <MetricWidget widget={entry.props} />
-                ) : entry.props.type === 'card' ? (
+                )}
+                {entry.props.type === 'card' && (
                     <CardWidget widget={entry.props} />
-                ) : null}
+                )}
+                {entry.props.type === 'status' && (
+                    <StatusWidget widget={entry.props} />
+                )}
             </Suspense>
         </div>
     );
