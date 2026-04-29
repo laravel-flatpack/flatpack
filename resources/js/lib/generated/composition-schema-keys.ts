@@ -2,7 +2,7 @@
  * AUTO-GENERATED FILE — do not edit by hand.
  *
  * Regenerate with: `php artisan flatpack:generate-composition-schema-keys`
- * Source: resources/schema/form.json, resources/schema/list.json
+ * Source: resources/schema/form.json, resources/schema/list.json, resources/schema/dashboard.json
  *
  * Intentionally small so the client bundle does not embed full schema JSON.
  */
@@ -234,6 +234,17 @@ export const OPTION_STATUS_VALUES = [
     'error',
     'info',
     'pending',
+    'success',
+    'warning',
+] as const;
+
+/**
+ * Widget status values. Mirrors PHP `CompositionSchemaKeys::WIDGET_STATUS_VALUES`.
+ */
+export const WIDGET_STATUS_VALUES = [
+    'default',
+    'error',
+    'info',
     'success',
     'warning',
 ] as const;

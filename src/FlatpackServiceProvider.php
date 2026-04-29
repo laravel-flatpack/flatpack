@@ -20,10 +20,12 @@ use Flatpack\Http\Middleware\ConfigureFlatpackViteAssets;
 use Flatpack\Http\Middleware\SetFlatpackInertiaRootView;
 use Flatpack\Http\Middleware\ShareFlatpackInertiaData;
 use Flatpack\Schema\Forms\FormSchemaNormalizer;
+use Flatpack\Schema\Widgets\WidgetSchemaNormalizer;
 use Flatpack\Services\Lists\ListRecordsLoader;
 use Flatpack\Services\Navigation\BreadcrumbsBuilder;
 use Flatpack\Services\Navigation\FlatpackMenuBuilder;
 use Flatpack\Services\Navigation\MenuBuilder;
+use Flatpack\Services\Runtime\WidgetRuntime;
 use Flatpack\Support\AuthenticationRedirectCallbacks;
 use Flatpack\Support\PolicyAwareAuthorizer;
 use Illuminate\Auth\AuthenticationException;
@@ -102,8 +104,10 @@ final class FlatpackServiceProvider extends ServiceProvider
         $this->app->singleton(ListRecordsLoader::class, fn (): ListRecordsLoader => new ListRecordsLoader);
 
         $this->app->singleton(FormSchemaNormalizer::class);
+        $this->app->singleton(WidgetSchemaNormalizer::class);
 
         $this->app->singleton(ActionModelClassResolver::class);
+        $this->app->singleton(WidgetRuntime::class);
     }
 
     protected function registerContractBindings(): void

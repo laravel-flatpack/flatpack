@@ -10,6 +10,7 @@ import type {
 import type { FlatpackActionCondition } from '@/types/flatpack-actions';
 import type { FlatpackFormCompositionSchema } from '@/types/form-composition';
 import type { FlatpackListCompositionSchema } from '@/types/list-composition';
+import type { FlatpackWidgetsCompositionSchema } from '@/types/widgets-composition';
 
 export type { FlatpackFormCompositionSchema, FlatpackListCompositionSchema };
 
@@ -33,6 +34,8 @@ export type FlatpackListHeaderAction = {
 /** Props for `/flatpack` dashboard (Inertia `dashboard` page). */
 export type FlatpackDashboardPageProps = {
     schema?: Record<string, unknown> | null;
+    widgets?: FlatpackWidgetsCompositionSchema['widgets'];
+    widgets_schema?: FlatpackWidgetsCompositionSchema | null;
     composition_debug?: string[];
 };
 

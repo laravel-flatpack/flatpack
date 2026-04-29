@@ -30,11 +30,12 @@ final class GenerateCompositionSchemaKeysCommand extends Command
         $root = dirname(__DIR__, 3);
         $formPath = $root . '/resources/schema/form.json';
         $listPath = $root . '/resources/schema/list.json';
+        $dashboardPath = $root . '/resources/schema/dashboard.json';
         $outPhp = $root . '/' . self::OUTPUT_PHP_RELATIVE;
         $outTs = $root . '/' . self::OUTPUT_TS_RELATIVE;
 
-        if (! is_file($formPath) || ! is_file($listPath)) {
-            $this->error('Schema JSON files are missing (expected resources/schema/form.json and list.json).');
+        if (! is_file($formPath) || ! is_file($listPath) || ! is_file($dashboardPath)) {
+            $this->error('Schema JSON files are missing (expected resources/schema/form.json, list.json, and dashboard.json).');
 
             return self::FAILURE;
         }
@@ -42,13 +43,14 @@ final class GenerateCompositionSchemaKeysCommand extends Command
         try {
             $form = $this->decodeJsonFile($formPath);
             $list = $this->decodeJsonFile($listPath);
+            $dashboard = $this->decodeJsonFile($dashboardPath);
         } catch (Throwable $e) {
             $this->error('Failed to read schema JSON: ' . $e->getMessage());
 
             return self::FAILURE;
         }
 
-        $expected = $generator->extractKeySets($form, $list);
+        $expected = $generator->extractKeySets($form, $list, $dashboard);
 
         if ($this->option('check')) {
             if (! $this->generatedPhpMatches($expected)) {
@@ -58,7 +60,7 @@ final class GenerateCompositionSchemaKeysCommand extends Command
             }
             $tsContent = $this->formatTypeScriptWithBiomeIfPossible(
                 $root,
-                $generator->generateTypeScriptModule($form, $list),
+                $generator->generateTypeScriptModule($form, $list, $dashboard),
             );
             $existingTs = is_file($outTs) ? File::get($outTs) : null;
             if ($existingTs !== $tsContent) {
@@ -73,14 +75,14 @@ final class GenerateCompositionSchemaKeysCommand extends Command
             return self::SUCCESS;
         }
 
-        $content = $generator->generate($form, $list);
+        $content = $generator->generate($form, $list, $dashboard);
         File::ensureDirectoryExists(dirname($outPhp));
         File::put($outPhp, $content);
         $this->maybeRunPint($root, $outPhp);
 
         $tsOut = $this->formatTypeScriptWithBiomeIfPossible(
             $root,
-            $generator->generateTypeScriptModule($form, $list),
+            $generator->generateTypeScriptModule($form, $list, $dashboard),
         );
         File::ensureDirectoryExists(dirname($outTs));
         File::put($outTs, $tsOut);
@@ -95,6 +97,7 @@ final class GenerateCompositionSchemaKeysCommand extends Command
      * @param  array{
      *     formRootPropertyKeys: list<string>,
      *     listRootPropertyKeys: list<string>,
+     *     dashboardRootPropertyKeys: list<string>,
      *     formFieldTypesCanonical: list<string>,
      *     headerActionEntryKeys: list<string>,
      *     listBulkActionEntryKeys: list<string>,
@@ -105,6 +108,7 @@ final class GenerateCompositionSchemaKeysCommand extends Command
      *     buttonVariantValues: list<string>,
      *     buttonVariantUiValues: list<string>,
      *     optionStatusValues: list<string>,
+     *     widgetStatusValues: list<string>,
      *     listFilterTypes: list<string>,
      *     listFilterDateModes: list<string>,
      *     listColumnGenericYamlTypes: list<string>,
@@ -125,6 +129,7 @@ final class GenerateCompositionSchemaKeysCommand extends Command
             && $expected['buttonVariantValues'] === SchemaKeys::BUTTON_VARIANT_VALUES
             && $expected['buttonVariantUiValues'] === SchemaKeys::BUTTON_VARIANT_UI_VALUES
             && $expected['optionStatusValues'] === SchemaKeys::OPTION_STATUS_VALUES
+            && $expected['widgetStatusValues'] === SchemaKeys::WIDGET_STATUS_VALUES
             && $expected['listFilterTypes'] === SchemaKeys::LIST_FILTER_TYPES
             && $expected['listFilterDateModes'] === SchemaKeys::LIST_FILTER_DATE_MODES
             && $expected['listColumnGenericYamlTypes'] === SchemaKeys::LIST_COLUMN_GENERIC_YAML_TYPES

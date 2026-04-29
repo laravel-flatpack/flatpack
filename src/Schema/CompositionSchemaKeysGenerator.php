@@ -38,6 +38,7 @@ final class CompositionSchemaKeysGenerator
      * @return array{
      *     formRootPropertyKeys: list<string>,
      *     listRootPropertyKeys: list<string>,
+     *     dashboardRootPropertyKeys: list<string>,
      *     formFieldTypesCanonical: list<string>,
      *     headerActionEntryKeys: list<string>,
      *     listBulkActionEntryKeys: list<string>,
@@ -48,19 +49,22 @@ final class CompositionSchemaKeysGenerator
      *     buttonVariantValues: list<string>,
      *     buttonVariantUiValues: list<string>,
      *     optionStatusValues: list<string>,
+     *     widgetStatusValues: list<string>,
      *     listFilterTypes: list<string>,
      *     listFilterDateModes: list<string>,
      *     listColumnGenericYamlTypes: list<string>,
      *     listColumnActionButtonEntryKeys: list<string>,
      * }
      */
-    public function extractKeySets(array $formSchema, array $listSchema): array
+    public function extractKeySets(array $formSchema, array $listSchema, array $dashboardSchema): array
     {
         $formRoot = self::sortedStringKeys($formSchema['properties'] ?? []);
         $listRoot = self::sortedStringKeys($listSchema['properties'] ?? []);
+        $dashboardRoot = self::sortedStringKeys($dashboardSchema['properties'] ?? []);
 
         $formDefs = $formSchema['$defs'] ?? [];
         $listDefs = $listSchema['$defs'] ?? [];
+        $dashboardDefs = $dashboardSchema['$defs'] ?? [];
 
         $formSuccess = self::successRedirectStringTargets($formDefs['successRedirect'] ?? null);
         $listSuccess = self::successRedirectStringTargets($listDefs['successRedirect'] ?? null);
@@ -73,6 +77,7 @@ final class CompositionSchemaKeysGenerator
         $formOptionStatus = self::enumStrings($formDefs['optionStatus']['enum'] ?? null);
         $listOptionStatus = self::enumStrings($listDefs['optionStatus']['enum'] ?? null);
         self::assertEnumListsMatch('optionStatus', $formOptionStatus, $listOptionStatus);
+        $widgetStatusValues = self::enumStrings($dashboardDefs['widgetStatus']['enum'] ?? null);
 
         $presetTypes = self::enumStrings($formDefs['preset']['properties']['type']['enum'] ?? null);
 
@@ -118,6 +123,7 @@ final class CompositionSchemaKeysGenerator
         return [
             'formRootPropertyKeys' => $formRoot,
             'listRootPropertyKeys' => $listRoot,
+            'dashboardRootPropertyKeys' => $dashboardRoot,
             'formFieldTypesCanonical' => $canonicalTypes,
             'headerActionEntryKeys' => $headerUnion,
             'listBulkActionEntryKeys' => $bulkKeys,
@@ -128,6 +134,7 @@ final class CompositionSchemaKeysGenerator
             'buttonVariantValues' => $formButton,
             'buttonVariantUiValues' => $buttonVariantUiValues,
             'optionStatusValues' => $formOptionStatus,
+            'widgetStatusValues' => $widgetStatusValues,
             'listFilterTypes' => $listFilterTypes,
             'listFilterDateModes' => $listFilterDateModes,
             'listColumnGenericYamlTypes' => $listColumnGenericYamlTypes,
@@ -138,10 +145,11 @@ final class CompositionSchemaKeysGenerator
     /**
      * @param  array<string, mixed>  $formSchema
      * @param  array<string, mixed>  $listSchema
+     * @param  array<string, mixed>  $dashboardSchema
      */
-    public function generate(array $formSchema, array $listSchema): string
+    public function generate(array $formSchema, array $listSchema, array $dashboardSchema): string
     {
-        $keys = $this->extractKeySets($formSchema, $listSchema);
+        $keys = $this->extractKeySets($formSchema, $listSchema, $dashboardSchema);
         $formRoot = $keys['formRootPropertyKeys'];
         $listRoot = $keys['listRootPropertyKeys'];
         $canonicalTypes = $keys['formFieldTypesCanonical'];
@@ -154,6 +162,7 @@ final class CompositionSchemaKeysGenerator
         $buttonVariantValues = $keys['buttonVariantValues'];
         $buttonVariantUiValues = $keys['buttonVariantUiValues'];
         $optionStatusValues = $keys['optionStatusValues'];
+        $widgetStatusValues = $keys['widgetStatusValues'];
         $listFilterTypes = $keys['listFilterTypes'];
         $listFilterDateModes = $keys['listFilterDateModes'];
         $listColumnGenericYamlTypes = $keys['listColumnGenericYamlTypes'];
@@ -171,7 +180,7 @@ PHP;
         $header .= ' * AUTO-GENERATED FILE — do not edit by hand.' . "\n";
         $header .= ' *' . "\n";
         $header .= ' * Regenerate with: `php artisan flatpack:generate-composition-schema-keys`' . "\n";
-        $header .= ' * Source: resources/schema/form.json, resources/schema/list.json' . "\n";
+        $header .= ' * Source: resources/schema/form.json, resources/schema/list.json, resources/schema/dashboard.json' . "\n";
         $header .= ' */' . "\n";
         $header .= 'final class CompositionSchemaKeys' . "\n";
         $header .= '{' . "\n";
@@ -193,6 +202,7 @@ PHP;
         $body .= self::constBlock('form.json `$defs.buttonVariant` enum (includes YAML alias `primary`).', 'BUTTON_VARIANT_VALUES', $buttonVariantValues);
         $body .= self::constBlock('Button variants after normalizing `primary` → `default` (shadcn / runtime output).', 'BUTTON_VARIANT_UI_VALUES', $buttonVariantUiValues);
         $body .= self::constBlock('form.json `$defs.optionStatus` enum (select/column option status).', 'OPTION_STATUS_VALUES', $optionStatusValues);
+        $body .= self::constBlock('dashboard.json `$defs.widgetStatus` enum (card widget badge status).', 'WIDGET_STATUS_VALUES', $widgetStatusValues);
         $body .= self::constBlock('list.json filterSelect / filterDate `type` const values.', 'LIST_FILTER_TYPES', $listFilterTypes);
         $body .= self::constBlock('list.json `$defs.filterDate.properties.mode` enum.', 'LIST_FILTER_DATE_MODES', $listFilterDateModes);
 
@@ -204,17 +214,18 @@ PHP;
      *
      * @param  array<string, mixed>  $formSchema
      * @param  array<string, mixed>  $listSchema
+     * @param  array<string, mixed>  $dashboardSchema
      */
-    public function generateTypeScriptModule(array $formSchema, array $listSchema): string
+    public function generateTypeScriptModule(array $formSchema, array $listSchema, array $dashboardSchema): string
     {
-        $keys = $this->extractKeySets($formSchema, $listSchema);
+        $keys = $this->extractKeySets($formSchema, $listSchema, $dashboardSchema);
 
         $out = '';
         $out .= "/**\n";
         $out .= " * AUTO-GENERATED FILE — do not edit by hand.\n";
         $out .= " *\n";
         $out .= " * Regenerate with: `php artisan flatpack:generate-composition-schema-keys`\n";
-        $out .= " * Source: resources/schema/form.json, resources/schema/list.json\n";
+        $out .= " * Source: resources/schema/form.json, resources/schema/list.json, resources/schema/dashboard.json\n";
         $out .= " *\n";
         $out .= " * Intentionally small so the client bundle does not embed full schema JSON.\n";
         $out .= " */\n\n";
@@ -289,6 +300,11 @@ PHP;
             'Option status values. Mirrors PHP `CompositionSchemaKeys::OPTION_STATUS_VALUES`.',
             'OPTION_STATUS_VALUES',
             $keys['optionStatusValues'],
+        );
+        $out .= self::tsConstAsConst(
+            'Widget status values. Mirrors PHP `CompositionSchemaKeys::WIDGET_STATUS_VALUES`.',
+            'WIDGET_STATUS_VALUES',
+            $keys['widgetStatusValues'],
         );
         $out .= self::tsConstAsConst(
             'List filter discriminator types (filterSelect / filterDate). Mirrors PHP `CompositionSchemaKeys::LIST_FILTER_TYPES`.',

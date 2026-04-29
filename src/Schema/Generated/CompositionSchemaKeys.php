@@ -8,7 +8,7 @@ namespace Flatpack\Schema\Generated;
  * AUTO-GENERATED FILE — do not edit by hand.
  *
  * Regenerate with: `php artisan flatpack:generate-composition-schema-keys`
- * Source: resources/schema/form.json, resources/schema/list.json
+ * Source: resources/schema/form.json, resources/schema/list.json, resources/schema/dashboard.json
  */
 final class CompositionSchemaKeys
 {
@@ -271,6 +271,19 @@ final class CompositionSchemaKeys
         'error',
         'info',
         'pending',
+        'success',
+        'warning',
+    ];
+
+    /**
+     * dashboard.json `$defs.widgetStatus` enum (card widget badge status).
+     *
+     * @var list<string>
+     */
+    public const array WIDGET_STATUS_VALUES = [
+        'default',
+        'error',
+        'info',
         'success',
         'warning',
     ];

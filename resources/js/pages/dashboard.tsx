@@ -1,6 +1,6 @@
 import { Head } from '@inertiajs/react';
 import { lazy, Suspense } from 'react';
-import { SectionCards } from '@/components/section-cards';
+import { FlatpackDashboardWidgets } from '@/components/widgets/flatpack-dashboard-widgets';
 import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
 import data from '@/data/data.json';
 import { useCompositionDebugLog } from '@/hooks/use-composition-debug-log';
@@ -31,7 +31,14 @@ export default function FlatpackDashboard(props: FlatpackDashboardPageProps) {
                     <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
                 </div>
             </div>
-            <SectionCards />
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+                <div className="col-span-1 md:col-span-2 xl:col-span-4">
+                    <FlatpackDashboardWidgets
+                        widgets={props.widgets}
+                        tabPanels={props.widgets_schema?.tab_panels}
+                    />
+                </div>
+            </div>
             <Suspense
                 fallback={
                     <div className="h-96 animate-pulse rounded-xl border border-border bg-muted/40" />

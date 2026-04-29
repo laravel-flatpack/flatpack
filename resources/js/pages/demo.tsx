@@ -1,5 +1,11 @@
 import { Head, usePage } from '@inertiajs/react';
-import { ChevronDown, RadioIcon } from 'lucide-react';
+import {
+    BlocksIcon,
+    ChevronDown,
+    LayersIcon,
+    RadioIcon,
+    SlidersHorizontalIcon,
+} from 'lucide-react';
 import {
     type ReactNode,
     Suspense,
@@ -9,24 +15,28 @@ import {
     useState,
 } from 'react';
 import { FieldLoading } from '@/components/field-loading';
+import { NavHeader } from '@/components/nav-header';
 import {
     Collapsible,
     CollapsibleContent,
     CollapsibleTrigger,
 } from '@/components/ui/collapsible';
+import { CardWidget } from '@/components/widgets/card';
+import { MetricWidget } from '@/components/widgets/metric';
 import DemoLayout from '@/layouts/demo-layout';
 import {
     buildDemoFieldRenderProps,
     type DemoLazyFieldMap,
-    demoCatalogToByType,
     lazyFieldMapFromCatalog,
-    resolveDemoComponentSelection,
 } from '@/lib/demo';
 import { mergeDemoFlatQuery, resolveDemoShowValue } from '@/lib/demo-query';
+import { route } from '@/lib/route';
 import type {
     DemoComponentCatalogEntry,
     DemoComponentsInertiaProps,
+    DemoComponentWidgetEntry,
 } from '@/types/demo';
+import { WidgetLoading } from '@/components/widget-loading';
 
 function formatDemoLiveValue(value: unknown): string {
     return JSON.stringify(
@@ -110,17 +120,58 @@ function DemoFieldPreview({
     );
 }
 
+function DemoWidgetPreview({
+    entry,
+}: {
+    entry: DemoComponentWidgetEntry;
+}) {
+    return (
+        <div className="flex flex-col gap-4">
+            <Suspense fallback={<WidgetLoading {...entry.props} />}>
+                {entry.props.type === 'metric' ? (
+                    <MetricWidget widget={entry.props} />
+                ) : entry.props.type === 'card' ? (
+                    <CardWidget widget={entry.props} />
+                ) : null}
+            </Suspense>
+        </div>
+    );
+}   
+
 function DemoComponents() {
     const inertiaPage = usePage<DemoComponentsInertiaProps>();
-    const { query, catalog } = inertiaPage.props;
+    const query = inertiaPage.props.query ?? {};
+    const fields = inertiaPage.props.fieldsCatalog;
+    const widgets = inertiaPage.props.widgetsCatalog;
 
     const catalogDerived = useMemo(
         () => ({
-            byType: demoCatalogToByType(catalog),
-            lazyByType: lazyFieldMapFromCatalog(catalog),
-            orderedTypes: catalog.map((e) => e.props.type),
+            byType: fields.reduce<Record<string, DemoComponentCatalogEntry>>(
+                (acc, entry) => {
+                    if (!Object.hasOwn(acc, entry.props.type)) {
+                        acc[entry.props.type] = entry;
+                    }
+                    return acc;
+                },
+                {},
+            ),
+            lazyByType: lazyFieldMapFromCatalog(fields),
+            orderedTypes: [...new Set(fields.map((e) => e.props.type))],
         }),
-        [catalog],
+        [fields],
+    );
+    const widgetsByType = useMemo(
+        () =>
+            widgets.reduce<Record<string, DemoComponentWidgetEntry>>(
+                (acc, entry) => {
+                    if (!Object.hasOwn(acc, entry.props.type)) {
+                        acc[entry.props.type] = entry;
+                    }
+                    return acc;
+                },
+                {},
+            ),
+        [widgets],
     );
 
     const browserSearch =
@@ -136,14 +187,39 @@ function DemoComponents() {
         [query, inertiaPage.url, browserSearch],
     );
 
-    const { selectorRaw, normalized, requestedUnknown } = useMemo(
-        () => resolveDemoComponentSelection(flatQuery, catalogDerived.byType),
-        [flatQuery, catalogDerived.byType],
-    );
+    const catalogParam = (flatQuery.catalog ?? 'all').toLowerCase();
+    const selectedCatalog: 'all' | 'fields' | 'widgets' =
+        catalogParam === 'fields' || catalogParam === 'widgets'
+            ? catalogParam
+            : 'all';
+    const lookupCatalog: 'fields' | 'widgets' =
+        catalogParam === 'widgets' ? 'widgets' : 'fields';
+
+    const selectorRaw = (
+        flatQuery.type ??
+        flatQuery.demo ??
+        flatQuery.field ??
+        flatQuery.widget ??
+        flatQuery.column ??
+        ''
+    ).trim();
+    const selectorNormalized = selectorRaw.toLowerCase();
+    const selectedWidgetEntry =
+        selectorNormalized !== '' ? widgetsByType[selectorNormalized] : undefined;
+    const selectedFieldEntry =
+        selectorNormalized !== '' ? catalogDerived.byType[selectorNormalized] : undefined;
+    const requestedUnknown =
+        selectorNormalized !== '' && (
+            lookupCatalog === 'widgets'
+                ? selectedWidgetEntry === undefined
+                : selectedFieldEntry === undefined
+        );
 
     const headTitle =
-        normalized !== null
-            ? `${catalogDerived.byType[normalized].title} — Components`
+        lookupCatalog === 'widgets' && selectedWidgetEntry !== undefined
+            ? `${selectedWidgetEntry.title} — Widgets`
+            : selectedFieldEntry !== undefined
+                ? `${selectedFieldEntry.title} — Components`
             : 'Components';
 
     if (requestedUnknown) {
@@ -159,6 +235,14 @@ function DemoComponents() {
                     <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono">
                         ?type=
                     </code>{' '}
+                    {lookupCatalog === 'widgets' ? (
+                        <>
+                            with{' '}
+                            <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono">
+                                catalog=widgets
+                            </code>{' '}
+                        </>
+                    ) : null}
                     or open this page without those parameters to see all
                     components.
                 </p>
@@ -166,95 +250,162 @@ function DemoComponents() {
         );
     }
 
-    if (normalized !== null) {
+    if (lookupCatalog === 'widgets' && selectedWidgetEntry !== undefined) {
         return (
             <div
                 className="p-6"
-                data-demo-component={normalized}
+                data-demo-component={selectedWidgetEntry.id}
+                data-slot="demo-components-single"
+            >
+                <Head title={headTitle} />
+                <DemoWidgetPreview entry={selectedWidgetEntry} />
+            </div>
+        );
+    }
+
+    if (selectedFieldEntry !== undefined) {
+        return (
+            <div
+                className="p-6"
+                data-demo-component={selectedFieldEntry.id}
                 data-slot="demo-components-single"
             >
                 <Head title={headTitle} />
                 <DemoFieldPreview
-                    entry={catalogDerived.byType[normalized]}
+                    entry={selectedFieldEntry}
                     queryOverrides={flatQuery}
                     demoQueryFlat={flatQuery}
                     lazyByType={catalogDerived.lazyByType}
                 />
             </div>
-        );
+        );  
     }
 
     return (
-        <div
-            className="flex flex-col gap-10 p-4 md:p-6"
-            data-slot="demo-components-all"
-        >
-            <Head title={headTitle} />
-            <div className="flex flex-col gap-2">
-                <h1 className="text-2xl font-semibold tracking-tight">
-                    Components
-                </h1>
-                <p className="text-sm text-muted-foreground">
-                    Preview Flatpack UI primitives. Use{' '}
-                    <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">
-                        ?type=
-                    </code>
-                    (or
-                    <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">
-                        ?demo=text
-                    </code>
-                    ) to show one field. Optional query keys override catalog
-                    props (for example{' '}
-                    <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">
-                        placeholder
-                    </code>
-                    ,{' '}
-                    <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">
-                        label
-                    </code>
-                    ,{' '}
-                    <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">
-                        showFixedToolbar
-                    </code>
-                    ). Use{' '}
-                    <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">
-                        showValue=true
-                    </code>{' '}
-                    or{' '}
-                    <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">
-                        showValue=false
-                    </code>{' '}
-                    to toggle the live value panel.
-                </p>
+        <>
+            <NavHeader
+                activeId={selectedCatalog}
+                items={[
+                    {
+                        id: 'all',
+                        label: 'All Components',
+                        href: route('flatpack.demo.components'),
+                        icon: LayersIcon,
+                    },
+                    {
+                        id: 'fields',
+                        label: 'Form Fields',
+                        href: route('flatpack.demo.components', {
+                            catalog: 'fields',
+                        }),
+                        icon: SlidersHorizontalIcon,
+                    },
+                    {
+                        id: 'widgets',
+                        label: 'Widgets',
+                        href: route('flatpack.demo.components', {
+                            catalog: 'widgets',
+                        }),
+                        icon: BlocksIcon,
+                    },
+                ]}
+            />
+            <div className="mx-2 flex w-full max-w-7xl flex-col gap-6 py-6">
+                <Head title={headTitle} />
+                <div className="flex items-center justify-between gap-3">
+                    <div className="flex flex-col gap-1">
+                        <h1 className="text-2xl font-black tracking-tight mb-4">
+                            Components
+                        </h1>
+                        <p className="text-sm text-muted-foreground">
+                            Preview Flatpack UI primitives. Use{' '}
+                            <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">
+                                ?type=
+                            </code>
+                            (or
+                            <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">
+                                ?demo=text
+                            </code>
+                            ) to show one field. Optional query keys override catalog
+                            props (for example{' '}
+                            <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">
+                                placeholder
+                            </code>
+                            ,{' '}
+                            <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">
+                                label
+                            </code>
+                            ,{' '}
+                            <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">
+                                showFixedToolbar
+                            </code>
+                            ). Use{' '}
+                            <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">
+                                showValue=true
+                            </code>{' '}
+                            or{' '}
+                            <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-xs">
+                                showValue=false
+                            </code>{' '}
+                            to toggle the live value panel.
+                        </p>
+                    </div>
+                </div>
+                {(selectedCatalog === 'all' || selectedCatalog === 'fields') && (
+                    <div className="flex flex-col gap-12">
+                        {catalogDerived.orderedTypes.map((key) => (
+                            <section
+                                key={key}
+                                id={`demo-${key}`}
+                                className="flex flex-col gap-4 scroll-mt-6"
+                                data-demo-component={key}
+                            >
+                                <div className="flex flex-col gap-1">
+                                    <h2 className="text-lg font-medium tracking-tight">
+                                        {catalogDerived.byType[key].title}
+                                    </h2>
+                                    <p className="text-sm text-muted-foreground">
+                                        {catalogDerived.byType[key].description}
+                                    </p>
+                                </div>
+                                <div className="rounded-xl border border-border bg-card/30 p-6">
+                                    <DemoFieldPreview
+                                        entry={catalogDerived.byType[key]}
+                                        queryOverrides={{}}
+                                        demoQueryFlat={flatQuery}
+                                        lazyByType={catalogDerived.lazyByType}
+                                    />
+                                </div>
+                            </section>
+                        ))}
+                    </div>
+                )}
+                {(selectedCatalog === 'all' || selectedCatalog === 'widgets') && (
+                    <div className="flex flex-col gap-12">
+                        {widgets.map((entry) => (
+                            <section 
+                                key={entry.id}
+                                id={`demo-${entry.id}`}
+                                className="flex flex-col gap-4 scroll-mt-6"
+                                data-demo-component={entry.id}
+                            >
+                                <div className="flex flex-col gap-1">
+                                    <h2 className="text-lg font-medium tracking-tight">
+                                        {entry.title}
+                                    </h2>
+                                    <p className="text-sm text-muted-foreground">
+                                        {entry.description}
+                                    </p>
+                                </div>
+                                <div className="rounded-xl border border-border bg-card/30 p-6">
+                                    <DemoWidgetPreview entry={entry} />
+                                </div>
+                            </section>
+                        ))}
+                    </div>
+                )}
             </div>
-            <div className="flex flex-col gap-12">
-                {catalogDerived.orderedTypes.map((key) => (
-                    <section
-                        key={key}
-                        id={`demo-${key}`}
-                        className="flex flex-col gap-4 scroll-mt-6"
-                        data-demo-component={key}
-                    >
-                        <div className="flex flex-col gap-1">
-                            <h2 className="text-lg font-medium tracking-tight">
-                                {catalogDerived.byType[key].title}
-                            </h2>
-                            <p className="text-sm text-muted-foreground">
-                                {catalogDerived.byType[key].description}
-                            </p>
-                        </div>
-                        <div className="rounded-xl border border-border bg-card/30 p-6">
-                            <DemoFieldPreview
-                                entry={catalogDerived.byType[key]}
-                                queryOverrides={{}}
-                                demoQueryFlat={flatQuery}
-                                lazyByType={catalogDerived.lazyByType}
-                            />
-                        </div>
-                    </section>
-                ))}
-            </div>
-        </div>
+        </>
     );
 }
 

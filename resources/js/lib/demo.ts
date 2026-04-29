@@ -19,7 +19,7 @@ export type DemoLazyFieldMap = Record<
 >;
 
 export function demoCatalogToByType(
-    catalog: DemoComponentCatalogEntry[],
+    catalog: { props: { type: string } }[],
 ): Record<string, DemoComponentCatalogEntry> {
     return Object.fromEntries(catalog.map((e) => [e.props.type, e])) as Record<
         string,
@@ -60,7 +60,7 @@ export function resolveDemoComponentSelection(
 }
 
 export function lazyFieldMapFromCatalog(
-    catalog: DemoComponentCatalogEntry[],
+    catalog: { props: { type: string } }[],
 ): DemoLazyFieldMap {
     const types = [...new Set(catalog.map((e) => e.props.type))];
     return Object.fromEntries(

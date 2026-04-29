@@ -17,16 +17,125 @@ final class DemoController
     {
         return FlatpackResponse::inertia('demo', [
             'query' => $request->query(),
-            'catalog' => $this->catalog(),
+            'widgetsCatalog' => $this->widgetsCatalog(),
+            'fieldsCatalog' => $this->fieldsCatalog(),
         ]);
     }
 
     /**
-     * Component docs catalog for the `/demo` page.
+     * Component docs widgets catalog for the `/demo` page.
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    private function widgetsCatalog(): array
+    {
+        return [
+            [
+                'id' => 'total_revenue',
+                'title' => 'Metric card (currency format)',
+                'description' => 'Metric card widget with a currency value format and a monthly period.',
+                'props' => [
+                    'type' => 'metric',
+                    'provider' => 'demo_total_revenue',
+                    'label' => 'Total Revenue',
+                    'description' => 'Revenue trend for the last 6 months',
+                    'value_format' => [
+                        'kind' => 'currency',
+                        'currency' => 'USD',
+                        'maximumFractionDigits' => 2,
+                    ],
+                    'period' => [
+                        'kind' => 'month',
+                        'lookback' => 6,
+                        'label' => 'this month',
+                    ],
+                    'trend' => [
+                        'precision' => 1,
+                    ],
+                    'data' => [
+                        'value' => 1250,
+                        'trend' => [
+                            'direction' => 'up',
+                            'percent' => 12.5,
+                            'comment' => 'Trending up this month',
+                        ],
+                    ],
+                ]
+            ],
+            [
+                'id' => 'new_customers',
+                'title' => 'Metric card (number format)',
+                'description' => 'Metric card widget with a number value format and a monthly period.',
+                'props' => [
+                    'type' => 'metric',
+                    'provider' => 'demo_new_customers',
+                    'label' => 'New Customers',
+                    'description' => 'Acquisition trend for the last 3 months',
+                    'value_format' => [
+                        'kind' => 'number',
+                        'maximumFractionDigits' => 0,
+                    ],
+                    'period' => [
+                        'kind' => 'month',
+                        'lookback' => 3,
+                        'label' => 'this period',
+                    ],
+                    'trend' => [
+                        'precision' => 1,
+                    ],
+                    'data' => [
+                        'value' => 1234,
+                        'trend' => [
+                            'direction' => 'down',
+                            'percent' => -20.0,
+                            'comment' => 'Down 20% this period',
+                        ],
+                    ],
+                ],
+            ],
+            [
+                'id' => 'status_card',
+                'title' => 'Status card',
+                'description' => 'Operational status card with state, key value, and last update.',
+                'props' => [
+                    'type' => 'card',
+                    'provider' => 'demo_status_card',
+                    'label' => 'API Gateway',
+                    'data' => [
+                        'status' => 'warning',
+                        'value' => '99.91%',
+                        'context' => 'Availability over last 24h',
+                        'updated_at' => '2m ago',
+                        'description' => 'Elevated error rate in EU region',
+                    ],
+                ],
+            ],
+            [
+                'id' => 'status_card_2',
+                'title' => 'Status card',
+                'description' => 'Operational status card with state, key value, and last update.',
+                'props' => [
+                    'type' => 'card',
+                    'provider' => 'demo_status_card',
+                    'label' => 'Health Check',
+                    'data' => [
+                        'status' => 'success',
+                        'value' => '99.99%',
+                        'context' => 'Availability over last 24h',
+                        'updated_at' => '2m ago',
+                        'description' => 'All services are healthy',
+                    ],
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * Component docs fields catalog for the `/demo` page.
      *
      * @return list<array<string, mixed>>
      */
-    private function catalog(): array
+    private function fieldsCatalog(): array
     {
         return [
             [
@@ -284,7 +393,7 @@ final class DemoController
                 ],
                 'showValue' => true,
                 'value' => array_map(
-                    static fn (): array => [
+                    static fn(): array => [
                         'id' => fake()->uuid(),
                         'name' => fake()->name(),
                         'email' => fake()->email(),

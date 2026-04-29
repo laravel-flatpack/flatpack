@@ -636,3 +636,77 @@ describe('list composition schema (resources/schema/list.json)', function () {
         expect($errors)->not->toBeEmpty();
     });
 });
+
+describe('dashboard composition schema (resources/schema/dashboard.json)', function () {
+    it('accepts root-level widgets', function () {
+        $errors = CompositionSchemaAsserter::validateDashboard([
+            'widgets' => [
+                'revenue' => [
+                    'type' => 'metric',
+                    'provider' => 'total_revenue',
+                    'label' => 'Total Revenue',
+                    'value_format' => [
+                        'kind' => 'currency',
+                        'currency' => 'USD',
+                    ],
+                    'period' => [
+                        'kind' => 'month',
+                    ],
+                ],
+            ],
+        ]);
+
+        expect($errors)->toBeEmpty();
+    });
+
+    it('accepts tabs with nested widgets', function () {
+        $errors = CompositionSchemaAsserter::validateDashboard([
+            'tabs' => [
+                'overview' => [
+                    'label' => 'Overview',
+                    'widgets' => [
+                        'revenue' => [
+                            'type' => 'metric',
+                            'provider' => 'total_revenue',
+                            'label' => 'Total Revenue',
+                            'value_format' => [
+                                'kind' => 'currency',
+                                'currency' => 'USD',
+                            ],
+                            'period' => [
+                                'kind' => 'month',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        expect($errors)->toBeEmpty();
+    });
+
+    it('rejects metric widget without provider', function () {
+        $errors = CompositionSchemaAsserter::validateDashboard([
+            'tabs' => [
+                'overview' => [
+                    'label' => 'Overview',
+                    'widgets' => [
+                        'revenue' => [
+                            'type' => 'metric',
+                            'label' => 'Total Revenue',
+                            'value_format' => [
+                                'kind' => 'currency',
+                                'currency' => 'USD',
+                            ],
+                            'period' => [
+                                'kind' => 'month',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        expect($errors)->not->toBeEmpty();
+    });
+});

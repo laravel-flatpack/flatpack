@@ -14,10 +14,12 @@ it('keeps generated CompositionSchemaKeys aligned with the JSON schema files', f
     $generator = new CompositionSchemaKeysGenerator;
     $form = json_decode(File::get($root . '/resources/schema/form.json'), true, flags: JSON_THROW_ON_ERROR);
     $list = json_decode(File::get($root . '/resources/schema/list.json'), true, flags: JSON_THROW_ON_ERROR);
+    $dashboard = json_decode(File::get($root . '/resources/schema/dashboard.json'), true, flags: JSON_THROW_ON_ERROR);
     assert(is_array($form));
     assert(is_array($list));
+    assert(is_array($dashboard));
 
-    $sets = $generator->extractKeySets($form, $list);
+    $sets = $generator->extractKeySets($form, $list, $dashboard);
 
     expect($sets['formRootPropertyKeys'])->toBe(CompositionSchemaKeys::FORM_ROOT_PROPERTY_KEYS)
         ->and($sets['listRootPropertyKeys'])->toBe(CompositionSchemaKeys::LIST_ROOT_PROPERTY_KEYS)
@@ -31,6 +33,7 @@ it('keeps generated CompositionSchemaKeys aligned with the JSON schema files', f
         ->and($sets['buttonVariantValues'])->toBe(CompositionSchemaKeys::BUTTON_VARIANT_VALUES)
         ->and($sets['buttonVariantUiValues'])->toBe(CompositionSchemaKeys::BUTTON_VARIANT_UI_VALUES)
         ->and($sets['optionStatusValues'])->toBe(CompositionSchemaKeys::OPTION_STATUS_VALUES)
+        ->and($sets['widgetStatusValues'])->toBe(CompositionSchemaKeys::WIDGET_STATUS_VALUES)
         ->and($sets['listFilterTypes'])->toBe(CompositionSchemaKeys::LIST_FILTER_TYPES)
         ->and($sets['listFilterDateModes'])->toBe(CompositionSchemaKeys::LIST_FILTER_DATE_MODES)
         ->and($sets['listColumnGenericYamlTypes'])->toBe(CompositionSchemaKeys::LIST_COLUMN_GENERIC_YAML_TYPES)

@@ -124,6 +124,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Widget data providers
+    |--------------------------------------------------------------------------
+    |
+    | Provider map for dashboard widgets that require backend data resolution.
+    | Widgets in widgets.yaml reference these keys via `provider`.
+    | Implements Flatpack\Contracts\Widgets\WidgetDataProvider.
+    |
+    */
+    'widget_providers' => [],
+
+    /*
+    |--------------------------------------------------------------------------
     | Entity list pagination
     |--------------------------------------------------------------------------
     |

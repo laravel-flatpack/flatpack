@@ -13,10 +13,12 @@ it('keeps generated TypeScript composition schema keys aligned with schema files
     $generator = new CompositionSchemaKeysGenerator;
     $form = json_decode(File::get($root . '/resources/schema/form.json'), true, flags: JSON_THROW_ON_ERROR);
     $list = json_decode(File::get($root . '/resources/schema/list.json'), true, flags: JSON_THROW_ON_ERROR);
+    $dashboard = json_decode(File::get($root . '/resources/schema/dashboard.json'), true, flags: JSON_THROW_ON_ERROR);
     assert(is_array($form));
     assert(is_array($list));
+    assert(is_array($dashboard));
 
-    $sets = $generator->extractKeySets($form, $list);
+    $sets = $generator->extractKeySets($form, $list, $dashboard);
     $actual = File::get($root . '/resources/js/lib/generated/composition-schema-keys.ts');
 
     $extractTuple = static function (string $name) use ($actual): array {
@@ -60,6 +62,7 @@ it('keeps generated TypeScript composition schema keys aligned with schema files
         ->and($extractTuple('BUTTON_VARIANT_VALUES'))->toBe($sets['buttonVariantValues'])
         ->and($extractTuple('BUTTON_VARIANT_UI_VALUES'))->toBe($sets['buttonVariantUiValues'])
         ->and($extractTuple('OPTION_STATUS_VALUES'))->toBe($sets['optionStatusValues'])
+        ->and($extractTuple('WIDGET_STATUS_VALUES'))->toBe($sets['widgetStatusValues'])
         ->and($extractTuple('LIST_FILTER_TYPES'))->toBe($sets['listFilterTypes'])
         ->and($extractTuple('LIST_FILTER_DATE_MODES'))->toBe($sets['listFilterDateModes']);
 });
