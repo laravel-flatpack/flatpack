@@ -77,6 +77,7 @@ export const FORM_FIELD_TYPES_CANONICAL = [
     'combobox',
     'date-picker',
     'date-range-picker',
+    'file-upload',
     'rich-text',
     'select',
     'switch',

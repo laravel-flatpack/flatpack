@@ -6,6 +6,7 @@ export {
 } from './combobox';
 export { DatePickerField } from './date-picker';
 export { DateRangePickerField } from './date-range-picker';
+export { FileUploadField } from './file-upload';
 export { RichTextField } from './rich-text';
 export { SelectField, type SelectFieldOption } from './select';
 export { SwitchField } from './switch';

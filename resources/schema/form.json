@@ -309,6 +309,7 @@
                 "switch",
                 "rich-text",
                 "block-editor",
+                "file-upload",
                 "table",
                 "widget"
             ]
@@ -490,6 +491,9 @@
                 },
                 {
                     "$ref": "#/$defs/fieldBlockEditor"
+                },
+                {
+                    "$ref": "#/$defs/fieldFileUpload"
                 },
                 {
                     "$ref": "#/$defs/fieldTable"
@@ -1007,6 +1011,155 @@
             },
             "additionalProperties": false,
             "description": "Block editor field definition."
+        },
+        "fileUploadMode": {
+            "type": "string",
+            "enum": [
+                "relation",
+                "url"
+            ],
+            "description": "Persistence strategy for uploaded files: related records or URL(s) in model attributes."
+        },
+        "fileUploadPersistAs": {
+            "type": "string",
+            "enum": [
+                "string",
+                "json"
+            ],
+            "description": "How URL mode persists values when `multiple` is true."
+        },
+        "fieldFileUpload": {
+            "type": "object",
+            "required": [
+                "type",
+                "label",
+                "mode"
+            ],
+            "properties": {
+                "type": {
+                    "const": "file-upload"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "helperText": {
+                    "type": "string"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "rules": {
+                    "$ref": "#/$defs/validationRules"
+                },
+                "value": {},
+                "mode": {
+                    "$ref": "#/$defs/fileUploadMode"
+                },
+                "multiple": {
+                    "type": "boolean"
+                },
+                "max_files": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "max_size_kb": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "accept": {
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "minLength": 1
+                        },
+                        {
+                            "type": "array",
+                            "minItems": 1,
+                            "items": {
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        }
+                    ]
+                },
+                "directory": {
+                    "type": "string"
+                },
+                "disk": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "visibility": {
+                    "type": "string",
+                    "enum": [
+                        "public",
+                        "private"
+                    ]
+                },
+                "relation": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Relation name used for relation mode persistence."
+                },
+                "collection": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Optional collection/group identifier for relation-backed media records."
+                },
+                "target_column": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Model attribute receiving URL(s) in url mode."
+                },
+                "persist_as": {
+                    "$ref": "#/$defs/fileUploadPersistAs"
+                },
+                "trigger": {
+                    "$ref": "#/$defs/fieldTrigger"
+                }
+            },
+            "allOf": [
+                {
+                    "if": {
+                        "properties": {
+                            "mode": {
+                                "const": "relation"
+                            }
+                        },
+                        "required": [
+                            "mode"
+                        ]
+                    },
+                    "then": {
+                        "required": [
+                            "relation"
+                        ]
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "mode": {
+                                "const": "url"
+                            }
+                        },
+                        "required": [
+                            "mode"
+                        ]
+                    },
+                    "then": {
+                        "required": [
+                            "target_column"
+                        ]
+                    }
+                }
+            ],
+            "additionalProperties": false,
+            "description": "File upload field definition supporting relation-backed attachments or URL persistence."
         },
         "fieldTableActionEntry": {
             "type": "object",

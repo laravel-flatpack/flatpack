@@ -165,6 +165,13 @@ describe('buildInitialValues', () => {
                 sel: { id: 'sel', type: 'select' },
                 combo: { id: 'combo', type: 'combobox' },
                 multi: { id: 'multi', type: 'combobox', multiple: true },
+                avatar: { id: 'avatar', type: 'file-upload', mode: 'url' },
+                docs: {
+                    id: 'docs',
+                    type: 'file-upload',
+                    mode: 'relation',
+                    multiple: true,
+                },
             },
         });
         expect(buildInitialValues(fields, {})).toEqual({
@@ -174,6 +181,8 @@ describe('buildInitialValues', () => {
             sel: null,
             combo: null,
             multi: [],
+            avatar: null,
+            docs: [],
         });
     });
 

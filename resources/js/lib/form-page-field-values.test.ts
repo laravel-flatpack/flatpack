@@ -131,6 +131,16 @@ describe('componentValueProps', () => {
             ),
         ).toEqual({ data: [{ x: 1 }] });
     });
+
+    it('passes file-upload value through for component binding', () => {
+        const value = [{ url: '/a.png', path: 'users/a.png' }];
+        expect(
+            componentValueProps(
+                { type: 'file-upload', label: 'Avatar', mode: 'url' },
+                value,
+            ),
+        ).toEqual({ value });
+    });
 });
 
 describe('relationRemoteProps', () => {

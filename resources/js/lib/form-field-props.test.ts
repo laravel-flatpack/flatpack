@@ -10,6 +10,19 @@ import type {
 } from '@/types/data-table';
 import type { FormFieldProps } from '@/types/form-fields';
 
+const hoisted = vi.hoisted(() => ({
+    route: vi.fn((name: string, params?: { entity?: string }) => {
+        if (name === 'flatpack.entities.upload') {
+            return `/flatpack/${params?.entity ?? 'entity'}/upload`;
+        }
+        return '/';
+    }),
+}));
+
+vi.mock('@/lib/route', () => ({
+    route: hoisted.route,
+}));
+
 const context = { fieldId: 'field-1', onValueChange: vi.fn() };
 
 describe('mapFormFieldPropsToComponentProps', () => {
@@ -125,6 +138,30 @@ describe('mapFormFieldPropsToComponentProps', () => {
             timeLabel: 'Time',
             dateEmptyLabel: 'p',
             timeDefaultValue: '09:00:00',
+        });
+    });
+
+    it('maps file-upload endpoint and constraints', () => {
+        const props: FormFieldProps = {
+            type: 'file-upload',
+            label: 'Avatar',
+            mode: 'url',
+            multiple: true,
+            max_files: 3,
+            max_size_kb: 2048,
+            accept: ['image/png'],
+        };
+        const out = mapFormFieldPropsToComponentProps(props, {
+            ...context,
+            entity: 'users',
+        });
+        expect(out).toMatchObject({
+            id: 'field-1',
+            fieldId: 'field-1',
+            maxFiles: 3,
+            maxSizeKb: 2048,
+            accept: ['image/png'],
+            uploadEndpoint: '/flatpack/users/upload',
         });
     });
 

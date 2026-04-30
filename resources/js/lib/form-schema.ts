@@ -45,6 +45,8 @@ function defaultValueForField(field: FormFieldProps): unknown {
             return null;
         case 'combobox':
             return field.multiple ? [] : null;
+        case 'file-upload':
+            return field.multiple ? [] : null;
         default:
             return undefined;
     }

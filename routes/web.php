@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Flatpack\Http\Controllers\DashboardController;
 use Flatpack\Http\Controllers\EntityActionController;
+use Flatpack\Http\Controllers\FileUploadController;
 use Flatpack\Http\Controllers\FormController;
 use Flatpack\Http\Controllers\ListController;
 use Flatpack\Http\Controllers\RelationOptionsController;
@@ -55,6 +56,8 @@ Route::middleware(['auth:' . config('flatpack.security.guard', 'web'), EnsureFla
     Route::get('{entity}/create', [FormController::class, 'create'])->name('entities.create');
     /** Submits the form (create or update); pass {@code record} in the body for edits. */
     Route::post('{entity}/submit', [FormController::class, 'submit'])->name('entities.form.submit');
+    /** Stores file blobs for `type: file-upload` fields and returns persisted file metadata. */
+    Route::post('{entity}/upload', [FileUploadController::class, 'upload'])->name('entities.upload');
 
     /** Renders the edit form page for an existing record. */
     Route::get('{entity}/{record}/edit', [FormController::class, 'edit'])->name('entities.edit');

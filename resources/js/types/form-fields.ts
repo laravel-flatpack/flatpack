@@ -104,6 +104,30 @@ type BlockEditorFieldProps = FormFieldBase &
     WithPlaceholder & {
         showFixedToolbar?: boolean;
     };
+export type FileUploadStoredFile = {
+    disk?: string;
+    path?: string;
+    url?: string;
+    name?: string;
+    mime_type?: string;
+    size?: number;
+    visibility?: string;
+    collection?: string;
+};
+type FileUploadFieldProps = FormFieldBase & {
+    mode: 'relation' | 'url';
+    multiple?: boolean;
+    max_files?: number;
+    max_size_kb?: number;
+    accept?: string | string[];
+    directory?: string;
+    disk?: string;
+    visibility?: 'public' | 'private';
+    relation?: string;
+    collection?: string;
+    target_column?: string;
+    persist_as?: 'string' | 'json';
+};
 type TableFieldProps = FormFieldBase & {
     /** List page column shape (array or id-keyed map); normalized to DataTable columns in the mapper. */
     columns: FlatpackDataTableColumn[] | FlatpackListCompositionColumnsYaml;
@@ -155,6 +179,7 @@ export type FormFieldProps =
     | ({ type: 'switch' } & SwitchFieldProps)
     | ({ type: 'rich-text' } & RichTextFieldProps)
     | ({ type: 'block-editor' } & BlockEditorFieldProps)
+    | ({ type: 'file-upload' } & FileUploadFieldProps)
     | ({ type: 'table' } & TableFieldProps);
 
 export type FormFieldType = FormFieldProps['type'];

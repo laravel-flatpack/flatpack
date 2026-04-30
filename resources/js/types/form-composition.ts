@@ -214,6 +214,29 @@ export type FlatpackFormCompositionFieldBlockEditorYaml = {
     trigger?: FormFieldTrigger;
 };
 
+export type FlatpackFormCompositionFieldFileUploadYaml = {
+    type: 'file-upload';
+    id?: string;
+    label: string;
+    helperText?: string;
+    required?: boolean;
+    rules?: FlatpackFormCompositionValidationRulesYaml;
+    value?: unknown;
+    mode: 'relation' | 'url';
+    multiple?: boolean;
+    max_files?: number;
+    max_size_kb?: number;
+    accept?: string | string[];
+    directory?: string;
+    disk?: string;
+    visibility?: 'public' | 'private';
+    relation?: string;
+    collection?: string;
+    target_column?: string;
+    persist_as?: 'string' | 'json';
+    trigger?: FormFieldTrigger;
+};
+
 export type FlatpackFormCompositionFieldTableYaml = {
     type: 'table';
     id?: string;
@@ -269,6 +292,7 @@ export type FlatpackFormCompositionFieldYaml =
     | FlatpackFormCompositionFieldSwitchYaml
     | FlatpackFormCompositionFieldRichTextYaml
     | FlatpackFormCompositionFieldBlockEditorYaml
+    | FlatpackFormCompositionFieldFileUploadYaml
     | FlatpackFormCompositionFieldTableYaml;
 
 export type FlatpackFormCompositionFieldsYaml = Record<

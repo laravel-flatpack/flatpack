@@ -111,6 +111,7 @@ export function componentValueProps(
             return { value: value == null ? '' : String(value) };
         case 'select':
         case 'combobox':
+        case 'file-upload':
             return { value };
         case 'checkbox':
         case 'switch':

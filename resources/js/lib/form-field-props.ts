@@ -9,6 +9,7 @@ import { normalizeFormTableBulkActionsInput } from '@/lib/form-table-bulk-action
 import { normalizeFormTableToolbarActionsInput } from '@/lib/form-table-toolbar-actions';
 import { listYamlColumnsToDataTableColumns } from '@/lib/list-schema';
 import { updateFormTableModelRow } from '@/lib/model-table-row-update';
+import { route } from '@/lib/route';
 import type { FlatpackDataTableColumn } from '@/types/data-table';
 import type {
     FormFieldPropsMapper,
@@ -174,6 +175,24 @@ function mapTimePicker(props: FormFieldProps, ctx: FormFieldRenderContext) {
         timeLabel: p.timeLabel ?? 'Time',
         dateEmptyLabel: p.datePlaceholder ?? p.placeholder ?? '',
         timeDefaultValue: p.timeDefaultValue ?? '09:00:00',
+        onValueChange: ctx.onValueChange,
+    };
+}
+
+function mapFileUpload(props: FormFieldProps, ctx: FormFieldRenderContext) {
+    const p = props as Extract<FormFieldProps, { type: 'file-upload' }>;
+    const entity = typeof ctx.entity === 'string' ? ctx.entity.trim() : '';
+    return {
+        id: ctx.fieldId,
+        label: p.label,
+        helperText: p.helperText,
+        multiple: p.multiple ?? false,
+        maxFiles: p.max_files,
+        maxSizeKb: p.max_size_kb,
+        accept: p.accept,
+        uploadEndpoint:
+            entity !== '' ? route('flatpack.entities.upload', { entity }) : '',
+        fieldId: ctx.fieldId,
         onValueChange: ctx.onValueChange,
     };
 }
@@ -366,6 +385,7 @@ const formFieldTypeToMapper: Record<FormFieldType, FormFieldPropsMapper> = {
     'date-picker': mapDatePicker,
     'date-range-picker': mapDateRangePicker,
     'time-picker': mapTimePicker,
+    'file-upload': mapFileUpload,
     table: mapTable,
 };
 
