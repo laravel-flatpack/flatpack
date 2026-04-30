@@ -13,6 +13,14 @@ export const DATA_TABLE_SELECT_COLUMN_HEAD_CLASS = 'w-8 min-w-8 max-w-8';
 
 export const DATA_TABLE_SELECT_COLUMN_CELL_CLASS = 'w-8 min-w-8 max-w-8';
 
+/**
+ * Inner wrapper for each body cell. `min-h-8` matches `DASHBOARD_TABLE_INPUT_CLASS` /
+ * `DASHBOARD_TABLE_SELECT_TRIGGER_CLASS` so read-only rows keep the same row height as
+ * editable cells.
+ */
+export const DATA_TABLE_CELL_CONTENT_CLASS =
+    'flex min-h-8 w-full min-w-0 items-center gap-2';
+
 export const DASHBOARD_TABLE_INPUT_CLASS =
     'h-8 min-w-0 w-full max-w-full border-transparent bg-transparent text-sm shadow-none hover:bg-input/30 focus-visible:border focus-visible:bg-background dark:bg-transparent dark:hover:bg-input/30 dark:focus-visible:bg-input/30';
 

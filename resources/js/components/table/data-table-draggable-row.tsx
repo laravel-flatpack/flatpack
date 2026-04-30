@@ -3,6 +3,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { flexRender, type Row } from '@tanstack/react-table';
 import { AlertCircleIcon, GripVerticalIcon } from 'lucide-react';
 import {
+    DATA_TABLE_CELL_CONTENT_CLASS,
     DATA_TABLE_DRAG_COLUMN_CELL_CLASS,
     DATA_TABLE_ROW_SELECTION_COLUMN_ID,
     DATA_TABLE_SELECT_COLUMN_CELL_CLASS,
@@ -64,7 +65,7 @@ export function DataTableDraggableRow({
                             DATA_TABLE_SELECT_COLUMN_CELL_CLASS,
                     )}
                 >
-                    <div className="flex items-center gap-2">
+                    <div className={DATA_TABLE_CELL_CONTENT_CLASS}>
                         {cell.column.id === 'drag' ? (
                             <Button
                                 type="button"

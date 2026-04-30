@@ -20,7 +20,11 @@ final readonly class FlatpackMenuBuilder implements MenuBuilder
      */
     public function resolveSharedNavigation(?Authenticatable $user = null): array
     {
-        $menuItemsByBucket = $this->resolvedMenuItemsByBucket(user: $user);
+        $menuItemsByBucket = $this->resolvedMenuItemsByBucket(
+            applyAuthorization: true,
+            user: $user,
+            sortResolvedItems: true,
+        );
         $secondaryRaw = $this->config->get('flatpack.ui.navigation.secondary');
         $secondary = is_array($secondaryRaw)
             ? $this->resolveSidebarGroup($secondaryRaw, $menuItemsByBucket['secondary'])

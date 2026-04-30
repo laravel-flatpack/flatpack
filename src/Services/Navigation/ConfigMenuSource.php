@@ -33,12 +33,16 @@ final readonly class ConfigMenuSource
             }
             $icon = (string) ($entry['icon'] ?? 'folder');
             $key = is_string($slug) ? $slug : (string) $name;
+            $navOrder = isset($entry['nav_order']) && is_numeric($entry['nav_order'])
+                ? (int) $entry['nav_order']
+                : 99;
 
             $result[] = new MenuItem(
                 slug: $key,
                 name: $name,
                 url: $url,
                 icon: $icon,
+                navOrder: $navOrder,
             );
         }
 

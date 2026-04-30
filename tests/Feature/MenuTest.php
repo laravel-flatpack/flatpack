@@ -59,6 +59,116 @@ test('flatpack builds default menu from filesystem path when menu override is nu
     }
 });
 
+test('flatpack sorts filesystem main menu by list root nav_order not directory order', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-menu-nav-order-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/alpha');
+        File::ensureDirectoryExists($tempPath . '/zebra');
+        File::put($tempPath . '/alpha/list.yaml', <<<'YAML'
+name: Alpha
+model: Flatpack\Tests\Models\Post
+nav_order: 20
+YAML);
+        File::put($tempPath . '/zebra/list.yaml', <<<'YAML'
+name: Zebra
+model: Flatpack\Tests\Models\Post
+nav_order: 5
+YAML);
+        config()->set('flatpack.composition.path', $tempPath);
+        config()->set('flatpack.ui.navigation.main', null);
+
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get(route('flatpack.dashboard'))
+            ->assertInertia(fn ($page) => $page
+                ->has('flatpack.menu', 2)
+                ->where('flatpack.menu.0.slug', 'zebra')
+                ->where('flatpack.menu.0.name', 'Zebra')
+                ->where('flatpack.menu.1.slug', 'alpha')
+                ->where('flatpack.menu.1.name', 'Alpha')
+            );
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
+test('flatpack sorts secondary filesystem items by list nav_order', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-menu-secondary-nav-order-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/apple');
+        File::ensureDirectoryExists($tempPath . '/mule');
+        File::ensureDirectoryExists($tempPath . '/solo');
+        File::put($tempPath . '/solo/list.yaml', <<<'YAML'
+name: Solo
+model: Flatpack\Tests\Models\PostBySlug
+YAML);
+        File::put($tempPath . '/apple/list.yaml', <<<'YAML'
+name: Apple
+model: Flatpack\Tests\Models\Post
+menu: secondary
+nav_order: 50
+YAML);
+        File::put($tempPath . '/mule/list.yaml', <<<'YAML'
+name: Mule
+model: Flatpack\Tests\Models\Post
+menu: secondary
+nav_order: 10
+YAML);
+        config()->set('flatpack.composition.path', $tempPath);
+        config()->set('flatpack.ui.navigation.main', null);
+        config()->set('flatpack.ui.navigation.secondary', null);
+        config()->set('flatpack.ui.navigation.bottom', null);
+
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get(route('flatpack.dashboard'))
+            ->assertInertia(fn ($page) => $page
+                ->has('flatpack.menu', 1)
+                ->where('flatpack.menu.0.slug', 'solo')
+                ->has('flatpack.secondaryMenu.items', 2)
+                ->where('flatpack.secondaryMenu.items.0.slug', 'mule')
+                ->where('flatpack.secondaryMenu.items.0.name', 'Mule')
+                ->where('flatpack.secondaryMenu.items.1.slug', 'apple')
+                ->where('flatpack.secondaryMenu.items.1.name', 'Apple')
+            );
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
+test('flatpack sorts config main override by nav_order', function () {
+    config()->set('flatpack.ui.navigation.main', [
+        'zebra' => [
+            'name' => 'Zebra',
+            'url' => '/flatpack/zebra',
+            'icon' => 'folder',
+            'nav_order' => 20,
+        ],
+        'alpha' => [
+            'name' => 'Alpha',
+            'url' => '/flatpack/alpha',
+            'icon' => 'folder',
+            'nav_order' => 5,
+        ],
+    ]);
+
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->get(route('flatpack.dashboard'))
+        ->assertInertia(fn ($page) => $page
+            ->has('flatpack.menu', 2)
+            ->where('flatpack.menu.0.slug', 'alpha')
+            ->where('flatpack.menu.0.name', 'Alpha')
+            ->where('flatpack.menu.1.slug', 'zebra')
+            ->where('flatpack.menu.1.name', 'Zebra')
+        );
+});
+
 test('flatpack supports an explicit empty menu override', function () {
     config()->set('flatpack.ui.navigation.main', []);
 

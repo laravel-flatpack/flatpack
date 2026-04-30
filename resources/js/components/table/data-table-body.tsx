@@ -6,6 +6,7 @@ import { flexRender, type Table as TanStackTable } from '@tanstack/react-table';
 import { AlertCircleIcon } from 'lucide-react';
 import type * as React from 'react';
 import {
+    DATA_TABLE_CELL_CONTENT_CLASS,
     DATA_TABLE_DRAG_COLUMN_HEAD_CLASS,
     DATA_TABLE_EMPTY_RESULTS_LABEL,
     DATA_TABLE_ROW_SELECTION_COLUMN_ID,
@@ -127,7 +128,11 @@ export function DataTableBody({
                                                     DATA_TABLE_SELECT_COLUMN_CELL_CLASS,
                                             )}
                                         >
-                                            <div className="flex items-center gap-2">
+                                            <div
+                                                className={
+                                                    DATA_TABLE_CELL_CONTENT_CLASS
+                                                }
+                                            >
                                                 {flexRender(
                                                     cell.column.columnDef.cell,
                                                     cell.getContext(),
