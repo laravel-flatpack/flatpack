@@ -18,6 +18,8 @@ trait BuildsListPageProps
     /**
      * @param  array<string, mixed>|null  $schema
      * @param  array<string, mixed>  $result
+     * @param  array<string, array<string, mixed>>  $widgets
+     * @param  array<string, mixed>|null  $widgetsSchema
      * @return array<string, mixed>
      */
     private function listPageProps(
@@ -28,6 +30,8 @@ trait BuildsListPageProps
         string $searchTerm,
         ?string $activeTabId = null,
         ?CompositionDebugLog $debugLog = null,
+        array $widgets = [],
+        ?array $widgetsSchema = null,
     ): array {
         return [
             'entity' => $entity,
@@ -46,6 +50,8 @@ trait BuildsListPageProps
             'sorting' => $result['sorting'],
             'list_actions' => HeaderActions::fromSchema($schema, $debugLog),
             'bulk_actions' => BulkActions::fromSchema($schema, $debugLog),
+            'widgets' => $widgets,
+            'widgets_schema' => $widgetsSchema,
         ];
     }
 

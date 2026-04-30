@@ -57,6 +57,7 @@ function ComboboxInput({
     className,
     children,
     disabled = false,
+    invalid = false,
     showTrigger = true,
     showClear = false,
     loading = false,
@@ -65,9 +66,16 @@ function ComboboxInput({
     showTrigger?: boolean;
     showClear?: boolean;
     loading?: boolean;
+    invalid?: boolean;
 }) {
     return (
-        <InputGroup className={cn('w-auto', className)}>
+        <InputGroup
+            data-invalid={invalid || undefined}
+            className={cn(
+                'w-auto data-[invalid=true]:border-destructive data-[invalid=true]:ring-3 data-[invalid=true]:ring-destructive/20 dark:data-[invalid=true]:border-destructive/50 dark:data-[invalid=true]:ring-destructive/40',
+                className,
+            )}
+        >
             <ComboboxPrimitive.Input
                 render={<InputGroupInput disabled={disabled} />}
                 {...props}
@@ -122,7 +130,7 @@ function ComboboxContent({
                 align={align}
                 alignOffset={alignOffset}
                 anchor={anchor}
-                className="isolate z-50"
+                className="isolate z-[60] pointer-events-auto"
             >
                 <ComboboxPrimitive.Popup
                     data-slot="combobox-content"
@@ -240,14 +248,18 @@ function ComboboxSeparator({
 
 function ComboboxChips({
     className,
+    invalid = false,
     ...props
 }: React.ComponentPropsWithRef<typeof ComboboxPrimitive.Chips> &
-    ComboboxPrimitive.Chips.Props) {
+    ComboboxPrimitive.Chips.Props & {
+        invalid?: boolean;
+    }) {
     return (
         <ComboboxPrimitive.Chips
             data-slot="combobox-chips"
+            data-invalid={invalid || undefined}
             className={cn(
-                'flex min-h-9 flex-wrap items-center gap-1.5 rounded-3xl border border-transparent bg-input/50 bg-clip-padding px-3 py-1.5 text-sm transition-[color,box-shadow,background-color] focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/30 has-aria-invalid:border-destructive has-aria-invalid:ring-3 has-aria-invalid:ring-destructive/20 has-data-[slot=combobox-chip]:px-1.5 dark:has-aria-invalid:border-destructive/50 dark:has-aria-invalid:ring-destructive/40',
+                'flex min-h-9 flex-wrap items-center gap-1.5 rounded-3xl border border-transparent bg-input/50 bg-clip-padding px-3 py-1.5 text-sm transition-[color,box-shadow,background-color] focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/30 data-[invalid=true]:border-destructive data-[invalid=true]:ring-3 data-[invalid=true]:ring-destructive/20 has-data-[slot=combobox-chip]:px-1.5 dark:data-[invalid=true]:border-destructive/50 dark:data-[invalid=true]:ring-destructive/40',
                 className,
             )}
             {...props}

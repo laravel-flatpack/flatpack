@@ -8,7 +8,7 @@ import {
     Trash2Icon,
 } from 'lucide-react';
 import { truncateActionMenuLabel } from '@/components/table/data-table-constants';
-import { Button } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -180,16 +180,14 @@ export function DataTableActionsCell({
     return (
         <div className="flex justify-end" data-no-row-click>
             <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="size-8 text-muted-foreground data-[state=open]:bg-muted"
-                    >
-                        <EllipsisVerticalIcon className="size-4" />
-                        <span className="sr-only">Open row actions</span>
-                    </Button>
+                <DropdownMenuTrigger
+                    className={cn(
+                        buttonVariants({ variant: 'ghost', size: 'icon' }),
+                        'size-8 text-muted-foreground data-[state=open]:bg-muted',
+                    )}
+                >
+                    <EllipsisVerticalIcon className="size-4" />
+                    <span className="sr-only">Open row actions</span>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                     align="end"

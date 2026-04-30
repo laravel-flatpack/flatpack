@@ -54,7 +54,7 @@ export function StatusWidget({ widget }: StatusWidgetProps) {
 
     const badgeTooltip = widget.data?.description?.trim() ?? '';
 
-    const BadgeContent = () => (
+    const badgeContent = (
         <Badge variant="outline" className={statusMeta.className}>
             <CircleIcon className="size-4 fill-current" />
             {statusMeta.label}
@@ -69,12 +69,12 @@ export function StatusWidget({ widget }: StatusWidgetProps) {
                     {badgeTooltip !== '' ? (
                         <Tooltip>
                             <TooltipTrigger asChild>
-                                <BadgeContent />
+                                {badgeContent}
                             </TooltipTrigger>
                             <TooltipContent>{badgeTooltip}</TooltipContent>
                         </Tooltip>
                     ) : (
-                        <BadgeContent />
+                        badgeContent
                     )}
                 </div>
                 <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
@@ -82,9 +82,9 @@ export function StatusWidget({ widget }: StatusWidgetProps) {
                 </CardTitle>
             </CardHeader>
             <CardFooter className="flex-col items-start gap-1.5 text-sm">
-                <CardDescription>
-                    {widget.data?.context ?? widget.data?.description ?? ''}
-                </CardDescription>
+                <div className="line-clamp-1 truncate flex gap-2 font-medium">
+                    {widget.data?.context ?? ''}
+                </div>
                 {updatedAtLabel !== '' ? (
                     <div className="w-full truncate text-muted-foreground">
                         Updated {updatedAtLabel}

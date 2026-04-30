@@ -8,6 +8,7 @@ import type * as React from 'react';
 import {
     DATA_TABLE_DRAG_COLUMN_HEAD_CLASS,
     DATA_TABLE_EMPTY_RESULTS_LABEL,
+    DATA_TABLE_ROW_SELECTION_COLUMN_ID,
     DATA_TABLE_SELECT_COLUMN_CELL_CLASS,
     DATA_TABLE_SELECT_COLUMN_HEAD_CLASS,
 } from '@/components/table/data-table-constants';
@@ -57,7 +58,8 @@ export function DataTableBody({
                                 className={cn(
                                     header.column.id === 'drag' &&
                                         DATA_TABLE_DRAG_COLUMN_HEAD_CLASS,
-                                    header.column.id === 'select' &&
+                                    header.column.id ===
+                                        DATA_TABLE_ROW_SELECTION_COLUMN_ID &&
                                         DATA_TABLE_SELECT_COLUMN_HEAD_CLASS,
                                 )}
                             >
@@ -120,7 +122,8 @@ export function DataTableBody({
                                         <TableCell
                                             key={cell.id}
                                             className={cn(
-                                                cell.column.id === 'select' &&
+                                                cell.column.id ===
+                                                    DATA_TABLE_ROW_SELECTION_COLUMN_ID &&
                                                     DATA_TABLE_SELECT_COLUMN_CELL_CLASS,
                                             )}
                                         >

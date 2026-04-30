@@ -30,10 +30,16 @@ export type TableFieldProps = {
     openDetailDrawerOnRowClick?: boolean;
     reorderable?: boolean | string;
     pagination?: boolean;
+    showColumnsVisibility?: boolean;
     onValueChange?: (value: unknown) => void;
     onRowUpdate?: (
         payload: DataTableRowUpdatePayload<DataTableRow>,
-    ) => void | Promise<void>;
+    ) =>
+        | DataTableRow
+        | null
+        | undefined
+        | Promise<DataTableRow | null | undefined>
+        | Promise<void>;
     renderRowDrawerAttachBody?: (
         ctx: DataTableRowDrawerAttachBodyRenderContext,
     ) => ReactNode;
@@ -59,6 +65,7 @@ export const TableField = ({
     openDetailDrawerOnRowClick = true,
     reorderable,
     pagination,
+    showColumnsVisibility,
     onValueChange,
     onRowUpdate,
     renderRowDrawerAttachBody,
@@ -84,6 +91,7 @@ export const TableField = ({
                     onToolbarAction={onToolbarAction}
                     reorderable={reorderable}
                     pagination={pagination}
+                    showColumnsVisibility={showColumnsVisibility}
                     rowDetailDrawer={rowDetailDrawer}
                     openDetailDrawerOnRowClick={openDetailDrawerOnRowClick}
                     onValueChange={onValueChange}

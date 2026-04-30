@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { MenuIconName } from '@/components/icons/lucide-menu-icon-registry';
 import { menuIcons } from '@/components/icons/lucide-menu-icon-registry';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { WidgetErrorBoundary } from '@/components/widgets/widget-error-boundary';
 import { renderWidgetByType, widgetGridSpanClass } from '@/lib/widget-trigger';
 import type {
     FlatpackWidget,
@@ -90,7 +91,12 @@ export function DashboardWidgets({
                     className={widgetGridSpanClass(entry.widget)}
                     data-widget-id={entry.id}
                 >
-                    {renderWidgetByType(entry.id, entry.widget)}
+                    <WidgetErrorBoundary
+                        widgetId={entry.id}
+                        widgetType={entry.widget.type}
+                    >
+                        {renderWidgetByType(entry.id, entry.widget)}
+                    </WidgetErrorBoundary>
                 </div>
             ))}
         </div>

@@ -1,4 +1,5 @@
 import type { Column, VisibilityState } from '@tanstack/react-table';
+import { DATA_TABLE_ROW_SELECTION_COLUMN_ID } from '@/components/table/data-table-constants';
 import type {
     FlatpackDataTableColumn,
     FlatpackDataTableColumnMeta,
@@ -36,7 +37,7 @@ export function leafColumnIdsInSchemaOrder(
 ): string[] {
     return [
         ...(reorderable ? ['drag'] : []),
-        ...(hasBulkActions ? ['select'] : []),
+        ...(hasBulkActions ? [DATA_TABLE_ROW_SELECTION_COLUMN_ID] : []),
         ...schemaColumns.map((c) => c.id),
     ];
 }

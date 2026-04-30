@@ -4,6 +4,7 @@ import type {
     FlatpackChartWidget,
     FlatpackMetricWidget,
     FlatpackStatusWidget,
+    FlatpackTableWidget,
 } from '@/types/widgets-composition';
 
 type DemoEntryBase = {
@@ -25,7 +26,8 @@ export type DemoComponentWidgetEntry = DemoEntryBase & {
         | FlatpackMetricWidget
         | FlatpackCardWidget
         | FlatpackStatusWidget
-        | FlatpackChartWidget;
+        | FlatpackChartWidget
+        | FlatpackTableWidget;
 };
 
 export type DemoComponentsCatalogId = 'all' | 'fields' | 'widgets';

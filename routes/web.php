@@ -31,8 +31,12 @@ Route::middleware(['auth:' . config('flatpack.security.guard', 'web'), EnsureFla
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     /** Persists row drawer edits for model-backed dashboard table widgets. */
     Route::patch('dashboard/widgets/{widget}/{record}', [TableRowController::class, 'updateDashboardWidgetRow'])->name('dashboard.widgets.update-row');
+    /** Executes a row action for model-backed dashboard table widgets. */
+    Route::post('dashboard/widgets/{widget}/{record}/action', [TableRowController::class, 'rowActionDashboardWidgetRow'])->name('dashboard.widgets.row-action');
     /** Executes bulk action for model-backed dashboard table widgets. */
     Route::post('dashboard/widgets/{widget}/bulk', [TableRowController::class, 'bulkDashboardWidgetRows'])->name('dashboard.widgets.bulk-action');
+    /** Returns paginated relation options for dashboard widget table relation columns. */
+    Route::get('dashboard/widgets/{widget}/relation-options', [TableRowController::class, 'dashboardWidgetRelationOptions'])->name('dashboard.widgets.relation-options');
 
     /** Executes a bulk action against selected list records. */
     Route::post('{entity}/bulk', [EntityActionController::class, 'bulkAction'])->name('entities.bulk-action');

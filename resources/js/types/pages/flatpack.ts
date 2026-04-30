@@ -58,6 +58,8 @@ export type FlatpackListPageProps = {
     sorting?: FlatpackListServerSorting;
     list_actions?: FlatpackListHeaderAction[];
     bulk_actions?: FlatpackDataTableBulkAction[];
+    widgets?: FlatpackWidgetsCompositionSchema['widgets'];
+    widgets_schema?: FlatpackWidgetsCompositionSchema | null;
     /** Non-sensitive debug messages when composition YAML was sanitized (APP_DEBUG). */
     composition_debug?: string[];
 };
@@ -77,6 +79,8 @@ export type FlatpackFormPageProps = {
     schema?: FlatpackFormCompositionSchema | null;
     values?: Record<string, unknown>;
     form_actions?: FlatpackListHeaderAction[];
+    widgets?: FlatpackWidgetsCompositionSchema['widgets'];
+    widgets_schema?: FlatpackWidgetsCompositionSchema | null;
     /** Non-sensitive debug messages when composition YAML was sanitized (APP_DEBUG). */
     composition_debug?: string[];
 };

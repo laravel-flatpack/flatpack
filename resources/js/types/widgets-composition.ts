@@ -122,9 +122,19 @@ export type FlatpackChartWidget = {
 
 export type FlatpackTableWidgetResolvedData = {
     rows?: Record<string, unknown>[];
+    /** Echo of the server-side search filter for this widget (query round-trip). */
+    search?: string;
     sorting?: {
         sort_by?: string | null;
         sort_direction?: 'asc' | 'desc' | null;
+    };
+    pagination?: {
+        current_page: number;
+        last_page: number;
+        per_page: number;
+        total: number;
+        from: number | null;
+        to: number | null;
     };
 };
 
@@ -136,6 +146,7 @@ export type FlatpackTableWidget = {
     provider?: string;
     model?: string;
     columns: Record<string, FlatpackDataTableColumn>;
+    showColumnsVisibility?: boolean;
     bulk_actions?: FlatpackDataTableBulkAction[];
     pagination?: boolean | { per_page?: number; page_sizes?: number[] };
     default_sort?: FlatpackDataTableDefaultSort;

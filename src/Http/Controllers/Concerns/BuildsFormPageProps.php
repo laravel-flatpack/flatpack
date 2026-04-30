@@ -17,6 +17,8 @@ trait BuildsFormPageProps
 {
     /**
      * @param  array<string, mixed>|null  $schema
+     * @param  array<string, array<string, mixed>>  $widgets
+     * @param  array<string, mixed>|null  $widgetsSchema
      * @return array<string, mixed>
      */
     private function formPageProps(
@@ -27,6 +29,8 @@ trait BuildsFormPageProps
         ?string $record,
         array $values,
         ?CompositionDebugLog $debugLog = null,
+        array $widgets = [],
+        ?array $widgetsSchema = null,
     ): array {
         $oldValues = old('values');
         if ($this->hasFlashedValidationErrors() && is_array($oldValues)) {
@@ -43,6 +47,8 @@ trait BuildsFormPageProps
             'schema' => $schema,
             'values' => $values,
             'form_actions' => HeaderActions::fromSchema($schema, $debugLog),
+            'widgets' => $widgets,
+            'widgets_schema' => $widgetsSchema,
         ];
     }
 

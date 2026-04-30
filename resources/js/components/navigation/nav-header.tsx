@@ -17,7 +17,7 @@ type NavHeaderProps = {
 export function NavHeader({ items, activeId }: NavHeaderProps) {
     return (
         <header className="w-full">
-            <nav className="mt-2 mx-auto hidden items-center gap-0 lg:flex">
+            <nav className="mt-2 mx-auto flex flex-wrap items-center gap-0">
                 {items.map((item) => {
                     const Icon = item.icon;
                     const isActive = item.id === activeId;

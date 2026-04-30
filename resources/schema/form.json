@@ -1189,6 +1189,10 @@
                     "type": "boolean",
                     "description": "Pagination visibility override: true always shows controls, false always hides controls."
                 },
+                "showColumnsVisibility": {
+                    "type": "boolean",
+                    "description": "Show or hide the column visibility dropdown in the table toolbar."
+                },
                 "row_detail_drawer": {
                     "type": "boolean",
                     "description": "When false, clicking a data row does not open the row detail drawer; toolbar `create` still uses the drawer for new rows (`add`/other may share that drawer when wired)."
@@ -1525,6 +1529,10 @@
                 },
                 "pagination": {
                     "$ref": "#/$defs/tableWidgetPagination"
+                },
+                "showColumnsVisibility": {
+                    "type": "boolean",
+                    "description": "Show or hide the column visibility dropdown in the widget table toolbar."
                 },
                 "empty_state": {
                     "$ref": "#/$defs/tableWidgetEmptyState"

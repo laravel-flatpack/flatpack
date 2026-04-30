@@ -67,6 +67,7 @@ function DrawerRowField({
     patchDraft,
     flatpackEntity,
     flatpackTableFieldId,
+    flatpackWidgetId,
     portalContainer,
     columnValidationErrorsById,
 }: {
@@ -78,6 +79,7 @@ function DrawerRowField({
     patchDraft: (patch: Record<string, unknown>) => void;
     flatpackEntity?: string;
     flatpackTableFieldId?: string;
+    flatpackWidgetId?: string;
     portalContainer?: HTMLElement | null;
     columnValidationErrorsById?: Record<string, string[]>;
 }): SchemaFieldRenderEntry | null {
@@ -107,6 +109,9 @@ function DrawerRowField({
         id: fieldId,
         field: fieldWithRelationValue,
         value: relationValue?.value ?? value[col.id],
+        disabled:
+            (col.type === 'date' || col.type === 'relation') &&
+            col.editable !== true,
         invalid: columnErrors.length > 0,
         errors: columnErrors.map((message) => ({ message })),
         serializeValue: (field, nextValue, currentValue) => {
@@ -130,6 +135,7 @@ function DrawerRowField({
             col,
             flatpackEntity,
             flatpackTableFieldId,
+            flatpackWidgetId,
             portalContainer,
         );
         return {
@@ -175,6 +181,7 @@ export type DataTableRowDrawerPanelProps = {
     ) => React.ReactNode;
     flatpackEntity?: string;
     flatpackTableFieldId?: string;
+    flatpackWidgetId?: string;
     columnValidationErrorsById?: Record<string, string[]>;
 };
 
@@ -195,12 +202,18 @@ export function DataTableRowDrawerPanel({
     renderAttachBody,
     flatpackEntity,
     flatpackTableFieldId,
+    flatpackWidgetId,
     columnValidationErrorsById,
 }: DataTableRowDrawerPanelProps) {
     const isMobile = useIsMobile();
     const [draft, setDraft] = React.useState<Record<string, unknown>>(row);
-    const [portalContainer, setPortalContainer] =
-        React.useState<HTMLElement | null>(null);
+    const portalContainerRef = React.useRef<HTMLElement | null>(null);
+    const handlePortalContainerRef = React.useCallback(
+        (node: HTMLElement | null) => {
+            portalContainerRef.current = node;
+        },
+        [],
+    );
     const firstFieldsRegionRef = React.useRef<HTMLDivElement>(null);
 
     React.useLayoutEffect(() => {
@@ -270,7 +283,8 @@ export function DataTableRowDrawerPanel({
                               patchDraft,
                               flatpackEntity,
                               flatpackTableFieldId,
-                              portalContainer,
+                              flatpackWidgetId,
+                              portalContainer: portalContainerRef.current,
                               columnValidationErrorsById,
                           })
                         : null,
@@ -285,7 +299,7 @@ export function DataTableRowDrawerPanel({
             patchDraft,
             flatpackEntity,
             flatpackTableFieldId,
-            portalContainer,
+            flatpackWidgetId,
             columnValidationErrorsById,
         ],
     );
@@ -317,7 +331,7 @@ export function DataTableRowDrawerPanel({
             open={open}
         >
             {trigger}
-            <DrawerContent ref={setPortalContainer}>
+            <DrawerContent ref={handlePortalContainerRef}>
                 <DrawerHeader className="gap-1">
                     <DrawerTitle>{titleColumn.label}</DrawerTitle>
                     <DrawerDescription>

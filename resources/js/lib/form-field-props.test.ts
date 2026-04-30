@@ -253,6 +253,18 @@ describe('mapFormFieldPropsToComponentProps', () => {
         expect(out.pagination).toBe(false);
     });
 
+    it('maps table showColumnsVisibility when provided', () => {
+        const props: FormFieldProps = {
+            type: 'table',
+            label: 'Users',
+            columns: [{ id: 'name', label: 'Name', sortable: true }],
+            data: [{ name: 'Ada' }],
+            showColumnsVisibility: false,
+        };
+        const out = mapFormFieldPropsToComponentProps(props, context);
+        expect(out.showColumnsVisibility).toBe(false);
+    });
+
     it('defaults table data to empty array when omitted', () => {
         const props: FormFieldProps = {
             type: 'table',

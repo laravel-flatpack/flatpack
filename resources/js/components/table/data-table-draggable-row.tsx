@@ -4,6 +4,7 @@ import { flexRender, type Row } from '@tanstack/react-table';
 import { AlertCircleIcon, GripVerticalIcon } from 'lucide-react';
 import {
     DATA_TABLE_DRAG_COLUMN_CELL_CLASS,
+    DATA_TABLE_ROW_SELECTION_COLUMN_ID,
     DATA_TABLE_SELECT_COLUMN_CELL_CLASS,
 } from '@/components/table/data-table-constants';
 import { Button } from '@/components/ui/button';
@@ -59,7 +60,7 @@ export function DataTableDraggableRow({
                     className={cn(
                         cell.column.id === 'drag' &&
                             DATA_TABLE_DRAG_COLUMN_CELL_CLASS,
-                        cell.column.id === 'select' &&
+                        cell.column.id === DATA_TABLE_ROW_SELECTION_COLUMN_ID &&
                             DATA_TABLE_SELECT_COLUMN_CELL_CLASS,
                     )}
                 >

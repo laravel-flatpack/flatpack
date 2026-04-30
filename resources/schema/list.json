@@ -112,6 +112,10 @@
         "pagination": {
             "type": "boolean",
             "description": "Pagination visibility override: true always shows controls, false always hides controls."
+        },
+        "showColumnsVisibility": {
+            "type": "boolean",
+            "description": "Show or hide the column visibility dropdown in the table toolbar."
         }
     },
     "additionalProperties": false,
@@ -1252,6 +1256,10 @@
                 },
                 "pagination": {
                     "$ref": "#/$defs/tableWidgetPagination"
+                },
+                "showColumnsVisibility": {
+                    "type": "boolean",
+                    "description": "Show or hide the column visibility dropdown in the widget table toolbar."
                 },
                 "empty_state": {
                     "$ref": "#/$defs/tableWidgetEmptyState"

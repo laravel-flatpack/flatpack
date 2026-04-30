@@ -1,5 +1,5 @@
 import { Tooltip as TooltipPrimitive } from 'radix-ui';
-import type * as React from 'react';
+import * as React from 'react';
 import { cn } from '@/lib/utils';
 
 function TooltipProvider({
@@ -21,11 +21,17 @@ function Tooltip({
     return <TooltipPrimitive.Root data-slot="tooltip" {...props} />;
 }
 
-function TooltipTrigger({
-    ...props
-}: React.ComponentProps<typeof TooltipPrimitive.Trigger>) {
-    return <TooltipPrimitive.Trigger data-slot="tooltip-trigger" {...props} />;
-}
+const TooltipTrigger = React.forwardRef<
+    React.ElementRef<typeof TooltipPrimitive.Trigger>,
+    React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Trigger>
+>((props, ref) => (
+    <TooltipPrimitive.Trigger
+        ref={ref}
+        data-slot="tooltip-trigger"
+        {...props}
+    />
+));
+TooltipTrigger.displayName = 'TooltipTrigger';
 
 function TooltipContent({
     className,

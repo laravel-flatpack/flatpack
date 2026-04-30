@@ -546,6 +546,31 @@ describe('FlatpackListPage', () => {
         expect(routerGet).not.toHaveBeenCalled();
     });
 
+    it('opens row drawer on row click when row_click is edit_drawer', async () => {
+        render(
+            <FlatpackListPage
+                entity="posts"
+                schema={{
+                    row_click: 'edit_drawer',
+                    columns: {
+                        id: { label: 'ID' },
+                        title: { label: 'Title', editable: true },
+                    },
+                }}
+                records={[{ id: 42, title: 'Hello' }]}
+            />,
+        );
+
+        fireEvent.click(screen.getByRole('cell', { name: 'Hello' }));
+
+        await waitFor(() => {
+            expect(
+                screen.getByText('Edit row fields and save your changes.'),
+            ).toBeInTheDocument();
+        });
+        expect(routerGet).not.toHaveBeenCalled();
+    });
+
     it('renders header href actions as links', () => {
         render(
             <FlatpackListPage

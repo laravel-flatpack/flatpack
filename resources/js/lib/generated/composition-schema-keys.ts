@@ -34,6 +34,7 @@ export const LIST_ROOT = {
     pagination: 'pagination',
     reorderable: 'reorderable',
     row_click: 'row_click',
+    showColumnsVisibility: 'showColumnsVisibility',
     tabs: 'tabs',
     widgets: 'widgets',
 } as const;
@@ -62,6 +63,7 @@ export const LIST_ROOT_PROPERTY_KEYS = [
     'pagination',
     'reorderable',
     'row_click',
+    'showColumnsVisibility',
     'tabs',
     'widgets',
 ] as const;

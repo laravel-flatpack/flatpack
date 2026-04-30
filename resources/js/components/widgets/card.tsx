@@ -26,8 +26,10 @@ export function CardWidget({ widget }: CardWidgetProps) {
                 </CardTitle>
             </CardHeader>
             <CardFooter className="flex-col items-start gap-1.5 text-sm">
-                {context && <CardDescription>{context}</CardDescription>}
-                {footer ? <CardDescription>{footer}</CardDescription> : null}
+                <div className="w-full truncate font-medium">{context}</div>
+                <div className="w-full truncate text-muted-foreground">
+                    {footer}
+                </div>
             </CardFooter>
         </Card>
     );

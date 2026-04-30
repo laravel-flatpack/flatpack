@@ -57,8 +57,23 @@ import type {
     FlatpackDataTableBulkAction,
     FlatpackDataTableColumn,
     FlatpackDataTableFilter,
+    FlatpackDataTableServerFiltersState,
     FlatpackFormTableToolbarAction,
+    FlatpackListServerSorting,
 } from '@/types/data-table';
+
+/** Stable fallbacks — inline `{}` / `[]` defaults re-create references every render and break effect deps. */
+const EMPTY_BULK_ACTIONS: FlatpackDataTableBulkAction[] = [];
+const EMPTY_TOOLBAR_ACTIONS: FlatpackFormTableToolbarAction[] = [];
+const EMPTY_SERVER_FILTERS: FlatpackDataTableFilter[] = [];
+const EMPTY_SERVER_FILTER_VALUES: FlatpackDataTableServerFiltersState = {};
+const DEFAULT_SERVER_SORTING: FlatpackListServerSorting = {
+    sort_by: null,
+    sort_direction: null,
+};
+const EMPTY_ROW_VALIDATION_MESSAGES: DataTableRowValidationMessagesById = {};
+const EMPTY_ROW_VALIDATION_FIELD_ERRORS: DataTableRowValidationFieldErrorsById =
+    {};
 
 /**
  * Return value of {@link useDataTableController} for `DataTable` (toolbar, `tableAndFooter`, row drawer, confirm).
@@ -81,6 +96,7 @@ export type DataTableController = {
     handleBulkActionClick: (actionId: string) => void;
     hasSearchableColumns: boolean;
     hasFilters: boolean;
+    showColumnsVisibility: boolean;
     globalFilter: string;
     setGlobalFilter: (v: string) => void;
     serverFilters: FlatpackDataTableFilter[];
@@ -127,8 +143,8 @@ export function useDataTableController(
         columns: schemaColumns,
         data: initialData,
         dataRowKey = 'id',
-        bulkActions = [],
-        toolbarActions = [],
+        bulkActions = EMPTY_BULK_ACTIONS,
+        toolbarActions = EMPTY_TOOLBAR_ACTIONS,
         toolbarActionsDisabled = false,
         toolbarActionsDisabledTitle,
         onToolbarAction,
@@ -139,6 +155,7 @@ export function useDataTableController(
         onValueChange,
         onBulkAction,
         onRowAction,
+        inlineCellEdit = true,
         requireRowIdForActions = false,
         onCellUpdate,
         onRowUpdate,
@@ -146,15 +163,16 @@ export function useDataTableController(
         reorderOnError,
         serverPagination,
         pagination: paginationVisibility,
+        showColumnsVisibility = true,
         serverSearch,
-        serverFilters = [],
-        serverFilterValues = {},
-        serverSorting = { sort_by: null, sort_direction: null },
+        serverFilters = EMPTY_SERVER_FILTERS,
+        serverFilterValues = EMPTY_SERVER_FILTER_VALUES,
+        serverSorting = DEFAULT_SERVER_SORTING,
         defaultSort,
         onServerPaginationChange,
         renderRowDrawerAttachBody,
-        rowValidationMessagesById = {},
-        rowValidationFieldErrorsById = {},
+        rowValidationMessagesById = EMPTY_ROW_VALIDATION_MESSAGES,
+        rowValidationFieldErrorsById = EMPTY_ROW_VALIDATION_FIELD_ERRORS,
     } = props;
 
     const openDetailDrawerOnRowClick =
@@ -165,7 +183,18 @@ export function useDataTableController(
         () => initialData,
     );
     React.useLayoutEffect(() => {
-        setData(initialData);
+        setData((prev) => {
+            if (prev === initialData) {
+                return prev;
+            }
+            if (
+                prev.length === initialData.length &&
+                prev.every((row, index) => row === initialData[index])
+            ) {
+                return prev;
+            }
+            return initialData;
+        });
     }, [initialData]);
     const [rowSelection, setRowSelection] = React.useState<RowSelectionState>(
         {},
@@ -256,7 +285,12 @@ export function useDataTableController(
         ),
     );
     React.useLayoutEffect(() => {
-        setColumnOrder(schemaLeafOrder);
+        setColumnOrder((prev) =>
+            prev.length === schemaLeafOrder.length &&
+            prev.every((id, index) => id === schemaLeafOrder[index])
+                ? prev
+                : schemaLeafOrder,
+        );
     }, [schemaLeafOrder]);
     const [columnFilters, setColumnFilters] =
         React.useState<ColumnFiltersState>([]);
@@ -391,7 +425,6 @@ export function useDataTableController(
     const handleRowAction = React.useCallback(
         (payload: DataTableRowActionPayload) => {
             if (
-                onRowAction == null &&
                 rowDetailDrawer &&
                 isEmbeddedTableEditRowAction(payload.action)
             ) {
@@ -401,7 +434,6 @@ export function useDataTableController(
             handleRelationshipRowAction(payload);
         },
         [
-            onRowAction,
             rowDetailDrawer,
             resolveRowIdFromReference,
             openDetailDrawerForRow,
@@ -417,6 +449,7 @@ export function useDataTableController(
                 onCellChange: handleCellChange,
                 onRowReplace: handleRowReplace,
                 onRowAction: handleRowAction,
+                inlineCellEdit,
                 requireRowIdForActions,
             }),
         [
@@ -426,6 +459,7 @@ export function useDataTableController(
             handleCellChange,
             handleRowReplace,
             handleRowAction,
+            inlineCellEdit,
             requireRowIdForActions,
         ],
     );
@@ -661,6 +695,7 @@ export function useDataTableController(
         handleBulkActionClick,
         hasSearchableColumns,
         hasFilters,
+        showColumnsVisibility,
         globalFilter,
         setGlobalFilter,
         serverFilters,

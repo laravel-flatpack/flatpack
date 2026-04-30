@@ -29,10 +29,55 @@ test('table widget normalizes model-backed definition', function () {
     expect($out['widgets']['posts_table']['type'])->toBe('table')
         ->and($out['widgets']['posts_table']['model'])->toBe('Flatpack\\Tests\\Models\\Post')
         ->and($out['widgets']['posts_table']['columns'])->toHaveKey('title')
+        ->and($out['widgets']['posts_table']['showColumnsVisibility'])->toBeFalse()
         ->and($out['widgets']['posts_table']['default_sort'])->toBe([
             'key' => 'title',
             'direction' => 'asc',
         ]);
+});
+
+test('table widget accepts showColumnsVisibility override', function () {
+    $normalizer = new WidgetSchemaNormalizer();
+    $out = $normalizer->normalize([
+        'widgets' => [
+            'posts_table' => [
+                'type' => 'table',
+                'provider' => 'posts_table_provider',
+                'columns' => [
+                    'title' => [
+                        'label' => 'Title',
+                    ],
+                ],
+                'showColumnsVisibility' => true,
+            ],
+        ],
+    ]);
+
+    expect($out['widgets']['posts_table']['showColumnsVisibility'])->toBeTrue();
+});
+
+test('table widget keeps pagination per_page config', function () {
+    $normalizer = new WidgetSchemaNormalizer();
+    $out = $normalizer->normalize([
+        'widgets' => [
+            'posts_table' => [
+                'type' => 'table',
+                'model' => 'Flatpack\\Tests\\Models\\Post',
+                'columns' => [
+                    'title' => [
+                        'label' => 'Title',
+                    ],
+                ],
+                'pagination' => [
+                    'per_page' => 3,
+                ],
+            ],
+        ],
+    ]);
+
+    expect($out['widgets']['posts_table']['pagination'])->toBe([
+        'per_page' => 3,
+    ]);
 });
 
 test('table widget normalizes bulk_actions for model-backed widgets', function () {
@@ -66,6 +111,66 @@ test('table widget normalizes bulk_actions for model-backed widgets', function (
             'icon' => '',
             'variant' => 'destructive',
         ],
+    ]);
+});
+
+test('table widget adds relation edit_form_field for model-backed widgets', function () {
+    $normalizer = new WidgetSchemaNormalizer();
+    $out = $normalizer->normalize([
+        'widgets' => [
+            'comments_table' => [
+                'type' => 'table',
+                'model' => 'Flatpack\\Tests\\Models\\Post',
+                'columns' => [
+                    'user_id' => [
+                        'label' => 'User',
+                        'type' => 'relation',
+                        'relation' => 'user',
+                        'relation_name' => 'name',
+                        'relation_value' => 'id',
+                    ],
+                ],
+            ],
+        ],
+    ]);
+
+    expect($out['widgets']['comments_table']['columns']['user_id']['edit_form_field'])->toBe([
+        'type' => 'combobox',
+        'label' => 'User',
+        'placeholder' => 'Select the user',
+        'required' => false,
+    ]);
+});
+
+test('table widget relation edit_form_field allows explicit overrides', function () {
+    $normalizer = new WidgetSchemaNormalizer();
+    $out = $normalizer->normalize([
+        'widgets' => [
+            'comments_table' => [
+                'type' => 'table',
+                'model' => 'Flatpack\\Tests\\Models\\Post',
+                'columns' => [
+                    'user_id' => [
+                        'label' => 'User',
+                        'type' => 'relation',
+                        'relation' => 'user',
+                        'relation_name' => 'name',
+                        'relation_value' => 'id',
+                        'edit_form_field' => [
+                            'placeholder' => 'Pick a user',
+                            'required' => true,
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ]);
+
+    expect($out['widgets']['comments_table']['columns']['user_id']['edit_form_field'])->toBe([
+        'type' => 'combobox',
+        'label' => 'User',
+        'placeholder' => 'Pick a user',
+        'required' => true,
     ]);
 });
 

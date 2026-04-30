@@ -1,5 +1,5 @@
 import { AlertDialog as AlertDialogPrimitive } from 'radix-ui';
-import type * as React from 'react';
+import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -9,16 +9,17 @@ function AlertDialog({
     return <AlertDialogPrimitive.Root data-slot="alert-dialog" {...props} />;
 }
 
-function AlertDialogTrigger({
-    ...props
-}: React.ComponentProps<typeof AlertDialogPrimitive.Trigger>) {
-    return (
-        <AlertDialogPrimitive.Trigger
-            data-slot="alert-dialog-trigger"
-            {...props}
-        />
-    );
-}
+const AlertDialogTrigger = React.forwardRef<
+    React.ElementRef<typeof AlertDialogPrimitive.Trigger>,
+    React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Trigger>
+>((props, ref) => (
+    <AlertDialogPrimitive.Trigger
+        ref={ref}
+        data-slot="alert-dialog-trigger"
+        {...props}
+    />
+));
+AlertDialogTrigger.displayName = 'AlertDialogTrigger';
 
 function AlertDialogPortal({
     ...props

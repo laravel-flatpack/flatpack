@@ -1,6 +1,7 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import { DataTableActionsCell } from '@/components/table/data-table-actions-cell';
 import { DataTableColumnHeader } from '@/components/table/data-table-column-header';
+import { DATA_TABLE_ROW_SELECTION_COLUMN_ID } from '@/components/table/data-table-constants';
 import { DataTableSchemaCell } from '@/components/table/data-table-schema-cell';
 import { Checkbox } from '@/components/ui/checkbox';
 import type {
@@ -27,7 +28,7 @@ export function buildDataTableColumnDefs(
 
     if (options.hasBulkActions) {
         defs.push({
-            id: 'select',
+            id: DATA_TABLE_ROW_SELECTION_COLUMN_ID,
             header: ({ table }) => (
                 <div className="flex items-center justify-start">
                     <Checkbox
@@ -101,6 +102,7 @@ export function buildDataTableColumnDefs(
                         value={row.getValue(col.id)}
                         onCellChange={options.onCellChange}
                         onRowReplace={options.onRowReplace}
+                        inlineCellEdit={options.inlineCellEdit !== false}
                     />
                 );
             },

@@ -14,18 +14,33 @@ import type {
 } from '@/types/widgets-composition';
 
 type DataTableProps = Record<string, unknown>;
+const { visitMock, runDashboardWidgetModelRowActionMock } = vi.hoisted(() => ({
+    visitMock: vi.fn(),
+    runDashboardWidgetModelRowActionMock: vi.fn(),
+}));
 
 let lastDataTableProps: DataTableProps | null = null;
 let lastDataTableId: string | null = null;
 let lastDataTableData: unknown[] | null = null;
 let lastDataTableBulkActions: unknown[] | null = null;
+let lastDataTableWidgetId: string | null = null;
+let lastDataTableColumns: unknown[] | null = null;
+const getLastDataTableProps = (): DataTableProps | null => lastDataTableProps;
 
 afterEach(() => {
     cleanup();
+    visitMock.mockReset();
+    runDashboardWidgetModelRowActionMock.mockReset();
 });
 
 vi.mock('@/hooks/use-mobile', () => ({
     useIsMobile: () => false,
+}));
+
+vi.mock('@inertiajs/react', () => ({
+    router: {
+        visit: visitMock,
+    },
 }));
 
 vi.mock('@/components/table/data-table', () => ({
@@ -36,8 +51,21 @@ vi.mock('@/components/table/data-table', () => ({
         lastDataTableBulkActions = Array.isArray(props.bulkActions)
             ? props.bulkActions
             : null;
+        lastDataTableColumns = Array.isArray(props.columns)
+            ? props.columns
+            : null;
+        lastDataTableWidgetId =
+            typeof props.flatpackWidgetId === 'string'
+                ? props.flatpackWidgetId
+                : null;
         return <div data-testid="table-widget-data-table" />;
     },
+}));
+
+vi.mock('@/lib/model-table-row-update', () => ({
+    updateDashboardWidgetModelRow: vi.fn(),
+    bulkDashboardWidgetModelRows: vi.fn(),
+    runDashboardWidgetModelRowAction: runDashboardWidgetModelRowActionMock,
 }));
 
 function makeMetricWidget(
@@ -193,17 +221,60 @@ describe('widgets basic rendering', () => {
         lastDataTableProps = null;
         lastDataTableId = null;
         lastDataTableData = null;
+        lastDataTableColumns = null;
 
         render(
-            <TableWidget widgetId="Orders Widget" widget={makeTableWidget()} />,
+            <TableWidget
+                widgetId="Orders Widget"
+                widget={makeTableWidget({
+                    columns: {
+                        id: {
+                            id: 'id',
+                            label: 'Id',
+                            type: 'text',
+                            editable: true,
+                        },
+                    },
+                })}
+            />,
         );
 
         expect(
             screen.getByTestId('table-widget-data-table'),
         ).toBeInTheDocument();
+        expect(screen.getByText('Recent Orders')).toBeInTheDocument();
         expect(lastDataTableProps).not.toBeNull();
+        expect(getLastDataTableProps()?.regionLabelledBy).toBe(
+            'widget-table-orders-widget-label',
+        );
         expect(lastDataTableId).toBe('widget-table-orders-widget');
         expect(lastDataTableData).toEqual([{ id: 1 }]);
+        expect(lastDataTableWidgetId).toBe('Orders Widget');
+        expect(lastDataTableColumns).toEqual([
+            expect.objectContaining({
+                id: 'id',
+                editable: true,
+            }),
+        ]);
+        expect(getLastDataTableProps()?.inlineCellEdit).toBe(false);
+        expect(getLastDataTableProps()?.showColumnsVisibility).toBe(false);
+    });
+
+    it('omits Field label chrome when table widget has no label or description', () => {
+        lastDataTableProps = null;
+
+        render(
+            <TableWidget
+                widgetId="Bare Widget"
+                widget={makeTableWidget({
+                    label: '',
+                    description: '',
+                })}
+            />,
+        );
+
+        expect(screen.queryByText('Recent Orders')).not.toBeInTheDocument();
+        expect(getLastDataTableProps()?.regionLabelledBy).toBeUndefined();
     });
 
     it('passes widget bulk_actions to DataTable for model-backed tables', () => {
@@ -236,5 +307,88 @@ describe('widgets basic rendering', () => {
                 variant: 'destructive',
             },
         ]);
+    });
+
+    it('uses row href for row-click navigation on provider-backed tables', () => {
+        lastDataTableProps = null;
+
+        render(
+            <TableWidget
+                widgetId="Activity Widget"
+                widget={makeTableWidget({
+                    provider: 'recent_activity',
+                    data: {
+                        rows: [{ id: 1, href: '/flatpack/posts/1/edit' }],
+                    },
+                })}
+            />,
+        );
+
+        expect(typeof getLastDataTableProps()?.onRowClick).toBe('function');
+        (
+            getLastDataTableProps()?.onRowClick as (
+                row: Record<string, unknown>,
+            ) => void
+        )({ id: 1, href: '/flatpack/posts/1/edit' });
+        expect(visitMock).toHaveBeenCalledWith('/flatpack/posts/1/edit');
+    });
+
+    it('runs model-backed row action immediately when confirm is false', async () => {
+        lastDataTableProps = null;
+
+        render(
+            <TableWidget
+                widgetId="Posts Widget"
+                widget={makeTableWidget({
+                    model: 'App\\Models\\Post',
+                })}
+            />,
+        );
+
+        await (
+            getLastDataTableProps()?.onRowAction as (payload: {
+                action: string;
+                row: Record<string, unknown>;
+                button?: { success_message?: string };
+            }) => Promise<void>
+        )({
+            action: 'delete',
+            row: { id: 42, title: 'Draft' },
+            button: { success_message: 'Deleted' },
+        });
+
+        expect(runDashboardWidgetModelRowActionMock).toHaveBeenCalledWith({
+            widgetId: 'Posts Widget',
+            rowId: '42',
+            action: 'delete',
+            successMessage: 'Deleted',
+        });
+    });
+
+    it('waits for confirm before running model-backed row action', async () => {
+        lastDataTableProps = null;
+
+        render(
+            <TableWidget
+                widgetId="Posts Widget"
+                widget={makeTableWidget({
+                    model: 'App\\Models\\Post',
+                })}
+            />,
+        );
+
+        await (
+            getLastDataTableProps()?.onRowAction as (payload: {
+                action: string;
+                row: Record<string, unknown>;
+                button?: { label?: string; confirm?: boolean };
+            }) => Promise<void>
+        )({
+            action: 'delete',
+            row: { id: 7 },
+            button: { label: 'Delete', confirm: true },
+        });
+
+        expect(runDashboardWidgetModelRowActionMock).not.toHaveBeenCalled();
     });
 });

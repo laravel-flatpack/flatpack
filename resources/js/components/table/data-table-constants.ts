@@ -2,6 +2,13 @@ export const DATA_TABLE_DRAG_COLUMN_HEAD_CLASS = 'w-8 min-w-8 max-w-8 px-1';
 
 export const DATA_TABLE_DRAG_COLUMN_CELL_CLASS = 'w-8 min-w-8 max-w-8 p-1';
 
+/**
+ * TanStack column id for bulk row selection checkboxes.
+ * Must not equal a YAML column `id` (e.g. lists often use `id: select` for select cells).
+ */
+export const DATA_TABLE_ROW_SELECTION_COLUMN_ID =
+    '__flatpack_row_selection__' as const;
+
 export const DATA_TABLE_SELECT_COLUMN_HEAD_CLASS = 'w-8 min-w-8 max-w-8';
 
 export const DATA_TABLE_SELECT_COLUMN_CELL_CLASS = 'w-8 min-w-8 max-w-8';
@@ -13,7 +20,7 @@ export const DASHBOARD_TABLE_SELECT_TRIGGER_CLASS =
     'h-8 w-full min-w-0 max-w-full border-transparent bg-transparent shadow-none hover:bg-input/30 focus-visible:border focus-visible:bg-background dark:bg-transparent dark:hover:bg-input/30 dark:focus-visible:bg-input/30 **:data-[slot=select-value]:block **:data-[slot=select-value]:truncate';
 
 export const ACTION_MENU_LABEL_MAX_CHARS = 28;
-export const DATA_TABLE_PAGE_SIZE_OPTIONS = [10, 20, 30, 40, 50] as const;
+export const DATA_TABLE_PAGE_SIZE_OPTIONS = [5, 10, 20, 30, 40, 50] as const;
 export const DATA_TABLE_EMPTY_RESULTS_LABEL = 'No results.';
 export const DATA_TABLE_LABEL = 'Data table';
 export const DATA_TABLE_SEARCH_PLACEHOLDER = 'Search…';

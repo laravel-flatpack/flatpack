@@ -33,6 +33,7 @@ export default function FlatpackListPage(props: FlatpackListPageProps) {
         filterDefinitions,
         reorderable,
         isRowClickEditPage,
+        isRowClickEditDrawer,
         pendingListConfirm,
         pendingRowActionConfirm,
         setPendingListConfirm,
@@ -50,6 +51,7 @@ export default function FlatpackListPage(props: FlatpackListPageProps) {
         records,
         pagination,
         paginationVisibility,
+        showColumnsVisibility,
         searchTerm,
         serverFilterValues,
         serverSorting,
@@ -159,6 +161,8 @@ export default function FlatpackListPage(props: FlatpackListPageProps) {
                             toolbarStart={listTabsToolbar}
                             bulkActions={bulkActions}
                             reorderable={reorderable}
+                            rowDetailDrawer={isRowClickEditDrawer}
+                            openDetailDrawerOnRowClick={isRowClickEditDrawer}
                             onRowClick={
                                 isRowClickEditPage ? handleRowClick : undefined
                             }
@@ -166,6 +170,7 @@ export default function FlatpackListPage(props: FlatpackListPageProps) {
                             data={records}
                             serverPagination={pagination}
                             pagination={paginationVisibility}
+                            showColumnsVisibility={showColumnsVisibility}
                             serverSearch={searchTerm}
                             serverFilters={filterDefinitions}
                             serverFilterValues={serverFilterValues}

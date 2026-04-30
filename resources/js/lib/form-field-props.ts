@@ -290,6 +290,10 @@ function mapTable(props: FormFieldProps, ctx: FormFieldRenderContext) {
             : undefined;
     const pagination =
         typeof rawObj.pagination === 'boolean' ? rawObj.pagination : undefined;
+    const showColumnsVisibility =
+        typeof rawObj.showColumnsVisibility === 'boolean'
+            ? rawObj.showColumnsVisibility
+            : undefined;
 
     return {
         ...rest,
@@ -343,6 +347,9 @@ function mapTable(props: FormFieldProps, ctx: FormFieldRenderContext) {
             ? { defaultSort }
             : {}),
         ...(pagination !== undefined ? { pagination } : {}),
+        ...(showColumnsVisibility !== undefined
+            ? { showColumnsVisibility }
+            : {}),
         ...(tableRelationType !== undefined ? { tableRelationType } : {}),
     };
 }

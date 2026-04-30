@@ -10,7 +10,12 @@ function useRowReplaceHarness({
     onRowUpdate?: (payload: {
         rowId: string;
         row: Record<string, unknown>;
-    }) => Promise<void> | void;
+    }) =>
+        | Record<string, unknown>
+        | null
+        | undefined
+        | Promise<Record<string, unknown> | null | undefined>
+        | Promise<void>;
     onValueChange?: (value: unknown) => void;
 }) {
     const [data, setData] = React.useState<Record<string, unknown>[]>([

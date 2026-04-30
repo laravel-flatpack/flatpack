@@ -9,9 +9,13 @@ use Flatpack\Http\Controllers\Concerns\BuildsListPageProps;
 use Flatpack\Http\Controllers\Concerns\LoadsListComposition;
 use Flatpack\Http\Controllers\Concerns\LoadsListRecords;
 use Flatpack\Http\Controllers\Concerns\ResolvesListQuery;
+use Flatpack\Http\Controllers\Concerns\ResolvesWidgets;
 use Flatpack\Http\FlatpackResponse;
 use Flatpack\Http\FlatpackResponseOptions;
+use Flatpack\Schema\Widgets\WidgetSchemaNormalizer;
 use Flatpack\Services\Lists\ActiveTabResolver;
+use Flatpack\Services\Lists\ListRecordsLoader;
+use Flatpack\Services\Runtime\WidgetRuntime;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -25,9 +29,13 @@ final readonly class ListController
     use LoadsListComposition;
     use LoadsListRecords;
     use ResolvesListQuery;
+    use ResolvesWidgets;
 
     public function __construct(
         private ActiveTabResolver $activeTabResolver,
+        private WidgetSchemaNormalizer $widgetSchemaNormalizer,
+        private WidgetRuntime $widgetRuntime,
+        private ListRecordsLoader $listRecordsLoader,
     ) {}
 
     /**
@@ -52,6 +60,13 @@ final readonly class ListController
         );
         $debugContext = FlatpackResponse::compositionDebugContextForEntity($entity, 'list.yaml');
         $debugLog = FlatpackResponse::compositionDebugLog($debugContext);
+        $widgetsSchema = $this->normalizedWidgetsSchema($effectiveSchema, $debugLog);
+        $resolvedWidgets = $this->resolveWidgetData(
+            $request,
+            $entity,
+            $widgetsSchema['widgets'] ?? [],
+            $debugLog,
+        );
 
         return FlatpackResponse::inertia(
             'list',
@@ -63,6 +78,8 @@ final readonly class ListController
                 $query['searchTerm'],
                 $activeTab['id'] ?? null,
                 $debugLog,
+                $resolvedWidgets,
+                $widgetsSchema,
             ),
             new FlatpackResponseOptions(
                 compositionDebugLog: $debugLog,
@@ -105,5 +122,20 @@ final readonly class ListController
                 ),
             ]);
         }
+    }
+
+    private function widgetSchemaNormalizer(): WidgetSchemaNormalizer
+    {
+        return $this->widgetSchemaNormalizer;
+    }
+
+    private function widgetRuntime(): WidgetRuntime
+    {
+        return $this->widgetRuntime;
+    }
+
+    private function listRecordsLoader(): ListRecordsLoader
+    {
+        return $this->listRecordsLoader;
     }
 }

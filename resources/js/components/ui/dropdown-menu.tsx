@@ -1,6 +1,6 @@
 import { CheckIcon, ChevronRightIcon } from 'lucide-react';
 import { DropdownMenu as DropdownMenuPrimitive } from 'radix-ui';
-import type * as React from 'react';
+import * as React from 'react';
 import { cn } from '@/lib/utils';
 
 function DropdownMenu({
@@ -20,16 +20,17 @@ function DropdownMenuPortal({
     );
 }
 
-function DropdownMenuTrigger({
-    ...props
-}: React.ComponentProps<typeof DropdownMenuPrimitive.Trigger>) {
-    return (
-        <DropdownMenuPrimitive.Trigger
-            data-slot="dropdown-menu-trigger"
-            {...props}
-        />
-    );
-}
+const DropdownMenuTrigger = React.forwardRef<
+    React.ElementRef<typeof DropdownMenuPrimitive.Trigger>,
+    React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Trigger>
+>((props, ref) => (
+    <DropdownMenuPrimitive.Trigger
+        ref={ref}
+        data-slot="dropdown-menu-trigger"
+        {...props}
+    />
+));
+DropdownMenuTrigger.displayName = 'DropdownMenuTrigger';
 
 function DropdownMenuContent({
     className,
@@ -219,29 +220,27 @@ function DropdownMenuSub({
     );
 }
 
-function DropdownMenuSubTrigger({
-    className,
-    inset,
-    children,
-    ...props
-}: React.ComponentProps<typeof DropdownMenuPrimitive.SubTrigger> & {
-    inset?: boolean;
-}) {
-    return (
-        <DropdownMenuPrimitive.SubTrigger
-            data-slot="dropdown-menu-sub-trigger"
-            data-inset={inset}
-            className={cn(
-                "flex cursor-default items-center gap-2 rounded-2xl px-3 py-2 text-sm font-medium outline-hidden select-none focus:bg-accent focus:text-accent-foreground not-data-[variant=destructive]:focus:**:text-accent-foreground data-inset:pl-9.5 data-open:bg-accent data-open:text-accent-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
-                className,
-            )}
-            {...props}
-        >
-            {children}
-            <ChevronRightIcon className="ml-auto" />
-        </DropdownMenuPrimitive.SubTrigger>
-    );
-}
+const DropdownMenuSubTrigger = React.forwardRef<
+    React.ElementRef<typeof DropdownMenuPrimitive.SubTrigger>,
+    React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.SubTrigger> & {
+        inset?: boolean;
+    }
+>(({ className, inset, children, ...props }, ref) => (
+    <DropdownMenuPrimitive.SubTrigger
+        ref={ref}
+        data-slot="dropdown-menu-sub-trigger"
+        data-inset={inset}
+        className={cn(
+            "flex cursor-default items-center gap-2 rounded-2xl px-3 py-2 text-sm font-medium outline-hidden select-none focus:bg-accent focus:text-accent-foreground not-data-[variant=destructive]:focus:**:text-accent-foreground data-inset:pl-9.5 data-open:bg-accent data-open:text-accent-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+            className,
+        )}
+        {...props}
+    >
+        {children}
+        <ChevronRightIcon className="ml-auto" />
+    </DropdownMenuPrimitive.SubTrigger>
+));
+DropdownMenuSubTrigger.displayName = 'DropdownMenuSubTrigger';
 
 function DropdownMenuSubContent({
     className,

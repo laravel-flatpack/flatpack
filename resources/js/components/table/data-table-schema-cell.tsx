@@ -19,6 +19,7 @@ export function DataTableSchemaCell({
     schemaColumns,
     onCellChange,
     onRowReplace,
+    inlineCellEdit = true,
 }: {
     column: FlatpackDataTableColumn;
     value: unknown;
@@ -27,6 +28,7 @@ export function DataTableSchemaCell({
     schemaColumns: FlatpackDataTableColumn[];
     onCellChange?: (rowId: string, columnId: string, next: unknown) => void;
     onRowReplace?: (rowId: string, nextRow: Record<string, unknown>) => void;
+    inlineCellEdit?: boolean;
 }) {
     if (col.detailDrawer === true && onRowReplace) {
         return (
@@ -41,6 +43,7 @@ export function DataTableSchemaCell({
     }
 
     const editable =
+        inlineCellEdit &&
         col.editable === true &&
         col.type !== 'actions' &&
         onCellChange != null &&

@@ -126,6 +126,7 @@ type TableFieldProps = FormFieldBase & {
     toolbarActions?: unknown;
     reorderable?: boolean | string;
     pagination?: boolean;
+    showColumnsVisibility?: boolean;
     default_sort?: FlatpackDataTableDefaultSort;
     /** Relation-backed table: hydrate + sync as RelationRow[] */
     relation?: string;

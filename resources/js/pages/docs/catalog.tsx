@@ -26,6 +26,7 @@ import { CardWidget } from '@/components/widgets/card';
 import { ChartWidget } from '@/components/widgets/chart';
 import { MetricWidget } from '@/components/widgets/metric';
 import { StatusWidget } from '@/components/widgets/status';
+import { TableWidget } from '@/components/widgets/table-widget';
 import DocsLayout from '@/layouts/docs-layout';
 import {
     buildDemoFieldRenderProps,
@@ -141,6 +142,9 @@ function DemoWidgetPreview({ entry }: { entry: DemoComponentWidgetEntry }) {
                 )}
                 {entry.props.type === 'chart' && (
                     <ChartWidget widget={entry.props} />
+                )}
+                {entry.props.type === 'table' && (
+                    <TableWidget widgetId={entry.id} widget={entry.props} />
                 )}
             </Suspense>
         </div>

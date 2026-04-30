@@ -26,24 +26,44 @@ export function DataTable(props: DataTableProps) {
         tableRelationType,
         flatpackEntity,
         flatpackTableFieldId,
+        flatpackWidgetId,
+        regionLabelledBy,
         ...tableProps
     } = props;
-    const c = useDataTableController(tableProps);
+    const c = useDataTableController({
+        ...tableProps,
+        flatpackWidgetId,
+    });
+    const hasToolbarContent =
+        Boolean(tableProps.toolbarStart) ||
+        c.hasToolbarActions ||
+        c.hasBulkActions ||
+        c.hasSearchableColumns ||
+        c.hasFilters ||
+        c.showColumnsVisibility;
+
+    const ariaLabelledBy = regionLabelledBy ?? c.tableLabelId;
 
     return (
         <div
-            className={cn('flex w-full flex-col gap-4', className)}
+            className={cn(
+                'flex w-full flex-col',
+                hasToolbarContent ? 'gap-4' : 'gap-0',
+                className,
+            )}
             role="region"
-            aria-labelledby={c.tableLabelId}
+            aria-labelledby={ariaLabelledBy}
             {...(tableRelationType !== undefined
                 ? {
                       'data-flatpack-table-relation-type': tableRelationType,
                   }
                 : {})}
         >
-            <span id={c.tableLabelId} className="sr-only">
-                {DATA_TABLE_LABEL}
-            </span>
+            {regionLabelledBy == null ? (
+                <span id={c.tableLabelId} className="sr-only">
+                    {DATA_TABLE_LABEL}
+                </span>
+            ) : null}
             <DataTableToolbar
                 id={c.id}
                 table={c.table}
@@ -62,6 +82,7 @@ export function DataTable(props: DataTableProps) {
                 onBulkAction={c.handleBulkActionClick}
                 hasSearchableColumns={c.hasSearchableColumns}
                 hasFilters={c.hasFilters}
+                showColumnsVisibility={c.showColumnsVisibility}
                 globalFilter={c.globalFilter}
                 onGlobalFilterChange={c.setGlobalFilter}
                 serverFilters={c.serverFilters}
@@ -89,6 +110,7 @@ export function DataTable(props: DataTableProps) {
                     renderAttachBody={c.renderRowDrawerAttachBody}
                     flatpackEntity={flatpackEntity}
                     flatpackTableFieldId={flatpackTableFieldId}
+                    flatpackWidgetId={flatpackWidgetId}
                     columnValidationErrorsById={
                         c.rowValidationFieldErrorsById[c.detailDrawerRowId] ??
                         {}

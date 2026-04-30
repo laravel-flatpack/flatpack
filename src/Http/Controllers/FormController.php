@@ -11,9 +11,13 @@ use Flatpack\Http\Controllers\Concerns\BuildsFormPageProps;
 use Flatpack\Http\Controllers\Concerns\HandlesFormActions;
 use Flatpack\Http\Controllers\Concerns\LoadsFormComposition;
 use Flatpack\Http\Controllers\Concerns\NormalizesFormSchema;
+use Flatpack\Http\Controllers\Concerns\ResolvesWidgets;
 use Flatpack\Http\FlatpackResponse;
 use Flatpack\Http\FlatpackResponseOptions;
 use Flatpack\Http\Requests\FormSubmitRequest;
+use Flatpack\Schema\Widgets\WidgetSchemaNormalizer;
+use Flatpack\Services\Lists\ListRecordsLoader;
+use Flatpack\Services\Runtime\WidgetRuntime;
 use Flatpack\Support\SuccessRedirect;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
@@ -31,6 +35,13 @@ final readonly class FormController
     use HandlesFormActions;
     use LoadsFormComposition;
     use NormalizesFormSchema;
+    use ResolvesWidgets;
+
+    public function __construct(
+        private WidgetSchemaNormalizer $widgetSchemaNormalizer,
+        private WidgetRuntime $widgetRuntime,
+        private ListRecordsLoader $listRecordsLoader,
+    ) {}
 
     /**
      * Display the create form for a new record.
@@ -47,10 +58,27 @@ final readonly class FormController
             schema: $schema,
             modelClass: $modelClass,
         );
+        $widgetsSchema = $this->normalizedWidgetsSchema($normalized->schema, $normalized->debugLog);
+        $resolvedWidgets = $this->resolveWidgetData(
+            $request,
+            $entity,
+            $widgetsSchema['widgets'] ?? [],
+            $normalized->debugLog,
+        );
 
         return FlatpackResponse::inertia(
             view: 'form',
-            data: $this->formPageProps($entity, $form, $normalized->schema, 'create', null, [], $normalized->debugLog),
+            data: $this->formPageProps(
+                $entity,
+                $form,
+                $normalized->schema,
+                'create',
+                null,
+                [],
+                $normalized->debugLog,
+                $resolvedWidgets,
+                $widgetsSchema,
+            ),
             options: new FlatpackResponseOptions(
                 compositionDebugLog: $normalized->debugLog,
                 skipFormSchemaNormalize: true,
@@ -98,10 +126,27 @@ final readonly class FormController
             $normalized->schema,
             $normalized->debugLog,
         );
+        $widgetsSchema = $this->normalizedWidgetsSchema($normalized->schema, $normalized->debugLog);
+        $resolvedWidgets = $this->resolveWidgetData(
+            $request,
+            $entity,
+            $widgetsSchema['widgets'] ?? [],
+            $normalized->debugLog,
+        );
 
         return FlatpackResponse::inertia(
             view: 'form',
-            data: $this->formPageProps($entity, $form, $normalized->schema, 'edit', $record, $values, $normalized->debugLog),
+            data: $this->formPageProps(
+                $entity,
+                $form,
+                $normalized->schema,
+                'edit',
+                $record,
+                $values,
+                $normalized->debugLog,
+                $resolvedWidgets,
+                $widgetsSchema,
+            ),
             options: new FlatpackResponseOptions(
                 compositionDebugLog: $normalized->debugLog,
                 skipFormSchemaNormalize: true,
@@ -198,5 +243,20 @@ final readonly class FormController
             'entity' => $entity,
             'entityName' => mb_strtolower($form->name ?? $entity),
         ]);
+    }
+
+    private function widgetSchemaNormalizer(): WidgetSchemaNormalizer
+    {
+        return $this->widgetSchemaNormalizer;
+    }
+
+    private function widgetRuntime(): WidgetRuntime
+    {
+        return $this->widgetRuntime;
+    }
+
+    private function listRecordsLoader(): ListRecordsLoader
+    {
+        return $this->listRecordsLoader;
     }
 }

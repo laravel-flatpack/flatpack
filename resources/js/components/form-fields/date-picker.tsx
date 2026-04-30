@@ -1,6 +1,6 @@
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
-import { useLayoutEffect, useState } from 'react';
+import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Calendar } from '../ui/calendar';
 import { Field, FieldContent, FieldTitle } from '../ui/field';
@@ -24,7 +24,6 @@ export const DatePickerField = ({
     triggerClassName?: string;
 }) => {
     const [open, setOpen] = useState(false);
-    const [date, setDate] = useState<Date | undefined>(value);
     const labelId = `${id}-label`;
     const labelledBy = !inline && label ? labelId : undefined;
 
@@ -43,8 +42,8 @@ export const DatePickerField = ({
                     aria-labelledby={labelledBy}
                 >
                     <CalendarIcon className="mr-2 size-4 shrink-0 text-muted-foreground" />
-                    {date ? (
-                        format(date, 'PPP')
+                    {value ? (
+                        format(value, 'PPP')
                     ) : (
                         <span className="text-muted-foreground">
                             {emptyLabel}
@@ -55,9 +54,8 @@ export const DatePickerField = ({
             <PopoverContent className="w-auto p-0" align="start">
                 <Calendar
                     mode="single"
-                    selected={date}
+                    selected={value}
                     onSelect={(d) => {
-                        setDate(d);
                         setOpen(false);
                         onValueChange?.(d);
                     }}
@@ -65,10 +63,6 @@ export const DatePickerField = ({
             </PopoverContent>
         </Popover>
     );
-
-    useLayoutEffect(() => {
-        setDate(value);
-    }, [value]);
 
     if (inline) {
         return trigger;

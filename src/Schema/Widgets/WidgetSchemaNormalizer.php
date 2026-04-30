@@ -207,6 +207,8 @@ final class WidgetSchemaNormalizer
         $normalizedColumns = $columns;
         if ($provider !== '') {
             $normalizedColumns = $this->normalizeProviderBackedTableWidgetColumns($columns);
+        } elseif ($model !== '') {
+            $normalizedColumns = $this->normalizeModelBackedTableWidgetColumns($columns);
         }
 
         $normalized = [
@@ -215,6 +217,9 @@ final class WidgetSchemaNormalizer
             'description' => isset($definition['description']) ? (string) $definition['description'] : null,
             'icon' => isset($definition['icon']) ? (string) $definition['icon'] : null,
             'columns' => $normalizedColumns,
+            'showColumnsVisibility' => is_bool($definition['showColumnsVisibility'] ?? null)
+                ? $definition['showColumnsVisibility']
+                : false,
         ];
         if ($provider !== '') {
             $normalized['provider'] = $provider;
@@ -328,6 +333,59 @@ final class WidgetSchemaNormalizer
                 continue;
             }
             $normalized[$columnId] = array_merge($columnDefinition, ['editable' => false]);
+        }
+
+        return $normalized;
+    }
+
+    /**
+     * Model-backed widget rows support row-drawer editing. Relation columns should expose
+     * a combobox edit field shape so drawer rendering matches form-table behavior.
+     *
+     * @param  array<string, mixed>  $columns
+     * @return array<string, mixed>
+     */
+    private function normalizeModelBackedTableWidgetColumns(array $columns): array
+    {
+        $normalized = [];
+        foreach ($columns as $columnId => $columnDefinition) {
+            if (! is_array($columnDefinition)) {
+                continue;
+            }
+
+            $next = $columnDefinition;
+            $type = isset($columnDefinition['type']) ? trim((string) $columnDefinition['type']) : '';
+            $hasRelation =
+                isset($columnDefinition['relation']) &&
+                trim((string) $columnDefinition['relation']) !== '' &&
+                isset($columnDefinition['relation_name']) &&
+                trim((string) $columnDefinition['relation_name']) !== '' &&
+                isset($columnDefinition['relation_value']) &&
+                trim((string) $columnDefinition['relation_value']) !== '';
+
+            if (
+                $type === 'relation' &&
+                $hasRelation
+            ) {
+                $columnLabel = isset($columnDefinition['label']) ? trim((string) $columnDefinition['label']) : '';
+                if ($columnLabel === '') {
+                    $columnLabel = (string) $columnId;
+                }
+
+                $rawEditFormField = $columnDefinition['edit_form_field'] ?? $columnDefinition['editFormField'] ?? null;
+                $editFormFieldOverrides = is_array($rawEditFormField) ? $rawEditFormField : [];
+
+                $next['edit_form_field'] = array_merge([
+                    'type' => 'combobox',
+                    'label' => $columnLabel,
+                    'placeholder' => sprintf('Select the %s', mb_strtolower($columnLabel)),
+                    'required' => false,
+                ], $editFormFieldOverrides);
+
+                unset($next['editFormField']);
+            }
+
+            $normalized[$columnId] = $next;
         }
 
         return $normalized;

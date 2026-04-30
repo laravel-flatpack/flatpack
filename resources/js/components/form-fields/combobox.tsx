@@ -238,9 +238,13 @@ export const ComboboxField = ({
     const requestIdRef = useRef(0);
     const isFetchingNextPageRef = useRef(false);
     const remoteAbortControllerRef = useRef<AbortController | null>(null);
+    const wasInvalidRef = useRef(false);
     const labelId = `${id}-label`;
     const normalizedItems = useMemo(
-        () => (remote ? remoteItems : items),
+        () =>
+            remote
+                ? dedupeItems([...items, ...remoteItems])
+                : dedupeItems(items),
         [items, remote, remoteItems],
     );
     /** Multi-select: hide options already chosen so duplicates cannot be added. */
@@ -393,6 +397,18 @@ export const ComboboxField = ({
     }, [loadRemotePage, query, remote, remoteEndpoint]);
 
     useEffect(() => {
+        if (!remote || !remoteEndpoint) {
+            wasInvalidRef.current = invalid;
+            return;
+        }
+        if (invalid && !wasInvalidRef.current) {
+            setQuery('');
+            void loadRemotePage(1, false, '');
+        }
+        wasInvalidRef.current = invalid;
+    }, [invalid, loadRemotePage, remote, remoteEndpoint]);
+
+    useEffect(() => {
         setLabelByValue((prev) => {
             const next = { ...prev };
             for (const o of normalizedItems) {
@@ -500,7 +516,7 @@ export const ComboboxField = ({
                             }
                         }}
                     >
-                        <ComboboxChips className="w-full">
+                        <ComboboxChips className="w-full" invalid={invalid}>
                             <ComboboxValue>
                                 {multiValue.map((item) => {
                                     const id = String(item);
@@ -523,7 +539,6 @@ export const ComboboxField = ({
                                 placeholder={multiPlaceholder}
                                 autoComplete="off"
                                 aria-labelledby={label ? labelId : undefined}
-                                aria-invalid={invalid || undefined}
                                 onChange={(event) => {
                                     setQuery(event.currentTarget.value);
                                 }}
@@ -586,9 +601,9 @@ export const ComboboxField = ({
                         autoComplete="off"
                         showClear={singleValue != null}
                         className="w-full rounded-3xl"
+                        invalid={invalid}
                         loading={remoteLoading}
                         aria-labelledby={label ? labelId : undefined}
-                        aria-invalid={invalid || undefined}
                         onChange={(event) => {
                             setQuery(event.currentTarget.value);
                         }}

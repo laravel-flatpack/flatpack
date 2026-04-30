@@ -9,12 +9,16 @@ use Flatpack\Actions\FlatpackBulkActionContext;
 use Flatpack\Contracts\Composition\CompositionQuery;
 use Flatpack\Facades\Flatpack;
 use Flatpack\Http\Requests\BulkActionRequest;
+use Flatpack\Http\Requests\ListActionRequest;
+use Flatpack\Http\Response\FlatpackErrorPayload;
+use Flatpack\Http\Response\RelationOptionsPayload;
 use Flatpack\Schema\Forms\FormSchemaFields;
 use Flatpack\Schema\Forms\FormSchemaNormalizer;
 use Flatpack\Schema\Widgets\WidgetSchemaNormalizer;
 use Flatpack\Services\Runtime\ActionRuntime;
 use Flatpack\Support\Exceptions\ActionRuntimeException;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -93,6 +97,132 @@ final readonly class TableRowController
             modelValue: $definition['model'] ?? null,
             columnsValue: $definition['columns'] ?? null,
         );
+    }
+
+    public function rowActionDashboardWidgetRow(
+        ListActionRequest $request,
+        string $widget,
+        string $record,
+    ): RedirectResponse {
+        /** @var array<string, mixed>|null $schema */
+        $schema = $this->compositions->optional(Flatpack::dashboardEntity(), 'list');
+        $normalized = $this->widgetSchemaNormalizer->normalize($schema);
+        $definition = $normalized['widgets'][$widget] ?? null;
+        if (! is_array($definition) || (($definition['type'] ?? null) !== 'table')) {
+            abort(404);
+        }
+
+        $modelClass = is_string($definition['model'] ?? null)
+            ? trim((string) $definition['model'])
+            : '';
+        if ($modelClass === '' || ! class_exists($modelClass) || ! is_subclass_of($modelClass, Model::class)) {
+            throw ValidationException::withMessages([
+                'flatpack' => 'Table is not model-backed.',
+            ]);
+        }
+
+        $action = trim((string) $request->input('action', ''));
+        if ($action === '') {
+            abort(404, 'Flatpack row action is missing.');
+        }
+
+        $user = $request->user();
+        if ($user === null) {
+            abort(403);
+        }
+
+        $handler = $this->actionRuntime->resolveRecordActionHandler($action);
+        $model = $this->actionRuntime->resolveRecordModel(
+            $modelClass,
+            $record,
+            'table row',
+        );
+        $this->actionRuntime->ensureRecordActionAuthorized(
+            $handler,
+            $user,
+            $modelClass,
+            $model,
+        );
+
+        try {
+            $handler->handle(new FlatpackActionContext(
+                request: $request,
+                entity: Flatpack::dashboardEntity(),
+                actionName: $action,
+                modelClass: $modelClass,
+                record: $record,
+                compositionType: 'list',
+                schema: [
+                    'model' => $modelClass,
+                    'columns' => $definition['columns'] ?? [],
+                ],
+                model: $model,
+            ));
+        } catch (Throwable $exception) {
+            throw $this->actionRuntime->toUserFacingValidationException($exception);
+        }
+
+        return back(303)->with('flatpack', [
+            $action => true,
+        ]);
+    }
+
+    public function dashboardWidgetRelationOptions(Request $request, string $widget): JsonResponse
+    {
+        /** @var array<string, mixed>|null $schema */
+        $schema = $this->compositions->optional(Flatpack::dashboardEntity(), 'list');
+        $normalized = $this->widgetSchemaNormalizer->normalize($schema);
+        $definition = $normalized['widgets'][$widget] ?? null;
+        if (! is_array($definition) || (($definition['type'] ?? null) !== 'table')) {
+            return FlatpackErrorPayload::notFound('Flatpack dashboard widget is not configured.');
+        }
+
+        $modelClass = is_string($definition['model'] ?? null)
+            ? trim((string) $definition['model'])
+            : '';
+        if ($modelClass === '' || ! class_exists($modelClass) || ! is_subclass_of($modelClass, Model::class)) {
+            return FlatpackErrorPayload::notFound('Flatpack dashboard widget is not model-backed.');
+        }
+
+        $validated = $request->validate([
+            'column_id' => ['required', 'string'],
+        ]);
+        $columnId = trim((string) $validated['column_id']);
+        $columns = $definition['columns'] ?? null;
+        if (! is_array($columns) || $columns === []) {
+            return FlatpackErrorPayload::notFound('Flatpack dashboard widget columns are not configured.');
+        }
+
+        $column = null;
+        if (array_is_list($columns)) {
+            foreach ($columns as $item) {
+                if (! is_array($item)) {
+                    continue;
+                }
+                if (trim((string) ($item['id'] ?? '')) === $columnId) {
+                    $column = $item;
+                    break;
+                }
+            }
+        } else {
+            $candidate = $columns[$columnId] ?? null;
+            if (is_array($candidate)) {
+                $column = $candidate;
+            }
+        }
+
+        if (! is_array($column) || trim((string) ($column['type'] ?? '')) !== 'relation') {
+            return FlatpackErrorPayload::notFound('Flatpack dashboard widget relation column is not configured.');
+        }
+
+        $fieldDefinition = $column;
+        $fieldDefinition['type'] = 'combobox';
+
+        return response()->json(RelationOptionsPayload::forModelField(
+            $modelClass,
+            $fieldDefinition,
+            $request,
+        ));
     }
 
     public function updateFormTableRow(Request $request, string $entity, string $field, string $record): RedirectResponse

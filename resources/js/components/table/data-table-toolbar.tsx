@@ -44,6 +44,7 @@ type DataTableToolbarProps = {
     onBulkAction: (actionId: string) => void | Promise<void>;
     hasSearchableColumns: boolean;
     hasFilters: boolean;
+    showColumnsVisibility: boolean;
     globalFilter: string;
     onGlobalFilterChange: (value: string) => void;
     serverFilters: FlatpackDataTableFilter[];
@@ -72,6 +73,7 @@ export function DataTableToolbar({
     onBulkAction,
     hasSearchableColumns,
     hasFilters,
+    showColumnsVisibility,
     globalFilter,
     onGlobalFilterChange,
     serverFilters,
@@ -108,187 +110,201 @@ export function DataTableToolbar({
     const hasEnabledBulkAction = bulkActionStates.some(
         ({ inactive }) => !inactive.inactive,
     );
+    const hasLeftControls = hasToolbarActions || hasBulkActions;
+    const hasRightControls =
+        hasSearchableColumns || hasFilters || showColumnsVisibility;
+    const hasToolbarContent = hasLeftControls || hasRightControls;
 
     return (
         <>
             <div className="block">{toolbarStart}</div>
-            <div className="flex min-h-8 flex-wrap items-center justify-between gap-3">
-                <div className="flex flex-wrap items-center gap-2">
-                    {hasToolbarActions &&
-                        toolbarActions.map((action) => (
-                            <span
-                                key={action.id}
-                                title={
-                                    toolbarActionsDisabled
-                                        ? toolbarDisabledHint
-                                        : undefined
-                                }
-                                className="inline-flex max-w-full"
-                            >
-                                <Button
-                                    type="button"
-                                    variant={
-                                        action.variant === 'destructive'
-                                            ? 'destructive'
-                                            : action.variant === 'default'
-                                              ? 'default'
-                                              : action.variant === 'secondary'
-                                                ? 'secondary'
-                                                : 'outline'
+            {hasToolbarContent ? (
+                <div className="flex min-h-8 flex-wrap items-center justify-between gap-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                        {hasToolbarActions &&
+                            toolbarActions.map((action) => (
+                                <span
+                                    key={action.id}
+                                    title={
+                                        toolbarActionsDisabled
+                                            ? toolbarDisabledHint
+                                            : undefined
                                     }
-                                    size="sm"
-                                    disabled={toolbarActionsDisabled}
-                                    onClick={() => onToolbarAction(action.id)}
+                                    className="inline-flex max-w-full"
                                 >
-                                    {action.icon ? (
-                                        <LucideIconByName
-                                            name={action.icon}
-                                            data-icon="inline-start"
-                                        />
-                                    ) : null}
-                                    {action.label}
-                                </Button>
-                            </span>
-                        ))}
-                    {hasToolbarActions && hasBulkActions ? (
-                        <span
-                            aria-hidden="true"
-                            className="mx-1 hidden h-6 w-px shrink-0 bg-border sm:inline-block"
-                        />
-                    ) : null}
-                    {hasBulkActions && (
-                        <>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
                                     <Button
-                                        variant="outline"
+                                        type="button"
+                                        variant={
+                                            action.variant === 'destructive'
+                                                ? 'destructive'
+                                                : action.variant === 'default'
+                                                  ? 'default'
+                                                  : action.variant ===
+                                                      'secondary'
+                                                    ? 'secondary'
+                                                    : 'outline'
+                                        }
                                         size="sm"
-                                        disabled={
-                                            selectedRowCount === 0 ||
-                                            !hasEnabledBulkAction
+                                        disabled={toolbarActionsDisabled}
+                                        onClick={() =>
+                                            onToolbarAction(action.id)
                                         }
                                     >
-                                        Bulk Actions
-                                        <ChevronDownIcon data-icon="inline-end" />
+                                        {action.icon ? (
+                                            <LucideIconByName
+                                                name={action.icon}
+                                                data-icon="inline-start"
+                                            />
+                                        ) : null}
+                                        {action.label}
                                     </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent
-                                    forceMount
-                                    align="start"
-                                    className="w-auto min-w-56 duration-0 data-open:animate-none data-closed:animate-none data-open:fade-in-0 data-open:zoom-in-100 data-closed:fade-out-0 data-closed:zoom-out-100"
-                                >
-                                    {bulkActionStates.map(
-                                        ({ action, inactive }) => (
-                                            <DropdownMenuItem
-                                                key={action.id}
-                                                className="whitespace-nowrap"
-                                                disabled={inactive.inactive}
-                                                title={inactive.message}
-                                                variant={
-                                                    action.variant ===
-                                                    'destructive'
-                                                        ? 'destructive'
-                                                        : 'default'
-                                                }
-                                                onSelect={() => {
-                                                    if (inactive.inactive) {
-                                                        return;
+                                </span>
+                            ))}
+                        {hasToolbarActions && hasBulkActions ? (
+                            <span
+                                aria-hidden="true"
+                                className="mx-1 hidden h-6 w-px shrink-0 bg-border sm:inline-block"
+                            />
+                        ) : null}
+                        {hasBulkActions && (
+                            <>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            disabled={
+                                                selectedRowCount === 0 ||
+                                                !hasEnabledBulkAction
+                                            }
+                                        >
+                                            Bulk Actions
+                                            <ChevronDownIcon data-icon="inline-end" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent
+                                        forceMount
+                                        align="start"
+                                        className="w-auto min-w-56 duration-0 data-open:animate-none data-closed:animate-none data-open:fade-in-0 data-open:zoom-in-100 data-closed:fade-out-0 data-closed:zoom-out-100"
+                                    >
+                                        {bulkActionStates.map(
+                                            ({ action, inactive }) => (
+                                                <DropdownMenuItem
+                                                    key={action.id}
+                                                    className="whitespace-nowrap"
+                                                    disabled={inactive.inactive}
+                                                    title={inactive.message}
+                                                    variant={
+                                                        action.variant ===
+                                                        'destructive'
+                                                            ? 'destructive'
+                                                            : 'default'
                                                     }
-                                                    if (
-                                                        action.confirm === true
-                                                    ) {
-                                                        setPendingActionId(
-                                                            action.id,
-                                                        );
-                                                        setIsConfirmBulkOpen(
-                                                            true,
-                                                        );
-                                                        return;
-                                                    }
-                                                    onBulkAction(action.id);
-                                                }}
+                                                    onSelect={() => {
+                                                        if (inactive.inactive) {
+                                                            return;
+                                                        }
+                                                        if (
+                                                            action.confirm ===
+                                                            true
+                                                        ) {
+                                                            setPendingActionId(
+                                                                action.id,
+                                                            );
+                                                            setIsConfirmBulkOpen(
+                                                                true,
+                                                            );
+                                                            return;
+                                                        }
+                                                        onBulkAction(action.id);
+                                                    }}
+                                                >
+                                                    {action.icon ? (
+                                                        <LucideIconByName
+                                                            name={action.icon}
+                                                        />
+                                                    ) : null}
+                                                    {action.label}
+                                                </DropdownMenuItem>
+                                            ),
+                                        )}
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                                {selectedRowCount > 0 && (
+                                    <div className="flex items-center gap-2">
+                                        <div className="text-sm text-muted-foreground">
+                                            Selected rows: {selectedRowCount}
+                                        </div>
+                                        {isAllRowsSelected ? (
+                                            <Button
+                                                variant="link"
+                                                size="sm"
+                                                onClick={onDeselectAllRows}
                                             >
-                                                {action.icon ? (
-                                                    <LucideIconByName
-                                                        name={action.icon}
-                                                    />
-                                                ) : null}
-                                                {action.label}
-                                            </DropdownMenuItem>
-                                        ),
-                                    )}
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                            {selectedRowCount > 0 && (
-                                <div className="flex items-center gap-2">
-                                    <div className="text-sm text-muted-foreground">
-                                        Selected rows: {selectedRowCount}
+                                                Deselect all
+                                            </Button>
+                                        ) : totalRowCount > selectedRowCount ? (
+                                            <Button
+                                                variant="link"
+                                                size="sm"
+                                                onClick={onSelectAllRows}
+                                            >
+                                                Select all
+                                            </Button>
+                                        ) : null}
                                     </div>
-                                    {isAllRowsSelected ? (
-                                        <Button
-                                            variant="link"
-                                            size="sm"
-                                            onClick={onDeselectAllRows}
-                                        >
-                                            Deselect all
-                                        </Button>
-                                    ) : totalRowCount > selectedRowCount ? (
-                                        <Button
-                                            variant="link"
-                                            size="sm"
-                                            onClick={onSelectAllRows}
-                                        >
-                                            Select all
-                                        </Button>
-                                    ) : null}
-                                </div>
-                            )}
-                        </>
-                    )}
+                                )}
+                            </>
+                        )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                        {hasSearchableColumns && (
+                            <DataTableSearchInput
+                                id={id}
+                                value={globalFilter}
+                                onChange={onGlobalFilterChange}
+                            />
+                        )}
+                        {hasFilters && (
+                            <DataTableFiltersDropdown
+                                id={id}
+                                serverFilters={serverFilters}
+                                serverFilterState={serverFilterState}
+                                onSetSingleFilter={onSetSingleFilter}
+                                onToggleMultiFilterValue={
+                                    onToggleMultiFilterValue
+                                }
+                                onSetDateFilter={onSetDateFilter}
+                            />
+                        )}
+                        {showColumnsVisibility ? (
+                            <DataTableColumnsVisibilityDropdown table={table} />
+                        ) : null}
+                    </div>
                 </div>
-                <div className="flex items-center gap-2">
-                    {hasSearchableColumns && (
-                        <DataTableSearchInput
-                            id={id}
-                            value={globalFilter}
-                            onChange={onGlobalFilterChange}
-                        />
-                    )}
-                    {hasFilters && (
-                        <DataTableFiltersDropdown
-                            id={id}
-                            serverFilters={serverFilters}
-                            serverFilterState={serverFilterState}
-                            onSetSingleFilter={onSetSingleFilter}
-                            onToggleMultiFilterValue={onToggleMultiFilterValue}
-                            onSetDateFilter={onSetDateFilter}
-                        />
-                    )}
-                    <DataTableColumnsVisibilityDropdown table={table} />
-                </div>
-                <ConfirmDialog
-                    open={isConfirmBulkOpen}
-                    onOpenChange={(open) => {
-                        setIsConfirmBulkOpen(open);
-                        if (!open) {
-                            setPendingActionId(null);
-                        }
-                    }}
-                    title={pendingAction?.label ?? 'Confirm'}
-                    continueVariant={
-                        pendingAction?.variant === 'destructive'
-                            ? 'destructive'
-                            : 'default'
-                    }
-                    onContinue={() => {
-                        if (pendingActionId !== null) {
-                            onBulkAction(pendingActionId);
-                        }
-                        setIsConfirmBulkOpen(false);
+            ) : null}
+            <ConfirmDialog
+                open={isConfirmBulkOpen}
+                onOpenChange={(open) => {
+                    setIsConfirmBulkOpen(open);
+                    if (!open) {
                         setPendingActionId(null);
-                    }}
-                />
-            </div>
+                    }
+                }}
+                title={pendingAction?.label ?? 'Confirm'}
+                continueVariant={
+                    pendingAction?.variant === 'destructive'
+                        ? 'destructive'
+                        : 'default'
+                }
+                onContinue={() => {
+                    if (pendingActionId !== null) {
+                        onBulkAction(pendingActionId);
+                    }
+                    setIsConfirmBulkOpen(false);
+                    setPendingActionId(null);
+                }}
+            />
         </>
     );
 }

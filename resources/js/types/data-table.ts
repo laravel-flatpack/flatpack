@@ -150,6 +150,7 @@ export type BuildDataTableColumnDefsOptions<
     onRowAction?: (
         payload: DataTableRowActionPayload<TRow>,
     ) => void | Promise<void>;
+    inlineCellEdit?: boolean;
     requireRowIdForActions?: boolean;
 };
 
@@ -292,7 +293,12 @@ export type UseDataTableRowReplaceFlowOptions = {
         onValueChange?: (value: unknown) => void;
         onRowUpdate?: (
             payload: DataTableRowUpdatePayload,
-        ) => DataTableRow | null | void | Promise<DataTableRow | null | void>;
+        ) =>
+            | DataTableRow
+            | null
+            | undefined
+            | Promise<DataTableRow | null | undefined>
+            | Promise<void>;
     };
     clearCreateDraftRow: () => void;
 };
@@ -361,6 +367,7 @@ export type DataTableProps<TRow extends DataTableRow = DataTableRow> = {
     onRowAction?: (
         payload: DataTableRowActionPayload<TRow>,
     ) => void | Promise<void>;
+    inlineCellEdit?: boolean;
     /**
      * When true, action-column menus require a non-empty row `id`; rows without it
      * render actions as inactive.
@@ -371,12 +378,19 @@ export type DataTableProps<TRow extends DataTableRow = DataTableRow> = {
     ) => void | Promise<void>;
     onRowUpdate?: (
         payload: DataTableRowUpdatePayload<TRow>,
-    ) => TRow | null | void | Promise<TRow | null | void>;
+    ) =>
+        | TRow
+        | null
+        | undefined
+        | Promise<TRow | null | undefined>
+        | Promise<void>;
     reorderEndpoint?: (item: TRow) => string;
     reorderOnError?: () => void;
     className?: string;
     toolbarStart?: ReactNode;
     toolbarAfterColumns?: ReactNode;
+    /** When false, hides the columns visibility dropdown in the table toolbar. */
+    showColumnsVisibility?: boolean;
     serverPagination?: FlatpackListServerPagination;
     /**
      * Pagination visibility strategy:
@@ -417,6 +431,13 @@ export type DataTableProps<TRow extends DataTableRow = DataTableRow> = {
     flatpackEntity?: string;
     /** Form field id for this table (same as the field key in `form.yaml`). */
     flatpackTableFieldId?: string;
+    /** Widget id when this table is rendered from a dashboard widget. */
+    flatpackWidgetId?: string;
+    /**
+     * When set, the table {@code role="region"} uses this id for {@code aria-labelledby}
+     * (e.g. a visible {@link FieldTitle} above the table). Omits the default sr-only label.
+     */
+    regionLabelledBy?: string;
     /** Row-level validation messages keyed by stable row id (used for embedded table error highlighting). */
     rowValidationMessagesById?: DataTableRowValidationMessagesById;
     /** Row+column validation messages keyed by stable row id then column id (for drawer field invalid state). */

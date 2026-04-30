@@ -1,6 +1,6 @@
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
-import { type ReactNode, useLayoutEffect, useState } from 'react';
+import { type ReactNode, useState } from 'react';
 import type { DateRange } from 'react-day-picker';
 import { cn } from '@/lib/utils';
 import { Calendar } from '../ui/calendar';
@@ -42,12 +42,7 @@ export const DateRangePickerField = ({
     onValueChange?: (value: DateRange | undefined) => void;
 }) => {
     const [open, setOpen] = useState(false);
-    const [range, setRange] = useState<DateRange | undefined>(value);
     const labelId = `${id}-label`;
-
-    useLayoutEffect(() => {
-        setRange(value);
-    }, [value]);
 
     return (
         <Field>
@@ -66,7 +61,7 @@ export const DateRangePickerField = ({
                             aria-labelledby={label ? labelId : undefined}
                         >
                             <CalendarIcon className="mr-2 size-4 shrink-0 text-muted-foreground" />
-                            {formatRangeLabel(range) ?? (
+                            {formatRangeLabel(value) ?? (
                                 <span className="text-muted-foreground">
                                     {emptyLabel}
                                 </span>
@@ -77,9 +72,8 @@ export const DateRangePickerField = ({
                         <Calendar
                             mode="range"
                             numberOfMonths={2}
-                            selected={range}
+                            selected={value}
                             onSelect={(next) => {
-                                setRange(next);
                                 onValueChange?.(next);
                                 if (next?.from && next.to) {
                                     setOpen(false);

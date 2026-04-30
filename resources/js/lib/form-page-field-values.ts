@@ -1,6 +1,6 @@
 import type { DateRange } from 'react-day-picker';
 import { localDateSegment } from '@/lib/data-table-utils';
-import { route } from '@/lib/route';
+import { relationComboboxRemoteProps } from '@/lib/relation-combobox-remote';
 import type { FormFieldProps } from '@/types/form-fields';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -154,9 +154,9 @@ export function relationRemoteProps(
         return {};
     }
 
-    return {
-        remote: true,
-        remoteEndpoint: route('flatpack.entities.relation-options', { entity }),
-        remoteFieldId: fieldId,
-    };
+    return relationComboboxRemoteProps({
+        kind: 'field',
+        entity,
+        fieldId,
+    });
 }

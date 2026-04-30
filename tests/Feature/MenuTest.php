@@ -264,3 +264,42 @@ test('flatpack resolves slug keyed secondary override without wrapper keys', fun
             ->where('flatpack.secondaryMenu.items.0.name', 'Posts')
         );
 });
+
+test('flatpack uses dashboard route for configured dashboard entity with list metadata', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-menu-dashboard-entity-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/home');
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/home/list.yaml', <<<'YAML'
+name: Overview
+model: Flatpack\Tests\Models\PostBySlug
+icon: house
+nav_order: 1
+YAML);
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+nav_order: 10
+YAML);
+        config()->set('flatpack.composition.path', $tempPath);
+        config()->set('flatpack.composition.dashboard_entity', 'home');
+        config()->set('flatpack.ui.navigation.main', null);
+
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get(route('flatpack.dashboard'))
+            ->assertInertia(fn ($page) => $page
+                ->has('flatpack.menu', 2)
+                ->where('flatpack.menu.0.slug', 'home')
+                ->where('flatpack.menu.0.name', 'Overview')
+                ->where('flatpack.menu.0.url', route('flatpack.dashboard'))
+                ->where('flatpack.menu.0.icon', 'house')
+                ->where('flatpack.menu.1.slug', 'posts')
+                ->where('flatpack.menu.1.url', url('/flatpack/posts'))
+            );
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});

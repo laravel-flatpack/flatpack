@@ -229,6 +229,7 @@ export type FlatpackListCompositionSchema = {
     /** Row click behavior. Default `none`; `edit_page` navigates to edit route. */
     row_click?: 'none' | 'edit_page' | 'edit_modal' | 'edit_drawer';
     pagination?: boolean;
+    showColumnsVisibility?: boolean;
     columns?: FlatpackListCompositionColumnsYaml;
     tabs?: FlatpackListCompositionTabsYaml;
     tab_panels?: FlatpackListTabPanelLayout[];

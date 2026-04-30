@@ -1,11 +1,12 @@
 import { ChevronDownIcon, FilterIcon } from 'lucide-react';
 import { useMemo } from 'react';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { cn } from '@/lib/utils';
 import type {
     FlatpackDataTableFilter,
     FlatpackDataTableServerFiltersState,
@@ -75,20 +76,22 @@ export function DataTableFiltersDropdown({
 
     return (
         <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm">
-                    <FilterIcon data-icon="inline-start" />
-                    Filters
-                    {selectedFiltersCount > 0 && (
-                        <Badge
-                            variant="default"
-                            className="h-4 rounded-full px-2 text-xs ml-2"
-                        >
-                            {selectedFiltersCount}
-                        </Badge>
-                    )}
-                    <ChevronDownIcon data-icon="inline-end" />
-                </Button>
+            <DropdownMenuTrigger
+                className={cn(
+                    buttonVariants({ variant: 'outline', size: 'sm' }),
+                )}
+            >
+                <FilterIcon data-icon="inline-start" />
+                Filters
+                {selectedFiltersCount > 0 && (
+                    <Badge
+                        variant="default"
+                        className="h-4 rounded-full px-2 text-xs ml-2"
+                    >
+                        {selectedFiltersCount}
+                    </Badge>
+                )}
+                <ChevronDownIcon data-icon="inline-end" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-full min-w-80">
                 <div id="data-table-filters-form" className="px-4 py-2">

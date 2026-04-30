@@ -109,4 +109,60 @@ describe('DataTableRowDrawerPanel', () => {
         );
         expect(screen.getByText('User id is required.')).toBeInTheDocument();
     });
+
+    it('renders non-editable date columns as disabled in drawer', () => {
+        const onRowReplace = vi.fn();
+        const onOpenChange = vi.fn();
+        const dateColumns: FlatpackDataTableColumn[] = [
+            titleColumn,
+            {
+                id: 'created_at',
+                label: 'Created At',
+                type: 'date',
+                editable: false,
+            },
+        ];
+        render(
+            <DataTableRowDrawerPanel
+                open
+                onOpenChange={onOpenChange}
+                row={{ name: 'Post', created_at: '2026-04-30' }}
+                rowId="row-0"
+                schemaColumns={dateColumns}
+                titleColumn={titleColumn}
+                onRowReplace={onRowReplace}
+            />,
+        );
+        expect(document.querySelector('[aria-disabled="true"]')).not.toBeNull();
+    });
+
+    it('renders non-editable relation columns as disabled in drawer', () => {
+        const onRowReplace = vi.fn();
+        const onOpenChange = vi.fn();
+        const relationColumns: FlatpackDataTableColumn[] = [
+            titleColumn,
+            {
+                id: 'user_id',
+                label: 'User',
+                type: 'relation',
+                relation: 'user',
+                relationName: 'name',
+                relationValue: 'id',
+                editable: false,
+                options: [{ value: '1', label: 'Ada' }],
+            },
+        ];
+        render(
+            <DataTableRowDrawerPanel
+                open
+                onOpenChange={onOpenChange}
+                row={{ name: 'Post', user_id: '1' }}
+                rowId="row-1"
+                schemaColumns={relationColumns}
+                titleColumn={titleColumn}
+                onRowReplace={onRowReplace}
+            />,
+        );
+        expect(document.querySelector('[aria-disabled="true"]')).not.toBeNull();
+    });
 });

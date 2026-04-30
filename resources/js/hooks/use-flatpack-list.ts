@@ -3,6 +3,10 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { firstErrorMessage } from '@/lib/form-errors';
 import {
+    inertiaPatchMutation,
+    inertiaPostMutation,
+} from '@/lib/inertia-mutation';
+import {
     listYamlColumnsToDataTableColumns,
     listYamlFiltersToDataTableFilters,
 } from '@/lib/list-schema';
@@ -48,6 +52,16 @@ type ListQuerySorting = {
     sort_by: string | null;
     sort_direction: 'asc' | 'desc' | null;
 };
+
+type ListRowClickBehavior = 'none' | 'edit_page' | 'edit_drawer';
+
+function normalizeListRowClickBehavior(raw: unknown): ListRowClickBehavior {
+    if (raw === 'none' || raw === 'edit_page' || raw === 'edit_drawer') {
+        return raw;
+    }
+
+    return 'edit_page';
+}
 
 function sanitizeQueryFilters(
     filters?: Record<string, string | string[] | null>,
@@ -243,10 +257,15 @@ export function useFlatpackList({
             : typeof schema?.reorderable === 'string'
               ? schema.reorderable
               : schema?.reorderable === true;
-    const rowClickBehavior = schema?.row_click ?? 'edit_page';
+    const rowClickBehavior = normalizeListRowClickBehavior(schema?.row_click);
     const isRowClickEditPage = rowClickBehavior === 'edit_page';
+    const isRowClickEditDrawer = rowClickBehavior === 'edit_drawer';
     const paginationVisibility =
         typeof schema?.pagination === 'boolean' ? schema.pagination : undefined;
+    const showColumnsVisibility =
+        typeof schema?.showColumnsVisibility === 'boolean'
+            ? schema.showColumnsVisibility
+            : true;
     const rowClickRecordKey = modelKey || 'id';
 
     const [pendingListConfirm, setPendingListConfirm] = useState<
@@ -311,39 +330,22 @@ export function useFlatpackList({
 
     const handleBulkAction = useCallback(
         async (payload: DataTableBulkDeletePayload) => {
-            await new Promise<void>((resolve, reject) => {
-                router.post(
-                    route('flatpack.entities.bulk-action', { entity }),
-                    {
-                        action: payload.action,
-                        selection: payload.selection,
-                        search: payload.search,
-                        filters: payload.filters,
-                        sort_by: payload.sorting.sort_by,
-                        sort_direction: payload.sorting.sort_direction,
-                    },
-                    {
-                        preserveState: true,
-                        preserveScroll: true,
-                        onSuccess: () => {
-                            resolve();
-                            const cfg = bulkActions.find(
-                                (a) => a.action === payload.action,
-                            );
-                            if (cfg?.success_message) {
-                                toast.success(cfg.success_message);
-                            }
-                        },
-                        onError: (errors) =>
-                            reject(
-                                new Error(
-                                    firstErrorMessage(errors) ??
-                                        'Bulk action failed',
-                                ),
-                            ),
-                    },
-                );
-            });
+            const cfg = bulkActions.find((a) => a.action === payload.action);
+            await inertiaPostMutation(
+                route('flatpack.entities.bulk-action', { entity }),
+                {
+                    action: payload.action,
+                    selection: payload.selection,
+                    search: payload.search,
+                    filters: payload.filters,
+                    sort_by: payload.sorting.sort_by,
+                    sort_direction: payload.sorting.sort_direction,
+                },
+                {
+                    errorMessage: 'Bulk action failed',
+                    successMessage: cfg?.success_message,
+                },
+            );
         },
         [bulkActions, entity],
     );
@@ -358,32 +360,22 @@ export function useFlatpackList({
             if (record == null || record === '') {
                 throw new Error('Record key is missing');
             }
-            await new Promise<void>((resolve, reject) => {
-                router.post(
+            try {
+                await inertiaPostMutation(
                     route('flatpack.entities.row-action', {
                         entity,
                         record: String(record),
                     }),
                     { action: opts.action },
                     {
-                        preserveState: true,
-                        preserveScroll: true,
-                        onSuccess: () => {
-                            resolve();
-                            if (opts.success_message) {
-                                toast.success(opts.success_message);
-                            }
-                        },
-                        onError: (errors) => {
-                            const message =
-                                firstErrorMessage(errors) ??
-                                'Row action failed';
-                            toast.error(message);
-                            reject(new Error(message));
-                        },
+                        errorMessage: 'Row action failed',
+                        successMessage: opts.success_message,
                     },
                 );
-            });
+            } catch (error) {
+                toast.error((error as Error).message);
+                throw error;
+            }
         },
         [entity, modelKey],
     );
@@ -413,29 +405,19 @@ export function useFlatpackList({
     const executeListAction = useCallback(
         async (config: FlatpackListHeaderAction & { action: string }) => {
             const { action } = config;
-            await new Promise<void>((resolve, reject) => {
-                router.post(
+            try {
+                await inertiaPostMutation(
                     route('flatpack.entities.action', { entity }),
                     { action },
                     {
-                        preserveState: true,
-                        preserveScroll: true,
-                        onSuccess: () => {
-                            resolve();
-                            if (config.success_message) {
-                                toast.success(config.success_message);
-                            }
-                        },
-                        onError: (errors) => {
-                            const message =
-                                firstErrorMessage(errors) ??
-                                'List action failed';
-                            toast.error(message);
-                            reject(new Error(message));
-                        },
+                        errorMessage: 'List action failed',
+                        successMessage: config.success_message,
                     },
                 );
-            });
+            } catch (error) {
+                toast.error((error as Error).message);
+                throw error;
+            }
         },
         [entity],
     );
@@ -454,30 +436,25 @@ export function useFlatpackList({
             if (record == null || record === '') {
                 throw new Error('Record key is missing');
             }
-            await new Promise<void>((resolve, reject) => {
-                router.patch(
+            try {
+                await inertiaPatchMutation(
                     route('flatpack.entities.update', {
                         entity,
                         record: String(record),
                     }),
                     {
                         field: columnId,
-                        value: value as never,
+                        value,
                     },
                     {
-                        preserveState: true,
-                        preserveScroll: true,
-                        onSuccess: () => resolve(),
-                        onError: (errors) => {
-                            const message =
-                                firstErrorMessage(errors) ??
-                                'Record update failed';
-                            toast.error(message);
-                            reject(new Error(message));
-                        },
+                        errorMessage: 'Record update failed',
+                        successMessage: 'Record updated',
                     },
                 );
-            });
+            } catch (error) {
+                toast.error((error as Error).message);
+                throw error;
+            }
         },
         [entity, modelKey],
     );
@@ -488,27 +465,22 @@ export function useFlatpackList({
             if (record == null || record === '') {
                 throw new Error('Record key is missing');
             }
-            await new Promise<void>((resolve, reject) => {
-                router.patch(
+            try {
+                await inertiaPatchMutation(
                     route('flatpack.entities.update', {
                         entity,
                         record: String(record),
                     }),
-                    { values: row as never },
+                    { values: row },
                     {
-                        preserveState: true,
-                        preserveScroll: true,
-                        onSuccess: () => resolve(),
-                        onError: (errors) => {
-                            const message =
-                                firstErrorMessage(errors) ??
-                                'Record update failed';
-                            toast.error(message);
-                            reject(new Error(message));
-                        },
+                        errorMessage: 'Record update failed',
+                        successMessage: 'Record updated',
                     },
                 );
-            });
+            } catch (error) {
+                toast.error((error as Error).message);
+                throw error;
+            }
         },
         [entity, modelKey],
     );
@@ -555,6 +527,7 @@ export function useFlatpackList({
         filterDefinitions,
         reorderable,
         isRowClickEditPage,
+        isRowClickEditDrawer,
         pendingListConfirm,
         pendingRowActionConfirm,
         setPendingListConfirm,
@@ -572,6 +545,7 @@ export function useFlatpackList({
         records,
         pagination,
         paginationVisibility,
+        showColumnsVisibility,
         searchTerm,
         serverFilterValues,
         serverSorting,

@@ -59,14 +59,7 @@ export function AppSidebar({
             <SidebarContent>
                 <NavMain
                     quickAction={navigation.quickAction}
-                    items={[
-                        {
-                            name: 'Dashboard',
-                            url: route('flatpack.dashboard'),
-                            icon: 'layout-dashboard',
-                        },
-                        ...mainMenuItems,
-                    ]}
+                    items={mainMenuItems}
                     currentPath={currentPath}
                 />
                 <NavSecondary

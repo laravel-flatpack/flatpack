@@ -1,4 +1,4 @@
-import { route } from '@/lib/route';
+import { relationComboboxRemoteProps } from '@/lib/relation-combobox-remote';
 import type { FlatpackDataTableColumn } from '@/types/data-table';
 
 type RelationComboboxValue = {
@@ -23,30 +23,35 @@ export function relationComboboxExtraProps(
     column: FlatpackDataTableColumn,
     flatpackEntity?: string,
     flatpackTableFieldId?: string,
+    flatpackWidgetId?: string,
     portalContainer?: HTMLElement | null,
 ): Record<string, unknown> {
     const entity = flatpackEntity?.trim() ?? '';
     const tableField = flatpackTableFieldId?.trim() ?? '';
+    const widgetId = flatpackWidgetId?.trim() ?? '';
+    if (entity !== '' && tableField !== '') {
+        return relationComboboxRemoteProps(
+            {
+                kind: 'embedded-table-column',
+                entity,
+                tableFieldId: tableField,
+                columnId: column.id,
+            },
+            portalContainer,
+        );
+    }
+    if (widgetId !== '') {
+        return relationComboboxRemoteProps(
+            {
+                kind: 'widget-table-column',
+                widgetId,
+                columnId: column.id,
+            },
+            portalContainer,
+        );
+    }
 
-    return {
-        remote: true,
-        portalContainer,
-        remoteEndpoint:
-            entity !== ''
-                ? route('flatpack.entities.embedded-table-relation-options', {
-                      entity,
-                  })
-                : undefined,
-        remoteFieldParamKey: null,
-        remoteSearchParamKey: 'q',
-        remoteBaseParams:
-            tableField !== ''
-                ? {
-                      table_field: tableField,
-                      column_id: column.id,
-                  }
-                : undefined,
-    };
+    return { remote: true, portalContainer };
 }
 
 export function applyRelationComboboxDraftPatch(

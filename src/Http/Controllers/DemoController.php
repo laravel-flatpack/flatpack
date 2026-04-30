@@ -275,6 +275,68 @@ final class DemoController
                     ],
                 ],
             ],
+            [
+                'id' => 'recent-activity',
+                'title' => 'Table widget',
+                'description' => 'Table widget can display data from a provider (read-only) or a model (editable).',
+                'props' => [
+                    'type' => 'table',
+                    'columns' => [
+                        [
+                            'id' => 'id',
+                            'label' => 'ID',
+                            'type' => 'text',
+                        ],
+                        [
+                            'id' => 'user',
+                            'label' => 'User',
+                            'type' => 'relation',
+                            'relation' => 'user',
+                            'relation_name' => 'name',
+                            'relation_value' => 'id',
+                        ],
+                        [
+                            'id' => 'activity',
+                            'label' => 'Activity',
+                            'type' => 'text',
+                        ],
+                        [
+                            'id' => 'created_at',
+                            'label' => 'Created at',
+                            'type' => 'date',
+                            'format' => 'Y-m-d H:i:s',
+                        ],
+                    ],
+                    'data' => [
+                        'rows' => [
+                            [
+                                'id' => 1,
+                                'user' => ['id' => 1, 'name' => 'John Doe'],
+                                'activity' => 'Logged in',
+                                'created_at' => '2024-04-01 12:00:00',
+                            ],
+                            [
+                                'id' => 2,
+                                'user' => ['id' => 2, 'name' => 'Jane Doe'],
+                                'activity' => 'Logged out',
+                                'created_at' => '2024-04-01 12:01:00',
+                            ],
+                            [
+                                'id' => 3,
+                                'user' => ['id' => 3, 'name' => 'Jim Doe'],
+                                'activity' => 'Created a new post',
+                                'created_at' => '2024-04-01 12:02:00',
+                            ],
+                            [
+                                'id' => 4,
+                                'user' => ['id' => 2, 'name' => 'Jane Doe'],
+                                'activity' => 'Updated a post',
+                                'created_at' => '2024-04-01 12:03:00',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
         ];
     }
 

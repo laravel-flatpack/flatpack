@@ -1,28 +1,28 @@
-import { router } from '@inertiajs/react';
-import { firstErrorMessage } from '@/lib/form-errors';
+import {
+    inertiaPatchMutation,
+    inertiaPostMutation,
+} from '@/lib/inertia-mutation';
 import { route } from '@/lib/route';
 
 async function patchWithInertia(
     url: string,
     values: Record<string, unknown>,
+    options?: {
+        successMessage?: string;
+        errorMessage?: string;
+    },
 ): Promise<Record<string, unknown> | null> {
-    return await new Promise<Record<string, unknown> | null>(
-        (resolve, reject) => {
-            router.patch(url, { values: values as never } as never, {
-                preserveState: true,
-                preserveScroll: true,
-                only: ['composition_debug'],
-                onSuccess: () => resolve(null),
-                onError: (errors) => {
-                    reject(
-                        new Error(
-                            firstErrorMessage(errors) ?? 'Row update failed',
-                        ),
-                    );
-                },
-            });
+    await inertiaPatchMutation(
+        url,
+        { values },
+        {
+            only: ['composition_debug'],
+            successMessage: options?.successMessage,
+            errorMessage: options?.errorMessage ?? 'Row update failed',
         },
     );
+
+    return null;
 }
 
 export async function updateDashboardWidgetModelRow(params: {
@@ -36,6 +36,10 @@ export async function updateDashboardWidgetModelRow(params: {
             record: params.rowId,
         }),
         params.values,
+        {
+            successMessage: 'Row updated successfully',
+            errorMessage: 'Row update failed',
+        },
     );
 }
 
@@ -50,32 +54,43 @@ export async function bulkDashboardWidgetModelRows(params: {
         sort_direction: 'asc' | 'desc' | null;
     };
 }): Promise<void> {
-    await new Promise<void>((resolve, reject) => {
-        router.post(
-            route('flatpack.dashboard.widgets.bulk-action', {
-                widget: params.widgetId,
-            }),
-            {
-                action: params.action,
-                selection: params.selection,
-                search: params.search,
-                filters: params.filters,
-                sort_by: params.sorting.sort_by,
-                sort_direction: params.sorting.sort_direction,
-            } as never,
-            {
-                preserveState: true,
-                preserveScroll: true,
-                onSuccess: () => resolve(),
-                onError: (errors) =>
-                    reject(
-                        new Error(
-                            firstErrorMessage(errors) ?? 'Bulk action failed',
-                        ),
-                    ),
-            },
-        );
-    });
+    await inertiaPostMutation(
+        route('flatpack.dashboard.widgets.bulk-action', {
+            widget: params.widgetId,
+        }),
+        {
+            action: params.action,
+            selection: params.selection,
+            search: params.search,
+            filters: params.filters,
+            sort_by: params.sorting.sort_by,
+            sort_direction: params.sorting.sort_direction,
+        },
+        {
+            errorMessage: 'Bulk action failed',
+        },
+    );
+}
+
+export async function runDashboardWidgetModelRowAction(params: {
+    widgetId: string;
+    rowId: string;
+    action: string;
+    successMessage?: string;
+}): Promise<void> {
+    await inertiaPostMutation(
+        route('flatpack.dashboard.widgets.row-action', {
+            widget: params.widgetId,
+            record: params.rowId,
+        }),
+        {
+            action: params.action,
+        },
+        {
+            errorMessage: 'Row action failed',
+            successMessage: params.successMessage,
+        },
+    );
 }
 
 export async function updateFormTableModelRow(params: {

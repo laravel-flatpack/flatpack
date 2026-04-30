@@ -123,6 +123,10 @@ final readonly class FlatpackMenuBuilder implements MenuBuilder
     private function collectFilesystemBuckets(bool $applyAuthorization = true): array
     {
         $basePath = (string) $this->config->get('flatpack.composition.path', base_path('flatpack'));
+        $dashboardEntity = trim((string) $this->config->get('flatpack.composition.dashboard_entity', 'dashboard'));
+        if ($dashboardEntity === '') {
+            $dashboardEntity = 'dashboard';
+        }
         $buckets = [
             'main' => [],
             'secondary' => [],
@@ -162,7 +166,9 @@ final readonly class FlatpackMenuBuilder implements MenuBuilder
                     ->title()
                     ->plural()
                     ->toString(),
-                url: action([ListController::class, 'index'], ['entity' => $entry]),
+                url: $entry === $dashboardEntity
+                    ? route('flatpack.dashboard')
+                    : action([ListController::class, 'index'], ['entity' => $entry]),
                 icon: $icon ?? 'folder',
                 navOrder: $navOrder,
             );

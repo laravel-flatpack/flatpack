@@ -8,6 +8,14 @@ import type {
     FlatpackListServerSorting,
 } from '@/types/data-table';
 
+/** Stable defaults — fresh `{}` / `[]` / sorting objects each call break effect dependency equality. */
+const EMPTY_SERVER_FILTER_VALUES: FlatpackDataTableServerFiltersState = {};
+const DEFAULT_SERVER_SORTING: FlatpackListServerSorting = {
+    sort_by: null,
+    sort_direction: null,
+};
+const EMPTY_ALLOWED_SORTING_COLUMN_IDS: readonly string[] = [];
+
 type PaginationState = {
     pageIndex: number;
     pageSize: number;
@@ -131,10 +139,10 @@ function buildSortingState(
 export function useDataTableServerState({
     serverPagination,
     serverSearch,
-    serverFilterValues = {},
-    serverSorting = { sort_by: null, sort_direction: null },
+    serverFilterValues = EMPTY_SERVER_FILTER_VALUES,
+    serverSorting = DEFAULT_SERVER_SORTING,
     defaultSort,
-    allowedSortingColumnIds = [],
+    allowedSortingColumnIds = EMPTY_ALLOWED_SORTING_COLUMN_IDS,
     onServerPaginationChange,
 }: UseDataTableServerStateOptions) {
     const allowedSortingColumnIdSet = React.useMemo(
@@ -166,6 +174,8 @@ export function useDataTableServerState({
             allowedSortingColumnIdSet,
         );
     });
+    const sortingRef = React.useRef(sorting);
+    sortingRef.current = sorting;
     const [pagination, setPagination] = React.useState<PaginationState>({
         pageIndex: 0,
         pageSize: 10,
@@ -313,7 +323,7 @@ export function useDataTableServerState({
                 paginationState.pageSize,
                 globalFilter,
                 serverFilterState,
-                serverSortingFromState(sorting),
+                serverSortingFromState(sortingRef.current),
             );
         }, 250);
 
@@ -326,7 +336,6 @@ export function useDataTableServerState({
         serverFilterValues,
         serverPagination,
         serverSearch,
-        sorting,
     ]);
 
     const setSingleServerFilter = React.useCallback(

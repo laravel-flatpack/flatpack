@@ -656,6 +656,21 @@ describe('list composition schema (resources/schema/list.json)', function () {
         expect($errors)->toBeEmpty();
     });
 
+    it('accepts list-level showColumnsVisibility', function () {
+        $errors = CompositionSchemaAsserter::validateList([
+            'columns' => [
+                [
+                    'id' => 'title',
+                    'type' => 'text',
+                    'label' => 'Title',
+                ],
+            ],
+            'showColumnsVisibility' => false,
+        ]);
+
+        expect($errors)->toBeEmpty();
+    });
+
     it('accepts embedded table field default_sort', function () {
         $errors = CompositionSchemaAsserter::validateForm([
             'fields' => [
@@ -672,6 +687,26 @@ describe('list composition schema (resources/schema/list.json)', function () {
                         'key' => 'title',
                         'direction' => 'asc',
                     ],
+                ],
+            ],
+        ]);
+
+        expect($errors)->toBeEmpty();
+    });
+
+    it('accepts embedded table field showColumnsVisibility', function () {
+        $errors = CompositionSchemaAsserter::validateForm([
+            'fields' => [
+                'items' => [
+                    'type' => 'table',
+                    'label' => 'Items',
+                    'relation' => 'items',
+                    'columns' => [
+                        'title' => [
+                            'label' => 'Title',
+                        ],
+                    ],
+                    'showColumnsVisibility' => false,
                 ],
             ],
         ]);
@@ -937,6 +972,33 @@ describe('widget schema contracts', function () {
                 'recent_posts' => [
                     'type' => 'table',
                     'provider' => 'recent_posts',
+                    'columns' => [
+                        'title' => [
+                            'label' => 'Title',
+                            'type' => 'text',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        expect($errors)->toBeEmpty();
+    });
+
+    it('accepts table widget showColumnsVisibility', function () {
+        $errors = CompositionSchemaAsserter::validateList([
+            'columns' => [
+                [
+                    'id' => 'title',
+                    'type' => 'text',
+                    'label' => 'Title',
+                ],
+            ],
+            'widgets' => [
+                'recent_posts' => [
+                    'type' => 'table',
+                    'provider' => 'recent_posts',
+                    'showColumnsVisibility' => true,
                     'columns' => [
                         'title' => [
                             'label' => 'Title',

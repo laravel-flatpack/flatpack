@@ -8,11 +8,13 @@ function Drawer({
     return <DrawerPrimitive.Root data-slot="drawer" {...props} />;
 }
 
-function DrawerTrigger({
-    ...props
-}: React.ComponentProps<typeof DrawerPrimitive.Trigger>) {
-    return <DrawerPrimitive.Trigger data-slot="drawer-trigger" {...props} />;
-}
+const DrawerTrigger = React.forwardRef<
+    React.ElementRef<typeof DrawerPrimitive.Trigger>,
+    React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Trigger>
+>((props, ref) => (
+    <DrawerPrimitive.Trigger ref={ref} data-slot="drawer-trigger" {...props} />
+));
+DrawerTrigger.displayName = 'DrawerTrigger';
 
 function DrawerPortal({
     ...props
@@ -20,11 +22,13 @@ function DrawerPortal({
     return <DrawerPrimitive.Portal data-slot="drawer-portal" {...props} />;
 }
 
-function DrawerClose({
-    ...props
-}: React.ComponentProps<typeof DrawerPrimitive.Close>) {
-    return <DrawerPrimitive.Close data-slot="drawer-close" {...props} />;
-}
+const DrawerClose = React.forwardRef<
+    React.ElementRef<typeof DrawerPrimitive.Close>,
+    React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Close>
+>((props, ref) => (
+    <DrawerPrimitive.Close ref={ref} data-slot="drawer-close" {...props} />
+));
+DrawerClose.displayName = 'DrawerClose';
 
 function DrawerOverlay({
     className,

@@ -46,6 +46,7 @@ final class CompositionSchemaKeys
         'pagination' => 'pagination',
         'reorderable' => 'reorderable',
         'row_click' => 'row_click',
+        'showColumnsVisibility' => 'showColumnsVisibility',
         'tabs' => 'tabs',
         'widgets' => 'widgets',
     ];
@@ -75,6 +76,7 @@ final class CompositionSchemaKeys
         'pagination',
         'reorderable',
         'row_click',
+        'showColumnsVisibility',
         'tabs',
         'widgets',
     ];
