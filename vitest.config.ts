@@ -12,6 +12,26 @@ export default defineConfig({
         setupFiles: ['./resources/js/test/setup.ts'],
         include: ['resources/js/**/*.test.ts', 'resources/js/**/*.test.tsx'],
         css: true,
+        coverage: {
+            provider: 'v8',
+            reporter: ['text', 'html'],
+            exclude: [
+                'resources/js/components/ui/**',
+            ],
+            include: [
+                'resources/js/components/actions/**',
+                'resources/js/components/form-fields/**',
+                'resources/js/components/list-columns/**',
+                'resources/js/components/shortcuts/**',
+                'resources/js/components/widgets/**',
+            ],
+            thresholds: {
+                lines: 80,
+                functions: 80,
+                branches: 80,
+                statements: 80,
+            },
+        },
     },
     resolve: {
         dedupe: ['react', 'react-dom', 'scheduler'],
