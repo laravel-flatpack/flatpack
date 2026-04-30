@@ -1353,6 +1353,9 @@
                 },
                 {
                     "$ref": "#/$defs/statusWidget"
+                },
+                {
+                    "$ref": "#/$defs/chartWidget"
                 }
             ]
         },
@@ -1445,6 +1448,149 @@
                 },
                 "data": {
                     "$ref": "#/$defs/cardWidgetData"
+                }
+            },
+            "additionalProperties": false
+        },
+        "chartWidgetSeries": {
+            "type": "object",
+            "required": [
+                "key",
+                "label"
+            ],
+            "properties": {
+                "key": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "color": {
+                    "description": "Series stroke/fill: an `optionStatus` token (same as select option badges) or any CSS color string.",
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/optionStatus"
+                        },
+                        {
+                            "type": "string",
+                            "minLength": 1
+                        }
+                    ]
+                }
+            },
+            "additionalProperties": false
+        },
+        "chartWidgetTimeRange": {
+            "type": "object",
+            "required": [
+                "id",
+                "label"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Client filter token (e.g. 90d, 30d, 7d)."
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "additionalProperties": false
+        },
+        "chartWidgetConfig": {
+            "type": "object",
+            "required": [
+                "series"
+            ],
+            "properties": {
+                "x_key": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Optional data key for the X axis (dates or categories). Defaults to date."
+                },
+                "mode": {
+                    "type": "string",
+                    "enum": [
+                        "area",
+                        "bar",
+                        "line"
+                    ],
+                    "description": "Chart render mode. Defaults to area when omitted."
+                },
+                "variant": {
+                    "type": "string",
+                    "enum": [
+                        "area_stacked",
+                        "area"
+                    ],
+                    "description": "Area-only variant. area_stacked is the default when mode is area."
+                },
+                "series": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/$defs/chartWidgetSeries"
+                    }
+                },
+                "time_ranges": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/chartWidgetTimeRange"
+                    },
+                    "description": "Optional range filters. When omitted, range controls are hidden and all points are shown."
+                }
+            },
+            "additionalProperties": false
+        },
+        "chartWidget": {
+            "type": "object",
+            "required": [
+                "type",
+                "provider",
+                "label",
+                "chart"
+            ],
+            "properties": {
+                "type": {
+                    "const": "chart"
+                },
+                "provider": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Key in config `flatpack.widget_providers` used to resolve runtime data."
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "description": {
+                    "type": "string"
+                },
+                "chart": {
+                    "$ref": "#/$defs/chartWidgetConfig"
+                },
+                "data": {
+                    "$ref": "#/$defs/chartWidgetResolvedData",
+                    "description": "Populated at runtime from the widget provider; omitted in YAML."
+                }
+            },
+            "additionalProperties": false
+        },
+        "chartWidgetResolvedData": {
+            "type": "object",
+            "description": "Shape returned from WidgetDataProvider (merged into the widget as `data`).",
+            "properties": {
+                "points": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                    },
+                    "description": "Time series or category rows; each point must include `chart.x_key` and series value keys."
                 }
             },
             "additionalProperties": false

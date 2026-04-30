@@ -47,6 +47,34 @@ export type FlatpackMetricWidgetResolvedData = {
     description?: string;
 };
 
+/** Same string union as JSON `optionStatus` / select option badge `status`. */
+export type FlatpackChartSeriesColorToken =
+    typeof import('@/lib/generated/composition-schema-keys').OPTION_STATUS_VALUES[number];
+
+export type FlatpackChartSeries = {
+    key: string;
+    label: string;
+    /** Option-status semantic token or raw CSS (`var(…)`, `#rgb`, …). */
+    color?: FlatpackChartSeriesColorToken | string;
+};
+
+export type FlatpackChartTimeRange = {
+    id: string;
+    label: string;
+};
+
+export type FlatpackChartConfig = {
+    x_key: string;
+    mode?: 'area' | 'bar' | 'line';
+    variant: 'area_stacked' | 'area';
+    series: FlatpackChartSeries[];
+    time_ranges?: FlatpackChartTimeRange[];
+};
+
+export type FlatpackChartWidgetResolvedData = {
+    points?: Array<Record<string, string | number | undefined>>;
+};
+
 export type FlatpackMetricWidget = {
     type: 'metric';
     provider: string;
@@ -77,10 +105,20 @@ export type FlatpackStatusWidget = {
     data?: FlatpackStatusWidgetResolvedData;
 };
 
+export type FlatpackChartWidget = {
+    type: 'chart';
+    provider: string;
+    label: string;
+    description?: string | null;
+    chart: FlatpackChartConfig;
+    data?: FlatpackChartWidgetResolvedData;
+};
+
 export type FlatpackWidget =
     | FlatpackMetricWidget
     | FlatpackCardWidget
-    | FlatpackStatusWidget;
+    | FlatpackStatusWidget
+    | FlatpackChartWidget;
 
 export type FlatpackWidgetTabPanelLayout = {
     id: string;

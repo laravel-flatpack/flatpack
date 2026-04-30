@@ -727,4 +727,34 @@ describe('widget schema contracts', function () {
 
         expect($errors)->not->toBeEmpty();
     });
+
+    it('accepts chart widget in list composition', function () {
+        $errors = CompositionSchemaAsserter::validateList([
+            'columns' => [
+                [
+                    'id' => 'title',
+                    'type' => 'text',
+                    'label' => 'Title',
+                ],
+            ],
+            'widgets' => [
+                'traffic' => [
+                    'type' => 'chart',
+                    'provider' => 'traffic_area_chart',
+                    'label' => 'Traffic',
+                    'chart' => [
+                        'mode' => 'bar',
+                        'x_key' => 'date',
+                        'variant' => 'area_stacked',
+                        'series' => [
+                            ['key' => 'desktop', 'label' => 'Desktop'],
+                            ['key' => 'mobile', 'label' => 'Mobile'],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        expect($errors)->toBeEmpty();
+    });
 });

@@ -170,6 +170,111 @@ final class DemoController
                     ],
                 ],
             ],
+            [
+                'id' => 'traffic_chart',
+                'title' => 'Chart widget (stacked area)',
+                'description' => 'Time-series chart with provider-resolved points and YAML-driven series.',
+                'props' => [
+                    'type' => 'chart',
+                    'provider' => 'traffic_area_chart',
+                    'label' => 'Total visitors',
+                    'description' => 'Desktop vs mobile sessions',
+                    'chart' => [
+                        'x_key' => 'date',
+                        'variant' => 'area_stacked',
+                        'series' => [
+                            ['key' => 'desktop', 'label' => 'Desktop', 'color' => 'success'],
+                            ['key' => 'mobile', 'label' => 'Mobile', 'color' => 'info'],
+                        ],
+                        'time_ranges' => [
+                            ['id' => '90d', 'label' => 'Last 3 months'],
+                            ['id' => '30d', 'label' => 'Last 30 days'],
+                            ['id' => '7d', 'label' => 'Last 7 days'],
+                        ],
+                    ],
+                    'data' => [
+                        'points' => [
+                            ['date' => '2024-04-01', 'desktop' => 222, 'mobile' => 150],
+                            ['date' => '2024-04-15', 'desktop' => 120, 'mobile' => 170],
+                            ['date' => '2024-05-01', 'desktop' => 165, 'mobile' => 220],
+                            ['date' => '2024-05-15', 'desktop' => 292, 'mobile' => 210],
+                            ['date' => '2024-06-01', 'desktop' => 178, 'mobile' => 200],
+                            ['date' => '2024-06-15', 'desktop' => 307, 'mobile' => 350],
+                            ['date' => '2024-06-30', 'desktop' => 446, 'mobile' => 400],
+                        ],
+                    ],
+                ],
+            ],
+            [
+                'id' => 'traffic_chart_bar',
+                'title' => 'Chart widget (grouped bar)',
+                'description' => 'Bar chart mode using the same widget data shape.',
+                'props' => [
+                    'type' => 'chart',
+                    'provider' => 'traffic_area_chart',
+                    'label' => 'Total visitors',
+                    'description' => 'Desktop vs mobile sessions',
+                    'chart' => [
+                        'mode' => 'bar',
+                        'x_key' => 'date',
+                        'series' => [
+                            ['key' => 'desktop', 'label' => 'Desktop', 'color' => 'success'],
+                            ['key' => 'mobile', 'label' => 'Mobile', 'color' => 'info'],
+                        ],
+                        'time_ranges' => [
+                            ['id' => '90d', 'label' => 'Last 3 months'],
+                            ['id' => '30d', 'label' => 'Last 30 days'],
+                            ['id' => '7d', 'label' => 'Last 7 days'],
+                        ],
+                    ],
+                    'data' => [
+                        'points' => [
+                            ['date' => '2024-04-01', 'desktop' => 222, 'mobile' => 150],
+                            ['date' => '2024-04-15', 'desktop' => 120, 'mobile' => 170],
+                            ['date' => '2024-05-01', 'desktop' => 165, 'mobile' => 220],
+                            ['date' => '2024-05-15', 'desktop' => 292, 'mobile' => 210],
+                            ['date' => '2024-06-01', 'desktop' => 178, 'mobile' => 200],
+                            ['date' => '2024-06-15', 'desktop' => 307, 'mobile' => 350],
+                            ['date' => '2024-06-30', 'desktop' => 446, 'mobile' => 400],
+                        ],
+                    ],
+                ],
+            ],
+            [
+                'id' => 'traffic_chart_line',
+                'title' => 'Chart widget (line)',
+                'description' => 'Line chart mode using the same widget data shape.',
+                'props' => [
+                    'type' => 'chart',
+                    'provider' => 'traffic_area_chart',
+                    'label' => 'Total visitors',
+                    'description' => 'Desktop vs mobile sessions',
+                    'chart' => [
+                        'mode' => 'line',
+                        'x_key' => 'date',
+                        'series' => [
+                            ['key' => 'desktop', 'label' => 'Desktop', 'color' => 'success'],
+                            ['key' => 'mobile', 'label' => 'Mobile', 'color' => 'info'],
+                        ],
+                        'time_ranges' => [
+                            ['id' => '90d', 'label' => 'Last 3 months'],
+                            ['id' => '30d', 'label' => 'Last 30 days'],
+                            ['id' => '7d', 'label' => 'Last 7 days'],
+                        ],
+                    ],
+                    'data' => [
+                        'points' => [
+                            ['date' => '2024-04-01', 'desktop' => 222, 'mobile' => 150],
+                            ['date' => '2024-04-15', 'desktop' => 120, 'mobile' => 170],
+                            ['date' => '2024-05-01', 'desktop' => 165, 'mobile' => 220],
+                            ['date' => '2024-05-15', 'desktop' => 292, 'mobile' => 210],
+                            ['date' => '2024-06-01', 'desktop' => 178, 'mobile' => 200],
+                            ['date' => '2024-06-15', 'desktop' => 307, 'mobile' => 350],
+                            ['date' => '2024-06-30', 'desktop' => 446, 'mobile' => 400],
+                        ],
+                    ],
+                ],
+            ],
         ];
     }
 

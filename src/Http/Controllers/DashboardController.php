@@ -114,6 +114,10 @@ final readonly class DashboardController
     {
         $data = is_array($rawData) ? $rawData : [];
         $type = isset($definition['type']) ? trim((string) $definition['type']) : '';
+        if ($type === 'chart') {
+            return $this->normalizeChartWidgetResolvedData($data);
+        }
+
         if ($type !== 'status') {
             return $data;
         }
@@ -122,6 +126,27 @@ final readonly class DashboardController
         $data['status'] = $status ?? 'default';
 
         return $data;
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array{points: list<array<string, mixed>>}
+     */
+    private function normalizeChartWidgetResolvedData(array $data): array
+    {
+        $points = $data['points'] ?? null;
+        if (! is_array($points)) {
+            return ['points' => []];
+        }
+
+        $clean = [];
+        foreach ($points as $row) {
+            if (is_array($row)) {
+                $clean[] = $row;
+            }
+        }
+
+        return ['points' => $clean];
     }
 
     /**
