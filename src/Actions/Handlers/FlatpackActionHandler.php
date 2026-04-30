@@ -7,6 +7,7 @@ namespace Flatpack\Actions\Handlers;
 use Flatpack\Actions\FlatpackActionContext;
 use Flatpack\Contracts\Actions\FlatpackAction;
 use Flatpack\Contracts\Authorization\FlatpackAuthorizer;
+use Flatpack\Support\EloquentModelResolver;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 
@@ -36,19 +37,6 @@ abstract class FlatpackActionHandler implements FlatpackAction
 
     protected function resolveModel(FlatpackActionContext $context): ?Model
     {
-        if ($context->model instanceof Model) {
-            return $context->model;
-        }
-
-        $modelClass = trim($context->modelClass);
-        if ($modelClass === '' || ! class_exists($modelClass)) {
-            return null;
-        }
-        if (! is_subclass_of($modelClass, Model::class)) {
-            return null;
-        }
-
-        /** @var class-string<Model> $modelClass */
-        return new $modelClass();
+        return EloquentModelResolver::fromContext($context);
     }
 }

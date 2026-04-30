@@ -1,0 +1,62 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Flatpack;
+
+use Flatpack\Actions\ActionModelClassResolver;
+use Flatpack\Composition\CompositionValues;
+use Flatpack\Composition\DefaultCompositionQuery;
+use Flatpack\Composition\EntityComposition;
+use Flatpack\Composition\YamlCompositionLoader;
+use Flatpack\Contracts\Composition\CompositionLoader;
+use Flatpack\Contracts\Composition\CompositionQuery;
+use Flatpack\Schema\Forms\FormSchemaNormalizer;
+use Flatpack\Schema\Widgets\WidgetSchemaNormalizer;
+use Flatpack\Services\Lists\ListRecordsLoader;
+use Flatpack\Services\Runtime\WidgetRuntime;
+use Illuminate\Support\ServiceProvider;
+use Override;
+
+/**
+ * Composition graph, YAML loading, and schema-adjacent runtime singletons.
+ */
+final class FlatpackCompositionServiceProvider extends ServiceProvider
+{
+    #[Override]
+    public function register(): void
+    {
+        $this->registerCompositionBindings();
+        $this->registerConcreteServiceSingletons();
+    }
+
+    protected function registerCompositionBindings(): void
+    {
+        $this->app->singleton(CompositionLoader::class, fn ($app): YamlCompositionLoader => new YamlCompositionLoader(
+            $app->make('files'),
+            (string) $app['config']->get('flatpack.composition.path', base_path('flatpack')),
+        ));
+
+        $this->app->singleton(CompositionQuery::class, fn ($app): DefaultCompositionQuery => new DefaultCompositionQuery(
+            $app->make(CompositionLoader::class),
+        ));
+
+        $this->app->singleton(CompositionValues::class, fn (): CompositionValues => new CompositionValues);
+
+        $this->app->singleton(EntityComposition::class, fn ($app): EntityComposition => new EntityComposition(
+            $app->make(CompositionQuery::class),
+            $app->make(CompositionValues::class),
+        ));
+    }
+
+    protected function registerConcreteServiceSingletons(): void
+    {
+        $this->app->singleton(ListRecordsLoader::class, fn (): ListRecordsLoader => new ListRecordsLoader);
+
+        $this->app->singleton(FormSchemaNormalizer::class);
+        $this->app->singleton(WidgetSchemaNormalizer::class);
+
+        $this->app->singleton(ActionModelClassResolver::class);
+        $this->app->singleton(WidgetRuntime::class);
+    }
+}

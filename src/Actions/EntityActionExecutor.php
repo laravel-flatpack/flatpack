@@ -30,6 +30,7 @@ final readonly class EntityActionExecutor
         } catch (AuthorizationException $exception) {
             throw $exception;
         } catch (Throwable $exception) {
+            report($exception);
             throw $this->actions->toUserFacingValidationException($exception);
         }
     }

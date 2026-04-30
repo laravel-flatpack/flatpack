@@ -9,6 +9,7 @@ import {
     normalizeFields,
     validationErrorsFingerprint,
 } from '@/lib/form-schema';
+import { FORM_FIELD_TYPES_CANONICAL } from '@/lib/generated/composition-schema-keys';
 import type { SchemaFieldRenderEntry } from '@/types/schema-fields-renderer';
 
 describe('mergeFormTabsIntoSchemaFields', () => {
@@ -65,6 +66,21 @@ describe('mergeFormTabsIntoSchemaFields', () => {
 });
 
 describe('normalizeFields', () => {
+    it('normalizes every canonical generated form field type', () => {
+        const fields = Object.fromEntries(
+            FORM_FIELD_TYPES_CANONICAL.map((type) => [
+                type,
+                { id: type, type, label: String(type) },
+            ]),
+        );
+        const entries = normalizeFields({ fields });
+
+        expect(entries).toHaveLength(FORM_FIELD_TYPES_CANONICAL.length);
+        expect(entries.map((entry) => entry.field.type).sort()).toEqual(
+            [...FORM_FIELD_TYPES_CANONICAL].sort(),
+        );
+    });
+
     it('returns empty array when schema is nullish or fields missing', () => {
         expect(normalizeFields(null)).toEqual([]);
         expect(normalizeFields(undefined)).toEqual([]);

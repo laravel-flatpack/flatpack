@@ -41,56 +41,8 @@ final class ResolveFormPayload
         ?array $schema,
         array $values,
     ): WritablePayloadResult {
-        if ($schema !== null) {
-            $schema = match ($compositionType) {
-                'form' => CompositionTabsMerge::form($schema) ?? $schema,
-                'list' => CompositionTabsMerge::list($schema) ?? $schema,
-                default => $schema,
-            };
-        }
-
-        $writableFields = $this->writableFieldsFromSchema($compositionType, $schema);
-        $attributes = [];
-
-        foreach ($values as $field => $value) {
-            if (! is_string($field) || trim($field) === '') {
-                continue;
-            }
-            if (! isset($writableFields[$field])) {
-                continue;
-            }
-
-            $fieldDefinition = $this->fieldDefinitionForSchemaField($schema, $field);
-            if ($fieldDefinition !== null && FormFieldType::shouldDeferToRelationSync($fieldDefinition)) {
-                continue;
-            }
-
-            $targetField = $field;
-            if (
-                $fieldDefinition !== null
-                && FormFieldType::isSingleRelationCombobox($fieldDefinition)
-                && ! $model->isFillable($field)
-            ) {
-                $mapped = $this->massAssignableFieldForSingleRelationCombobox(
-                    $model,
-                    $fieldDefinition,
-                    $field,
-                );
-                if ($mapped !== null) {
-                    $targetField = $mapped;
-                }
-            }
-
-            if (! $model->isFillable($targetField)) {
-                throw new MassAssignmentException(sprintf(
-                    'Add [%s] to fillable property to allow mass assignment on [%s].',
-                    $targetField,
-                    $model::class,
-                ));
-            }
-
-            $attributes[$targetField] = $value;
-        }
+        $schema = $this->normalizedSchema($compositionType, $schema);
+        $attributes = $this->writableAttributes($model, $compositionType, $schema, $values);
 
         return new WritablePayloadResult(
             attributes: $attributes,
@@ -115,6 +67,84 @@ final class ResolveFormPayload
             'list' => $this->editableListColumnsFromSchema($schema),
             default => $this->editableListColumnsFromSchema($schema),
         };
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $schema
+     * @param  array<string, mixed>  $values
+     * @return array<string, mixed>
+     */
+    private function writableAttributes(
+        Model $model,
+        string $compositionType,
+        ?array $schema,
+        array $values,
+    ): array {
+        $writableFields = $this->writableFieldsFromSchema($compositionType, $schema);
+        $attributes = [];
+
+        foreach ($values as $field => $value) {
+            if (! is_string($field) || trim($field) === '' || ! isset($writableFields[$field])) {
+                continue;
+            }
+
+            $fieldDefinition = $this->fieldDefinitionForSchemaField($schema, $field);
+            if ($fieldDefinition !== null && FormFieldType::shouldDeferToRelationSync($fieldDefinition)) {
+                continue;
+            }
+
+            if ($fieldDefinition !== null && $this->isFileUploadField($fieldDefinition)) {
+                $targetField = $this->fileUploadTargetColumn($fieldDefinition, $field);
+                $this->assertMassAssignable($model, $targetField);
+                $attributes[$targetField] = $this->normalizedFileUploadValue($fieldDefinition, $value);
+
+                continue;
+            }
+
+            $targetField = $field;
+            if (
+                $fieldDefinition !== null
+                && FormFieldType::isSingleRelationCombobox($fieldDefinition)
+                && ! $model->isFillable($field)
+            ) {
+                $targetField = $this->belongsToForeignKey($model, $fieldDefinition, $field) ?? $field;
+            }
+
+            $this->assertMassAssignable($model, $targetField);
+            $attributes[$targetField] = $value;
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $schema
+     * @return array<string, mixed>|null
+     */
+    private function normalizedSchema(string $compositionType, ?array $schema): ?array
+    {
+        if ($schema === null) {
+            return null;
+        }
+
+        return match ($compositionType) {
+            'form' => CompositionTabsMerge::form($schema) ?? $schema,
+            'list' => CompositionTabsMerge::list($schema) ?? $schema,
+            default => $schema,
+        };
+    }
+
+    private function assertMassAssignable(Model $model, string $targetField): void
+    {
+        if ($model->isFillable($targetField)) {
+            return;
+        }
+
+        throw new MassAssignmentException(sprintf(
+            'Add [%s] to fillable property to allow mass assignment on [%s].',
+            $targetField,
+            $model::class,
+        ));
     }
 
     /**
@@ -206,7 +236,7 @@ final class ResolveFormPayload
     /**
      * @param  array<string, mixed>  $fieldDefinition
      */
-    private function massAssignableFieldForSingleRelationCombobox(
+    private function belongsToForeignKey(
         Model $model,
         array $fieldDefinition,
         string $fallback,
@@ -262,5 +292,55 @@ final class ResolveFormPayload
         }
 
         return false;
+    }
+
+    /**
+     * @param  array<string, mixed>  $fieldDefinition
+     */
+    private function isFileUploadField(array $fieldDefinition): bool
+    {
+        return FormFieldType::normalizeYamlType(trim((string) ($fieldDefinition['type'] ?? ''))) === 'file-upload'
+            && trim((string) ($fieldDefinition['mode'] ?? 'url')) === 'url';
+    }
+
+    /**
+     * @param  array<string, mixed>  $fieldDefinition
+     */
+    private function fileUploadTargetColumn(array $fieldDefinition, string $fallback): string
+    {
+        $target = trim((string) ($fieldDefinition['target_column'] ?? ''));
+
+        return $target !== '' ? $target : $fallback;
+    }
+
+    /**
+     * @param  array<string, mixed>  $fieldDefinition
+     */
+    private function normalizedFileUploadValue(array $fieldDefinition, mixed $value): mixed
+    {
+        $multiple = ($fieldDefinition['multiple'] ?? false) === true;
+        if (! is_array($value)) {
+            return $multiple ? [] : null;
+        }
+
+        $persistAs = trim((string) ($fieldDefinition['persist_as'] ?? 'string'));
+        $items = array_is_list($value) ? $value : [$value];
+        $urls = [];
+        foreach ($items as $item) {
+            if (! is_array($item)) {
+                continue;
+            }
+
+            $url = trim((string) ($item['url'] ?? $item['path'] ?? ''));
+            if ($url !== '') {
+                $urls[] = $url;
+            }
+        }
+
+        if ($multiple) {
+            return $persistAs === 'json' ? $urls : implode(',', $urls);
+        }
+
+        return $urls[0] ?? null;
     }
 }

@@ -10,10 +10,8 @@ use Flatpack\Contracts\Actions\FlatpackBulkAction;
 use Flatpack\Support\Exceptions\ActionRuntimeException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Database\Eloquent\MassAssignmentException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Illuminate\Database\QueryException;
 use Illuminate\Validation\ValidationException;
 use Throwable;
 
@@ -21,42 +19,18 @@ final readonly class ActionRuntime
 {
     public function __construct(
         private ActionModelClassResolver $actionModelClassResolver,
+        private ActionHandlerResolver $actionHandlerResolver,
+        private DatabaseExceptionTranslator $databaseExceptionTranslator,
     ) {}
 
     public function resolveRecordActionHandler(string $action): FlatpackAction
     {
-        $handlerClass = config("flatpack.actions.{$action}");
-        if (! is_string($handlerClass) || $handlerClass === '') {
-            throw new ActionRuntimeException(
-                404,
-                sprintf('Flatpack action "%s" is not configured. Add it to config/flatpack.php under "actions".', $action),
-            );
-        }
-
-        $handler = app()->make($handlerClass);
-        if (! $handler instanceof FlatpackAction) {
-            throw new ActionRuntimeException(500, 'Flatpack action handler must implement FlatpackAction.');
-        }
-
-        return $handler;
+        return $this->actionHandlerResolver->resolveRecordActionHandler($action);
     }
 
     public function resolveBulkActionHandler(string $action): FlatpackBulkAction
     {
-        $handlerClass = config("flatpack.bulk_actions.{$action}");
-        if (! is_string($handlerClass) || $handlerClass === '') {
-            throw new ActionRuntimeException(
-                404,
-                sprintf('Flatpack bulk action "%s" is not configured. Add it to config/flatpack.php under "bulk_actions".', $action),
-            );
-        }
-
-        $handler = app()->make($handlerClass);
-        if (! $handler instanceof FlatpackBulkAction) {
-            throw new ActionRuntimeException(500, 'Flatpack bulk action handler must implement FlatpackBulkAction.');
-        }
-
-        return $handler;
+        return $this->actionHandlerResolver->resolveBulkActionHandler($action);
     }
 
     public function ensureRecordActionAuthorized(
@@ -163,37 +137,7 @@ final readonly class ActionRuntime
     public function toUserFacingValidationException(
         Throwable $exception,
     ): ValidationException {
-        report($exception);
-
-        $message = 'This change could not be completed.';
-        if ($exception instanceof MassAssignmentException) {
-            $message = config('app.debug')
-                ? $exception->getMessage()
-                : 'This field is not writable for this model.';
-        } elseif ($exception instanceof QueryException) {
-            $validationError = $this->databaseValidationError($exception);
-            if ($validationError !== null) {
-                return ValidationException::withMessages([
-                    $validationError['field'] => $validationError['message'],
-                ]);
-            }
-        } elseif (config('app.debug')) {
-            $message = $exception->getMessage() !== ''
-                ? $exception->getMessage()
-                : $message;
-        }
-
-        $messages = [
-            'flatpack' => $message,
-        ];
-        if (config('app.debug')) {
-            $messages['flatpack_exception'] = $exception::class;
-            $messages['flatpack_exception_message'] = $exception->getMessage() !== ''
-                ? $exception->getMessage()
-                : '(no message; see server log for stack trace)';
-        }
-
-        return ValidationException::withMessages($messages);
+        return $this->databaseExceptionTranslator->toUserFacingValidationException($exception);
     }
 
     private function invalidModelClassMessage(): string
@@ -212,42 +156,5 @@ final readonly class ActionRuntime
         }
 
         return 'This action is not authorized.';
-    }
-
-    /**
-     * @return array{field: string, message: string}|null
-     */
-    private function databaseValidationError(QueryException $exception): ?array
-    {
-        $message = $exception->getMessage();
-
-        if (preg_match('/NOT NULL constraint failed: [^.]+\.([a-zA-Z0-9_]+)/', $message, $matches) === 1) {
-            $field = $matches[1];
-
-            return [
-                'field' => $field,
-                'message' => sprintf('%s is required.', str_replace('_', ' ', ucfirst($field))),
-            ];
-        }
-
-        if (preg_match('/UNIQUE constraint failed: [^.]+\.([a-zA-Z0-9_]+)/', $message, $matches) === 1) {
-            $field = $matches[1];
-
-            return [
-                'field' => $field,
-                'message' => sprintf('%s must be unique.', str_replace('_', ' ', ucfirst($field))),
-            ];
-        }
-
-        if (preg_match('/Duplicate entry .* for key .*\.([a-zA-Z0-9_]+)\'?/', $message, $matches) === 1) {
-            $field = $matches[1];
-
-            return [
-                'field' => $field,
-                'message' => sprintf('%s must be unique.', str_replace('_', ' ', ucfirst($field))),
-            ];
-        }
-
-        return null;
     }
 }

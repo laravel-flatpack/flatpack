@@ -6,8 +6,6 @@ namespace Flatpack\Schema\Validation;
 
 use Flatpack\Schema\CompositionTabsMerge;
 use Flatpack\Schema\Generated\CompositionSchemaKeys;
-use Flatpack\Schema\RelationFieldQuery;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\In;
 
 /**
@@ -86,7 +84,7 @@ final class ListSchemaRuleBuilder
         }
 
         if ($type === 'relation') {
-            $exists = $this->relationExistsRule($modelClass, $columnDefinition);
+            $exists = SchemaFieldRuleHelper::relationExistsRule($modelClass, $columnDefinition);
             if ($exists !== null) {
                 $rules[] = $exists;
             } else {
@@ -97,7 +95,7 @@ final class ListSchemaRuleBuilder
         }
 
         if ($type === 'select') {
-            $in = $this->selectInRule($columnDefinition);
+            $in = SchemaFieldRuleHelper::selectInRule($columnDefinition);
             if ($in !== null) {
                 $rules[] = $in;
             } else {
@@ -133,57 +131,5 @@ final class ListSchemaRuleBuilder
         }
 
         return $columnType;
-    }
-
-    /**
-     * @param  array<string, mixed>  $columnDefinition
-     */
-    private function selectInRule(array $columnDefinition): ?In
-    {
-        $options = $columnDefinition['options'] ?? null;
-        if (! is_array($options)) {
-            return null;
-        }
-
-        $values = [];
-        if (array_is_list($options)) {
-            foreach ($options as $option) {
-                if (! is_array($option)) {
-                    continue;
-                }
-
-                $value = isset($option['value']) ? trim((string) $option['value']) : '';
-                if ($value !== '') {
-                    $values[] = $value;
-                }
-            }
-        } else {
-            foreach ($options as $value => $_label) {
-                $values[] = trim((string) $value);
-            }
-        }
-
-        if ($values === []) {
-            return null;
-        }
-
-        return Rule::in($values);
-    }
-
-    /**
-     * @param  array<string, mixed>  $columnDefinition
-     */
-    private function relationExistsRule(string $modelClass, array $columnDefinition): ?string
-    {
-        $components = RelationFieldQuery::components($modelClass, $columnDefinition);
-        if ($components === null) {
-            return null;
-        }
-
-        [, , $valueField] = $components;
-        $related = $components[0]->getModel();
-        $table = $related->getTable();
-
-        return 'exists:' . $table . ',' . $valueField;
     }
 }

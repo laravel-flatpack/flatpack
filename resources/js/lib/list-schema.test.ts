@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { LIST_COLUMN_YAML_TYPES } from '@/lib/generated/composition-schema-keys';
 import {
     listYamlColumnsToDataTableColumns,
     listYamlFiltersToDataTableFilters,
@@ -6,6 +7,21 @@ import {
 import type { FlatpackDataTableColumn } from '@/types/data-table';
 
 describe('listYamlColumnsToDataTableColumns', () => {
+    it('normalizes all generated list column yaml types', () => {
+        const cols = listYamlColumnsToDataTableColumns(
+            LIST_COLUMN_YAML_TYPES.map((type) => ({
+                id: `${type}-col`,
+                type,
+                label: String(type),
+            })),
+        );
+
+        expect(cols).toHaveLength(LIST_COLUMN_YAML_TYPES.length);
+        expect(cols.map((col) => col.id)).toEqual(
+            LIST_COLUMN_YAML_TYPES.map((type) => `${type}-col`),
+        );
+    });
+
     it('returns empty for null or non-object columns', () => {
         expect(listYamlColumnsToDataTableColumns(null)).toEqual([]);
         expect(listYamlColumnsToDataTableColumns('x')).toEqual([]);

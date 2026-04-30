@@ -6,6 +6,7 @@ namespace Flatpack\Services\SaveRecord;
 
 use Flatpack\Schema\CompositionTabsMerge;
 use Flatpack\Schema\Forms\FormFieldType;
+use Flatpack\Support\ValidationMessages;
 
 final class DeferredRelationValidationService
 {
@@ -60,7 +61,7 @@ final class DeferredRelationValidationService
                         continue;
                     }
                     $errors[sprintf('values.%s.%d.%s', $fieldId, $index, $columnId)] = [
-                        $this->defaultRequiredMessage($columnId),
+                        ValidationMessages::required($columnId),
                     ];
                 }
             }
@@ -118,10 +119,5 @@ final class DeferredRelationValidationService
         }
 
         return $required;
-    }
-
-    private function defaultRequiredMessage(string $field): string
-    {
-        return sprintf('%s is required.', str_replace('_', ' ', ucfirst($field)));
     }
 }

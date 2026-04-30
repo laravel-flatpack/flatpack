@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Flatpack\Http\Controllers;
 
 use Flatpack\Actions\FlatpackBulkActionContext;
-use Flatpack\Http\Controllers\Concerns\HandlesListActions;
+use Flatpack\Http\Controllers\Concerns\DispatchesActions;
 use Flatpack\Http\Controllers\Concerns\HandlesReorderRecord;
 use Flatpack\Http\Controllers\Concerns\LoadsListComposition;
 use Flatpack\Http\Requests\BulkActionRequest;
@@ -20,7 +20,7 @@ use Illuminate\Http\RedirectResponse;
 
 final readonly class EntityActionController
 {
-    use HandlesListActions;
+    use DispatchesActions;
     use HandlesReorderRecord;
     use LoadsListComposition;
 
@@ -183,7 +183,7 @@ final readonly class EntityActionController
         $requestedTabId = trim((string) $request->query('tab', ''));
         $resolvedTab = $this->activeTabResolver->resolveWithSchema($schema, $requestedTabId);
         $resolved = $this->resolveReorderSchemaAndModelClass(
-            schema: $resolvedTab['effectiveSchema'],
+            schema: $resolvedTab->effectiveSchema,
             fallbackModelClass: $fallbackModelClass,
         );
         if ($resolved instanceof JsonResponse) {
@@ -220,7 +220,7 @@ final readonly class EntityActionController
             modelClass: $modelClass,
             schema: $schema,
             model: $model,
-            scope: $resolvedTab['scope'],
+            scope: $resolvedTab->scope,
         );
         if ($reordered instanceof JsonResponse) {
             return $reordered;

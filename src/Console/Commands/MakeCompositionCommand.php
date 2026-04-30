@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace Flatpack\Console\Commands;
 
 use Closure;
-use Flatpack\Composition\CompositionPathGuard;
 use Flatpack\Services\Commands\BuildCompositionReplacementsService;
 use Flatpack\Services\Commands\DiscoverFlatpackIconNamesService;
 use Flatpack\Services\Commands\DiscoverModelsService;
 use Flatpack\Services\Commands\MakeCompositionInput;
 use Flatpack\Services\Commands\MakeCompositionToggleSet;
-use Flatpack\Services\Commands\ModelSoftDeleteInspector;
+use Flatpack\Services\Commands\MakeCompositionWizard;
 use Flatpack\Services\Commands\ResolveNextNavOrderService;
 use Flatpack\Services\Commands\WriteCompositionFilesService;
 use Illuminate\Console\GeneratorCommand;
@@ -89,7 +88,7 @@ final class MakeCompositionCommand extends GeneratorCommand
         private readonly BuildCompositionReplacementsService $buildReplacements,
         private readonly WriteCompositionFilesService $writeFiles,
         private readonly ResolveNextNavOrderService $resolveNextNavOrder,
-        private readonly ModelSoftDeleteInspector $softDeleteInspector,
+        private readonly MakeCompositionWizard $makeCompositionWizard,
     ) {
         parent::__construct($files);
     }
@@ -173,41 +172,24 @@ final class MakeCompositionCommand extends GeneratorCommand
     {
         $modelClass = $this->resolveModelClass();
         $basename = class_basename($modelClass);
-        $shouldAskFollowUpQuestions = ! $this->hasModelOption() && $this->isInteractiveMode();
-        $defaults = $this->defaultInputPreset(
-            modelClass: $modelClass,
-            basename: $basename
-        );
 
-        $selected = $defaults;
-        if (! ($shouldAskFollowUpQuestions && $this->confirmSuggestedDefaults($defaults))) {
-            $selected = $this->resolveInputPreset($defaults, $shouldAskFollowUpQuestions);
-        }
-
-        if (! CompositionPathGuard::isSafeSegment($selected['entities'])) {
-            throw new InvalidArgumentException('The derived entity directory "' . $selected['entities'] . '" is not a safe path segment (use letters, numbers, underscores, or hyphens only).');
-        }
-
-        $toggles = $this->resolveToggles(
-            defaults: $defaults['toggles'],
-            askInteractively: $shouldAskFollowUpQuestions,
-            usesSoftDeletes: $this->softDeleteInspector->usesSoftDeletes($modelClass),
-        );
-
-        return new MakeCompositionInput(
+        return $this->makeCompositionWizard->resolve(
             modelClass: $modelClass,
             modelBasename: $basename,
-            entity: $selected['entity'],
-            entities: $selected['entities'],
-            menu: $selected['menu'],
-            icon: $selected['icon'],
-            navOrder: $selected['navOrder'],
-            includeBasicActions: $toggles->basicActions,
-            includeBulkDelete: $toggles->bulkDelete,
-            includeAutoFields: $toggles->autoFields,
-            includeAutoColumns: $toggles->autoColumns,
-            includeSoftDeleteActions: $toggles->softDeleteActions,
+            hasModelOption: $this->hasModelOption(),
+            interactiveMode: $this->isInteractiveMode(),
             force: (bool) $this->option('force'),
+            defaultInputPreset: fn (string $resolvedModelClass, string $resolvedBasename): array => $this->defaultInputPreset(
+                modelClass: $resolvedModelClass,
+                basename: $resolvedBasename,
+            ),
+            confirmSuggestedDefaults: fn (array $defaults): bool => $this->confirmSuggestedDefaults($defaults),
+            resolveInputPreset: fn (array $defaults, bool $askInteractively): array => $this->resolveInputPreset($defaults, $askInteractively),
+            resolveToggles: fn (MakeCompositionToggleSet $defaults, bool $askInteractively, bool $usesSoftDeletes): MakeCompositionToggleSet => $this->resolveToggles(
+                defaults: $defaults,
+                askInteractively: $askInteractively,
+                usesSoftDeletes: $usesSoftDeletes,
+            ),
         );
     }
 

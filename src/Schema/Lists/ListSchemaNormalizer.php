@@ -11,6 +11,7 @@ use Flatpack\Schema\Lists\Normalization\Pipes\WarnInvalidListMenuPipe;
 use Flatpack\Schema\Lists\Normalization\Pipes\WarnUnknownListBulkActionsNestedKeysPipe;
 use Flatpack\Schema\Lists\Normalization\Pipes\WarnUnknownListColumnActionButtonsNestedKeysPipe;
 use Flatpack\Schema\Lists\Normalization\Pipes\WarnUnknownListHeaderActionsNestedKeysPipe;
+use Flatpack\Schema\ResolvesLaravelPipeline;
 use Flatpack\Support\CompositionDebugLog;
 use Illuminate\Pipeline\Pipeline;
 
@@ -20,6 +21,8 @@ use Illuminate\Pipeline\Pipeline;
  */
 final readonly class ListSchemaNormalizer
 {
+    use ResolvesLaravelPipeline;
+
     public function __construct(
         private ?Pipeline $pipeline = null,
     ) {}
@@ -50,10 +53,5 @@ final readonly class ListSchemaNormalizer
             ->thenReturn();
 
         return $out->schema;
-    }
-
-    private function resolvePipeline(): Pipeline
-    {
-        return $this->pipeline ?? app(Pipeline::class);
     }
 }

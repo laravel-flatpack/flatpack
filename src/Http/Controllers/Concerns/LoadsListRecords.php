@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Flatpack\Http\Controllers\Concerns;
 
+use Flatpack\Services\Lists\ListQueryParams;
 use Flatpack\Services\Lists\ListRecordsLoader;
 
 /**
@@ -33,13 +34,15 @@ trait LoadsListRecords
         return $this->listRecordsLoader()->load(
             $modelClass,
             $schema,
-            $query['page'],
-            $query['perPage'],
-            $query['searchTerm'],
-            $query['filters'],
-            $query['sortBy'],
-            $query['sortDirection'],
-            $scope,
+            new ListQueryParams(
+                page: $query['page'],
+                perPage: $query['perPage'],
+                search: $query['searchTerm'],
+                filters: $query['filters'],
+                sortBy: $query['sortBy'],
+                sortDirection: $query['sortDirection'],
+                scope: $scope,
+            ),
         );
     }
 

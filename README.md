@@ -48,6 +48,15 @@ Note: To make sure that the public assets are always up-to-date, remember to add
   ],
 ```
 
+## Securing your panel
+
+Flatpack gates access with Laravel policies and optional `canAccessFlatpack()` on the authenticated user model (see `config/flatpack.php` under `security.authorization`).
+
+- **Default (`allow_when_policy_missing` = true):** If no policy is registered for a model Flatpack is about to authorize, access is still allowed when the user may access the panel. In **production**, Flatpack logs a warning so you notice missing policies.
+- **Strict (`allow_when_policy_missing` = false):** Every Eloquent model exposed in your compositions must have a registered policy (or explicit gate rules). Missing policies deny authorization. Use this once you have full policy coverage and want fail-closed behavior.
+
+**Recommended migration path:** start with the default in development, register policies for each managed model, watch production logs for warnings, then set `FLATPACK_SECURITY_ALLOW_WHEN_POLICY_MISSING=false` (or the config key) when you are confident nothing is missing.
+
 ## Usage
 
 Generating Flatpack composition files for `App\Models\Post` model...

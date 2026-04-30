@@ -9,7 +9,6 @@ use Illuminate\Auth\AuthenticationException;
 use Illuminate\Auth\Middleware\RedirectIfAuthenticated;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use ReflectionProperty;
 
 /**
  * Wraps Laravel's guest / authenticated redirect callbacks so Flatpack URLs are handled
@@ -25,16 +24,9 @@ final class AuthenticationRedirectCallbacks
 
     private static function wrapAuthenticationException(): void
     {
-        $reflection = new ReflectionProperty(AuthenticationException::class, 'redirectToCallback');
-        $previous = $reflection->getValue();
-
-        AuthenticationException::redirectUsing(function (Request $request) use ($previous) {
+        AuthenticationException::redirectUsing(function (Request $request): string {
             if (FlatpackRequest::matches($request)) {
                 return route('flatpack.login');
-            }
-
-            if (is_callable($previous)) {
-                return $previous($request);
             }
 
             if (Route::has('login')) {
@@ -47,16 +39,9 @@ final class AuthenticationRedirectCallbacks
 
     private static function wrapRedirectIfAuthenticated(): void
     {
-        $reflection = new ReflectionProperty(RedirectIfAuthenticated::class, 'redirectToCallback');
-        $previous = $reflection->getValue();
-
-        RedirectIfAuthenticated::redirectUsing(function (Request $request) use ($previous) {
+        RedirectIfAuthenticated::redirectUsing(function (Request $request): ?string {
             if (FlatpackRequest::isFlatpackLoginRoute($request)) {
                 return route('flatpack.dashboard');
-            }
-
-            if (is_callable($previous)) {
-                return $previous($request);
             }
 
             return null;

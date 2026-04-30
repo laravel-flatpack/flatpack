@@ -159,6 +159,7 @@ final readonly class TableRowController
                 model: $model,
             ));
         } catch (Throwable $exception) {
+            report($exception);
             throw $this->actionRuntime->toUserFacingValidationException($exception);
         }
 
@@ -304,6 +305,7 @@ final readonly class TableRowController
                 model: $model,
             ));
         } catch (Throwable $exception) {
+            report($exception);
             throw $this->actionRuntime->toUserFacingValidationException($exception);
         }
 

@@ -8,12 +8,11 @@ use Flatpack\Actions\FlatpackActionContext;
 use Flatpack\Composition\FormComposition;
 use Flatpack\Http\Controllers\Concerns\AuthorizesModelAbility;
 use Flatpack\Http\Controllers\Concerns\BuildsFormPageProps;
-use Flatpack\Http\Controllers\Concerns\HandlesFormActions;
+use Flatpack\Http\Controllers\Concerns\DispatchesActions;
 use Flatpack\Http\Controllers\Concerns\LoadsFormComposition;
 use Flatpack\Http\Controllers\Concerns\NormalizesFormSchema;
 use Flatpack\Http\Controllers\Concerns\ResolvesWidgets;
 use Flatpack\Http\FlatpackResponse;
-use Flatpack\Http\FlatpackResponseOptions;
 use Flatpack\Http\Requests\FormSubmitRequest;
 use Flatpack\Schema\Widgets\WidgetSchemaNormalizer;
 use Flatpack\Services\Lists\ListRecordsLoader;
@@ -32,7 +31,7 @@ final readonly class FormController
 {
     use AuthorizesModelAbility;
     use BuildsFormPageProps;
-    use HandlesFormActions;
+    use DispatchesActions;
     use LoadsFormComposition;
     use NormalizesFormSchema;
     use ResolvesWidgets;
@@ -59,7 +58,7 @@ final readonly class FormController
             modelClass: $modelClass,
         );
         $widgetsSchema = $this->normalizedWidgetsSchema($normalized->schema, $normalized->debugLog);
-        $resolvedWidgets = $this->resolveWidgetData(
+        $resolvedWidgets = $this->resolveWidgetDataWhenPresent(
             $request,
             $entity,
             $widgetsSchema['widgets'] ?? [],
@@ -79,10 +78,7 @@ final readonly class FormController
                 $resolvedWidgets,
                 $widgetsSchema,
             ),
-            options: new FlatpackResponseOptions(
-                compositionDebugLog: $normalized->debugLog,
-                skipFormSchemaNormalize: true,
-            ),
+            compositionDebugLog: $normalized->debugLog,
         );
     }
 
@@ -102,10 +98,7 @@ final readonly class FormController
             return FlatpackResponse::inertia(
                 view: 'form',
                 data: $this->formPageProps($entity, $form, $schema, 'edit', $record, [], $debugLog),
-                options: new FlatpackResponseOptions(
-                    compositionDebugLog: $debugLog,
-                    skipFormSchemaNormalize: true,
-                ),
+                compositionDebugLog: $debugLog,
             );
         }
         $model = $this->resolveOptionalRecordModel($modelClass, $record);
@@ -127,7 +120,7 @@ final readonly class FormController
             $normalized->debugLog,
         );
         $widgetsSchema = $this->normalizedWidgetsSchema($normalized->schema, $normalized->debugLog);
-        $resolvedWidgets = $this->resolveWidgetData(
+        $resolvedWidgets = $this->resolveWidgetDataWhenPresent(
             $request,
             $entity,
             $widgetsSchema['widgets'] ?? [],
@@ -147,10 +140,7 @@ final readonly class FormController
                 $resolvedWidgets,
                 $widgetsSchema,
             ),
-            options: new FlatpackResponseOptions(
-                compositionDebugLog: $normalized->debugLog,
-                skipFormSchemaNormalize: true,
-            ),
+            compositionDebugLog: $normalized->debugLog,
         );
     }
 
@@ -200,6 +190,7 @@ final readonly class FormController
             if ($exception instanceof ValidationException) {
                 throw $exception;
             }
+            report($exception);
 
             throw $this->actionRuntime()->toUserFacingValidationException($exception);
         }

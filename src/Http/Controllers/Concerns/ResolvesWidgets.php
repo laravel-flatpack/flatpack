@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Flatpack\Http\Controllers\Concerns;
 
 use Flatpack\Facades\Flatpack;
-use Flatpack\Schema\Generated\CompositionSchemaKeys;
 use Flatpack\Schema\Widgets\WidgetSchemaNormalizer;
+use Flatpack\Services\Lists\ListQueryParams;
 use Flatpack\Services\Lists\ListRecordsLoader;
 use Flatpack\Services\Runtime\WidgetRuntime;
 use Flatpack\Support\CompositionDebugLog;
@@ -32,6 +32,27 @@ trait ResolvesWidgets
     private function normalizedWidgetsSchema(?array $schema, ?CompositionDebugLog $debugLog = null): ?array
     {
         return $this->widgetSchemaNormalizer()->normalize($schema, $debugLog);
+    }
+
+    /**
+     * Resolves widget payloads only when the normalized schema defines at least one widget.
+     * Skips provider/model resolution entirely when there is nothing to render (avoids eager
+     * {@see ListRecordsLoader} work for model-backed table widgets on widget-less pages).
+     *
+     * @param  array<string, mixed>  $widgets
+     * @return array<string, array<string, mixed>>
+     */
+    private function resolveWidgetDataWhenPresent(
+        Request $request,
+        string $entity,
+        array $widgets,
+        ?CompositionDebugLog $debugLog = null,
+    ): array {
+        if ($widgets === []) {
+            return [];
+        }
+
+        return $this->resolveWidgetData($request, $entity, $widgets, $debugLog);
     }
 
     /**
@@ -112,7 +133,7 @@ trait ResolvesWidgets
             return $data;
         }
 
-        $status = $this->normalizeWidgetStatus($data['status'] ?? null);
+        $status = $this->widgetSchemaNormalizer()->normalizeWidgetStatusValue($data['status'] ?? null);
         $data['status'] = $status ?? 'default';
 
         return $data;
@@ -170,13 +191,14 @@ trait ResolvesWidgets
         $loaded = $this->listRecordsLoader()->load(
             $modelClass,
             $schema,
-            $page,
-            $perPage,
-            $search,
-            [],
-            $sortBy,
-            $sortDirection,
-            null,
+            new ListQueryParams(
+                page: $page,
+                perPage: $perPage,
+                search: $search,
+                filters: [],
+                sortBy: $sortBy,
+                sortDirection: $sortDirection,
+            ),
         );
 
         return [
@@ -380,22 +402,5 @@ trait ResolvesWidgets
         }
 
         return ['points' => $clean];
-    }
-
-    /**
-     * @return 'warning'|'error'|'success'|'info'|'default'|null
-     */
-    private function normalizeWidgetStatus(mixed $raw): ?string
-    {
-        if (! is_string($raw)) {
-            return null;
-        }
-
-        $status = trim($raw);
-        if (! in_array($status, CompositionSchemaKeys::WIDGET_STATUS_VALUES, true)) {
-            return null;
-        }
-
-        return $status;
     }
 }

@@ -27,27 +27,57 @@ final readonly class MakeCompositionToggleSet
 
     public function withBasicActions(bool $value): self
     {
-        return new self($value, $this->bulkDelete, $this->autoFields, $this->autoColumns, $this->softDeleteActions);
+        return new self(
+            basicActions: $value,
+            bulkDelete: $this->bulkDelete,
+            autoFields: $this->autoFields,
+            autoColumns: $this->autoColumns,
+            softDeleteActions: $this->softDeleteActions,
+        );
     }
 
     public function withBulkDelete(bool $value): self
     {
-        return new self($this->basicActions, $value, $this->autoFields, $this->autoColumns, $this->softDeleteActions);
+        return new self(
+            basicActions: $this->basicActions,
+            bulkDelete: $value,
+            autoFields: $this->autoFields,
+            autoColumns: $this->autoColumns,
+            softDeleteActions: $this->softDeleteActions,
+        );
     }
 
     public function withAutoFields(bool $value): self
     {
-        return new self($this->basicActions, $this->bulkDelete, $value, $this->autoColumns, $this->softDeleteActions);
+        return new self(
+            basicActions: $this->basicActions,
+            bulkDelete: $this->bulkDelete,
+            autoFields: $value,
+            autoColumns: $this->autoColumns,
+            softDeleteActions: $this->softDeleteActions,
+        );
     }
 
     public function withAutoColumns(bool $value): self
     {
-        return new self($this->basicActions, $this->bulkDelete, $this->autoFields, $value, $this->softDeleteActions);
+        return new self(
+            basicActions: $this->basicActions,
+            bulkDelete: $this->bulkDelete,
+            autoFields: $this->autoFields,
+            autoColumns: $value,
+            softDeleteActions: $this->softDeleteActions,
+        );
     }
 
     public function withSoftDeleteActions(bool $value): self
     {
-        return new self($this->basicActions, $this->bulkDelete, $this->autoFields, $this->autoColumns, $value);
+        return new self(
+            basicActions: $this->basicActions,
+            bulkDelete: $this->bulkDelete,
+            autoFields: $this->autoFields,
+            autoColumns: $this->autoColumns,
+            softDeleteActions: $value,
+        );
     }
 
     public function withSoftDeleteGuard(bool $usesSoftDeletes): self

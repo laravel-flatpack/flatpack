@@ -8,7 +8,7 @@ use Flatpack\Contracts\Composition\CompositionQuery;
 use Flatpack\Facades\Flatpack;
 use Flatpack\Http\Controllers\Concerns\ResolvesWidgets;
 use Flatpack\Http\FlatpackResponse;
-use Flatpack\Http\FlatpackResponseOptions;
+use Flatpack\Schema\Lists\ListSchemaNormalizer;
 use Flatpack\Schema\Widgets\WidgetSchemaNormalizer;
 use Flatpack\Services\Lists\ListRecordsLoader;
 use Flatpack\Services\Runtime\WidgetRuntime;
@@ -22,6 +22,7 @@ final readonly class DashboardController
 
     public function __construct(
         private CompositionQuery $compositions,
+        private ListSchemaNormalizer $listSchemaNormalizer,
         private WidgetSchemaNormalizer $widgetSchemaNormalizer,
         private WidgetRuntime $widgetRuntime,
         private ListRecordsLoader $listRecordsLoader,
@@ -37,9 +38,10 @@ final readonly class DashboardController
             Flatpack::dashboardEntity(),
             'list'
         );
+        $normalizedSchema = $this->listSchemaNormalizer->normalizedListSchema($schema, $debugLog);
 
-        $normalizedWidgets = $this->normalizedWidgetsSchema($schema, $debugLog);
-        $resolvedWidgets = $this->resolveWidgetData(
+        $normalizedWidgets = $this->normalizedWidgetsSchema($normalizedSchema, $debugLog);
+        $resolvedWidgets = $this->resolveWidgetDataWhenPresent(
             $request,
             Flatpack::dashboardEntity(),
             $normalizedWidgets['widgets'] ?? [],
@@ -72,11 +74,11 @@ final readonly class DashboardController
         return FlatpackResponse::inertia(
             'dashboard',
             [
-                'schema' => $schema,
+                'schema' => $normalizedSchema,
                 'widgets' => $resolvedWidgets,
                 'widgets_schema' => $normalizedWidgets,
             ],
-            new FlatpackResponseOptions(compositionDebugLog: $debugLog),
+            compositionDebugLog: $debugLog,
         );
     }
 

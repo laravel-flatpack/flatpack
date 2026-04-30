@@ -292,6 +292,24 @@ it('enriches MorphMany with reflection on return type', function (): void {
     expect($schema['fields']['c']['table_relation_type'])->toBe('morph_many');
 });
 
+it('logs reflection fallback when runtime relation resolution fails', function (): void {
+    $log = new CompositionDebugLog('posts/form.yaml');
+    $normalizer = new FormSchemaNormalizer;
+    $schema = $normalizer->normalizedFormSchema([
+        'fields' => [
+            'lines' => [
+                'type' => 'table',
+                'label' => 'Lines',
+                'relation' => 'lines',
+                'columns' => [['id' => 'title', 'label' => 'Title', 'type' => 'text']],
+            ],
+        ],
+    ], $log, Flatpack\Tests\Models\ExplodingRelationModel::class);
+
+    expect($schema['fields']['lines']['table_relation_type'])->toBe('has_many')
+        ->and(implode(' ', $log->all()))->toContain('falling back to reflection return type');
+});
+
 it('keeps author-set table_relation_type when non-empty', function (): void {
     $normalizer = new FormSchemaNormalizer;
     $schema = $normalizer->normalizedFormSchema([

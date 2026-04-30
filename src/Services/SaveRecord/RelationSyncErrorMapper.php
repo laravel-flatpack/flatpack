@@ -6,6 +6,8 @@ namespace Flatpack\Services\SaveRecord;
 
 use Flatpack\Schema\CompositionTabsMerge;
 use Flatpack\Schema\Forms\FormFieldType;
+use Flatpack\Support\DatabaseConstraintParser;
+use Flatpack\Support\ValidationMessages;
 use Illuminate\Database\QueryException;
 
 final class RelationSyncErrorMapper
@@ -65,7 +67,7 @@ final class RelationSyncErrorMapper
 
                 return [
                     'field' => sprintf('values.%s.%d.%s', $fieldId, $index, $column),
-                    'message' => $this->defaultRequiredMessage($column),
+                    'message' => ValidationMessages::required($column),
                 ];
             }
         }
@@ -75,24 +77,7 @@ final class RelationSyncErrorMapper
 
     private function requiredColumnFromQueryException(QueryException $exception): ?string
     {
-        $message = $exception->getMessage();
-
-        if (
-            preg_match(
-                '/NOT NULL constraint failed: [^.]+\.([a-zA-Z0-9_]+)/',
-                $message,
-                $matches,
-            ) === 1
-        ) {
-            return $matches[1];
-        }
-
-        return null;
-    }
-
-    private function defaultRequiredMessage(string $field): string
-    {
-        return sprintf('%s is required.', str_replace('_', ' ', ucfirst($field)));
+        return DatabaseConstraintParser::notNullColumn($exception);
     }
 
     /**

@@ -74,6 +74,8 @@ final class FormEmbeddedTableRelationTypeResolver
                 $formModelClass,
                 $relation,
                 $formModel,
+                $log,
+                (string) ($field['id'] ?? $id),
             );
 
             if ($kind === null) {
@@ -114,53 +116,61 @@ final class FormEmbeddedTableRelationTypeResolver
         string $formModelClass,
         string $relation,
         ?Model $formModel,
+        ?CompositionDebugLog $log = null,
+        string $fieldId = '',
+    ): ?string {
+        /**
+         * Three-pass strategy:
+         * 1) try a live injected model instance when available;
+         * 2) fall back to a fresh model instance from the class string;
+         * 3) if runtime relation calls fail, inspect the declared return type via reflection.
+         */
+        $runtimeKind = $this->resolveByRuntimeRelationCall($formModelClass, $relation, $formModel);
+        if ($runtimeKind !== null) {
+            return $runtimeKind;
+        }
+        $log?->add(sprintf(
+            'Form field table "%s": relation "%s" on %s could not be resolved from a runtime relation instance; falling back to reflection return type.',
+            $fieldId !== '' ? $fieldId : $relation,
+            $relation,
+            $formModelClass,
+        ));
+
+        return $this->resolveByReflection($formModelClass, $relation);
+    }
+
+    private function resolveByRuntimeRelationCall(
+        string $formModelClass,
+        string $relation,
+        ?Model $formModel,
     ): ?string {
         if ($formModel !== null) {
-            $k = $this->resolveByRelationInstance($formModel, $relation);
-            if ($k !== null) {
-                return $k;
+            $kind = $this->resolveRelationOnModel($formModel, $relation);
+            if ($kind !== null) {
+                return $kind;
             }
         }
 
-        $k = $this->resolveByNewModelInstance($formModelClass, $relation);
-        if ($k !== null) {
-            return $k;
+        if (! class_exists($formModelClass) || ! is_subclass_of($formModelClass, Model::class)) {
+            return null;
         }
 
-        $k = $this->resolveByReflection($formModelClass, $relation);
-        if ($k !== null) {
-            return $k;
+        try {
+            $freshModel = new $formModelClass;
+        } catch (Throwable) {
+            return null;
         }
 
-        return null;
+        return $this->resolveRelationOnModel($freshModel, $relation);
     }
 
-    private function resolveByRelationInstance(Model $model, string $relation): ?string
+    private function resolveRelationOnModel(Model $model, string $relation): ?string
     {
         if (! method_exists($model, $relation)) {
             return null;
         }
 
         try {
-            $rel = $model->{$relation}();
-        } catch (Throwable) {
-            return null;
-        }
-
-        return $this->mapRelationObjectToKind($rel);
-    }
-
-    private function resolveByNewModelInstance(string $formModelClass, string $relation): ?string
-    {
-        if (! method_exists($formModelClass, $relation)) {
-            return null;
-        }
-
-        try {
-            $model = new $formModelClass;
-            if (! $model instanceof Model) {
-                return null;
-            }
             $rel = $model->{$relation}();
         } catch (Throwable) {
             return null;

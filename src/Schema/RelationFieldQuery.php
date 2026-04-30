@@ -30,8 +30,8 @@ final class RelationFieldQuery
         $relationName = isset($fieldDefinition['relation'])
             ? trim((string) $fieldDefinition['relation'])
             : '';
-        $labelField = self::stringFromField($fieldDefinition, 'relation_name', 'relationName');
-        $valueField = self::stringFromField($fieldDefinition, 'relation_value', 'relationValue');
+        $labelField = YamlSchemaHelper::readString($fieldDefinition, 'relation_name', 'relationName');
+        $valueField = YamlSchemaHelper::readString($fieldDefinition, 'relation_value', 'relationValue');
 
         if ($relationName === '' || $labelField === '' || $valueField === '') {
             return null;
@@ -59,12 +59,6 @@ final class RelationFieldQuery
         string $snakeKey,
         string $camelKey,
     ): string {
-        foreach ([$snakeKey, $camelKey] as $key) {
-            if (isset($fieldDefinition[$key]) && is_string($fieldDefinition[$key])) {
-                return trim($fieldDefinition[$key]);
-            }
-        }
-
-        return '';
+        return YamlSchemaHelper::readString($fieldDefinition, $snakeKey, $camelKey);
     }
 }

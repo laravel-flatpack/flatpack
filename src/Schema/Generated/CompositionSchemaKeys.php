@@ -92,6 +92,7 @@ final class CompositionSchemaKeys
         'combobox',
         'date-picker',
         'date-range-picker',
+        'file-upload',
         'rich-text',
         'select',
         'switch',

@@ -19,7 +19,7 @@ final class FormFieldType
         return self::relationName($fieldDefinition) !== ''
             && in_array(
                 self::normalizeYamlType(trim((string) ($fieldDefinition['type'] ?? ''))),
-                ['combobox', 'table'],
+                ['combobox', 'table', 'file-upload'],
                 true,
             );
     }
@@ -77,6 +77,13 @@ final class FormFieldType
             return true;
         }
 
+        if (
+            $type === 'file-upload'
+            && trim((string) ($fieldDefinition['mode'] ?? 'url')) === 'relation'
+        ) {
+            return true;
+        }
+
         if ($type === 'combobox' && ($fieldDefinition['multiple'] ?? false) === true) {
             return true;
         }
@@ -93,6 +100,18 @@ final class FormFieldType
     {
         return self::isRelationBackedField($fieldDefinition)
             && self::normalizeYamlType(trim((string) ($fieldDefinition['type'] ?? ''))) === 'table';
+    }
+
+    /**
+     * Relation-backed file upload (`type: file-upload`, `mode: relation`, non-empty relation).
+     *
+     * @param  array<string, mixed>  $fieldDefinition
+     */
+    public static function isRelationBackedFileUpload(array $fieldDefinition): bool
+    {
+        return self::isRelationBackedField($fieldDefinition)
+            && self::normalizeYamlType(trim((string) ($fieldDefinition['type'] ?? ''))) === 'file-upload'
+            && trim((string) ($fieldDefinition['mode'] ?? 'url')) === 'relation';
     }
 
     /**

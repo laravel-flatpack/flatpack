@@ -11,6 +11,9 @@ use Illuminate\Http\RedirectResponse;
  * Allowed {@code success_redirect} string values from Flatpack YAML (forms, lists, bulk, row actions).
  * YAML may use boolean {@code true} as an alias for {@code list}.
  *
+ * Intentionally static while the surface stays small (YAML normalization + a few call sites). If host
+ * apps need pluggable redirect resolution, introduce an injectable service and delegate these methods.
+ *
  * @see CompositionSchemaKeys::SUCCESS_REDIRECT_VALUES
  */
 final class SuccessRedirect

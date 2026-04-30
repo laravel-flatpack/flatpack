@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Flatpack\Http;
 
-use Flatpack\Schema\Forms\FormSchemaNormalizer;
-use Flatpack\Schema\Lists\ListSchemaNormalizer;
 use Flatpack\Support\CompositionDebugLog;
 use Flatpack\Support\ModelKeyResolver;
 use Illuminate\Http\JsonResponse;
@@ -53,9 +51,9 @@ final class FlatpackResponse
     public static function inertia(
         string $view,
         array $data = [],
-        ?FlatpackResponseOptions $options = null,
+        ?CompositionDebugLog $compositionDebugLog = null,
     ): Response|JsonResponse {
-        $data = self::prepareInertiaData($view, $data, $options);
+        $data = self::prepareInertiaData($view, $data, $compositionDebugLog);
 
         if (request()->boolean('json')) {
             return response()->json($data);
@@ -71,30 +69,9 @@ final class FlatpackResponse
     private static function prepareInertiaData(
         string $view,
         array $data,
-        ?FlatpackResponseOptions $options = null,
+        ?CompositionDebugLog $compositionDebugLog = null,
     ): array {
-        $log = $options !== null
-            ? $options->compositionDebugLog
-            : self::compositionDebugLogForView($view, $data);
-        $skipFormSchemaNormalize = $options?->skipFormSchemaNormalize === true;
-
-        if ($view === 'form' && array_key_exists('schema', $data) && ! $skipFormSchemaNormalize) {
-            $raw = $data['schema'];
-            $model = $data['model'] ?? null;
-            $formModelClass = is_string($model) && $model !== '' ? $model : null;
-            $data['schema'] = app(FormSchemaNormalizer::class)->normalizedFormSchema(
-                is_array($raw) || $raw === null ? $raw : null,
-                $log,
-                $formModelClass,
-                null,
-            );
-        } elseif (in_array($view, ['list', 'dashboard'], true) && array_key_exists('schema', $data)) {
-            $raw = $data['schema'];
-            $data['schema'] = app(ListSchemaNormalizer::class)->normalizedListSchema(
-                is_array($raw) || $raw === null ? $raw : null,
-                $log,
-            );
-        }
+        $log = $compositionDebugLog ?? self::compositionDebugLogForView($view, $data);
 
         $data = self::appendModelMetadata($view, $data);
 

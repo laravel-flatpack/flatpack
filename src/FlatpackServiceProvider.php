@@ -5,27 +5,16 @@ declare(strict_types=1);
 namespace Flatpack;
 
 use Closure;
-use Flatpack\Actions\ActionModelClassResolver;
-use Flatpack\Composition\CompositionValues;
-use Flatpack\Composition\DefaultCompositionQuery;
-use Flatpack\Composition\EntityComposition;
-use Flatpack\Composition\YamlCompositionLoader;
 use Flatpack\Console\Commands\GenerateCompositionSchemaKeysCommand;
 use Flatpack\Console\Commands\MakeCompositionCommand;
 use Flatpack\Contracts\Authorization\FlatpackAuthorizer;
-use Flatpack\Contracts\Composition\CompositionLoader;
-use Flatpack\Contracts\Composition\CompositionQuery;
 use Flatpack\Http\FlatpackRequest;
 use Flatpack\Http\Middleware\ConfigureFlatpackViteAssets;
 use Flatpack\Http\Middleware\SetFlatpackInertiaRootView;
 use Flatpack\Http\Middleware\ShareFlatpackInertiaData;
-use Flatpack\Schema\Forms\FormSchemaNormalizer;
-use Flatpack\Schema\Widgets\WidgetSchemaNormalizer;
-use Flatpack\Services\Lists\ListRecordsLoader;
+use Flatpack\Services\Demo\DemoCatalogFactory;
 use Flatpack\Services\Navigation\BreadcrumbsBuilder;
-use Flatpack\Services\Navigation\FlatpackMenuBuilder;
 use Flatpack\Services\Navigation\MenuBuilder;
-use Flatpack\Services\Runtime\WidgetRuntime;
 use Flatpack\Support\AuthenticationRedirectCallbacks;
 use Flatpack\Support\PolicyAwareAuthorizer;
 use Illuminate\Auth\AuthenticationException;
@@ -63,51 +52,11 @@ final class FlatpackServiceProvider extends ServiceProvider
 
     protected function registerContainerBindings(): void
     {
-        $this->registerCompositionBindings();
-        $this->registerNavigationBindings();
+        $this->app->register(FlatpackCompositionServiceProvider::class);
+        $this->app->register(FlatpackNavigationServiceProvider::class);
+        $this->app->singleton(DemoCatalogFactory::class);
         $this->registerContractBindings();
         $this->registerFlatpackSingleton();
-        $this->registerConcreteServiceSingletons();
-    }
-
-    protected function registerNavigationBindings(): void
-    {
-        $this->app->singleton(BreadcrumbsBuilder::class, fn ($app): BreadcrumbsBuilder => new BreadcrumbsBuilder(
-            $app->make(EntityComposition::class),
-            $app->make(Repository::class),
-        ));
-
-        $this->app->singleton(MenuBuilder::class, FlatpackMenuBuilder::class);
-    }
-
-    protected function registerCompositionBindings(): void
-    {
-        $this->app->singleton(CompositionLoader::class, fn ($app): YamlCompositionLoader => new YamlCompositionLoader(
-            $app->make('files'),
-            (string) $app['config']->get('flatpack.composition.path', base_path('flatpack')),
-        ));
-
-        $this->app->singleton(CompositionQuery::class, fn ($app): DefaultCompositionQuery => new DefaultCompositionQuery(
-            $app->make(CompositionLoader::class),
-        ));
-
-        $this->app->singleton(CompositionValues::class, fn (): CompositionValues => new CompositionValues);
-
-        $this->app->singleton(EntityComposition::class, fn ($app): EntityComposition => new EntityComposition(
-            $app->make(CompositionQuery::class),
-            $app->make(CompositionValues::class),
-        ));
-    }
-
-    protected function registerConcreteServiceSingletons(): void
-    {
-        $this->app->singleton(ListRecordsLoader::class, fn (): ListRecordsLoader => new ListRecordsLoader);
-
-        $this->app->singleton(FormSchemaNormalizer::class);
-        $this->app->singleton(WidgetSchemaNormalizer::class);
-
-        $this->app->singleton(ActionModelClassResolver::class);
-        $this->app->singleton(WidgetRuntime::class);
     }
 
     protected function registerContractBindings(): void

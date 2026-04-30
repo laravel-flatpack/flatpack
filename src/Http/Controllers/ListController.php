@@ -11,7 +11,6 @@ use Flatpack\Http\Controllers\Concerns\LoadsListRecords;
 use Flatpack\Http\Controllers\Concerns\ResolvesListQuery;
 use Flatpack\Http\Controllers\Concerns\ResolvesWidgets;
 use Flatpack\Http\FlatpackResponse;
-use Flatpack\Http\FlatpackResponseOptions;
 use Flatpack\Schema\Widgets\WidgetSchemaNormalizer;
 use Flatpack\Services\Lists\ActiveTabResolver;
 use Flatpack\Services\Lists\ListRecordsLoader;
@@ -49,19 +48,19 @@ final readonly class ListController
         $this->ensureModelAbility($request, $modelClass, 'viewAny');
         $query = $this->listQueryFromRequest($request);
         $resolvedTab = $this->activeTabResolver->resolveWithSchema($schema, $query['tab']);
-        $activeTab = $resolvedTab['activeTab'];
+        $activeTab = $resolvedTab->activeTab;
         $this->assertValidTabScope($modelClass, $activeTab);
-        $effectiveSchema = $resolvedTab['effectiveSchema'];
+        $effectiveSchema = $resolvedTab->effectiveSchema;
         $result = $this->loadRecordsForList(
             $modelClass,
             $effectiveSchema,
             $query,
-            $resolvedTab['scope'],
+            $resolvedTab->scope,
         );
         $debugContext = FlatpackResponse::compositionDebugContextForEntity($entity, 'list.yaml');
         $debugLog = FlatpackResponse::compositionDebugLog($debugContext);
         $widgetsSchema = $this->normalizedWidgetsSchema($effectiveSchema, $debugLog);
-        $resolvedWidgets = $this->resolveWidgetData(
+        $resolvedWidgets = $this->resolveWidgetDataWhenPresent(
             $request,
             $entity,
             $widgetsSchema['widgets'] ?? [],
@@ -81,9 +80,7 @@ final readonly class ListController
                 $resolvedWidgets,
                 $widgetsSchema,
             ),
-            new FlatpackResponseOptions(
-                compositionDebugLog: $debugLog,
-            ),
+            compositionDebugLog: $debugLog,
         );
     }
 

@@ -91,6 +91,46 @@ final class FormFieldDefinitionNormalizer
                     $fieldDefinition['remote'] = true;
                 }
             }
+        } elseif ($fieldDefinition['type'] === 'file-upload') {
+            $mode = isset($fieldDefinition['mode'])
+                ? trim((string) $fieldDefinition['mode'])
+                : 'url';
+            if (! in_array($mode, ['relation', 'url'], true)) {
+                $mode = 'url';
+            }
+            $fieldDefinition['mode'] = $mode;
+
+            $fieldDefinition['multiple'] = ($fieldDefinition['multiple'] ?? false) === true;
+
+            if (isset($fieldDefinition['max_files']) && (int) $fieldDefinition['max_files'] > 0) {
+                $fieldDefinition['max_files'] = (int) $fieldDefinition['max_files'];
+            }
+
+            if (isset($fieldDefinition['max_size_kb']) && (int) $fieldDefinition['max_size_kb'] > 0) {
+                $fieldDefinition['max_size_kb'] = (int) $fieldDefinition['max_size_kb'];
+            }
+
+            if ($mode === 'relation') {
+                $relation = isset($fieldDefinition['relation'])
+                    ? trim((string) $fieldDefinition['relation'])
+                    : '';
+                if ($relation === '') {
+                    $label = $this->fieldDisplayLabel($fieldDefinition, $yamlKey);
+                    $log?->add(sprintf(
+                        'Form field "%s": file-upload with relation mode requires relation (field omitted).',
+                        $label,
+                    ));
+
+                    return null;
+                }
+            } else {
+                $targetColumn = isset($fieldDefinition['target_column'])
+                    ? trim((string) $fieldDefinition['target_column'])
+                    : '';
+                if ($targetColumn === '') {
+                    $fieldDefinition['target_column'] = $this->fieldDisplayLabel($fieldDefinition, $yamlKey);
+                }
+            }
         }
 
         $canonicalType = $fieldDefinition['type'];

@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Flatpack\Composition\DefaultCompositionQuery;
 use Flatpack\Contracts\Composition\CompositionLoader;
 use Flatpack\Contracts\Composition\CompositionNotFoundException;
+use Illuminate\Http\Request;
 
 it('memoizes loaded composition by entity and type within request scope', function () {
     $state = new class
@@ -55,4 +56,33 @@ it('memoizes missing compositions to avoid repeated loader exceptions', function
     expect($query->optional('posts', 'missing'))->toBeNull();
     expect($query->optional('posts', 'missing'))->toBeNull();
     expect($state->calls)->toBe(1);
+});
+
+it('does not reuse request-scoped memoization when the container request is replaced', function () {
+    $state = new class
+    {
+        public int $calls = 0;
+    };
+
+    $loader = new class($state) implements CompositionLoader
+    {
+        public function __construct(private object $state) {}
+
+        public function load(string $entity, string $type): array
+        {
+            $this->state->calls++;
+
+            return ['name' => $entity . '-' . $type];
+        }
+    };
+
+    $query = new DefaultCompositionQuery($loader);
+
+    app()->instance('request', Request::create('/flatpack-a', 'GET'));
+    $query->optional('posts', 'list');
+
+    app()->instance('request', Request::create('/flatpack-b', 'GET'));
+    $query->optional('posts', 'list');
+
+    expect($state->calls)->toBe(2);
 });

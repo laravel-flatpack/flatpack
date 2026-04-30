@@ -11,6 +11,7 @@ use Flatpack\Schema\Forms\Normalization\Pipes\NormalizeFormFieldDefinitionsPipe;
 use Flatpack\Schema\Forms\Normalization\Pipes\StripInvalidFormPresetsPipe;
 use Flatpack\Schema\Forms\Normalization\Pipes\WarnUnknownFormActionsNestedKeysPipe;
 use Flatpack\Schema\RelationFieldQuery;
+use Flatpack\Schema\ResolvesLaravelPipeline;
 use Flatpack\Services\Forms\FormRelationValuesHydrator;
 use Flatpack\Support\CompositionDebugLog;
 use Illuminate\Database\Eloquent\Model;
@@ -23,6 +24,8 @@ use Throwable;
  */
 final readonly class FormSchemaNormalizer
 {
+    use ResolvesLaravelPipeline;
+
     public function __construct(
         private ?Pipeline $pipeline = null,
         private ?FormRelationValuesHydrator $relationValuesHydrator = null,
@@ -123,7 +126,9 @@ final readonly class FormSchemaNormalizer
                 continue;
             }
 
-            if (FormFieldType::shouldDeferToRelationSync($fieldDefinition)) {
+            if (FormFieldType::isRelationBackedFileUpload($fieldDefinition)) {
+                $values[$id] = $this->relationFileUploadValue($model, $fieldDefinition);
+            } elseif (FormFieldType::shouldDeferToRelationSync($fieldDefinition)) {
                 $values[$id] = $this->relationHydrator()->hydrate($model, $id, $fieldDefinition, $debug);
             } elseif (FormFieldType::isSingleRelationCombobox($fieldDefinition)) {
                 $values[$id] = $this->singleRelationComboboxValue($model, $id, $fieldDefinition, $debug);
@@ -233,8 +238,45 @@ final readonly class FormSchemaNormalizer
         return $this->relationValuesHydrator ?? app(FormRelationValuesHydrator::class);
     }
 
-    private function resolvePipeline(): Pipeline
+    /**
+     * @param  array<string, mixed>  $fieldDefinition
+     * @return list<array<string, mixed>>
+     */
+    private function relationFileUploadValue(Model $model, array $fieldDefinition): array
     {
-        return $this->pipeline ?? app(Pipeline::class);
+        $relation = trim((string) ($fieldDefinition['relation'] ?? ''));
+        if ($relation === '' || ! method_exists($model, $relation)) {
+            return [];
+        }
+
+        $related = $model->getRelation($relation);
+        if ($related instanceof \Illuminate\Database\Eloquent\Collection) {
+            return $related
+                ->map(static fn (Model $item): array => [
+                    'disk' => $item->getAttribute('disk'),
+                    'path' => $item->getAttribute('path'),
+                    'url' => $item->getAttribute('url'),
+                    'name' => $item->getAttribute('name'),
+                    'mime_type' => $item->getAttribute('mime_type'),
+                    'size' => $item->getAttribute('size'),
+                    'collection' => $item->getAttribute('collection'),
+                ])
+                ->values()
+                ->all();
+        }
+
+        if ($related instanceof Model) {
+            return [[
+                'disk' => $related->getAttribute('disk'),
+                'path' => $related->getAttribute('path'),
+                'url' => $related->getAttribute('url'),
+                'name' => $related->getAttribute('name'),
+                'mime_type' => $related->getAttribute('mime_type'),
+                'size' => $related->getAttribute('size'),
+                'collection' => $related->getAttribute('collection'),
+            ]];
+        }
+
+        return [];
     }
 }

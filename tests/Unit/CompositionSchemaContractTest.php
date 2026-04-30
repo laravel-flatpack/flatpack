@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Flatpack\Schema\Generated\CompositionSchemaKeys;
 use Flatpack\Tests\Support\CompositionSchemaAsserter;
 
 describe('form composition schema (resources/schema/form.json)', function () {
@@ -1080,5 +1081,28 @@ describe('widget schema contracts', function () {
         ]);
 
         expect($errors)->not->toBeEmpty();
+    });
+});
+
+describe('generated CompositionSchemaKeys parity', function () {
+    it('FORM_FIELD_TYPES_CANONICAL matches form.json yamlFormFieldType excluding date alias', function () {
+        $path = dirname(__DIR__, 2) . '/resources/schema/form.json';
+        $schema = json_decode(
+            (string) file_get_contents($path),
+            true,
+            512,
+            JSON_THROW_ON_ERROR,
+        );
+        /** @var list<string> $yamlTypes */
+        $yamlTypes = $schema['$defs']['yamlFormFieldType']['enum'];
+        $expected = array_values(array_filter(
+            $yamlTypes,
+            static fn (string $t): bool => $t !== 'date',
+        ));
+        sort($expected);
+        $actual = CompositionSchemaKeys::FORM_FIELD_TYPES_CANONICAL;
+        sort($actual);
+
+        expect($actual)->toBe($expected);
     });
 });

@@ -6,8 +6,6 @@ namespace Flatpack\Schema\Validation;
 
 use Flatpack\Schema\CompositionTabsMerge;
 use Flatpack\Schema\Forms\FormFieldType;
-use Flatpack\Schema\RelationFieldQuery;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\In;
 
 /**
@@ -88,7 +86,7 @@ final class FormSchemaRuleBuilder
         }
 
         if (FormFieldType::isSingleRelationCombobox($fieldDefinition)) {
-            $exists = $this->relationExistsRule($modelClass, $fieldDefinition);
+            $exists = SchemaFieldRuleHelper::relationExistsRule($modelClass, $fieldDefinition);
             if ($exists !== null) {
                 $rules[] = $exists;
             } else {
@@ -99,7 +97,7 @@ final class FormSchemaRuleBuilder
         }
 
         if ($type === 'select') {
-            $in = $this->selectInRule($fieldDefinition);
+            $in = SchemaFieldRuleHelper::selectInRule($fieldDefinition);
             if ($in !== null) {
                 $rules[] = $in;
             } else {
@@ -115,6 +113,17 @@ final class FormSchemaRuleBuilder
                 $rules[] = 'array';
             } else {
                 $rules[] = 'string';
+            }
+
+            return $rules;
+        }
+
+        if ($type === 'file-upload') {
+            $multi = ($fieldDefinition['multiple'] ?? false) === true;
+            if ($multi) {
+                $rules[] = 'array';
+            } else {
+                $rules[] = 'array';
             }
 
             return $rules;
@@ -140,57 +149,5 @@ final class FormSchemaRuleBuilder
     private function passthroughRules(array $fieldDefinition): array
     {
         return RuleListParser::parse($fieldDefinition['rules'] ?? null);
-    }
-
-    /**
-     * @param  array<string, mixed>  $fieldDefinition
-     */
-    private function selectInRule(array $fieldDefinition): ?In
-    {
-        $options = $fieldDefinition['options'] ?? null;
-        if (! is_array($options)) {
-            return null;
-        }
-
-        $values = [];
-        if (array_is_list($options)) {
-            foreach ($options as $option) {
-                if (! is_array($option)) {
-                    continue;
-                }
-
-                $value = isset($option['value']) ? trim((string) $option['value']) : '';
-                if ($value !== '') {
-                    $values[] = $value;
-                }
-            }
-        } else {
-            foreach ($options as $value => $_label) {
-                $values[] = trim((string) $value);
-            }
-        }
-
-        if ($values === []) {
-            return null;
-        }
-
-        return Rule::in($values);
-    }
-
-    /**
-     * @param  array<string, mixed>  $fieldDefinition
-     */
-    private function relationExistsRule(string $modelClass, array $fieldDefinition): ?string
-    {
-        $components = RelationFieldQuery::components($modelClass, $fieldDefinition);
-        if ($components === null) {
-            return null;
-        }
-
-        [, , $valueField] = $components;
-        $related = $components[0]->getModel();
-        $table = $related->getTable();
-
-        return 'exists:' . $table . ',' . $valueField;
     }
 }

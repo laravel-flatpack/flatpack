@@ -6,6 +6,7 @@ namespace Flatpack\Schema\Lists\Normalization\Pipes;
 
 use Closure;
 use Flatpack\Schema\Lists\Normalization\ListSchemaPipelineState;
+use Flatpack\Support\ReorderColumnResolver;
 
 /**
  * Flattens {@code tabs.*.columns} into the top-level {@code columns} list (single column set for the table)
@@ -27,61 +28,8 @@ final readonly class MergeListTabsIntoColumnsPipe
         /** @var list<string> $mergedOrder */
         $mergedOrder = [];
 
-        $appendColumns = function (mixed $columns) use (&$mergedById, &$mergedOrder, $state): void {
-            if (! is_array($columns)) {
-                return;
-            }
-            if ($columns === []) {
-                return;
-            }
-
-            if (array_is_list($columns)) {
-                foreach ($columns as $item) {
-                    if (! is_array($item)) {
-                        continue;
-                    }
-                    $id = trim((string) ($item['id'] ?? ''));
-                    if ($id === '') {
-                        continue;
-                    }
-                    if (isset($mergedById[$id]) && $state->log !== null) {
-                        $state->log->add(sprintf(
-                            'List tabs: column id "%s" is declared more than once (first declaration wins).',
-                            $id,
-                        ));
-
-                        continue;
-                    }
-                    $mergedById[$id] = $item;
-                    $mergedOrder[] = $id;
-                }
-
-                return;
-            }
-
-            foreach ($columns as $yamlKey => $item) {
-                if (! is_array($item)) {
-                    continue;
-                }
-                $id = trim((string) ($item['id'] ?? $yamlKey));
-                if ($id === '') {
-                    continue;
-                }
-                if (isset($mergedById[$id]) && $state->log !== null) {
-                    $state->log->add(sprintf(
-                        'List tabs: column id "%s" is declared more than once (first declaration wins).',
-                        $id,
-                    ));
-
-                    continue;
-                }
-                $mergedById[$id] = array_merge(['id' => $id], $item);
-                $mergedOrder[] = $id;
-            }
-        };
-
         $rootColumns = $state->schema['columns'] ?? null;
-        $appendColumns($rootColumns);
+        $this->appendColumnsToMerged($rootColumns, $mergedById, $mergedOrder, $state);
 
         /** @var list<string> $rootColumnIds */
         $rootColumnIds = $mergedOrder;
@@ -135,43 +83,12 @@ final readonly class MergeListTabsIntoColumnsPipe
             }
 
             $tabColumns = $panel['columns'] ?? null;
-            /** @var list<string> $columnIdsOrdered */
-            $columnIdsOrdered = [];
-            if (is_array($tabColumns)) {
-                if (array_is_list($tabColumns)) {
-                    foreach ($tabColumns as $item) {
-                        if (! is_array($item)) {
-                            continue;
-                        }
-                        $id = trim((string) ($item['id'] ?? ''));
-                        if ($id === '') {
-                            continue;
-                        }
-                        $columnIdsOrdered[] = $id;
-                        if (! isset($mergedById[$id])) {
-                            $mergedById[$id] = $item;
-                            $mergedOrder[] = $id;
-                        }
-                    }
-                } else {
-                    foreach ($tabColumns as $yamlKey => $item) {
-                        if (! is_array($item)) {
-                            continue;
-                        }
-                        $id = trim((string) ($item['id'] ?? $yamlKey));
-                        if ($id === '') {
-                            continue;
-                        }
-                        $columnIdsOrdered[] = $id;
-                        if (! isset($mergedById[$id])) {
-                            $mergedById[$id] = array_merge(['id' => $id], $item);
-                            $mergedOrder[] = $id;
-                        }
-                    }
-                }
-            } else {
-                $columnIdsOrdered = $rootColumnIds;
-            }
+            $columnIdsOrdered = $this->resolveTabColumnIds(
+                $tabColumns,
+                $mergedById,
+                $mergedOrder,
+                $rootColumnIds,
+            );
 
             $entry = [
                 'id' => $tabIdStr,
@@ -186,7 +103,9 @@ final readonly class MergeListTabsIntoColumnsPipe
             }
             if ($reorderable !== null) {
                 $entry['reorderable'] = $reorderable;
-                $resolvedTabColumn = $this->resolveReorderableColumn($reorderable);
+                $resolvedTabColumn = ReorderColumnResolver::reorderColumnFromSchema([
+                    'reorderable' => $reorderable,
+                ]);
                 if ($resolvedTabColumn !== null) {
                     $entry['reorderableColumn'] = $resolvedTabColumn;
                 }
@@ -233,21 +152,105 @@ final readonly class MergeListTabsIntoColumnsPipe
      */
     private function applyReorderableColumn(array &$schema): void
     {
-        $resolved = $this->resolveReorderableColumn($schema['reorderable'] ?? null);
+        $resolved = ReorderColumnResolver::reorderColumnFromSchema($schema);
         if ($resolved !== null) {
             $schema['reorderableColumn'] = $resolved;
         }
     }
 
-    private function resolveReorderableColumn(mixed $reorderable): ?string
-    {
-        if ($reorderable === true || $reorderable === 'true') {
-            return 'sort_order';
-        }
-        if (is_string($reorderable) && trim($reorderable) !== '') {
-            return trim($reorderable);
+    /**
+     * @param  array<string, mixed>  $mergedById
+     * @param  list<string>  $mergedOrder
+     */
+    private function appendColumnsToMerged(
+        mixed $columns,
+        array &$mergedById,
+        array &$mergedOrder,
+        ListSchemaPipelineState $state,
+    ): void {
+        if (! is_array($columns) || $columns === []) {
+            return;
         }
 
-        return null;
+        if (array_is_list($columns)) {
+            foreach ($columns as $item) {
+                if (! is_array($item)) {
+                    continue;
+                }
+                $id = trim((string) ($item['id'] ?? ''));
+                if ($id === '') {
+                    continue;
+                }
+                if (isset($mergedById[$id])) {
+                    $state->log?->add(sprintf(
+                        'List tabs: column id "%s" is declared more than once (first declaration wins).',
+                        $id,
+                    ));
+
+                    continue;
+                }
+                $mergedById[$id] = $item;
+                $mergedOrder[] = $id;
+            }
+
+            return;
+        }
+
+        foreach ($columns as $yamlKey => $item) {
+            if (! is_array($item)) {
+                continue;
+            }
+            $id = trim((string) ($item['id'] ?? $yamlKey));
+            if ($id === '' || isset($mergedById[$id])) {
+                if ($id !== '') {
+                    $state->log?->add(sprintf(
+                        'List tabs: column id "%s" is declared more than once (first declaration wins).',
+                        $id,
+                    ));
+                }
+
+                continue;
+            }
+            $mergedById[$id] = array_merge(['id' => $id], $item);
+            $mergedOrder[] = $id;
+        }
+    }
+
+    /**
+     * @param  array<string, mixed>  $mergedById
+     * @param  list<string>  $mergedOrder
+     * @param  list<string>  $rootColumnIds
+     * @return list<string>
+     */
+    private function resolveTabColumnIds(
+        mixed $tabColumns,
+        array &$mergedById,
+        array &$mergedOrder,
+        array $rootColumnIds,
+    ): array {
+        if (! is_array($tabColumns)) {
+            return $rootColumnIds;
+        }
+
+        /** @var list<string> $columnIdsOrdered */
+        $columnIdsOrdered = [];
+        foreach ($tabColumns as $yamlKey => $item) {
+            if (! is_array($item)) {
+                continue;
+            }
+            $id = array_is_list($tabColumns)
+                ? trim((string) ($item['id'] ?? ''))
+                : trim((string) ($item['id'] ?? $yamlKey));
+            if ($id === '') {
+                continue;
+            }
+            $columnIdsOrdered[] = $id;
+            if (! isset($mergedById[$id])) {
+                $mergedById[$id] = array_is_list($tabColumns) ? $item : array_merge(['id' => $id], $item);
+                $mergedOrder[] = $id;
+            }
+        }
+
+        return $columnIdsOrdered;
     }
 }

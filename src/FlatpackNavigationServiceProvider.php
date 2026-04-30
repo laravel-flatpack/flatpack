@@ -1,0 +1,30 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Flatpack;
+
+use Flatpack\Composition\EntityComposition;
+use Flatpack\Services\Navigation\BreadcrumbsBuilder;
+use Flatpack\Services\Navigation\FlatpackMenuBuilder;
+use Flatpack\Services\Navigation\MenuBuilder;
+use Illuminate\Contracts\Config\Repository;
+use Illuminate\Support\ServiceProvider;
+use Override;
+
+/**
+ * Menu and breadcrumb graph bindings (depends on {@see EntityComposition}).
+ */
+final class FlatpackNavigationServiceProvider extends ServiceProvider
+{
+    #[Override]
+    public function register(): void
+    {
+        $this->app->singleton(BreadcrumbsBuilder::class, fn ($app): BreadcrumbsBuilder => new BreadcrumbsBuilder(
+            $app->make(EntityComposition::class),
+            $app->make(Repository::class),
+        ));
+
+        $this->app->singleton(MenuBuilder::class, FlatpackMenuBuilder::class);
+    }
+}

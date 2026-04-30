@@ -12,6 +12,7 @@ use Flatpack\Schema\Lists\RelationSerializer;
 use Flatpack\Schema\Lists\SchemaInspector;
 use Flatpack\Schema\Lists\SearchApplier;
 use Flatpack\Schema\Lists\SortingProcessor;
+use Flatpack\Support\ReorderColumnResolver;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -57,7 +58,7 @@ final readonly class ListRecordsLoader
     public function load(
         ?string $modelClass,
         ?array $schema,
-        int $page = 1,
+        int|ListQueryParams $params = 1,
         ?int $perPage = null,
         ?string $search = null,
         array $filters = [],
@@ -65,6 +66,26 @@ final readonly class ListRecordsLoader
         string $sortDirection = 'desc',
         ?string $scope = null,
     ): array {
+        if (is_int($params)) {
+            $params = new ListQueryParams(
+                page: $params,
+                perPage: $perPage,
+                search: $search,
+                filters: $filters,
+                sortBy: $sortBy,
+                sortDirection: $sortDirection,
+                scope: $scope,
+            );
+        }
+
+        $page = $params->page;
+        $perPage = $params->perPage;
+        $search = $params->search;
+        $filters = $params->filters;
+        $sortBy = $params->sortBy;
+        $sortDirection = $params->sortDirection;
+        $scope = $params->scope;
+
         $perPage ??= Flatpack::defaultListPerPage();
         $maxPerPage = Flatpack::maxListPerPage();
         $perPage = max(1, min($maxPerPage, $perPage));
@@ -96,6 +117,58 @@ final readonly class ListRecordsLoader
             return $empty;
         }
 
+        $built = $this->buildQuery(
+            modelClass: $modelClass,
+            schema: $schema,
+            columnKeys: $columnKeys,
+            search: $search,
+            filters: $filters,
+            sortBy: $sortBy,
+            sortDirection: $sortDirection,
+            scope: $scope,
+            filterDefinitions: $filterDefinitions,
+        );
+
+        $paginatorPayload = $this->paginateAndSerialize(
+            query: $built['query'],
+            columnKeys: $built['columnKeys'],
+            relationDefs: $built['relationDefs'],
+            perPage: $perPage,
+            page: $page,
+        );
+
+        return [
+            'records' => $paginatorPayload['records'],
+            'pagination' => $paginatorPayload['pagination'],
+            'filters' => $serializedFilterDefinitions,
+            'filter_values' => $built['normalizedFilterValues'],
+            'sorting' => $built['sorting'],
+        ];
+    }
+
+    /**
+     * @param  list<string>  $columnKeys
+     * @param  list<FilterDefinition>  $filterDefinitions
+     * @param  array<string, mixed>  $filters
+     * @return array{
+     *     query: Builder<Model>,
+     *     columnKeys: list<string>,
+     *     relationDefs: list<RelationDefinition>,
+     *     normalizedFilterValues: array<string, string|list<string>|null>,
+     *     sorting: array{sort_by: string|null, sort_direction: 'asc'|'desc'|null},
+     * }
+     */
+    private function buildQuery(
+        string $modelClass,
+        ?array $schema,
+        array $columnKeys,
+        ?string $search,
+        array $filters,
+        ?string $sortBy,
+        string $sortDirection,
+        ?string $scope,
+        array $filterDefinitions,
+    ): array {
         $relationDefs = SchemaInspector::relationColumnDefinitions($schema);
         $eagerRelations = SchemaInspector::uniqueRelationNames($relationDefs);
 
@@ -156,6 +229,38 @@ final readonly class ListRecordsLoader
             $defaultSortDirection,
         );
 
+        return [
+            'query' => $query,
+            'columnKeys' => $columnKeys,
+            'relationDefs' => $relationDefs,
+            'normalizedFilterValues' => $normalizedFilterValues,
+            'sorting' => $normalizedSorting,
+        ];
+    }
+
+    /**
+     * @param  Builder<Model>  $query
+     * @param  list<string>  $columnKeys
+     * @param  list<RelationDefinition>  $relationDefs
+     * @return array{
+     *     records: list<array<string, mixed>>,
+     *     pagination: array{
+     *         current_page: int,
+     *         last_page: int,
+     *         per_page: int,
+     *         total: int,
+     *         from: int|null,
+     *         to: int|null,
+     *     },
+     * }
+     */
+    private function paginateAndSerialize(
+        Builder $query,
+        array $columnKeys,
+        array $relationDefs,
+        int $perPage,
+        int $page,
+    ): array {
         /** @var LengthAwarePaginator<int, Model> $paginator */
         $paginator = $query->paginate($perPage, $columnKeys, 'page', $page);
 
@@ -174,9 +279,6 @@ final readonly class ListRecordsLoader
                 'from' => $paginator->firstItem(),
                 'to' => $paginator->lastItem(),
             ],
-            'filters' => $serializedFilterDefinitions,
-            'filter_values' => $normalizedFilterValues,
-            'sorting' => $normalizedSorting,
         ];
     }
 
@@ -196,9 +298,6 @@ final readonly class ListRecordsLoader
 
     /**
      * @param  array<string, mixed>|null  $schema
-     */
-    /**
-     * @param  array<string, mixed>|null  $schema
      * @return array{0: string|null, 1: 'asc'|'desc', 2: bool}
      */
     private function defaultSortFromSchema(?array $schema): array
@@ -207,7 +306,7 @@ final readonly class ListRecordsLoader
             return [null, 'desc', false];
         }
 
-        $resolvedReorderableColumn = $this->resolveReorderableColumn($schema);
+        $resolvedReorderableColumn = ReorderColumnResolver::reorderColumnFromSchema($schema);
 
         $defaultSort = $schema['default_sort'] ?? null;
         if (is_array($defaultSort)) {
@@ -226,26 +325,6 @@ final readonly class ListRecordsLoader
         }
 
         return [null, 'desc', false];
-    }
-
-    /**
-     * @param  array<string, mixed>  $schema
-     */
-    private function resolveReorderableColumn(array $schema): ?string
-    {
-        $resolved = $schema['reorderableColumn'] ?? null;
-        if (is_string($resolved) && trim($resolved) !== '') {
-            return trim($resolved);
-        }
-        $reorderable = $schema['reorderable'] ?? null;
-        if ($reorderable === true || $reorderable === 'true') {
-            return 'sort_order';
-        }
-        if (is_string($reorderable) && trim($reorderable) !== '') {
-            return trim($reorderable);
-        }
-
-        return null;
     }
 
     /**

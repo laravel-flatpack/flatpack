@@ -6,6 +6,7 @@ namespace Flatpack\Schema\Widgets;
 
 use Flatpack\Schema\Generated\CompositionSchemaKeys;
 use Flatpack\Support\CompositionDebugLog;
+use Illuminate\Database\Eloquent\Model;
 
 final class WidgetSchemaNormalizer
 {
@@ -94,93 +95,176 @@ final class WidgetSchemaNormalizer
                 }
 
                 $provider = trim((string) ($definition['provider'] ?? ''));
-                $model = trim((string) ($definition['model'] ?? ''));
-
-                if ($type === 'chart') {
-                    if ($provider === '') {
-                        $debug?->add(sprintf('widgets.%s ignored: chart widget requires non-empty provider.', $widgetId));
-
-                        continue;
-                    }
-                    $chartConfig = $this->normalizeChartWidgetConfig($definition['chart'] ?? null, $debug, $widgetId);
-                    if ($chartConfig === null) {
-                        continue;
-                    }
-                    $normalizedWidgets[$widgetId] = [
-                        'type' => 'chart',
-                        'provider' => $provider,
-                        'label' => $label,
-                        'description' => isset($definition['description']) ? (string) $definition['description'] : null,
-                        'chart' => $chartConfig,
-                    ];
-
+                $normalizedWidget = $this->normalizeWidgetByType(
+                    $type,
+                    $definition,
+                    $provider,
+                    $label,
+                    $debug,
+                    $widgetId,
+                );
+                if ($normalizedWidget === null) {
                     continue;
                 }
-
-                if ($type === 'metric') {
-                    if ($provider === '') {
-                        $debug?->add(sprintf('widgets.%s ignored: metric widget requires non-empty provider.', $widgetId));
-
-                        continue;
-                    }
-                    $normalizedWidgets[$widgetId] = [
-                        'type' => 'metric',
-                        'provider' => $provider,
-                        'label' => $label,
-                        'description' => isset($definition['description']) ? (string) $definition['description'] : null,
-                        'value_format' => is_array($definition['value_format'] ?? null) ? $definition['value_format'] : ['kind' => 'number'],
-                        'period' => is_array($definition['period'] ?? null) ? $definition['period'] : ['kind' => 'custom'],
-                        'trend' => is_array($definition['trend'] ?? null) ? $definition['trend'] : null,
-                    ];
-
-                    continue;
-                }
-
-                if ($type === 'card') {
-                    if ($provider === '') {
-                        $debug?->add(sprintf('widgets.%s ignored: card widget requires non-empty provider.', $widgetId));
-
-                        continue;
-                    }
-                    $normalizedWidgets[$widgetId] = [
-                        'type' => 'card',
-                        'provider' => $provider,
-                        'label' => $label,
-                        'description' => isset($definition['description']) ? (string) $definition['description'] : null,
-                        'data' => $this->normalizeStatusWidgetData($definition['data'] ?? null),
-                    ];
-
-                    continue;
-                }
-
-                if ($type === 'table') {
-                    $tableConfig = $this->normalizeTableWidgetConfig($definition, $debug, $widgetId);
-                    if ($tableConfig === null) {
-                        continue;
-                    }
-                    $normalizedWidgets[$widgetId] = $tableConfig;
-
-                    continue;
-                }
-
-                if ($provider === '') {
-                    $debug?->add(sprintf('widgets.%s ignored: status widget requires non-empty provider.', $widgetId));
-
-                    continue;
-                }
-                $normalizedWidgets[$widgetId] = [
-                    'type' => 'status',
-                    'provider' => $provider,
-                    'label' => $label,
-                    'description' => isset($definition['description']) ? (string) $definition['description'] : null,
-                    'data' => $this->normalizeStatusWidgetData($definition['data'] ?? null),
-                ];
+                $normalizedWidgets[$widgetId] = $normalizedWidget;
             }
         }
 
         $normalized['widgets'] = $normalizedWidgets;
 
         return $normalized;
+    }
+
+    /**
+     * @return 'warning'|'error'|'success'|'info'|'default'|null
+     */
+    /**
+     * @return 'warning'|'error'|'success'|'info'|'default'|null
+     */
+    public function normalizeWidgetStatusValue(mixed $raw): ?string
+    {
+        if (! is_string($raw)) {
+            return null;
+        }
+
+        $status = trim($raw);
+        if (! in_array($status, CompositionSchemaKeys::WIDGET_STATUS_VALUES, true)) {
+            return null;
+        }
+
+        return $status;
+    }
+
+    /**
+     * @param  array<string, mixed>  $definition
+     * @return array<string, mixed>|null
+     */
+    private function normalizeWidgetByType(
+        string $type,
+        array $definition,
+        string $provider,
+        string $label,
+        ?CompositionDebugLog $debug,
+        string $widgetId,
+    ): ?array {
+        return match ($type) {
+            'chart' => $this->normalizeChartWidgetDefinition($definition, $provider, $label, $debug, $widgetId),
+            'metric' => $this->normalizeMetricWidgetDefinition($definition, $provider, $label, $debug, $widgetId),
+            'card' => $this->normalizeCardWidgetDefinition($definition, $provider, $label, $debug, $widgetId),
+            'table' => $this->normalizeTableWidgetConfig($definition, $debug, $widgetId),
+            'status' => $this->normalizeStatusWidgetDefinition($definition, $provider, $label, $debug, $widgetId),
+            default => null,
+        };
+    }
+
+    /**
+     * @param  array<string, mixed>  $definition
+     * @return array<string, mixed>|null
+     */
+    private function normalizeChartWidgetDefinition(
+        array $definition,
+        string $provider,
+        string $label,
+        ?CompositionDebugLog $debug,
+        string $widgetId,
+    ): ?array {
+        if ($provider === '') {
+            $debug?->add(sprintf('widgets.%s ignored: chart widget requires non-empty provider.', $widgetId));
+
+            return null;
+        }
+        $chartConfig = $this->normalizeChartWidgetConfig($definition['chart'] ?? null, $debug, $widgetId);
+        if ($chartConfig === null) {
+            return null;
+        }
+
+        return [
+            'type' => 'chart',
+            'provider' => $provider,
+            'label' => $label,
+            'description' => isset($definition['description']) ? (string) $definition['description'] : null,
+            'chart' => $chartConfig,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $definition
+     * @return array<string, mixed>|null
+     */
+    private function normalizeMetricWidgetDefinition(
+        array $definition,
+        string $provider,
+        string $label,
+        ?CompositionDebugLog $debug,
+        string $widgetId,
+    ): ?array {
+        if ($provider === '') {
+            $debug?->add(sprintf('widgets.%s ignored: metric widget requires non-empty provider.', $widgetId));
+
+            return null;
+        }
+
+        return [
+            'type' => 'metric',
+            'provider' => $provider,
+            'label' => $label,
+            'description' => isset($definition['description']) ? (string) $definition['description'] : null,
+            'value_format' => is_array($definition['value_format'] ?? null) ? $definition['value_format'] : ['kind' => 'number'],
+            'period' => is_array($definition['period'] ?? null) ? $definition['period'] : ['kind' => 'custom'],
+            'trend' => is_array($definition['trend'] ?? null) ? $definition['trend'] : null,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $definition
+     * @return array<string, mixed>|null
+     */
+    private function normalizeCardWidgetDefinition(
+        array $definition,
+        string $provider,
+        string $label,
+        ?CompositionDebugLog $debug,
+        string $widgetId,
+    ): ?array {
+        if ($provider === '') {
+            $debug?->add(sprintf('widgets.%s ignored: card widget requires non-empty provider.', $widgetId));
+
+            return null;
+        }
+
+        return [
+            'type' => 'card',
+            'provider' => $provider,
+            'label' => $label,
+            'description' => isset($definition['description']) ? (string) $definition['description'] : null,
+            'data' => $this->normalizeStatusWidgetData($definition['data'] ?? null),
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $definition
+     * @return array<string, mixed>|null
+     */
+    private function normalizeStatusWidgetDefinition(
+        array $definition,
+        string $provider,
+        string $label,
+        ?CompositionDebugLog $debug,
+        string $widgetId,
+    ): ?array {
+        if ($provider === '') {
+            $debug?->add(sprintf('widgets.%s ignored: status widget requires non-empty provider.', $widgetId));
+
+            return null;
+        }
+
+        return [
+            'type' => 'status',
+            'provider' => $provider,
+            'label' => $label,
+            'description' => isset($definition['description']) ? (string) $definition['description'] : null,
+            'data' => $this->normalizeStatusWidgetData($definition['data'] ?? null),
+        ];
     }
 
     /**
@@ -193,6 +277,11 @@ final class WidgetSchemaNormalizer
         $model = trim((string) ($definition['model'] ?? ''));
         if (($provider === '' && $model === '') || ($provider !== '' && $model !== '')) {
             $debug?->add(sprintf('widgets.%s ignored: table widget requires exactly one of provider or model.', $widgetId));
+
+            return null;
+        }
+        if ($model !== '' && (! class_exists($model) || ! is_subclass_of($model, Model::class))) {
+            $debug?->add(sprintf('widgets.%s ignored: model "%s" is not a valid Eloquent model.', $widgetId, $model));
 
             return null;
         }
@@ -519,7 +608,7 @@ final class WidgetSchemaNormalizer
         }
 
         $normalized = [];
-        $status = $this->normalizeWidgetStatus($raw['status'] ?? null);
+        $status = $this->normalizeWidgetStatusValue($raw['status'] ?? null);
         if ($status !== null) {
             $normalized['status'] = $status;
         }
@@ -536,22 +625,5 @@ final class WidgetSchemaNormalizer
         }
 
         return $normalized === [] ? null : $normalized;
-    }
-
-    /**
-     * @return 'warning'|'error'|'success'|'info'|'default'|null
-     */
-    private function normalizeWidgetStatus(mixed $raw): ?string
-    {
-        if (! is_string($raw)) {
-            return null;
-        }
-
-        $status = trim($raw);
-        if (! in_array($status, CompositionSchemaKeys::WIDGET_STATUS_VALUES, true)) {
-            return null;
-        }
-
-        return $status;
     }
 }

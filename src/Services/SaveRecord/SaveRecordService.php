@@ -6,6 +6,7 @@ namespace Flatpack\Services\SaveRecord;
 
 use Flatpack\Actions\FlatpackActionContext;
 use Flatpack\Actions\RelationFormSynchronizer;
+use Flatpack\Support\EloquentModelResolver;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\QueryException;
 use Illuminate\Validation\ValidationException;
@@ -21,20 +22,7 @@ final readonly class SaveRecordService
 
     public function resolveModel(FlatpackActionContext $context): ?Model
     {
-        if ($context->model instanceof Model) {
-            return $context->model;
-        }
-
-        $modelClass = trim($context->modelClass);
-        if ($modelClass === '' || ! class_exists($modelClass)) {
-            return null;
-        }
-        if (! is_subclass_of($modelClass, Model::class)) {
-            return null;
-        }
-
-        /** @var class-string<Model> $modelClass */
-        return new $modelClass();
+        return EloquentModelResolver::fromContext($context);
     }
 
     /**
@@ -67,6 +55,12 @@ final readonly class SaveRecordService
     ): Model {
         if ($validated->attributes === [] && ! $validated->hasDeferredRelationPayload) {
             return $model;
+        }
+
+        if ($validated->attributes === [] && $validated->hasDeferredRelationPayload && $model->getKey() === null) {
+            $model->save();
+
+            return $model->fresh() ?? $model;
         }
 
         if ($validated->attributes !== []) {

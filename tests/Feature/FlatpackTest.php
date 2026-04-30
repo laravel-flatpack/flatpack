@@ -13,6 +13,7 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Foundation\Exceptions\Handler;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 test('flatpack registers shouldRenderJsonWhen on the exception handler', function () {
     $handler = app(ExceptionHandler::class);
@@ -50,6 +51,18 @@ test('guests requesting flatpack with Accept application/json are redirected to 
     ])->get('/flatpack');
 
     $response->assertRedirect(route('flatpack.login'));
+});
+
+test('guests requesting non-flatpack auth routes are redirected to host login route', function () {
+    if (! Route::has('login')) {
+        Route::middleware('web')->get('/host-login', fn () => 'host login')->name('login');
+    }
+
+    Route::middleware(['web', 'auth'])->get('/host-auth-only', fn () => 'ok');
+
+    $response = test()->get('/host-auth-only');
+
+    $response->assertRedirect(route('login'));
 });
 
 test('guests can view flatpack login page without redirect loop', function () {

@@ -233,6 +233,25 @@ test('table widget is skipped when columns are missing', function () {
     expect($out['widgets'])->toBeEmpty();
 });
 
+test('table widget is skipped when model is not a valid eloquent class', function () {
+    $normalizer = new WidgetSchemaNormalizer();
+    $out = $normalizer->normalize([
+        'widgets' => [
+            'posts_table' => [
+                'type' => 'table',
+                'model' => 'DateTime',
+                'columns' => [
+                    'title' => [
+                        'label' => 'Title',
+                    ],
+                ],
+            ],
+        ],
+    ]);
+
+    expect($out['widgets'])->toBeEmpty();
+});
+
 test('table widget allows missing label without fallback', function () {
     $normalizer = new WidgetSchemaNormalizer();
     $out = $normalizer->normalize([

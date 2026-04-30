@@ -103,6 +103,7 @@ trait HandlesReorderRecord
                 'errors' => $exception->errors(),
             ], 422);
         } catch (Throwable $exception) {
+            report($exception);
             $normalized = $this->actionRuntime()->toUserFacingValidationException($exception);
 
             return response()->json([

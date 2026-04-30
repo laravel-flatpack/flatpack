@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Flatpack\Schema\Lists;
 
 use Flatpack\Schema\Generated\CompositionSchemaKeys;
+use Flatpack\Schema\YamlSchemaHelper;
 
 final class SchemaInspector
 {
@@ -60,7 +61,7 @@ final class SchemaInspector
             $type = isset($column['type']) ? trim((string) $column['type']) : '';
             if ($type === 'relation') {
                 $relation = isset($column['relation']) ? trim((string) $column['relation']) : '';
-                $relationName = self::stringFromColumn(
+                $relationName = YamlSchemaHelper::readString(
                     $column,
                     'relation_name',
                     'relationName',
@@ -180,28 +181,14 @@ final class SchemaInspector
         }
 
         $relation = isset($column['relation']) ? trim((string) $column['relation']) : '';
-        $relationName = self::stringFromColumn($column, 'relation_name', 'relationName');
-        $relationValue = self::stringFromColumn($column, 'relation_value', 'relationValue');
+        $relationName = YamlSchemaHelper::readString($column, 'relation_name', 'relationName');
+        $relationValue = YamlSchemaHelper::readString($column, 'relation_value', 'relationValue');
 
         if ($relation === '' || $relationName === '' || $relationValue === '') {
             return null;
         }
 
         return new RelationDefinition($relation, $relationName, $relationValue);
-    }
-
-    /**
-     * @param  array<string, mixed>  $column
-     */
-    private static function stringFromColumn(array $column, string $snakeKey, string $camelKey): string
-    {
-        foreach ([$snakeKey, $camelKey] as $key) {
-            if (isset($column[$key]) && is_string($column[$key])) {
-                return trim($column[$key]);
-            }
-        }
-
-        return '';
     }
 
     /**

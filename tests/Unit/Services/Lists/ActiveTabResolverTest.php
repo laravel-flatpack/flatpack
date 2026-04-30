@@ -3,21 +3,24 @@
 declare(strict_types=1);
 
 use Flatpack\Services\Lists\ActiveTabResolver;
+use Flatpack\Tests\TestCase;
+
+uses(TestCase::class);
 
 test('resolve returns null when schema has no tabs', function (): void {
-    $resolver = new ActiveTabResolver();
+    $resolver = app(ActiveTabResolver::class);
 
     expect($resolver->resolve(['columns' => ['id' => ['label' => 'ID']]], ''))->toBeNull();
 });
 
 test('resolve returns null when schema is null', function (): void {
-    $resolver = new ActiveTabResolver();
+    $resolver = app(ActiveTabResolver::class);
 
     expect($resolver->resolve(null, ''))->toBeNull();
 });
 
 test('resolve picks requested tab when it exists', function (): void {
-    $resolver = new ActiveTabResolver();
+    $resolver = app(ActiveTabResolver::class);
     $schema = [
         'tabs' => [
             'a' => ['label' => 'Tab A'],
@@ -33,7 +36,7 @@ test('resolve picks requested tab when it exists', function (): void {
 });
 
 test('resolve falls back to first tab when requested id is missing', function (): void {
-    $resolver = new ActiveTabResolver();
+    $resolver = app(ActiveTabResolver::class);
     $schema = [
         'tabs' => [
             'first' => ['label' => 'First'],
@@ -48,14 +51,14 @@ test('resolve falls back to first tab when requested id is missing', function ()
 });
 
 test('schemaForTab returns schema unchanged when active tab is null', function (): void {
-    $resolver = new ActiveTabResolver();
+    $resolver = app(ActiveTabResolver::class);
     $schema = ['columns' => ['id' => ['label' => 'ID']]];
 
     expect($resolver->schemaForTab($schema, null))->toBe($schema);
 });
 
 test('schemaForTab merges tab overrides onto base schema', function (): void {
-    $resolver = new ActiveTabResolver();
+    $resolver = app(ActiveTabResolver::class);
     $schema = [
         'columns' => ['id' => ['label' => 'ID']],
         'filters' => ['status' => ['type' => 'select']],
@@ -73,7 +76,7 @@ test('schemaForTab merges tab overrides onto base schema', function (): void {
 });
 
 test('resolveWithSchema returns active tab effective schema and scope', function (): void {
-    $resolver = new ActiveTabResolver();
+    $resolver = app(ActiveTabResolver::class);
     $schema = [
         'columns' => ['id' => ['label' => 'ID']],
         'tabs' => [
@@ -88,9 +91,10 @@ test('resolveWithSchema returns active tab effective schema and scope', function
 
     $resolved = $resolver->resolveWithSchema($schema, 'drafts');
 
-    expect($resolved['activeTab'])->not->toBeNull()
-        ->and($resolved['activeTab']['id'])->toBe('drafts')
-        ->and($resolved['scope'])->toBe('draftOnly')
-        ->and($resolved['effectiveSchema'])->toBeArray()
-        ->and($resolved['effectiveSchema']['columns'])->toHaveKey('title');
+    expect($resolved->activeTab)->not->toBeNull()
+        ->and($resolved->activeTab['id'])->toBe('drafts')
+        ->and($resolved->scope)->toBe('draftOnly')
+        ->and($resolved->effectiveSchema)->toBeArray()
+        ->and($resolved->effectiveSchema['columns'])->toBeArray()
+        ->and($resolved->effectiveSchema['columns'][0]['id'] ?? null)->toBe('title');
 });

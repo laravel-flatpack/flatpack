@@ -60,6 +60,12 @@ final class RelationFormSynchronizer
             }
 
             $relation = $model->{$relationName}();
+            if ($this->isFileUploadRelationField($fieldDefinition)) {
+                $this->syncFileUploadRelation($relation, $payload, $fieldDefinition);
+
+                continue;
+            }
+
             if ($relation instanceof BelongsToMany) {
                 $this->syncBelongsToMany($relation, $payload, $fieldDefinition);
 
@@ -255,5 +261,93 @@ final class RelationFormSynchronizer
         }
 
         return $payload;
+    }
+
+    /**
+     * @param  array<string, mixed>  $fieldDefinition
+     */
+    private function isFileUploadRelationField(array $fieldDefinition): bool
+    {
+        return FormFieldType::normalizeYamlType(trim((string) ($fieldDefinition['type'] ?? ''))) === 'file-upload';
+    }
+
+    /**
+     * @param  array<string, mixed>  $fieldDefinition
+     */
+    private function syncFileUploadRelation(
+        mixed $relation,
+        mixed $payload,
+        array $fieldDefinition,
+    ): void {
+        $rows = $this->uploadedFileRows($payload, $fieldDefinition);
+        if ($relation instanceof HasMany || $relation instanceof MorphMany) {
+            $relation->get()->each->delete();
+            foreach ($rows as $row) {
+                $relation->create($row);
+            }
+
+            return;
+        }
+
+        if ($relation instanceof HasOne) {
+            $existing = $relation->first();
+            if ($rows === []) {
+                $existing?->delete();
+
+                return;
+            }
+
+            $first = $rows[0];
+            if ($existing !== null) {
+                $existing->fill($first);
+                $existing->save();
+
+                return;
+            }
+
+            $relation->create($first);
+        }
+    }
+
+    /**
+     * @param  array<string, mixed>  $fieldDefinition
+     * @return list<array<string, mixed>>
+     */
+    private function uploadedFileRows(mixed $payload, array $fieldDefinition): array
+    {
+        if (! is_array($payload)) {
+            return [];
+        }
+
+        $items = array_is_list($payload) ? $payload : [$payload];
+        $collection = trim((string) ($fieldDefinition['collection'] ?? ''));
+        $rows = [];
+        foreach ($items as $item) {
+            if (! is_array($item)) {
+                continue;
+            }
+
+            $path = trim((string) ($item['path'] ?? ''));
+            if ($path === '') {
+                continue;
+            }
+
+            $row = [
+                'disk' => trim((string) ($item['disk'] ?? '')),
+                'path' => $path,
+                'url' => trim((string) ($item['url'] ?? $path)),
+                'name' => trim((string) ($item['name'] ?? '')),
+                'mime_type' => trim((string) ($item['mime_type'] ?? '')),
+                'size' => (int) ($item['size'] ?? 0),
+                'collection' => trim((string) ($item['collection'] ?? $collection)),
+            ];
+
+            $rows[] = array_filter(
+                $row,
+                static fn (mixed $value): bool => $value !== '',
+            );
+        }
+
+        return $rows;
     }
 }

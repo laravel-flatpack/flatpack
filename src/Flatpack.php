@@ -10,6 +10,7 @@ use Flatpack\Services\Navigation\MenuBuilder;
 use Flatpack\Services\Navigation\MenuItem;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Throwable;
 
 /**
@@ -136,6 +137,6 @@ final readonly class Flatpack
      */
     private function sharedNavigation(): array
     {
-        return once(fn (): array => $this->menuBuilder->resolveSharedNavigation());
+        return once(fn (): array => $this->menuBuilder->resolveSharedNavigation(Auth::user()));
     }
 }
