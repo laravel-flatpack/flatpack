@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Flatpack\Http\Controllers;
 
 use Flatpack\Actions\FlatpackActionContext;
-use Flatpack\Contracts\Composition\CompositionQuery;
 use Flatpack\Actions\FlatpackBulkActionContext;
+use Flatpack\Contracts\Composition\CompositionQuery;
 use Flatpack\Facades\Flatpack;
 use Flatpack\Http\Requests\BulkActionRequest;
 use Flatpack\Schema\Forms\FormSchemaFields;
@@ -129,8 +129,7 @@ final readonly class TableRowController
         string $record,
         mixed $modelValue,
         mixed $columnsValue,
-    ): RedirectResponse
-    {
+    ): RedirectResponse {
         $modelClass = is_string($modelValue) ? trim($modelValue) : '';
         if ($modelClass === '' || ! class_exists($modelClass) || ! is_subclass_of($modelClass, Model::class)) {
             throw ValidationException::withMessages([
@@ -218,5 +217,4 @@ final readonly class TableRowController
 
         return $editable;
     }
-
 }
