@@ -1,4 +1,5 @@
 import { Form, Head, usePage } from '@inertiajs/react';
+import { AppLogoIcon } from '@/components/shell/app-logo-icon';
 import { InputError } from '@/components/shell/auth/input-error';
 import { PasswordInput } from '@/components/shell/auth/password-input';
 import { Button } from '@/components/ui/button';
@@ -10,7 +11,13 @@ import { Spinner } from '@/components/ui/spinner';
 import { route } from '@/lib/route';
 import type { FlatpackPageProps } from '@/types/flatpack';
 
-const LoginForm = ({ loginAction }: { loginAction: string }) => (
+const LoginForm = ({
+    loginAction,
+    logo,
+}: {
+    loginAction: string;
+    logo: string | null;
+}) => (
     <Form
         action={loginAction}
         method="post"
@@ -21,10 +28,7 @@ const LoginForm = ({ loginAction }: { loginAction: string }) => (
             <>
                 <FieldGroup>
                     <div className="flex flex-col items-center gap-2 text-center">
-                        <h1 className="text-2xl font-bold">Welcome back</h1>
-                        <p className="text-balance text-muted-foreground">
-                            Login to your dashboard.
-                        </p>
+                        <AppLogoIcon src={logo ?? ''} className="size-20" />
                     </div>
                     <Field>
                         <FieldTitle id="email-label">Email address</FieldTitle>
@@ -87,8 +91,11 @@ const LoginForm = ({ loginAction }: { loginAction: string }) => (
 );
 
 export default function FlatpackLogin() {
-    usePage<FlatpackPageProps>();
+    const {
+        props: { flatpack },
+    } = usePage<FlatpackPageProps>();
     const loginStoreRoute = route('flatpack.login.store');
+    const logo = flatpack.logo;
 
     return (
         <>
@@ -98,7 +105,10 @@ export default function FlatpackLogin() {
                     <div className="flex flex-col gap-6">
                         <Card className="overflow-hidden p-0">
                             <CardContent className="grid p-0">
-                                <LoginForm loginAction={loginStoreRoute} />
+                                <LoginForm
+                                    logo={logo}
+                                    loginAction={loginStoreRoute}
+                                />
                             </CardContent>
                         </Card>
                     </div>

@@ -1,10 +1,14 @@
 import type { FlatpackFormTabPanelLayout } from '@/lib/form-schema';
 import type {
-    FlatpackActionVariant,
+    FlatpackActionTarget,
+    FlatpackActionUiMeta,
+    FlatpackActionVisibilityMeta,
+    FlatpackYamlButtonVariant,
+} from '@/types/action-shared';
+import type {
     FlatpackSuccessRedirect,
     FlatpackTableRelationType,
 } from '@/types/data-table';
-import type { FlatpackActionCondition } from '@/types/flatpack-actions';
 import type {
     FormFieldInputFormat,
     FormFieldPreset,
@@ -23,8 +27,6 @@ import type {
 
 export type FlatpackFormCompositionValidationRulesYaml = string | string[];
 
-type FormCompositionButtonVariantYaml = FlatpackActionVariant | 'primary';
-
 type FormCompositionHeaderActionSuccessRedirect =
     | FlatpackSuccessRedirect
     | true;
@@ -32,16 +34,9 @@ type FormCompositionHeaderActionSuccessRedirect =
 /** Form save / toolbar actions keyed by action name (YAML map). */
 export type FlatpackFormCompositionHeaderActionYaml = {
     label: string;
-} & ({ action: string; href?: never } | { href: string; action?: never }) & {
-        icon?: string;
-        variant?: FormCompositionButtonVariantYaml;
-        success_message?: string;
-        confirm?: boolean;
-        success_redirect?: FormCompositionHeaderActionSuccessRedirect;
-        enabled_if?: FlatpackActionCondition;
-        visible_if?: FlatpackActionCondition;
-        shortcut?: string;
-    };
+} & FlatpackActionTarget &
+    FlatpackActionUiMeta<FormCompositionHeaderActionSuccessRedirect> &
+    FlatpackActionVisibilityMeta;
 
 export type FlatpackFormCompositionActionsYaml = Record<
     string,
@@ -55,7 +50,7 @@ export type FlatpackFormCompositionFieldTableActionYaml = {
     label: string;
     action: string;
     icon?: string;
-    variant?: FormCompositionButtonVariantYaml;
+    variant?: FlatpackYamlButtonVariant;
 };
 
 export type FlatpackFormCompositionFieldTextYaml = {

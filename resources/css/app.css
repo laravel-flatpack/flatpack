@@ -213,7 +213,7 @@
  * Use a mask to display the logo svg icon with the current color.
  */
 .logo {
-    @apply size-10! bg-current text-foreground;
+    @apply bg-current text-foreground;
 
     mask-size: contain;
     mask-repeat: no-repeat;

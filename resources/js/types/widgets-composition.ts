@@ -2,6 +2,8 @@ import type {
     FlatpackDataTableBulkAction,
     FlatpackDataTableColumn,
     FlatpackDataTableDefaultSort,
+    FlatpackListServerPagination,
+    FlatpackListServerSorting,
 } from '@/types/data-table';
 
 export type FlatpackMetricValueFormat = {
@@ -23,14 +25,6 @@ export type FlatpackMetricTrendOptions = {
 
 export type FlatpackCardWidgetStatus =
     typeof import('@/lib/generated/composition-schema-keys').WIDGET_STATUS_VALUES[number];
-
-export type FlatpackCardWidgetResolvedData = {
-    status?: FlatpackCardWidgetStatus;
-    value?: number | string;
-    context?: string;
-    updated_at?: string;
-    description?: string;
-};
 
 export type FlatpackStatusWidgetStatus =
     typeof import('@/lib/generated/composition-schema-keys').WIDGET_STATUS_VALUES[number];
@@ -124,18 +118,8 @@ export type FlatpackTableWidgetResolvedData = {
     rows?: Record<string, unknown>[];
     /** Echo of the server-side search filter for this widget (query round-trip). */
     search?: string;
-    sorting?: {
-        sort_by?: string | null;
-        sort_direction?: 'asc' | 'desc' | null;
-    };
-    pagination?: {
-        current_page: number;
-        last_page: number;
-        per_page: number;
-        total: number;
-        from: number | null;
-        to: number | null;
-    };
+    sorting?: FlatpackListServerSorting;
+    pagination?: FlatpackListServerPagination;
 };
 
 export type FlatpackTableWidget = {

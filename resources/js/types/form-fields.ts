@@ -40,11 +40,6 @@ export type FormFieldTrigger = {
     condition: FormFieldTriggerCondition;
 };
 
-export type FormFieldOutput = {
-    show: boolean;
-    label: string;
-};
-
 type FormFieldBase = {
     label: string;
     helperText?: string;
@@ -163,5 +158,3 @@ export type FormFieldProps =
     | ({ type: 'table' } & TableFieldProps);
 
 export type FormFieldType = FormFieldProps['type'];
-
-export type DataTableDrawerFormFieldType = FormFieldProps['type'];

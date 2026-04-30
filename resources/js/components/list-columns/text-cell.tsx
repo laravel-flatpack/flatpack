@@ -3,7 +3,7 @@ import { TextField } from '@/components/form-fields';
 import { DASHBOARD_TABLE_INPUT_CLASS } from '@/components/table/data-table-constants';
 import { formatCellValue } from '@/lib/data-table-utils';
 
-export function DataTableEditableTextCell({
+export function EditableTextCell({
     value,
     commit,
     ariaLabel,

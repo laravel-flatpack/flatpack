@@ -9,7 +9,7 @@ import { useDataTableController } from '@/hooks/use-data-table-controller';
 import { cn } from '@/lib/utils';
 import type { DataTableProps } from '@/types/data-table';
 
-export { buildDataTableColumnDefs } from '@/components/table/data-table-column-defs';
+export { buildDataTableColumnDefs } from '@/components/list-columns/column-defs';
 export type { DataTableController } from '@/hooks/use-data-table-controller';
 export { useDataTableController } from '@/hooks/use-data-table-controller';
 export type {

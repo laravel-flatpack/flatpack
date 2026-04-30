@@ -22,7 +22,7 @@ const BADGE_STATUS_CLASS: Record<FlatpackDataTableSelectOptionStatus, string> =
         info: 'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:border-blue-400/30 dark:bg-blue-400/10 dark:text-blue-300',
     };
 
-export function DataTableBadgeCell({
+export function BadgeCell({
     column,
     value,
     truncate,

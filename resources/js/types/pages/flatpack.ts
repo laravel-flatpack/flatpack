@@ -1,4 +1,8 @@
 import type {
+    FlatpackActionTarget,
+    FlatpackActionVisibilityMeta,
+} from '@/types/action-shared';
+import type {
     FlatpackActionVariant,
     FlatpackDataTableBulkAction,
     FlatpackDataTableFilter,
@@ -7,7 +11,6 @@ import type {
     FlatpackListServerSorting,
     FlatpackSuccessRedirect,
 } from '@/types/data-table';
-import type { FlatpackActionCondition } from '@/types/flatpack-actions';
 import type { FlatpackFormCompositionSchema } from '@/types/form-composition';
 import type { FlatpackListCompositionSchema } from '@/types/list-composition';
 import type { FlatpackWidgetsCompositionSchema } from '@/types/widgets-composition';
@@ -27,9 +30,8 @@ export type FlatpackListHeaderAction = {
     /** Form-page only: submit current form values when true (default false). */
     submit?: boolean;
     success_redirect?: FlatpackSuccessRedirect;
-    enabled_if?: FlatpackActionCondition;
-    visible_if?: FlatpackActionCondition;
-} & ({ href: string; action?: never } | { action: string; href?: never });
+} & FlatpackActionVisibilityMeta &
+    FlatpackActionTarget;
 
 /** Props for `/flatpack` dashboard (Inertia `dashboard` page). */
 export type FlatpackDashboardPageProps = {

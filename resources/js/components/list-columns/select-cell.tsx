@@ -14,7 +14,7 @@ import { readOnlyTruncatedDisplay } from '@/lib/data-table-utils';
 import { CLEAR_SELECT_ITEM_VALUE } from '@/lib/flatpack-select';
 import type { FlatpackDataTableColumn } from '@/types/data-table';
 
-export function DataTableSelectCell({
+export function SelectCell({
     column: col,
     value,
     editable,

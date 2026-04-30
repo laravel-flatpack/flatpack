@@ -4,7 +4,7 @@ import {
 } from '@/lib/data-table-utils';
 import type { FlatpackDataTableColumn } from '@/types/data-table';
 
-export function DataTableRelationCell({
+export function RelationCell({
     row,
     column: col,
 }: {

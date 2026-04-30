@@ -48,7 +48,9 @@ export function AppSidebar({
                             href={route('flatpack.dashboard')}
                             className="flex items-center gap-2 py-1 text-foreground data-[slot=sidebar-menu-button]:p-1.5!"
                         >
-                            {logo && <AppLogoIcon src={logo} />}
+                            {logo && (
+                                <AppLogoIcon src={logo} className="size-10!" />
+                            )}
                             <span className="text-base font-semibold">
                                 {displayName}
                             </span>

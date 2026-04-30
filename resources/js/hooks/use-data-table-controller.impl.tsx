@@ -32,8 +32,8 @@ import {
 } from '@tanstack/react-table';
 import * as React from 'react';
 import { toast } from 'sonner';
+import { buildDataTableColumnDefs } from '@/components/list-columns/column-defs';
 import { DataTableBodyWithFooter } from '@/components/table/data-table-body-with-footer';
-import { buildDataTableColumnDefs } from '@/components/table/data-table-column-defs';
 import {
     leafColumnIdsInSchemaOrder,
     visibilityFromSchema,

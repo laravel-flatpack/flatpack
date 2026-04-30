@@ -1,18 +1,20 @@
 import type {
-    FlatpackActionVariant,
+    FlatpackActionTarget,
+    FlatpackActionUiMeta,
+    FlatpackActionVisibilityMeta,
+    FlatpackYamlButtonVariant,
+} from '@/types/action-shared';
+import type {
     FlatpackDataTableDefaultSort,
     FlatpackDataTableSelectOptionStatus,
     FlatpackSuccessRedirect,
 } from '@/types/data-table';
-import type { FlatpackActionCondition } from '@/types/flatpack-actions';
+import type { FlatpackListRowClickMode } from '@/types/list-shared';
 
 /**
  * Raw list composition from `list.yaml` (decoded JSON). Parity with `resources/schema/list.json`.
  * These are pre-normalization shapes; see `list-schema.ts` and `useFlatpackList` for runtime types.
  */
-
-/** YAML `variant` matches `resources/schema/list.json` `buttonVariant` (includes `primary` before UI normalization). */
-type ListCompositionButtonVariantYaml = FlatpackActionVariant | 'primary';
 
 type ListCompositionColumnSharedYaml = {
     id?: string;
@@ -48,13 +50,8 @@ export type FlatpackListCompositionColumnOptionsYaml =
 /** Row/column action button as in list column `actions` or form `table` field `actions`. */
 export type FlatpackListCompositionColumnActionButtonYaml = {
     label: string;
-} & ({ action: string; href?: never } | { href: string; action?: never }) & {
-        icon?: string;
-        variant?: ListCompositionButtonVariantYaml;
-        success_redirect?: FlatpackSuccessRedirect | true;
-        success_message?: string;
-        confirm?: boolean;
-    };
+} & FlatpackActionTarget &
+    FlatpackActionUiMeta<FlatpackSuccessRedirect | true>;
 
 type ListCompositionHeaderActionSuccessRedirect =
     | FlatpackSuccessRedirect
@@ -141,16 +138,9 @@ export type FlatpackListCompositionFiltersYaml = Record<
 
 export type FlatpackListCompositionListHeaderActionYaml = {
     label: string;
-} & ({ action: string; href?: never } | { href: string; action?: never }) & {
-        icon?: string;
-        variant?: ListCompositionButtonVariantYaml;
-        success_message?: string;
-        confirm?: boolean;
-        success_redirect?: ListCompositionHeaderActionSuccessRedirect;
-        enabled_if?: FlatpackActionCondition;
-        visible_if?: FlatpackActionCondition;
-        shortcut?: string;
-    };
+} & FlatpackActionTarget &
+    FlatpackActionUiMeta<ListCompositionHeaderActionSuccessRedirect> &
+    FlatpackActionVisibilityMeta;
 
 /** Toolbar header actions keyed by arbitrary id (YAML map keys). */
 export type FlatpackListCompositionListActionsYaml = Record<
@@ -162,13 +152,11 @@ export type FlatpackListCompositionBulkActionYaml = {
     label: string;
     action: string;
     icon?: string;
-    variant?: ListCompositionButtonVariantYaml;
+    variant?: FlatpackYamlButtonVariant;
     success_message?: string;
     confirm?: boolean;
     success_redirect?: ListCompositionHeaderActionSuccessRedirect;
-    enabled_if?: FlatpackActionCondition;
-    visible_if?: FlatpackActionCondition;
-};
+} & FlatpackActionVisibilityMeta;
 
 export type FlatpackListCompositionBulkActionsYaml = Record<
     string,
@@ -186,7 +174,7 @@ export type FlatpackListCompositionTabPanelYaml = {
     scope?: string;
     reorderable?: boolean | string;
     reorderableColumn?: string;
-    row_click?: 'none' | 'edit_page' | 'edit_modal' | 'edit_drawer';
+    row_click?: FlatpackListRowClickMode;
     pagination?: boolean;
     default_sort?: FlatpackDataTableDefaultSort;
     columns?: FlatpackListCompositionColumnsYaml;
@@ -208,7 +196,7 @@ export type FlatpackListTabPanelLayout = {
     scope?: string;
     reorderable?: boolean | string;
     reorderableColumn?: string;
-    row_click?: 'none' | 'edit_page' | 'edit_modal' | 'edit_drawer';
+    row_click?: FlatpackListRowClickMode;
     pagination?: boolean;
     default_sort?: FlatpackDataTableDefaultSort;
     columns?: FlatpackListCompositionColumnsYaml;
@@ -227,7 +215,7 @@ export type FlatpackListCompositionSchema = {
     reorderableColumn?: string;
     default_sort?: FlatpackDataTableDefaultSort;
     /** Row click behavior. Default `none`; `edit_page` navigates to edit route. */
-    row_click?: 'none' | 'edit_page' | 'edit_modal' | 'edit_drawer';
+    row_click?: FlatpackListRowClickMode;
     pagination?: boolean;
     showColumnsVisibility?: boolean;
     columns?: FlatpackListCompositionColumnsYaml;

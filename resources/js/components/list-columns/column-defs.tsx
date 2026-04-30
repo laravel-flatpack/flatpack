@@ -1,8 +1,8 @@
 import type { ColumnDef } from '@tanstack/react-table';
-import { DataTableActionsCell } from '@/components/table/data-table-actions-cell';
+import { ActionsCell } from '@/components/list-columns/actions-cell';
+import { ColumnCellDispatcher } from '@/components/list-columns/column-cell-dispatcher';
 import { DataTableColumnHeader } from '@/components/table/data-table-column-header';
 import { DATA_TABLE_ROW_SELECTION_COLUMN_ID } from '@/components/table/data-table-constants';
-import { DataTableSchemaCell } from '@/components/table/data-table-schema-cell';
 import { Checkbox } from '@/components/ui/checkbox';
 import type {
     BuildDataTableColumnDefsOptions,
@@ -85,7 +85,7 @@ export function buildDataTableColumnDefs(
                         return <span className="text-muted-foreground">—</span>;
                     }
                     return (
-                        <DataTableActionsCell
+                        <ActionsCell
                             actions={rowActions}
                             row={row.original}
                             onAction={options.onRowAction}
@@ -94,7 +94,7 @@ export function buildDataTableColumnDefs(
                     );
                 }
                 return (
-                    <DataTableSchemaCell
+                    <ColumnCellDispatcher
                         column={col}
                         row={row.original}
                         rowId={row.id}

@@ -9,7 +9,7 @@ import {
 } from '@/lib/data-table-utils';
 import type { FlatpackDataTableColumn } from '@/types/data-table';
 
-export function DataTableDateCell({
+export function DateCell({
     column: col,
     value,
     editable,

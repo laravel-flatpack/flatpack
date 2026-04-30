@@ -170,13 +170,6 @@ export type DataTableRowUpdatePayload<
     row: TRow;
 };
 
-export type DataTableReorderPayload<TRow extends DataTableRow = DataTableRow> =
-    {
-        rows: TRow[];
-        movedRow: TRow;
-        reorderKey: string;
-    };
-
 export type FlatpackListServerPagination = {
     current_page: number;
     last_page: number;

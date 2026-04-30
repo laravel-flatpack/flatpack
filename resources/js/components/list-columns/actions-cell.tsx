@@ -156,7 +156,7 @@ function RowActionMenuItem({
     );
 }
 
-export function DataTableActionsCell({
+export function ActionsCell({
     actions,
     row,
     onAction,
