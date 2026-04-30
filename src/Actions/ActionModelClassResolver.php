@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Flatpack\Actions;
 
+use Flatpack\Support\EloquentModelResolver;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -21,17 +22,12 @@ final class ActionModelClassResolver
      */
     public function resolveEloquentModelClassOrNull(string $modelClass): ?string
     {
-        $modelClass = trim($modelClass);
-        if ($modelClass === '' || ! class_exists($modelClass)) {
+        $model = EloquentModelResolver::fromClass($modelClass);
+        if ($model === null) {
             return null;
         }
 
-        if (! is_subclass_of($modelClass, Model::class)) {
-            return null;
-        }
-
-        /** @var class-string<Model> $modelClass */
-        return $modelClass;
+        return $model::class;
     }
 
     /**

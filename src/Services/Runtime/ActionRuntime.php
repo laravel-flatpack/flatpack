@@ -7,6 +7,7 @@ namespace Flatpack\Services\Runtime;
 use Flatpack\Actions\ActionModelClassResolver;
 use Flatpack\Contracts\Actions\FlatpackAction;
 use Flatpack\Contracts\Actions\FlatpackBulkAction;
+use Flatpack\Support\EloquentModelResolver;
 use Flatpack\Support\Exceptions\ActionRuntimeException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -73,16 +74,16 @@ final readonly class ActionRuntime
         string $record,
         string $context = 'record',
     ): Model {
-        if ($modelClass === '' || ! class_exists($modelClass)) {
-            throw new ActionRuntimeException(404, sprintf('Flatpack %s model is not configured.', $context));
-        }
-        if (! is_subclass_of($modelClass, Model::class)) {
+        $modelClass = trim($modelClass);
+        $prototype = EloquentModelResolver::fromClass($modelClass);
+        if ($prototype === null) {
+            if ($modelClass === '' || ! class_exists($modelClass)) {
+                throw new ActionRuntimeException(404, sprintf('Flatpack %s model is not configured.', $context));
+            }
             throw new ActionRuntimeException(404, sprintf('Flatpack %s model class is invalid.', $context));
         }
 
-        /** @var class-string<Model> $modelClass */
-        $model = new $modelClass();
-        $keyName = $model->getKeyName();
+        $keyName = $prototype->getKeyName();
 
         return $modelClass::query()
             ->where($keyName, $record)
@@ -93,16 +94,13 @@ final readonly class ActionRuntime
         string $modelClass,
         string $record,
     ): ?Model {
-        if ($modelClass === '' || ! class_exists($modelClass)) {
-            return null;
-        }
-        if (! is_subclass_of($modelClass, Model::class)) {
+        $modelClass = trim($modelClass);
+        $prototype = EloquentModelResolver::fromClass($modelClass);
+        if ($prototype === null) {
             return null;
         }
 
-        /** @var class-string<Model> $modelClass */
-        $model = new $modelClass();
-        $keyName = $model->getKeyName();
+        $keyName = $prototype->getKeyName();
 
         return $modelClass::query()
             ->where($keyName, $record)
@@ -114,18 +112,18 @@ final readonly class ActionRuntime
         string $record,
         string $context = 'record',
     ): Model {
-        if ($modelClass === '' || ! class_exists($modelClass)) {
-            throw new ActionRuntimeException(404, sprintf('Flatpack %s model is not configured.', $context));
-        }
-        if (! is_subclass_of($modelClass, Model::class)) {
+        $modelClass = trim($modelClass);
+        $prototype = EloquentModelResolver::fromClass($modelClass);
+        if ($prototype === null) {
+            if ($modelClass === '' || ! class_exists($modelClass)) {
+                throw new ActionRuntimeException(404, sprintf('Flatpack %s model is not configured.', $context));
+            }
             throw new ActionRuntimeException(404, sprintf('Flatpack %s model class is invalid.', $context));
         }
 
-        /** @var class-string<Model> $modelClass */
-        $model = new $modelClass();
-        $keyName = $model->getKeyName();
+        $keyName = $prototype->getKeyName();
         $query = $modelClass::query();
-        if (method_exists($model, 'trashed')) {
+        if (method_exists($prototype, 'trashed')) {
             $query = $query->withoutGlobalScope(SoftDeletingScope::class);
         }
 
