@@ -214,8 +214,21 @@ test('flatpack demo returns JSON catalog when json query is true', function () {
     actingAs($user)
         ->getJson(route('flatpack.demo.components', ['json' => true]))
         ->assertOk()
-        ->assertJsonStructure(['fieldsCatalog', 'widgetsCatalog'])
-        ->assertJsonPath('fieldsCatalog.0.id', 'text');
+        ->assertJsonStructure([
+            'catalogId',
+            'query',
+            'document' => [
+                'id',
+                'title',
+                'description',
+                'meta',
+                'fields',
+                'widgets',
+            ],
+        ])
+        ->assertJsonPath('catalogId', 'all')
+        ->assertJsonPath('document.id', 'all')
+        ->assertJsonPath('document.fields.0.id', 'text');
 });
 
 test('flatpack schema form docs return normalized JSON when json query is true', function () {

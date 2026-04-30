@@ -15,11 +15,54 @@ final class DemoController
 {
     public function index(Request $request): Response|JsonResponse
     {
-        return FlatpackResponse::inertia('demo', [
+        $catalogId = $this->normalizeCatalogId($request->query('catalog'));
+
+        return FlatpackResponse::inertia('demo/catalog', [
+            'catalogId' => $catalogId,
             'query' => $request->query(),
-            'widgetsCatalog' => $this->widgetsCatalog(),
-            'fieldsCatalog' => $this->fieldsCatalog(),
+            'document' => $this->buildDocument($catalogId),
         ]);
+    }
+
+    private function normalizeCatalogId(mixed $value): string
+    {
+        if (is_string($value)) {
+            $normalized = mb_strtolower(trim($value));
+            if (in_array($normalized, ['fields', 'widgets'], true)) {
+                return $normalized;
+            }
+        }
+
+        return 'all';
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function buildDocument(string $id): array
+    {
+        $fields = $this->fieldsCatalog();
+        $widgets = $this->widgetsCatalog();
+
+        return [
+            'id' => $id,
+            'title' => match ($id) {
+                'fields' => 'Form Fields',
+                'widgets' => 'Widgets',
+                default => 'Components',
+            },
+            'description' => match ($id) {
+                'fields' => 'Form fields available to Flatpack compositions. Use <code>?type=text</code> to embed a single field.',
+                'widgets' => 'Dashboard and detail-page widgets. Use <code>?catalog=widgets&type=metric</code> to embed a single widget.',
+                default => 'Full catalog of Flatpack form fields and widgets. Use <code>?type=</code> to embed a single component.',
+            },
+            'meta' => [
+                'fieldCount' => count($fields),
+                'widgetCount' => count($widgets),
+            ],
+            'fields' => $id === 'widgets' ? [] : $fields,
+            'widgets' => $id === 'fields' ? [] : $widgets,
+        ];
     }
 
     /**

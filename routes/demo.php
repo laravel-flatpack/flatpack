@@ -7,10 +7,11 @@ use Flatpack\Http\Controllers\SchemaController;
 use Illuminate\Support\Facades\Route;
 
 if (config('flatpack.features.demo')) {
-    /** Renders the optional component demo page when enabled. */
+    // Components catalog
     Route::get('/demo', [DemoController::class, 'index'])->name('demo.components');
-    /** Renders generated docs for `resources/schema/form.json`. */
-    Route::get('/schema/form', [SchemaController::class, 'form'])->name('schema.form');
-    /** Renders generated docs for `resources/schema/list.json`. */
-    Route::get('/schema/list', [SchemaController::class, 'list'])->name('schema.list');
+
+    // Schema documentation
+    Route::get('/demo/schema', [SchemaController::class, 'form'])->name('schema.index');
+    Route::get('/demo/schema/form', [SchemaController::class, 'form'])->name('schema.form');
+    Route::get('/demo/schema/list', [SchemaController::class, 'list'])->name('schema.list');
 }

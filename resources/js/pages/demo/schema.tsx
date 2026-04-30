@@ -1,6 +1,7 @@
 import { Head, usePage } from '@inertiajs/react';
-import { ChevronDown } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { ChevronDown, ListChecksIcon, TextCursorInputIcon } from 'lucide-react';
+import { lazy, type ReactNode, Suspense, useState } from 'react';
+import { NavHeader } from '@/components/nav-header';
 import { Badge } from '@/components/ui/badge';
 import {
     Card,
@@ -15,12 +16,19 @@ import {
     CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import DocsLayout from '@/layouts/docs-layout';
+import DocsLayout from '@/layouts/docs/layout';
+import { route } from '@/lib/route';
 import type {
     SchemaNodeDoc,
     SchemaPageProps,
     SchemaPropertyDoc,
 } from '@/types/schema';
+
+const SchemaRawJsonPanel = lazy(() =>
+    import('@/components/schema-raw-json-panel').then((m) => ({
+        default: m.SchemaRawJsonPanel,
+    })),
+);
 
 function PropertyBadges({ property }: { property: SchemaPropertyDoc }) {
     return (
@@ -182,6 +190,7 @@ function SchemaNodeSection({ node }: { node: SchemaNodeDoc }) {
 
 function SchemaPage() {
     const { document } = usePage<SchemaPageProps>().props;
+    const [activeTab, setActiveTab] = useState('overview');
 
     return (
         <div className="mx-2 flex w-full max-w-7xl flex-col gap-6 py-6">
@@ -208,7 +217,11 @@ function SchemaPage() {
                 </Badge>
             </div>
 
-            <Tabs defaultValue="overview" className="w-full">
+            <Tabs
+                value={activeTab}
+                onValueChange={setActiveTab}
+                className="w-full"
+            >
                 <TabsList variant="line" className="w-full justify-start">
                     <TabsTrigger value="overview" className="flex-none">
                         Overview
@@ -286,9 +299,21 @@ function SchemaPage() {
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <pre className="max-h-[70vh] overflow-auto rounded-xl border bg-muted/30 p-4 text-xs">
-                                {JSON.stringify(document.raw, null, 2)}
-                            </pre>
+                            {activeTab === 'raw' ? (
+                                <Suspense
+                                    fallback={
+                                        <pre className="max-h-[70vh] overflow-auto rounded-xl border border-border bg-muted/30 p-4 font-mono text-xs leading-relaxed text-foreground dark:bg-muted/50">
+                                            {JSON.stringify(
+                                                document.raw,
+                                                null,
+                                                2,
+                                            )}
+                                        </pre>
+                                    }
+                                >
+                                    <SchemaRawJsonPanel raw={document.raw} />
+                                </Suspense>
+                            ) : null}
                         </CardContent>
                     </Card>
                 </TabsContent>
@@ -297,6 +322,33 @@ function SchemaPage() {
     );
 }
 
-SchemaPage.layout = (page: ReactNode) => <DocsLayout>{page}</DocsLayout>;
+function SchemaDocsShell({ children }: { children: ReactNode }) {
+    const { document } = usePage<SchemaPageProps>().props;
+    const navigation = (
+        <NavHeader
+            activeId={document.id}
+            items={[
+                {
+                    id: 'form',
+                    label: 'Form schema',
+                    href: route('flatpack.schema.form'),
+                    icon: TextCursorInputIcon,
+                },
+                {
+                    id: 'list',
+                    label: 'List schema',
+                    href: route('flatpack.schema.list'),
+                    icon: ListChecksIcon,
+                },
+            ]}
+        />
+    );
+
+    return <DocsLayout navigation={navigation}>{children}</DocsLayout>;
+}
+
+SchemaPage.layout = (page: ReactNode) => (
+    <SchemaDocsShell>{page}</SchemaDocsShell>
+);
 
 export default SchemaPage;

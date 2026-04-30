@@ -8,7 +8,11 @@ import {
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { DemoComponentCatalogEntry } from '@/types/demo';
+import type {
+    DemoCatalogDocument,
+    DemoComponentCatalogEntry,
+    DemoComponentsCatalogId,
+} from '@/types/demo';
 
 const { routeMock, usePage } = vi.hoisted(() => ({
     routeMock: vi.fn(() => '/components'),
@@ -55,7 +59,7 @@ vi.mock('@/lib/form', () => ({
     ),
 }));
 
-import DemoPage from '@/pages/demo';
+import DemoPage from '@/pages/demo/catalog';
 
 function textEntry(
     overrides: Partial<DemoComponentCatalogEntry> = {},
@@ -71,12 +75,26 @@ function textEntry(
     };
 }
 
-describe('DemoPage', () => {
-    const pageProps = {
-        query: {},
-        widgetsCatalog: [],
+function buildDocument(
+    id: DemoComponentsCatalogId,
+    fields: DemoComponentCatalogEntry[],
+): DemoCatalogDocument {
+    return {
+        id,
+        title:
+            id === 'fields'
+                ? 'Form Fields'
+                : id === 'widgets'
+                  ? 'Widgets'
+                  : 'Components',
+        description: null,
+        meta: { fieldCount: fields.length, widgetCount: 0 },
+        fields: id === 'widgets' ? [] : fields,
+        widgets: [],
     };
+}
 
+describe('DemoPage', () => {
     beforeEach(() => {
         usePage.mockReset();
     });
@@ -88,8 +106,9 @@ describe('DemoPage', () => {
     it('shows unknown component message for invalid type', () => {
         usePage.mockReturnValue({
             props: {
-                ...pageProps,
-                fieldsCatalog: [textEntry()],
+                catalogId: 'all',
+                query: {},
+                document: buildDocument('all', [textEntry()]),
             },
             url: '/components?type=not-real',
         });
@@ -103,15 +122,16 @@ describe('DemoPage', () => {
     it('lists all components when no selector is set', async () => {
         usePage.mockReturnValue({
             props: {
-                ...pageProps,
-                fieldsCatalog: [
+                catalogId: 'all',
+                query: {},
+                document: buildDocument('all', [
                     textEntry({ title: 'Alpha' }),
                     textEntry({
                         id: 'e-ta',
                         title: 'Beta',
                         props: { type: 'textarea', label: 'L' },
                     }),
-                ],
+                ]),
             },
             url: '/components',
         });
@@ -140,8 +160,9 @@ describe('DemoPage', () => {
         const user = userEvent.setup();
         usePage.mockReturnValue({
             props: {
-                ...pageProps,
-                fieldsCatalog: [textEntry()],
+                catalogId: 'all',
+                query: {},
+                document: buildDocument('all', [textEntry()]),
             },
             url: '/components?type=text',
         });
@@ -176,8 +197,9 @@ describe('DemoPage', () => {
     it('hides live value when showValue=false in query', async () => {
         usePage.mockReturnValue({
             props: {
-                ...pageProps,
-                fieldsCatalog: [textEntry()],
+                catalogId: 'all',
+                query: {},
+                document: buildDocument('all', [textEntry()]),
             },
             url: '/components?type=text&showValue=false',
         });

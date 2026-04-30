@@ -1,3 +1,4 @@
+import type { DemoComponentsInertiaProps } from '@/types/demo';
 import type { FormFieldProps } from '@/types/form-fields';
 
 const DEMO_ROUTING_QUERY_KEYS = new Set([
@@ -144,6 +145,24 @@ export function mergeQueryOverridesIntoFormFieldProps(
         patch[k] = coerceQueryParamValue(v);
     }
     return { ...props, ...patch, type: props.type } as FormFieldProps;
+}
+
+/**
+ * When any demo routing key (`?type=`, `?demo=`, etc.) is non-empty, the
+ * components catalog is in “embed” mode: no docs nav, only the single
+ * component (or unknown-type message) should show.
+ */
+export function isDemoCatalogEmbedMode(
+    props: DemoComponentsInertiaProps,
+    inertiaUrl: string,
+    locationSearch: string,
+): boolean {
+    const flat = mergeDemoFlatQuery({
+        query: props.query,
+        inertiaUrl,
+        locationSearch,
+    });
+    return pickDemoComponentSelector(flat).trim() !== '';
 }
 
 export function resolveDemoShowValue(

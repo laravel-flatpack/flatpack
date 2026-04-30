@@ -23,8 +23,20 @@ export type DemoComponentWidgetEntry = DemoEntryBase & {
     props: FlatpackMetricWidget | FlatpackCardWidget | FlatpackStatusWidget;
 };
 
+export type DemoComponentsCatalogId = 'all' | 'fields' | 'widgets';
+
+export type DemoCatalogDocument = {
+    id: DemoComponentsCatalogId;
+    title: string;
+    /** HTML string from the server; may include <code> for inline examples. */
+    description: string | null;
+    meta: { fieldCount: number; widgetCount: number };
+    fields: DemoComponentCatalogEntry[];
+    widgets: DemoComponentWidgetEntry[];
+};
+
 export type DemoComponentsInertiaProps = {
+    catalogId: DemoComponentsCatalogId;
     query: Record<string, unknown>;
-    fieldsCatalog: DemoComponentCatalogEntry[];
-    widgetsCatalog: DemoComponentWidgetEntry[];
+    document: DemoCatalogDocument;
 };

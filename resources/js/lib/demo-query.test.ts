@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
     flattenDemoQuery,
+    isDemoCatalogEmbedMode,
     mergeDemoFlatQuery,
     mergeQueryOverridesIntoFormFieldProps,
     parseLocationSearch,
@@ -8,6 +9,7 @@ import {
     pickDemoComponentSelector,
     resolveDemoShowValue,
 } from '@/lib/demo-query';
+import type { DemoComponentsInertiaProps } from '@/types/demo';
 import type { FormFieldProps } from '@/types/form-fields';
 
 describe('parseSearchParamsFromUrl', () => {
@@ -113,6 +115,37 @@ describe('mergeQueryOverridesIntoFormFieldProps', () => {
             demo: 'nope',
         });
         expect(out.type).toBe('text');
+    });
+});
+
+describe('isDemoCatalogEmbedMode', () => {
+    const baseProps = (): DemoComponentsInertiaProps => ({
+        catalogId: 'all',
+        query: {},
+        document: {
+            id: 'all',
+            title: 'Components',
+            description: null,
+            meta: { fieldCount: 0, widgetCount: 0 },
+            fields: [],
+            widgets: [],
+        },
+    });
+
+    it('is true when a routing selector is present', () => {
+        expect(isDemoCatalogEmbedMode(baseProps(), '/demo?type=text', '')).toBe(
+            true,
+        );
+    });
+
+    it('is false when only prop overrides or unrelated keys are present', () => {
+        expect(
+            isDemoCatalogEmbedMode(
+                { ...baseProps(), query: { label: 'x' } },
+                '/demo',
+                '',
+            ),
+        ).toBe(false);
     });
 });
 
