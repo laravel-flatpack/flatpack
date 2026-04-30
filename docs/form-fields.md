@@ -9,6 +9,7 @@ These field types can directly manage Eloquent relations.
 | Field type | Relation use-case | Required relation keys | Optional relation keys |
 | --- | --- | --- | --- |
 | `combobox` | Pick one or many related records (IDs/keys) via local or remote options. | `relation` (for relation-backed mode) | `relation_name`, `relation_value`, `multiple`, `remote`, `options` |
+| `file-upload` | Persist uploaded files as related records (for media/attachments). | `mode: relation`, `relation` | `collection`, `disk`, `directory`, `accept`, `max_size_kb`, `max_files`, `multiple` |
 | `table` | Manage related child rows inline (hydration + sync on submit). | `relation` (for relation-backed mode), `columns` | `relation_value`, `limit`, `table_relation_type`, `row_detail_drawer`, `actions` |
 
 ### Relation `combobox` Example
@@ -292,7 +293,50 @@ fields:
 | `placeholder` | `string` | Editor placeholder. |
 | `showFixedToolbar` | `boolean` | Fixed toolbar behavior. |
 
-## 13) `table` (embedded table field)
+## 13) `file-upload`
+
+```yaml
+fields:
+  avatar:
+    type: file-upload
+    label: Avatar
+    mode: url
+    target_column: avatar_url
+    disk: files
+    directory: users/avatars
+    accept: [image/jpeg, image/png]
+    max_size_kb: 2048
+```
+
+```yaml
+fields:
+  gallery:
+    type: file-upload
+    label: Gallery
+    mode: relation
+    relation: media
+    collection: gallery
+    multiple: true
+    max_files: 10
+    accept: [image/*]
+```
+
+| Option | Type | Description |
+| --- | --- | --- |
+| `mode` | `relation \| url` | Required. Persistence mode: related records (`relation`) or model URL column(s) (`url`). |
+| `multiple` | `boolean` | Enables multiple uploaded files. |
+| `relation` | `string` | Required in `relation` mode: relation method on parent model. |
+| `collection` | `string` | Optional grouping label for relation-backed rows. |
+| `target_column` | `string` | Required in `url` mode: attribute that stores URL value(s). |
+| `persist_as` | `string \| json` | For `url` + `multiple`; `json` stores array payload, `string` stores comma-separated URLs. |
+| `disk` | `string` | Storage disk override. |
+| `directory` | `string` | Optional upload directory within disk. |
+| `visibility` | `public \| private` | Stored file visibility preference. |
+| `accept` | `string \| string[]` | Accepted MIME filters. |
+| `max_size_kb` | `integer` | Max file size per upload. |
+| `max_files` | `integer` | Max file count for multi mode. |
+
+## 14) `table` (embedded table field)
 
 ```yaml
 fields:
