@@ -7,6 +7,7 @@ namespace Flatpack\Http;
 use Flatpack\Schema\Forms\FormSchemaNormalizer;
 use Flatpack\Schema\Lists\ListSchemaNormalizer;
 use Flatpack\Support\CompositionDebugLog;
+use Flatpack\Support\ModelKeyResolver;
 use Illuminate\Http\JsonResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -95,7 +96,55 @@ final class FlatpackResponse
             );
         }
 
+        $data = self::appendModelMetadata($view, $data);
+
         return self::applyCompositionDebug($data, $log);
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    private static function appendModelMetadata(string $view, array $data): array
+    {
+        if (! in_array($view, ['form', 'list', 'dashboard'], true)) {
+            return $data;
+        }
+
+        $resolvedModel = self::resolveModelClassForView($data);
+        $data['model'] = $resolvedModel;
+        $data['model_key'] = app(ModelKeyResolver::class)->resolve($resolvedModel);
+
+        return $data;
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    private static function resolveModelClassForView(array $data): ?string
+    {
+        $directModel = self::normalizeModelClassName($data['model'] ?? null);
+        if ($directModel !== null) {
+            return $directModel;
+        }
+
+        $schema = $data['schema'] ?? null;
+        if (! is_array($schema)) {
+            return null;
+        }
+
+        return self::normalizeModelClassName($schema['model'] ?? null);
+    }
+
+    private static function normalizeModelClassName(mixed $candidate): ?string
+    {
+        if (! is_string($candidate)) {
+            return null;
+        }
+
+        $modelClass = trim($candidate);
+
+        return $modelClass !== '' ? $modelClass : null;
     }
 
     /**

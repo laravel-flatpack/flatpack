@@ -3,6 +3,7 @@ import { DataTable } from '@/components/table/data-table';
 import type {
     DataTableRow,
     DataTableRowDrawerAttachBodyRenderContext,
+    DataTableRowUpdatePayload,
     DataTableRowValidationFieldErrorsById,
     DataTableRowValidationMessagesById,
     FlatpackDataTableBulkAction,
@@ -28,7 +29,11 @@ export type TableFieldProps = {
     /** When false while `rowDetailDrawer` is true, row clicks do not open the drawer. */
     openDetailDrawerOnRowClick?: boolean;
     reorderable?: boolean | string;
+    pagination?: boolean;
     onValueChange?: (value: unknown) => void;
+    onRowUpdate?: (
+        payload: DataTableRowUpdatePayload<DataTableRow>,
+    ) => void | Promise<void>;
     renderRowDrawerAttachBody?: (
         ctx: DataTableRowDrawerAttachBodyRenderContext,
     ) => ReactNode;
@@ -53,7 +58,9 @@ export const TableField = ({
     rowDetailDrawer = true,
     openDetailDrawerOnRowClick = true,
     reorderable,
+    pagination,
     onValueChange,
+    onRowUpdate,
     renderRowDrawerAttachBody,
     tableRelationType,
     flatpackEntity,
@@ -76,9 +83,11 @@ export const TableField = ({
                     toolbarActionsDisabledTitle={toolbarActionsDisabledTitle}
                     onToolbarAction={onToolbarAction}
                     reorderable={reorderable}
+                    pagination={pagination}
                     rowDetailDrawer={rowDetailDrawer}
                     openDetailDrawerOnRowClick={openDetailDrawerOnRowClick}
                     onValueChange={onValueChange}
+                    onRowUpdate={onRowUpdate}
                     renderRowDrawerAttachBody={renderRowDrawerAttachBody}
                     tableRelationType={tableRelationType}
                     flatpackEntity={flatpackEntity}

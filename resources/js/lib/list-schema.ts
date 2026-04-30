@@ -231,10 +231,14 @@ function normalizeActionVariant(raw: unknown): FlatpackActionVariant {
 export function normalizeColumnActions(
     raw: unknown,
 ): FlatpackDataTableActionButton[] {
-    if (!Array.isArray(raw)) {
+    const items = Array.isArray(raw)
+        ? raw
+        : raw != null && typeof raw === 'object'
+          ? Object.values(raw as Record<string, unknown>)
+          : null;
+    if (items == null) {
         return [];
     }
-    const items = raw;
     const normalized = items.map((action) => {
         if (action == null || typeof action !== 'object') {
             return null;

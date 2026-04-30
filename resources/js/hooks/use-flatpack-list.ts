@@ -245,6 +245,8 @@ export function useFlatpackList({
               : schema?.reorderable === true;
     const rowClickBehavior = schema?.row_click ?? 'edit_page';
     const isRowClickEditPage = rowClickBehavior === 'edit_page';
+    const paginationVisibility =
+        typeof schema?.pagination === 'boolean' ? schema.pagination : undefined;
     const rowClickRecordKey = modelKey || 'id';
 
     const [pendingListConfirm, setPendingListConfirm] = useState<
@@ -569,6 +571,7 @@ export function useFlatpackList({
         handleReorderError,
         records,
         pagination,
+        paginationVisibility,
         searchTerm,
         serverFilterValues,
         serverSorting,

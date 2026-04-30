@@ -436,4 +436,27 @@ describe('DataTable toolbar create flow', () => {
             screen.getByRole('button', { name: 'Save changes' }),
         ).toBeInTheDocument();
     });
+
+    it('hides row action trigger when actions require id and row id is missing', () => {
+        render(
+            <DataTable
+                id="actions-require-id"
+                columns={[
+                    { id: 'name', label: 'Name', type: 'text' },
+                    {
+                        id: 'actions',
+                        label: 'Actions',
+                        type: 'actions',
+                        actions: [{ label: 'Remove', action: 'remove' }],
+                    },
+                ]}
+                data={[{ name: 'Row without id' }]}
+                requireRowIdForActions
+            />,
+        );
+
+        expect(
+            screen.queryByRole('button', { name: 'Open row actions' }),
+        ).not.toBeInTheDocument();
+    });
 });

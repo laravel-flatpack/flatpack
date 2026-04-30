@@ -12,7 +12,7 @@ final readonly class ActiveTabResolver
     /**
      * @param  array<string, mixed>|null  $schema
      * @return array{
-     *     activeTab: array{id: string, scope?: string, reorderable?: bool|string, reorderableColumn?: string, row_click?: string, columns?: mixed, filters?: mixed, bulk_actions?: mixed}|null,
+     *     activeTab: array{id: string, scope?: string, reorderable?: bool|string, reorderableColumn?: string, row_click?: string, columns?: mixed, filters?: mixed, bulk_actions?: mixed, default_sort?: array{key: string, direction: 'asc'|'desc'}, pagination?: bool}|null,
      *     effectiveSchema: array<string, mixed>|null,
      *     scope: string|null
      * }
@@ -32,7 +32,7 @@ final readonly class ActiveTabResolver
 
     /**
      * @param  array<string, mixed>|null  $schema
-     * @return array{id: string, scope?: string, reorderable?: bool|string, reorderableColumn?: string, row_click?: string, columns?: mixed, filters?: mixed, bulk_actions?: mixed}|null
+     * @return array{id: string, scope?: string, reorderable?: bool|string, reorderableColumn?: string, row_click?: string, columns?: mixed, filters?: mixed, bulk_actions?: mixed, default_sort?: array{key: string, direction: 'asc'|'desc'}, pagination?: bool}|null
      */
     public function resolve(?array $schema, string $requestedTabId): ?array
     {
@@ -41,7 +41,7 @@ final readonly class ActiveTabResolver
             return null;
         }
 
-        /** @var list<array{id: string, scope?: string, reorderable?: bool|string, reorderableColumn?: string, row_click?: string, columns?: mixed, filters?: mixed, bulk_actions?: mixed}> $panels */
+        /** @var list<array{id: string, scope?: string, reorderable?: bool|string, reorderableColumn?: string, row_click?: string, columns?: mixed, filters?: mixed, bulk_actions?: mixed, default_sort?: array{key: string, direction: 'asc'|'desc'}, pagination?: bool}> $panels */
         $panels = [];
         foreach ($tabs as $tabId => $panel) {
             $id = trim((string) $tabId);
@@ -79,6 +79,20 @@ final readonly class ActiveTabResolver
             if (is_array($tabBulkActions)) {
                 $entry['bulk_actions'] = $tabBulkActions;
             }
+            $defaultSort = $panel['default_sort'] ?? null;
+            if (is_array($defaultSort)) {
+                $key = trim((string) ($defaultSort['key'] ?? ''));
+                $direction = trim((string) ($defaultSort['direction'] ?? ''));
+                if ($key !== '' && in_array($direction, ['asc', 'desc'], true)) {
+                    $entry['default_sort'] = [
+                        'key' => $key,
+                        'direction' => $direction,
+                    ];
+                }
+            }
+            if (is_bool($panel['pagination'] ?? null)) {
+                $entry['pagination'] = $panel['pagination'];
+            }
             $panels[] = $entry;
         }
 
@@ -99,7 +113,7 @@ final readonly class ActiveTabResolver
 
     /**
      * @param  array<string, mixed>|null  $schema
-     * @param  array{id: string, scope?: string, reorderable?: bool|string, reorderableColumn?: string, row_click?: string, columns?: mixed, filters?: mixed, bulk_actions?: mixed}|null  $activeTab
+     * @param  array{id: string, scope?: string, reorderable?: bool|string, reorderableColumn?: string, row_click?: string, columns?: mixed, filters?: mixed, bulk_actions?: mixed, default_sort?: array{key: string, direction: 'asc'|'desc'}, pagination?: bool}|null  $activeTab
      * @return array<string, mixed>|null
      */
     public function schemaForTab(?array $schema, ?array $activeTab): ?array
@@ -133,6 +147,12 @@ final readonly class ActiveTabResolver
         }
         if (isset($activeTab['row_click']) && is_string($activeTab['row_click'])) {
             $out['row_click'] = $activeTab['row_click'];
+        }
+        if (isset($activeTab['default_sort']) && is_array($activeTab['default_sort'])) {
+            $out['default_sort'] = $activeTab['default_sort'];
+        }
+        if (isset($activeTab['pagination']) && is_bool($activeTab['pagination'])) {
+            $out['pagination'] = $activeTab['pagination'];
         }
 
         return $out;

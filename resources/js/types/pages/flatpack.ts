@@ -33,6 +33,8 @@ export type FlatpackListHeaderAction = {
 
 /** Props for `/flatpack` dashboard (Inertia `dashboard` page). */
 export type FlatpackDashboardPageProps = {
+    model?: string;
+    model_key?: string;
     schema?: Record<string, unknown> | null;
     widgets?: FlatpackWidgetsCompositionSchema['widgets'];
     widgets_schema?: FlatpackWidgetsCompositionSchema | null;
@@ -68,6 +70,7 @@ export type FlatpackFormPageProps = {
     entity: string;
     name?: string;
     model?: string;
+    model_key?: string;
     icon?: string;
     record: string | null;
     mode: 'create' | 'edit';

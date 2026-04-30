@@ -1,17 +1,8 @@
 import { Head } from '@inertiajs/react';
-import { lazy, Suspense } from 'react';
 import { DashboardWidgets } from '@/components/widgets/dashboard-widgets';
-import data from '@/data/data.json';
 import { useCompositionDebugLog } from '@/hooks/use-composition-debug-log';
 import FlatpackLayout from '@/layouts/flatpack-layout';
-import type { DashboardSectionsTableCatalog } from '@/types/dashboard';
 import type { FlatpackDashboardPageProps } from '@/types/pages/flatpack';
-
-const DashboardDataTable = lazy(() =>
-    import('@/components/table/dashboard-data-table').then((module) => ({
-        default: module.DashboardDataTable,
-    })),
-);
 
 export default function FlatpackDashboard(props: FlatpackDashboardPageProps) {
     useCompositionDebugLog(props.composition_debug);
@@ -27,15 +18,6 @@ export default function FlatpackDashboard(props: FlatpackDashboardPageProps) {
                     />
                 </div>
             </div>
-            <Suspense
-                fallback={
-                    <div className="h-[32rem] animate-pulse rounded-xl border border-border bg-muted/40" />
-                }
-            >
-                <DashboardDataTable
-                    catalog={data as DashboardSectionsTableCatalog}
-                />
-            </Suspense>
         </div>
     );
 }

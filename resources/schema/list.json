@@ -104,6 +104,14 @@
             "additionalProperties": {
                 "$ref": "#/$defs/widgetDefinition"
             }
+        },
+        "default_sort": {
+            "$ref": "#/$defs/defaultSort",
+            "description": "Default sort applied when request sorting is absent."
+        },
+        "pagination": {
+            "type": "boolean",
+            "description": "Pagination visibility override: true always shows controls, false always hides controls."
         }
     },
     "additionalProperties": false,
@@ -188,6 +196,14 @@
                     "additionalProperties": {
                         "$ref": "#/$defs/bulkActionDefinition"
                     }
+                },
+                "default_sort": {
+                    "$ref": "#/$defs/defaultSort",
+                    "description": "Optional tab-level default sort applied when request sorting is absent."
+                },
+                "pagination": {
+                    "type": "boolean",
+                    "description": "Optional tab-level pagination visibility override."
                 }
             },
             "additionalProperties": false,
@@ -1101,6 +1117,28 @@
                 ]
             }
         },
+        "defaultSort": {
+            "type": "object",
+            "required": [
+                "key",
+                "direction"
+            ],
+            "properties": {
+                "key": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "direction": {
+                    "type": "string",
+                    "enum": [
+                        "asc",
+                        "desc"
+                    ]
+                }
+            },
+            "additionalProperties": false,
+            "description": "Default table sort used when request sorting is missing."
+        },
         "widgetDefinition": {
             "description": "Discriminated widget union keyed by `type`.",
             "oneOf": [
@@ -1115,8 +1153,155 @@
                 },
                 {
                     "$ref": "#/$defs/chartWidget"
+                },
+                {
+                    "$ref": "#/$defs/tableWidget"
                 }
             ]
+        },
+        "tableWidgetPagination": {
+            "oneOf": [
+                {
+                    "type": "boolean",
+                    "description": "Pagination visibility override: true always shows controls, false always hides controls."
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "per_page": {
+                            "type": "integer",
+                            "minimum": 1
+                        },
+                        "page_sizes": {
+                            "type": "array",
+                            "minItems": 1,
+                            "items": {
+                                "type": "integer",
+                                "minimum": 1
+                            }
+                        }
+                    },
+                    "additionalProperties": false
+                }
+            ]
+        },
+        "tableWidgetEmptyState": {
+            "type": "object",
+            "properties": {
+                "title": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false
+        },
+        "tableWidgetColumnDefinition": {
+            "$ref": "#/$defs/columnDefinition"
+        },
+        "tableWidgetColumns": {
+            "type": "object",
+            "minProperties": 1,
+            "additionalProperties": {
+                "$ref": "#/$defs/tableWidgetColumnDefinition"
+            }
+        },
+        "tableWidget": {
+            "type": "object",
+            "required": [
+                "type",
+                "columns"
+            ],
+            "properties": {
+                "type": {
+                    "const": "table"
+                },
+                "provider": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "model": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "description": {
+                    "type": "string"
+                },
+                "icon": {
+                    "type": "string"
+                },
+                "columns": {
+                    "$ref": "#/$defs/tableWidgetColumns"
+                },
+                "actions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/columnActionButton"
+                    }
+                },
+                "filters": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/$defs/filterDefinition"
+                    }
+                },
+                "pagination": {
+                    "$ref": "#/$defs/tableWidgetPagination"
+                },
+                "empty_state": {
+                    "$ref": "#/$defs/tableWidgetEmptyState"
+                },
+                "default_sort": {
+                    "$ref": "#/$defs/defaultSort"
+                },
+                "data": {
+                    "$ref": "#/$defs/tableWidgetResolvedData"
+                }
+            },
+            "oneOf": [
+                {
+                    "required": [
+                        "provider"
+                    ],
+                    "not": {
+                        "required": [
+                            "model"
+                        ]
+                    }
+                },
+                {
+                    "required": [
+                        "model"
+                    ],
+                    "not": {
+                        "required": [
+                            "provider"
+                        ]
+                    }
+                }
+            ],
+            "additionalProperties": false
+        },
+        "tableWidgetResolvedData": {
+            "type": "object",
+            "properties": {
+                "rows": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                    }
+                },
+                "sorting": {
+                    "$ref": "#/$defs/defaultSort"
+                }
+            },
+            "additionalProperties": false
         },
         "metricWidget": {
             "type": "object",

@@ -24,6 +24,8 @@ test('flatpack dashboard returns minimal JSON resource when json query is true a
     expect($payload)->toBe([
         'schema' => null,
         'widgets' => [],
+        'model' => null,
+        'model_key' => 'id',
         'composition_debug' => [],
     ]);
 });
@@ -46,6 +48,8 @@ YAML);
             ->getJson(route('flatpack.dashboard', ['json' => true]))
             ->assertOk()
             ->assertJson([
+                'model' => null,
+                'model_key' => 'id',
                 'schema' => [
                     'name' => 'Overview',
                     'widgets' => [],
@@ -81,7 +85,7 @@ YAML);
             ->json();
 
         expect($payload['composition_debug'][0] ?? '')->toContain(
-            'widgets.health_check ignored: requires non-empty provider and label.',
+            'widgets.health_check ignored: status widget requires non-empty provider.',
         );
     } finally {
         File::deleteDirectory($tempPath);
@@ -135,6 +139,8 @@ YAML);
             ->getJson(route('flatpack.entities.create', ['entity' => 'posts', 'json' => true]))
             ->assertOk()
             ->assertJson([
+                'model' => 'Flatpack\\Tests\\Models\\Post',
+                'model_key' => 'id',
                 'schema' => [
                     'name' => 'Post',
                     'fields' => [],

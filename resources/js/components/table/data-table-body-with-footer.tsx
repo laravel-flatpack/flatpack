@@ -21,6 +21,7 @@ type DataTableBodyWithFooterProps = {
     ) => void;
     emptyColSpan: number;
     rowCountLabel: string;
+    pagination?: boolean;
     onDragEnd: (event: DragEndEvent) => void;
     rowValidationMessagesById: DataTableRowValidationMessagesById;
     isReordering: boolean;
@@ -36,11 +37,19 @@ export function DataTableBodyWithFooter({
     onRowClick,
     emptyColSpan,
     rowCountLabel,
+    pagination,
     onDragEnd,
     rowValidationMessagesById,
     isReordering,
 }: DataTableBodyWithFooterProps): React.JSX.Element {
     const paginationStateCurrent = table.getState().pagination;
+    const pageCount = table.getPageCount() || 1;
+    const shouldShowPagination =
+        pagination === true
+            ? true
+            : pagination === false
+              ? false
+              : pageCount > 1;
 
     const tableBody = (
         <DataTableBody
@@ -70,22 +79,24 @@ export function DataTableBodyWithFooter({
                     tableBody
                 )}
             </div>
-            <DataTableFooter
-                id={id}
-                rowCountLabel={rowCountLabel}
-                pageSize={paginationStateCurrent.pageSize}
-                pageIndex={paginationStateCurrent.pageIndex}
-                pageCount={table.getPageCount()}
-                canPreviousPage={table.getCanPreviousPage()}
-                canNextPage={table.getCanNextPage()}
-                onPageSizeChange={(value) => {
-                    table.setPageSize(Number(value));
-                }}
-                onFirstPage={() => table.setPageIndex(0)}
-                onPreviousPage={() => table.previousPage()}
-                onNextPage={() => table.nextPage()}
-                onLastPage={() => table.setPageIndex(table.getPageCount() - 1)}
-            />
+            {shouldShowPagination ? (
+                <DataTableFooter
+                    id={id}
+                    rowCountLabel={rowCountLabel}
+                    pageSize={paginationStateCurrent.pageSize}
+                    pageIndex={paginationStateCurrent.pageIndex}
+                    pageCount={pageCount}
+                    canPreviousPage={table.getCanPreviousPage()}
+                    canNextPage={table.getCanNextPage()}
+                    onPageSizeChange={(value) => {
+                        table.setPageSize(Number(value));
+                    }}
+                    onFirstPage={() => table.setPageIndex(0)}
+                    onPreviousPage={() => table.previousPage()}
+                    onNextPage={() => table.nextPage()}
+                    onLastPage={() => table.setPageIndex(pageCount - 1)}
+                />
+            ) : null}
         </>
     );
 }

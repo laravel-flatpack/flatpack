@@ -8,6 +8,7 @@ use Flatpack\Http\Controllers\FormController;
 use Flatpack\Http\Controllers\ListController;
 use Flatpack\Http\Controllers\RelationOptionsController;
 use Flatpack\Http\Controllers\SessionController;
+use Flatpack\Http\Controllers\TableRowController;
 use Flatpack\Http\Middleware\EnsureFlatpackAccess;
 use Illuminate\Support\Facades\Route;
 
@@ -28,6 +29,10 @@ Route::middleware(['auth:' . config('flatpack.security.guard', 'web'), EnsureFla
 
     /** Renders the Flatpack dashboard landing page. */
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    /** Persists row drawer edits for model-backed dashboard table widgets. */
+    Route::patch('dashboard/widgets/{widget}/{record}', [TableRowController::class, 'updateDashboardWidgetRow'])->name('dashboard.widgets.update-row');
+    /** Executes bulk action for model-backed dashboard table widgets. */
+    Route::post('dashboard/widgets/{widget}/bulk', [TableRowController::class, 'bulkDashboardWidgetRows'])->name('dashboard.widgets.bulk-action');
 
     /** Executes a bulk action against selected list records. */
     Route::post('{entity}/bulk', [EntityActionController::class, 'bulkAction'])->name('entities.bulk-action');
@@ -39,6 +44,8 @@ Route::middleware(['auth:' . config('flatpack.security.guard', 'web'), EnsureFla
     Route::patch('{entity}/{record}/reorder', [EntityActionController::class, 'reorderRecord'])->name('entities.row-reorder');
     /** Persists inline edits for a specific list record. */
     Route::patch('{entity}/{record}', [EntityActionController::class, 'updateRecord'])->name('entities.update');
+    /** Persists row drawer edits for model-backed form table fields. */
+    Route::patch('{entity}/table-fields/{field}/{record}', [TableRowController::class, 'updateFormTableRow'])->name('entities.table-fields.update-row');
 
     /** Renders the create form page for an entity. */
     Route::get('{entity}/create', [FormController::class, 'create'])->name('entities.create');

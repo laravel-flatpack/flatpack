@@ -86,7 +86,7 @@ final readonly class MergeListTabsIntoColumnsPipe
         /** @var list<string> $rootColumnIds */
         $rootColumnIds = $mergedOrder;
 
-        /** @var list<array{id: string, label: string, icon?: string, scope?: string, reorderable?: bool|string, reorderableColumn?: string, row_click?: string, columns?: mixed, filters?: mixed, bulk_actions?: mixed, column_ids: list<string>}> $tabPanels */
+        /** @var list<array{id: string, label: string, icon?: string, scope?: string, reorderable?: bool|string, reorderableColumn?: string, row_click?: string, default_sort?: array{key: string, direction: 'asc'|'desc'}, pagination?: bool, columns?: mixed, filters?: mixed, bulk_actions?: mixed, column_ids: list<string>}> $tabPanels */
         $tabPanels = [];
 
         foreach ($tabs as $tabId => $panel) {
@@ -120,6 +120,18 @@ final readonly class MergeListTabsIntoColumnsPipe
             $rowClickValue = $panel['row_click'] ?? null;
             if (is_string($rowClickValue) && in_array($rowClickValue, ['none', 'edit_page', 'edit_modal', 'edit_drawer'], true)) {
                 $rowClick = $rowClickValue;
+            }
+            $defaultSort = null;
+            $defaultSortRaw = $panel['default_sort'] ?? null;
+            if (is_array($defaultSortRaw)) {
+                $sortKey = trim((string) ($defaultSortRaw['key'] ?? ''));
+                $sortDirection = trim((string) ($defaultSortRaw['direction'] ?? ''));
+                if ($sortKey !== '' && in_array($sortDirection, ['asc', 'desc'], true)) {
+                    $defaultSort = [
+                        'key' => $sortKey,
+                        'direction' => $sortDirection,
+                    ];
+                }
             }
 
             $tabColumns = $panel['columns'] ?? null;
@@ -181,6 +193,12 @@ final readonly class MergeListTabsIntoColumnsPipe
             }
             if ($rowClick !== null) {
                 $entry['row_click'] = $rowClick;
+            }
+            if ($defaultSort !== null) {
+                $entry['default_sort'] = $defaultSort;
+            }
+            if (is_bool($panel['pagination'] ?? null)) {
+                $entry['pagination'] = $panel['pagination'];
             }
             if (is_array($tabColumns) && $tabColumns !== []) {
                 $entry['columns'] = $tabColumns;

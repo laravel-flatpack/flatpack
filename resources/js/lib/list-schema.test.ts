@@ -140,7 +140,7 @@ describe('listYamlColumnsToDataTableColumns', () => {
         expect(actions?.length).toBe(1);
     });
 
-    it('ignores non-array column actions payloads', () => {
+    it('normalizes object-map column actions payloads', () => {
         const cols = listYamlColumnsToDataTableColumns([
             {
                 id: 'actions',
@@ -154,7 +154,13 @@ describe('listYamlColumnsToDataTableColumns', () => {
                 } as unknown,
             },
         ]);
-        expect(cols[0]?.actions).toBeUndefined();
+        expect(cols[0]?.actions).toEqual([
+            {
+                label: 'Edit',
+                action: 'edit',
+                variant: 'outline',
+            },
+        ]);
     });
 
     it('preserves confirm and success_message on column actions', () => {

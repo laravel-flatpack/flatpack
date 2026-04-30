@@ -2,6 +2,7 @@
  * Row save/append: commits draft into `data` and defers `onValueChange` (see `deferNotifyParentFormValues`).
  */
 import * as React from 'react';
+import { toast } from 'sonner';
 import { deferNotifyParentFormValues } from '@/lib/data-table-utils';
 import type {
     UseDataTableRowReplaceFlowOptions,
@@ -55,46 +56,86 @@ export function useDataTableRowReplaceFlow({
                     rowId,
                     row: nextRow,
                 }),
-            ).catch(() => {
-                if (previousRow == null) {
-                    if (appendedRowStableId == null) {
+            )
+                .then((resolvedRow) => {
+                    if (resolvedRow == null) {
+                        return;
+                    }
+                    const targetStableId =
+                        appendedRowStableId != null
+                            ? appendedRowStableId
+                            : rowId;
+                    setData((prev) => {
+                        const idx = prev.findIndex(
+                            (row, index) =>
+                                getStableRowId(row, index) === targetStableId,
+                        );
+                        if (idx === -1) {
+                            return prev;
+                        }
+                        const merged = prev.map((row, index) =>
+                            index === idx ? resolvedRow : row,
+                        );
+                        deferNotifyParentFormValues(onValueChange, merged);
+                        return merged;
+                    });
+                })
+                .catch((error) => {
+                    const message =
+                        error instanceof Error
+                            ? error.message
+                            : 'Row update failed';
+                    toast.error(message);
+                    console.error(
+                        '[TableRowReplace] server update failed, rolling back',
+                        {
+                            rowId,
+                            error,
+                        },
+                    );
+                    if (previousRow == null) {
+                        if (appendedRowStableId == null) {
+                            return;
+                        }
+                        setData((prev) => {
+                            const idx = prev.findIndex(
+                                (row, index) =>
+                                    getStableRowId(row, index) ===
+                                    appendedRowStableId,
+                            );
+                            if (idx === -1) {
+                                return prev;
+                            }
+                            const reverted = prev.filter(
+                                (_, index) => index !== idx,
+                            );
+                            deferNotifyParentFormValues(
+                                onValueChange,
+                                reverted,
+                            );
+                            return reverted;
+                        });
                         return;
                     }
                     setData((prev) => {
                         const idx = prev.findIndex(
                             (row, index) =>
-                                getStableRowId(row, index) ===
-                                appendedRowStableId,
+                                getStableRowId(row, index) === rowId,
                         );
                         if (idx === -1) {
                             return prev;
                         }
-                        const reverted = prev.filter(
-                            (_, index) => index !== idx,
+                        const resolvedPreviousRow = previousRow;
+                        if (resolvedPreviousRow == null) {
+                            return prev;
+                        }
+                        const reverted = prev.map((row, index) =>
+                            index === idx ? resolvedPreviousRow : row,
                         );
                         deferNotifyParentFormValues(onValueChange, reverted);
                         return reverted;
                     });
-                    return;
-                }
-                setData((prev) => {
-                    const idx = prev.findIndex(
-                        (row, index) => getStableRowId(row, index) === rowId,
-                    );
-                    if (idx === -1) {
-                        return prev;
-                    }
-                    const resolvedPreviousRow = previousRow;
-                    if (resolvedPreviousRow == null) {
-                        return prev;
-                    }
-                    const reverted = prev.map((row, index) =>
-                        index === idx ? resolvedPreviousRow : row,
-                    );
-                    deferNotifyParentFormValues(onValueChange, reverted);
-                    return reverted;
                 });
-            });
         },
         [
             clearCreateDraftRow,

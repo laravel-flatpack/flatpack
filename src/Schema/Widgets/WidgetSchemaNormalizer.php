@@ -80,21 +80,28 @@ final class WidgetSchemaNormalizer
                 }
 
                 $type = trim((string) ($definition['type'] ?? ''));
-                if (! in_array($type, ['metric', 'card', 'status', 'chart'], true)) {
+                if (! in_array($type, ['metric', 'card', 'status', 'chart', 'table'], true)) {
                     $debug?->add(sprintf('widgets.%s ignored: unsupported type "%s".', $widgetId, $type));
 
                     continue;
                 }
 
-                $provider = trim((string) ($definition['provider'] ?? ''));
                 $label = trim((string) ($definition['label'] ?? ''));
-                if ($provider === '' || $label === '') {
-                    $debug?->add(sprintf('widgets.%s ignored: requires non-empty provider and label.', $widgetId));
+                if ($type !== 'table' && $label === '') {
+                    $debug?->add(sprintf('widgets.%s ignored: requires non-empty label.', $widgetId));
 
                     continue;
                 }
 
+                $provider = trim((string) ($definition['provider'] ?? ''));
+                $model = trim((string) ($definition['model'] ?? ''));
+
                 if ($type === 'chart') {
+                    if ($provider === '') {
+                        $debug?->add(sprintf('widgets.%s ignored: chart widget requires non-empty provider.', $widgetId));
+
+                        continue;
+                    }
                     $chartConfig = $this->normalizeChartWidgetConfig($definition['chart'] ?? null, $debug, $widgetId);
                     if ($chartConfig === null) {
                         continue;
@@ -111,6 +118,11 @@ final class WidgetSchemaNormalizer
                 }
 
                 if ($type === 'metric') {
+                    if ($provider === '') {
+                        $debug?->add(sprintf('widgets.%s ignored: metric widget requires non-empty provider.', $widgetId));
+
+                        continue;
+                    }
                     $normalizedWidgets[$widgetId] = [
                         'type' => 'metric',
                         'provider' => $provider,
@@ -125,6 +137,11 @@ final class WidgetSchemaNormalizer
                 }
 
                 if ($type === 'card') {
+                    if ($provider === '') {
+                        $debug?->add(sprintf('widgets.%s ignored: card widget requires non-empty provider.', $widgetId));
+
+                        continue;
+                    }
                     $normalizedWidgets[$widgetId] = [
                         'type' => 'card',
                         'provider' => $provider,
@@ -136,6 +153,21 @@ final class WidgetSchemaNormalizer
                     continue;
                 }
 
+                if ($type === 'table') {
+                    $tableConfig = $this->normalizeTableWidgetConfig($definition, $debug, $widgetId);
+                    if ($tableConfig === null) {
+                        continue;
+                    }
+                    $normalizedWidgets[$widgetId] = $tableConfig;
+
+                    continue;
+                }
+
+                if ($provider === '') {
+                    $debug?->add(sprintf('widgets.%s ignored: status widget requires non-empty provider.', $widgetId));
+
+                    continue;
+                }
                 $normalizedWidgets[$widgetId] = [
                     'type' => 'status',
                     'provider' => $provider,
@@ -149,6 +181,166 @@ final class WidgetSchemaNormalizer
         $normalized['widgets'] = $normalizedWidgets;
 
         return $normalized;
+    }
+
+    /**
+     * @param  array<string, mixed>  $definition
+     * @return array<string, mixed>|null
+     */
+    private function normalizeTableWidgetConfig(array $definition, ?CompositionDebugLog $debug, string $widgetId): ?array
+    {
+        $provider = trim((string) ($definition['provider'] ?? ''));
+        $model = trim((string) ($definition['model'] ?? ''));
+        if (($provider === '' && $model === '') || ($provider !== '' && $model !== '')) {
+            $debug?->add(sprintf('widgets.%s ignored: table widget requires exactly one of provider or model.', $widgetId));
+
+            return null;
+        }
+
+        $columns = $definition['columns'] ?? null;
+        if (! is_array($columns) || $columns === []) {
+            $debug?->add(sprintf('widgets.%s ignored: table widget requires a non-empty columns map.', $widgetId));
+
+            return null;
+        }
+
+        $normalizedColumns = $columns;
+        if ($provider !== '') {
+            $normalizedColumns = $this->normalizeProviderBackedTableWidgetColumns($columns);
+        }
+
+        $normalized = [
+            'type' => 'table',
+            'label' => $this->normalizeOptionalWidgetLabel($definition['label'] ?? null),
+            'description' => isset($definition['description']) ? (string) $definition['description'] : null,
+            'icon' => isset($definition['icon']) ? (string) $definition['icon'] : null,
+            'columns' => $normalizedColumns,
+        ];
+        if ($provider !== '') {
+            $normalized['provider'] = $provider;
+        }
+        if ($model !== '') {
+            $normalized['model'] = $model;
+        }
+        if (isset($definition['filters']) && is_array($definition['filters'])) {
+            $normalized['filters'] = $definition['filters'];
+        }
+        if (isset($definition['actions']) && is_array($definition['actions'])) {
+            $normalized['actions'] = $definition['actions'];
+        }
+        $rawBulkActions = $definition['bulk_actions'] ?? $definition['bulkActions'] ?? null;
+        if (is_array($rawBulkActions)) {
+            $bulkActions = $this->normalizeTableWidgetBulkActions($rawBulkActions);
+            if ($bulkActions !== []) {
+                $normalized['bulk_actions'] = $bulkActions;
+            }
+        }
+        if (isset($definition['empty_state']) && is_array($definition['empty_state'])) {
+            $normalized['empty_state'] = $definition['empty_state'];
+        }
+        if (isset($definition['pagination']) && (is_array($definition['pagination']) || is_bool($definition['pagination']))) {
+            $normalized['pagination'] = $definition['pagination'];
+        }
+        $defaultSort = $definition['default_sort'] ?? null;
+        if (is_array($defaultSort)) {
+            $key = trim((string) ($defaultSort['key'] ?? ''));
+            $direction = trim((string) ($defaultSort['direction'] ?? ''));
+            if ($key !== '' && in_array($direction, ['asc', 'desc'], true)) {
+                $normalized['default_sort'] = [
+                    'key' => $key,
+                    'direction' => $direction,
+                ];
+            }
+        }
+
+        return $normalized;
+    }
+
+    /**
+     * @param  array<int|string, mixed>  $rawBulkActions
+     * @return list<array{id: string, label: string, action: string, icon: string, variant: string, success_message?: string, confirm?: bool, success_redirect?: string}>
+     */
+    private function normalizeTableWidgetBulkActions(array $rawBulkActions): array
+    {
+        $out = [];
+        foreach ($rawBulkActions as $key => $definition) {
+            if (! is_array($definition)) {
+                continue;
+            }
+            $label = isset($definition['label']) ? trim((string) $definition['label']) : '';
+            $action = isset($definition['action']) ? trim((string) $definition['action']) : '';
+            if ($label === '' || $action === '') {
+                continue;
+            }
+            $icon = isset($definition['icon']) ? trim((string) $definition['icon']) : '';
+            $id = is_string($key) && $key !== '' ? $key : (string) count($out);
+            $entry = [
+                'id' => $id,
+                'label' => $label,
+                'action' => $action,
+                'icon' => $icon,
+                'variant' => $this->normalizeActionVariant($definition['variant'] ?? null),
+            ];
+            if (($definition['confirm'] ?? null) === true) {
+                $entry['confirm'] = true;
+            }
+            $successMessage = isset($definition['success_message']) ? trim((string) $definition['success_message']) : '';
+            if ($successMessage !== '') {
+                $entry['success_message'] = $successMessage;
+            }
+            $successRedirect = $definition['success_redirect'] ?? null;
+            if (is_string($successRedirect) && trim($successRedirect) !== '') {
+                $entry['success_redirect'] = trim($successRedirect);
+            }
+            $out[] = $entry;
+        }
+
+        return $out;
+    }
+
+    private function normalizeActionVariant(mixed $raw): string
+    {
+        if (! is_string($raw)) {
+            return 'outline';
+        }
+        $variant = trim($raw);
+        if ($variant === '' || $variant === 'primary') {
+            return $variant === 'primary' ? 'default' : 'outline';
+        }
+        if (in_array($variant, CompositionSchemaKeys::BUTTON_VARIANT_UI_VALUES, true)) {
+            return $variant;
+        }
+
+        return 'outline';
+    }
+
+    /**
+     * Provider-backed widget rows are display-only, so inline editing is always disabled.
+     *
+     * @param  array<string, mixed>  $columns
+     * @return array<string, mixed>
+     */
+    private function normalizeProviderBackedTableWidgetColumns(array $columns): array
+    {
+        $normalized = [];
+        foreach ($columns as $columnId => $columnDefinition) {
+            if (! is_array($columnDefinition)) {
+                continue;
+            }
+            $normalized[$columnId] = array_merge($columnDefinition, ['editable' => false]);
+        }
+
+        return $normalized;
+    }
+
+    private function normalizeOptionalWidgetLabel(mixed $rawLabel): ?string
+    {
+        $label = is_string($rawLabel) ? trim($rawLabel) : '';
+        if ($label !== '') {
+            return $label;
+        }
+
+        return null;
     }
 
     /**

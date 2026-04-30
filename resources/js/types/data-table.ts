@@ -150,6 +150,7 @@ export type BuildDataTableColumnDefsOptions<
     onRowAction?: (
         payload: DataTableRowActionPayload<TRow>,
     ) => void | Promise<void>;
+    requireRowIdForActions?: boolean;
 };
 
 export type DataTableCellUpdatePayload<
@@ -187,6 +188,11 @@ export type FlatpackListServerPagination = {
 export type FlatpackListServerSorting = {
     sort_by: string | null;
     sort_direction: 'asc' | 'desc' | null;
+};
+
+export type FlatpackDataTableDefaultSort = {
+    key: string;
+    direction: 'asc' | 'desc';
 };
 
 export type DataTableBulkDeletePayload = {
@@ -286,7 +292,7 @@ export type UseDataTableRowReplaceFlowOptions = {
         onValueChange?: (value: unknown) => void;
         onRowUpdate?: (
             payload: DataTableRowUpdatePayload,
-        ) => void | Promise<void>;
+        ) => DataTableRow | null | void | Promise<DataTableRow | null | void>;
     };
     clearCreateDraftRow: () => void;
 };
@@ -355,22 +361,35 @@ export type DataTableProps<TRow extends DataTableRow = DataTableRow> = {
     onRowAction?: (
         payload: DataTableRowActionPayload<TRow>,
     ) => void | Promise<void>;
+    /**
+     * When true, action-column menus require a non-empty row `id`; rows without it
+     * render actions as inactive.
+     */
+    requireRowIdForActions?: boolean;
     onCellUpdate?: (
         payload: DataTableCellUpdatePayload<TRow>,
     ) => void | Promise<void>;
     onRowUpdate?: (
         payload: DataTableRowUpdatePayload<TRow>,
-    ) => void | Promise<void>;
+    ) => TRow | null | void | Promise<TRow | null | void>;
     reorderEndpoint?: (item: TRow) => string;
     reorderOnError?: () => void;
     className?: string;
     toolbarStart?: ReactNode;
     toolbarAfterColumns?: ReactNode;
     serverPagination?: FlatpackListServerPagination;
+    /**
+     * Pagination visibility strategy:
+     * - `true`: always show pagination controls
+     * - `false`: never show pagination controls
+     * - `undefined`: show only when more than one page exists
+     */
+    pagination?: boolean;
     serverSearch?: string;
     serverFilters?: FlatpackDataTableFilter[];
     serverFilterValues?: FlatpackDataTableServerFiltersState;
     serverSorting?: FlatpackListServerSorting;
+    defaultSort?: FlatpackDataTableDefaultSort;
     onServerPaginationChange?: (
         page: number,
         perPage: number,

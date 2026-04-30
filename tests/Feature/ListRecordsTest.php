@@ -1671,6 +1671,140 @@ YAML);
     }
 });
 
+test('flatpack entity list applies default_sort when request sorting is absent', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-list-default-sort-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+columns:
+  id:
+    label: ID
+  title:
+    label: Title
+    sortable: true
+default_sort:
+  key: title
+  direction: asc
+YAML);
+        config()->set('flatpack.composition.path', $tempPath);
+
+        Post::factory()->create(['title' => 'Zebra']);
+        Post::factory()->create(['title' => 'Apple']);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        $payload = actingAs($user)
+            ->getJson(route('flatpack.entities.index', [
+                'entity' => 'posts',
+                'json' => true,
+            ]))
+            ->assertOk()
+            ->json();
+
+        expect($payload['records'][0]['title'])->toBe('Apple')
+            ->and($payload['sorting'])->toMatchArray([
+                'sort_by' => 'title',
+                'sort_direction' => 'asc',
+            ]);
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
+test('flatpack entity list request sorting overrides default_sort', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-list-default-sort-override-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+columns:
+  id:
+    label: ID
+  title:
+    label: Title
+    sortable: true
+default_sort:
+  key: title
+  direction: asc
+YAML);
+        config()->set('flatpack.composition.path', $tempPath);
+
+        Post::factory()->create(['title' => 'Zebra']);
+        Post::factory()->create(['title' => 'Apple']);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        $payload = actingAs($user)
+            ->getJson(route('flatpack.entities.index', [
+                'entity' => 'posts',
+                'json' => true,
+                'sort_by' => 'title',
+                'sort_direction' => 'desc',
+            ]))
+            ->assertOk()
+            ->json();
+
+        expect($payload['records'][0]['title'])->toBe('Zebra')
+            ->and($payload['sorting'])->toMatchArray([
+                'sort_by' => 'title',
+                'sort_direction' => 'desc',
+            ]);
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
+test('flatpack entity list ignores invalid default_sort key and falls back safely', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-list-invalid-default-sort-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+columns:
+  id:
+    label: ID
+  title:
+    label: Title
+default_sort:
+  key: not_sortable
+  direction: asc
+YAML);
+        config()->set('flatpack.composition.path', $tempPath);
+
+        $older = Post::factory()->create(['title' => 'Older']);
+        $newer = Post::factory()->create(['title' => 'Newer']);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        $payload = actingAs($user)
+            ->getJson(route('flatpack.entities.index', [
+                'entity' => 'posts',
+                'json' => true,
+            ]))
+            ->assertOk()
+            ->json();
+
+        expect($payload['records'][0]['id'])->toBe($newer->getKey())
+            ->and($payload['records'][1]['id'])->toBe($older->getKey())
+            ->and($payload['sorting'])->toMatchArray([
+                'sort_by' => 'id',
+                'sort_direction' => 'desc',
+            ]);
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
 test('flatpack entity list keeps reorder default sorting when custom reorder column is requested explicitly', function () {
     $tempPath = sys_get_temp_dir() . '/flatpack-list-explicit-custom-reorder-sort-' . uniqid('', true);
 
@@ -1713,6 +1847,55 @@ YAML);
         expect($payload['records'][1]['title'])->toBe('Second');
         expect($payload['sorting'])->toMatchArray([
             'sort_by' => 'priority',
+            'sort_direction' => 'asc',
+        ]);
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
+test('flatpack entity list accepts default_sort on custom reorderable column', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-list-default-sort-custom-reorder-column-' . uniqid('', true);
+
+    try {
+        Schema::table('posts', static function ($table): void {
+            $table->unsignedInteger('sorting_order')->nullable();
+        });
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+reorderable: sorting_order
+default_sort:
+  key: sorting_order
+  direction: asc
+columns:
+  id:
+    label: ID
+  title:
+    label: Title
+YAML);
+        config()->set('flatpack.composition.path', $tempPath);
+
+        Post::factory()->create(['title' => 'Second', 'sorting_order' => 2]);
+        Post::factory()->create(['title' => 'First', 'sorting_order' => 1]);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        $payload = actingAs($user)
+            ->getJson(route('flatpack.entities.index', [
+                'entity' => 'posts',
+                'json' => true,
+            ]))
+            ->assertOk()
+            ->json();
+
+        expect($payload['records'])->toHaveCount(2);
+        expect($payload['records'][0]['title'])->toBe('First');
+        expect($payload['records'][1]['title'])->toBe('Second');
+        expect($payload['sorting'])->toMatchArray([
+            'sort_by' => 'sorting_order',
             'sort_direction' => 'asc',
         ]);
     } finally {

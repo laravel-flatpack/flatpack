@@ -23,7 +23,7 @@ import {
     CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import { CardWidget } from '@/components/widgets/card';
-import { ChartWidget } from '@/components/widgets/chart-area-interactive';
+import { ChartWidget } from '@/components/widgets/chart';
 import { MetricWidget } from '@/components/widgets/metric';
 import { StatusWidget } from '@/components/widgets/status';
 import DocsLayout from '@/layouts/docs-layout';

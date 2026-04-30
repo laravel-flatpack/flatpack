@@ -1,3 +1,9 @@
+import type {
+    FlatpackDataTableBulkAction,
+    FlatpackDataTableColumn,
+    FlatpackDataTableDefaultSort,
+} from '@/types/data-table';
+
 export type FlatpackMetricValueFormat = {
     kind: 'number' | 'currency' | 'percentage';
     currency?: string;
@@ -114,11 +120,34 @@ export type FlatpackChartWidget = {
     data?: FlatpackChartWidgetResolvedData;
 };
 
+export type FlatpackTableWidgetResolvedData = {
+    rows?: Record<string, unknown>[];
+    sorting?: {
+        sort_by?: string | null;
+        sort_direction?: 'asc' | 'desc' | null;
+    };
+};
+
+export type FlatpackTableWidget = {
+    type: 'table';
+    label?: string | null;
+    description?: string | null;
+    icon?: string | null;
+    provider?: string;
+    model?: string;
+    columns: Record<string, FlatpackDataTableColumn>;
+    bulk_actions?: FlatpackDataTableBulkAction[];
+    pagination?: boolean | { per_page?: number; page_sizes?: number[] };
+    default_sort?: FlatpackDataTableDefaultSort;
+    data?: FlatpackTableWidgetResolvedData;
+};
+
 export type FlatpackWidget =
     | FlatpackMetricWidget
     | FlatpackCardWidget
     | FlatpackStatusWidget
-    | FlatpackChartWidget;
+    | FlatpackChartWidget
+    | FlatpackTableWidget;
 
 export type FlatpackWidgetTabPanelLayout = {
     id: string;

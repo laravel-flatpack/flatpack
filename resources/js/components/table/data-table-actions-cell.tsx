@@ -160,12 +160,22 @@ export function DataTableActionsCell({
     actions,
     row,
     onAction,
+    requireRowId = false,
 }: {
     actions: FlatpackDataTableActionButton[];
     row: Record<string, unknown>;
     onAction?: (payload: DataTableRowActionPayload) => void | Promise<void>;
+    requireRowId?: boolean;
 }) {
     const { primary, destructive } = partitionRowActions(actions);
+    const rowIdRaw = row.id;
+    const hasUsableRowId =
+        rowIdRaw !== null &&
+        rowIdRaw !== undefined &&
+        String(rowIdRaw).trim() !== '';
+    if (requireRowId && !hasUsableRowId) {
+        return null;
+    }
 
     return (
         <div className="flex justify-end" data-no-row-click>

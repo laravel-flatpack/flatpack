@@ -2,6 +2,7 @@ import type { SortingState } from '@tanstack/react-table';
 import { format } from 'date-fns';
 import * as React from 'react';
 import type {
+    FlatpackDataTableDefaultSort,
     FlatpackDataTableServerFiltersState,
     FlatpackListServerPagination,
     FlatpackListServerSorting,
@@ -17,6 +18,8 @@ type UseDataTableServerStateOptions = {
     serverSearch?: string;
     serverFilterValues?: FlatpackDataTableServerFiltersState;
     serverSorting?: FlatpackListServerSorting;
+    defaultSort?: FlatpackDataTableDefaultSort;
+    allowedSortingColumnIds?: readonly string[];
     onServerPaginationChange?: (
         page: number,
         perPage: number,
@@ -102,13 +105,45 @@ function sortingStatesEqual(a: SortingState, b: SortingState): boolean {
     return true;
 }
 
+function buildSortingState(
+    sortBy: string | null | undefined,
+    sortDirection: 'asc' | 'desc' | null | undefined,
+    allowedSortingColumnIds: ReadonlySet<string> | null,
+): SortingState {
+    const columnId = typeof sortBy === 'string' ? sortBy.trim() : '';
+    if (columnId === '') {
+        return [];
+    }
+    if (
+        allowedSortingColumnIds !== null &&
+        !allowedSortingColumnIds.has(columnId)
+    ) {
+        return [];
+    }
+    return [
+        {
+            id: columnId,
+            desc: sortDirection === 'desc',
+        },
+    ];
+}
+
 export function useDataTableServerState({
     serverPagination,
     serverSearch,
     serverFilterValues = {},
     serverSorting = { sort_by: null, sort_direction: null },
+    defaultSort,
+    allowedSortingColumnIds = [],
     onServerPaginationChange,
 }: UseDataTableServerStateOptions) {
+    const allowedSortingColumnIdSet = React.useMemo(
+        () =>
+            allowedSortingColumnIds.length > 0
+                ? new Set(allowedSortingColumnIds)
+                : null,
+        [allowedSortingColumnIds],
+    );
     const hasMountedRef = React.useRef(false);
     React.useEffect(() => {
         hasMountedRef.current = true;
@@ -121,7 +156,16 @@ export function useDataTableServerState({
         React.useState<FlatpackDataTableServerFiltersState>(() =>
             normalizeServerFilterValues(serverFilterValues),
         );
-    const [sorting, setSorting] = React.useState<SortingState>([]);
+    const [sorting, setSorting] = React.useState<SortingState>(() => {
+        if (defaultSort == null) {
+            return [];
+        }
+        return buildSortingState(
+            defaultSort.key,
+            defaultSort.direction,
+            allowedSortingColumnIdSet,
+        );
+    });
     const [pagination, setPagination] = React.useState<PaginationState>({
         pageIndex: 0,
         pageSize: 10,
@@ -157,19 +201,34 @@ export function useDataTableServerState({
         if (serverPagination == null) {
             return;
         }
-        const nextSorting: SortingState =
-            serverSorting.sort_by == null
-                ? []
-                : [
-                      {
-                          id: serverSorting.sort_by,
-                          desc: serverSorting.sort_direction === 'desc',
-                      },
-                  ];
+        const nextSorting: SortingState = buildSortingState(
+            serverSorting.sort_by,
+            serverSorting.sort_direction,
+            allowedSortingColumnIdSet,
+        );
         setSorting((prev) =>
             sortingStatesEqual(prev, nextSorting) ? prev : nextSorting,
         );
-    }, [serverPagination, serverSorting.sort_by, serverSorting.sort_direction]);
+    }, [
+        allowedSortingColumnIdSet,
+        serverPagination,
+        serverSorting.sort_by,
+        serverSorting.sort_direction,
+    ]);
+
+    React.useEffect(() => {
+        if (serverPagination != null || defaultSort == null) {
+            return;
+        }
+        const nextSorting = buildSortingState(
+            defaultSort.key,
+            defaultSort.direction,
+            allowedSortingColumnIdSet,
+        );
+        setSorting((prev) =>
+            sortingStatesEqual(prev, nextSorting) ? prev : nextSorting,
+        );
+    }, [allowedSortingColumnIdSet, defaultSort, serverPagination]);
 
     const handlePaginationChange = React.useCallback(
         (updater: React.SetStateAction<PaginationState>) => {

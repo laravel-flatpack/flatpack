@@ -308,3 +308,40 @@ it('keeps author-set table_relation_type when non-empty', function (): void {
 
     expect($schema['fields']['lines']['table_relation_type'])->toBe('unknown');
 });
+
+it('omits table field when both model and relation are set', function (): void {
+    $log = new CompositionDebugLog('posts/form.yaml');
+    $normalizer = new FormSchemaNormalizer;
+    $schema = $normalizer->normalizedFormSchema([
+        'fields' => [
+            'items' => [
+                'type' => 'table',
+                'label' => 'Items',
+                'model' => 'Flatpack\\Tests\\Models\\Post',
+                'relation' => 'items',
+                'columns' => [['id' => 'title', 'label' => 'Title', 'type' => 'text']],
+            ],
+        ],
+    ], $log);
+
+    expect($schema['fields'])->not->toHaveKey('items');
+    expect(implode(' ', $log->all()))->toContain('cannot define both model and relation');
+});
+
+it('omits table field when provider is set', function (): void {
+    $log = new CompositionDebugLog('posts/form.yaml');
+    $normalizer = new FormSchemaNormalizer;
+    $schema = $normalizer->normalizedFormSchema([
+        'fields' => [
+            'items' => [
+                'type' => 'table',
+                'label' => 'Items',
+                'provider' => 'items_provider',
+                'columns' => [['id' => 'title', 'label' => 'Title', 'type' => 'text']],
+            ],
+        ],
+    ], $log);
+
+    expect($schema['fields'])->not->toHaveKey('items');
+    expect(implode(' ', $log->all()))->toContain('provider is not supported');
+});

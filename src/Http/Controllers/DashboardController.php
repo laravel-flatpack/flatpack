@@ -10,6 +10,7 @@ use Flatpack\Http\FlatpackResponse;
 use Flatpack\Http\FlatpackResponseOptions;
 use Flatpack\Schema\Generated\CompositionSchemaKeys;
 use Flatpack\Schema\Widgets\WidgetSchemaNormalizer;
+use Flatpack\Services\Lists\ListRecordsLoader;
 use Flatpack\Services\Runtime\WidgetRuntime;
 use Flatpack\Support\Exceptions\WidgetRuntimeException;
 use Flatpack\Widgets\WidgetContext;
@@ -24,6 +25,7 @@ final readonly class DashboardController
         private CompositionQuery $compositions,
         private WidgetSchemaNormalizer $widgetSchemaNormalizer,
         private WidgetRuntime $widgetRuntime,
+        private ListRecordsLoader $listRecordsLoader,
     ) {}
 
     public function index(Request $request): Response|JsonResponse
@@ -72,29 +74,36 @@ final readonly class DashboardController
             }
 
             $providerKey = trim((string) ($definition['provider'] ?? ''));
-            if ($providerKey === '') {
+            $type = trim((string) ($definition['type'] ?? ''));
+            $modelClass = trim((string) ($definition['model'] ?? ''));
+
+            if ($providerKey === '' && ! ($type === 'table' && $modelClass !== '')) {
                 $debugLog?->add(sprintf('widgets.%s ignored: missing provider.', $widgetId));
 
                 continue;
             }
 
-            try {
-                $provider = $this->widgetRuntime->resolveProvider($providerKey);
-                $data = $this->widgetRuntime->resolveData(
-                    $provider,
-                    new WidgetContext(
-                        request: $request,
-                        entity: $entity,
-                        widgetId: $widgetId,
-                        definition: $definition,
-                    ),
-                );
-            } catch (WidgetRuntimeException $exception) {
-                $debugLog?->add(sprintf('widgets.%s provider error: %s', $widgetId, $exception->getMessage()));
-                $data = [];
-            } catch (AuthorizationException $exception) {
-                $debugLog?->add(sprintf('widgets.%s unauthorized: %s', $widgetId, $exception->getMessage()));
-                $data = [];
+            if ($providerKey !== '') {
+                try {
+                    $provider = $this->widgetRuntime->resolveProvider($providerKey);
+                    $data = $this->widgetRuntime->resolveData(
+                        $provider,
+                        new WidgetContext(
+                            request: $request,
+                            entity: $entity,
+                            widgetId: $widgetId,
+                            definition: $definition,
+                        ),
+                    );
+                } catch (WidgetRuntimeException $exception) {
+                    $debugLog?->add(sprintf('widgets.%s provider error: %s', $widgetId, $exception->getMessage()));
+                    $data = [];
+                } catch (AuthorizationException $exception) {
+                    $debugLog?->add(sprintf('widgets.%s unauthorized: %s', $widgetId, $exception->getMessage()));
+                    $data = [];
+                }
+            } else {
+                $data = $this->resolveModelBackedTableWidgetData($definition);
             }
 
             $resolved[$widgetId] = [
@@ -117,6 +126,9 @@ final readonly class DashboardController
         if ($type === 'chart') {
             return $this->normalizeChartWidgetResolvedData($data);
         }
+        if ($type === 'table') {
+            return $this->normalizeTableWidgetResolvedData($data);
+        }
 
         if ($type !== 'status') {
             return $data;
@@ -126,6 +138,92 @@ final readonly class DashboardController
         $data['status'] = $status ?? 'default';
 
         return $data;
+    }
+
+    /**
+     * @param  array<string, mixed>  $definition
+     * @return array<string, mixed>
+     */
+    private function resolveModelBackedTableWidgetData(array $definition): array
+    {
+        $modelClass = trim((string) ($definition['model'] ?? ''));
+        if ($modelClass === '') {
+            return [];
+        }
+
+        $columns = $definition['columns'] ?? null;
+        if (! is_array($columns) || $columns === []) {
+            return [];
+        }
+
+        $schema = [
+            'model' => $modelClass,
+            'columns' => $columns,
+        ];
+        if (isset($definition['filters']) && is_array($definition['filters'])) {
+            $schema['filters'] = $definition['filters'];
+        }
+        if (isset($definition['default_sort']) && is_array($definition['default_sort'])) {
+            $schema['default_sort'] = $definition['default_sort'];
+        }
+
+        $pagination = is_array($definition['pagination'] ?? null) ? $definition['pagination'] : [];
+        $perPage = isset($pagination['per_page']) && is_numeric($pagination['per_page'])
+            ? max(1, (int) $pagination['per_page'])
+            : 10;
+
+        $loaded = $this->listRecordsLoader->load(
+            $modelClass,
+            $schema,
+            1,
+            $perPage,
+        );
+
+        return [
+            'rows' => $loaded['records'] ?? [],
+            'sorting' => $loaded['sorting'] ?? ['sort_by' => null, 'sort_direction' => null],
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array{rows: list<array<string, mixed>>, sorting: array{sort_by: string|null, sort_direction: 'asc'|'desc'|null}}
+     */
+    private function normalizeTableWidgetResolvedData(array $data): array
+    {
+        $rowsRaw = $data['rows'] ?? null;
+        if (! is_array($rowsRaw)) {
+            // Allow providers to return a plain list of rows directly.
+            $rowsRaw = array_is_list($data) ? $data : [];
+        }
+        $rows = [];
+        foreach ($rowsRaw as $row) {
+            if (is_array($row)) {
+                $rows[] = $row;
+            }
+        }
+
+        $sorting = $data['sorting'] ?? null;
+        $sortBy = null;
+        $sortDirection = null;
+        if (is_array($sorting)) {
+            $candidate = trim((string) ($sorting['sort_by'] ?? ''));
+            $direction = trim((string) ($sorting['sort_direction'] ?? ''));
+            if ($candidate !== '') {
+                $sortBy = $candidate;
+            }
+            if (in_array($direction, ['asc', 'desc'], true)) {
+                $sortDirection = $direction;
+            }
+        }
+
+        return [
+            'rows' => $rows,
+            'sorting' => [
+                'sort_by' => $sortBy,
+                'sort_direction' => $sortDirection,
+            ],
+        ];
     }
 
     /**

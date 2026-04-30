@@ -1,6 +1,7 @@
 import type {
     FlatpackDataTableBulkAction,
     FlatpackDataTableColumn,
+    FlatpackDataTableDefaultSort,
     FlatpackDataTableSelectOptionStatus,
     FlatpackTableRelationType,
 } from '@/types/data-table';
@@ -124,8 +125,12 @@ type TableFieldProps = FormFieldBase & {
     /** @deprecated Prefer {@link actions} or {@link toolbar}. Lowest precedence. */
     toolbarActions?: unknown;
     reorderable?: boolean | string;
+    pagination?: boolean;
+    default_sort?: FlatpackDataTableDefaultSort;
     /** Relation-backed table: hydrate + sync as RelationRow[] */
     relation?: string;
+    /** Model-backed table: row drawer saves persist immediately. */
+    model?: string;
     relation_value?: string;
     limit?: number;
     /**

@@ -246,6 +246,7 @@ export type FlatpackFormCompositionFieldTableYaml = {
         | Record<string, FlatpackFormCompositionFieldTableActionYaml>
         | FlatpackFormCompositionFieldTableActionYaml[];
     reorderable?: boolean | string;
+    model?: string;
     relation?: string;
     relation_value?: string;
     limit?: number;

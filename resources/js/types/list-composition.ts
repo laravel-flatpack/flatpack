@@ -1,5 +1,6 @@
 import type {
     FlatpackActionVariant,
+    FlatpackDataTableDefaultSort,
     FlatpackDataTableSelectOptionStatus,
     FlatpackSuccessRedirect,
 } from '@/types/data-table';
@@ -186,6 +187,8 @@ export type FlatpackListCompositionTabPanelYaml = {
     reorderable?: boolean | string;
     reorderableColumn?: string;
     row_click?: 'none' | 'edit_page' | 'edit_modal' | 'edit_drawer';
+    pagination?: boolean;
+    default_sort?: FlatpackDataTableDefaultSort;
     columns?: FlatpackListCompositionColumnsYaml;
     filters?: FlatpackListCompositionFiltersYaml;
     bulk_actions?: FlatpackListCompositionBulkActionsYaml;
@@ -206,6 +209,8 @@ export type FlatpackListTabPanelLayout = {
     reorderable?: boolean | string;
     reorderableColumn?: string;
     row_click?: 'none' | 'edit_page' | 'edit_modal' | 'edit_drawer';
+    pagination?: boolean;
+    default_sort?: FlatpackDataTableDefaultSort;
     columns?: FlatpackListCompositionColumnsYaml;
     filters?: FlatpackListCompositionFiltersYaml;
     bulk_actions?: FlatpackListCompositionBulkActionsYaml;
@@ -220,8 +225,10 @@ export type FlatpackListCompositionSchema = {
     nav_order?: number;
     reorderable?: boolean | string;
     reorderableColumn?: string;
+    default_sort?: FlatpackDataTableDefaultSort;
     /** Row click behavior. Default `none`; `edit_page` navigates to edit route. */
     row_click?: 'none' | 'edit_page' | 'edit_modal' | 'edit_drawer';
+    pagination?: boolean;
     columns?: FlatpackListCompositionColumnsYaml;
     tabs?: FlatpackListCompositionTabsYaml;
     tab_panels?: FlatpackListTabPanelLayout[];

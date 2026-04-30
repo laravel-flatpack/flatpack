@@ -1181,6 +1181,14 @@
                         }
                     ]
                 },
+                "default_sort": {
+                    "$ref": "#/$defs/defaultSort",
+                    "description": "Default local sort used when row table first renders."
+                },
+                "pagination": {
+                    "type": "boolean",
+                    "description": "Pagination visibility override: true always shows controls, false always hides controls."
+                },
                 "row_detail_drawer": {
                     "type": "boolean",
                     "description": "When false, clicking a data row does not open the row detail drawer; toolbar `create` still uses the drawer for new rows (`add`/other may share that drawer when wired)."
@@ -1189,6 +1197,11 @@
                     "type": "string",
                     "minLength": 1,
                     "description": "Eloquent relation method name on the parent model; when present, table is relation-backed (hydration + sync)."
+                },
+                "model": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Model class name for immediate row persistence from the embedded table drawer."
                 },
                 "relation_value": {
                     "type": "string",
@@ -1216,6 +1229,44 @@
                     "$ref": "#/$defs/fieldTrigger"
                 }
             },
+            "oneOf": [
+                {
+                    "required": [
+                        "relation"
+                    ],
+                    "not": {
+                        "required": [
+                            "model"
+                        ]
+                    }
+                },
+                {
+                    "required": [
+                        "model"
+                    ],
+                    "not": {
+                        "required": [
+                            "relation"
+                        ]
+                    }
+                },
+                {
+                    "not": {
+                        "anyOf": [
+                            {
+                                "required": [
+                                    "model"
+                                ]
+                            },
+                            {
+                                "required": [
+                                    "relation"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ],
             "additionalProperties": false
         },
         "embeddedTableColumnEditFormFieldDefinition": {
@@ -1244,6 +1295,27 @@
             },
             "additionalProperties": false,
             "description": "Inline row-drawer edit field override for embedded table columns."
+        },
+        "defaultSort": {
+            "type": "object",
+            "required": [
+                "key",
+                "direction"
+            ],
+            "properties": {
+                "key": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "direction": {
+                    "type": "string",
+                    "enum": [
+                        "asc",
+                        "desc"
+                    ]
+                }
+            },
+            "additionalProperties": false
         },
         "embeddedTableColumnDefinition": {
             "type": "object",
@@ -1356,8 +1428,153 @@
                 },
                 {
                     "$ref": "#/$defs/chartWidget"
+                },
+                {
+                    "$ref": "#/$defs/tableWidget"
                 }
             ]
+        },
+        "tableWidgetPagination": {
+            "oneOf": [
+                {
+                    "type": "boolean",
+                    "description": "Pagination visibility override: true always shows controls, false always hides controls."
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "per_page": {
+                            "type": "integer",
+                            "minimum": 1
+                        },
+                        "page_sizes": {
+                            "type": "array",
+                            "minItems": 1,
+                            "items": {
+                                "type": "integer",
+                                "minimum": 1
+                            }
+                        }
+                    },
+                    "additionalProperties": false
+                }
+            ]
+        },
+        "tableWidgetEmptyState": {
+            "type": "object",
+            "properties": {
+                "title": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false
+        },
+        "tableWidgetColumns": {
+            "type": "object",
+            "minProperties": 1,
+            "additionalProperties": {
+                "$ref": "#/$defs/embeddedTableColumnDefinition"
+            }
+        },
+        "tableWidget": {
+            "type": "object",
+            "required": [
+                "type",
+                "columns"
+            ],
+            "properties": {
+                "type": {
+                    "const": "table"
+                },
+                "provider": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "model": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "description": {
+                    "type": "string"
+                },
+                "icon": {
+                    "type": "string"
+                },
+                "columns": {
+                    "$ref": "#/$defs/tableWidgetColumns"
+                },
+                "actions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/fieldTableActionEntry"
+                    }
+                },
+                "filters": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "object",
+                        "additionalProperties": true
+                    }
+                },
+                "pagination": {
+                    "$ref": "#/$defs/tableWidgetPagination"
+                },
+                "empty_state": {
+                    "$ref": "#/$defs/tableWidgetEmptyState"
+                },
+                "default_sort": {
+                    "$ref": "#/$defs/defaultSort"
+                },
+                "data": {
+                    "$ref": "#/$defs/tableWidgetResolvedData"
+                }
+            },
+            "oneOf": [
+                {
+                    "required": [
+                        "provider"
+                    ],
+                    "not": {
+                        "required": [
+                            "model"
+                        ]
+                    }
+                },
+                {
+                    "required": [
+                        "model"
+                    ],
+                    "not": {
+                        "required": [
+                            "provider"
+                        ]
+                    }
+                }
+            ],
+            "additionalProperties": false
+        },
+        "tableWidgetResolvedData": {
+            "type": "object",
+            "properties": {
+                "rows": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                    }
+                },
+                "sorting": {
+                    "$ref": "#/$defs/defaultSort"
+                }
+            },
+            "additionalProperties": false
         },
         "metricWidget": {
             "type": "object",

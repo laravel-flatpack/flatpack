@@ -36,6 +36,30 @@ final class FormFieldDefinitionNormalizer
             $relation = isset($fieldDefinition['relation'])
                 ? trim((string) $fieldDefinition['relation'])
                 : '';
+            $model = isset($fieldDefinition['model'])
+                ? trim((string) $fieldDefinition['model'])
+                : '';
+            $provider = isset($fieldDefinition['provider'])
+                ? trim((string) $fieldDefinition['provider'])
+                : '';
+            if ($provider !== '') {
+                $tableLabel = $this->fieldDisplayLabel($fieldDefinition, $yamlKey);
+                $log?->add(sprintf(
+                    'Form field "%s": table provider is not supported (field omitted).',
+                    $tableLabel,
+                ));
+
+                return null;
+            }
+            if ($relation !== '' && $model !== '') {
+                $tableLabel = $this->fieldDisplayLabel($fieldDefinition, $yamlKey);
+                $log?->add(sprintf(
+                    'Form field "%s": table cannot define both model and relation (field omitted).',
+                    $tableLabel,
+                ));
+
+                return null;
+            }
             if ($relation !== '') {
                 $columns = $fieldDefinition['columns'] ?? null;
                 if (! $this->relationTableColumnsAreNonEmpty($columns)) {

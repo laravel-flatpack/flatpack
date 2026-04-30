@@ -139,15 +139,18 @@ export function useDataTableController(
         onValueChange,
         onBulkAction,
         onRowAction,
+        requireRowIdForActions = false,
         onCellUpdate,
         onRowUpdate,
         reorderEndpoint,
         reorderOnError,
         serverPagination,
+        pagination: paginationVisibility,
         serverSearch,
         serverFilters = [],
         serverFilterValues = {},
         serverSorting = { sort_by: null, sort_direction: null },
+        defaultSort,
         onServerPaginationChange,
         renderRowDrawerAttachBody,
         rowValidationMessagesById = {},
@@ -228,6 +231,10 @@ export function useDataTableController(
         () => serverFilters.length > 0,
         [serverFilters],
     );
+    const allowedSortingColumnIds = React.useMemo(
+        () => schemaColumns.map((column) => column.id),
+        [schemaColumns],
+    );
     const [columnVisibility, setColumnVisibility] =
         React.useState<VisibilityState>(() =>
             visibilityFromSchema(schemaColumns),
@@ -269,6 +276,8 @@ export function useDataTableController(
         serverSearch,
         serverFilterValues,
         serverSorting,
+        defaultSort,
+        allowedSortingColumnIds,
         onServerPaginationChange,
     });
 
@@ -408,6 +417,7 @@ export function useDataTableController(
                 onCellChange: handleCellChange,
                 onRowReplace: handleRowReplace,
                 onRowAction: handleRowAction,
+                requireRowIdForActions,
             }),
         [
             schemaColumns,
@@ -416,6 +426,7 @@ export function useDataTableController(
             handleCellChange,
             handleRowReplace,
             handleRowAction,
+            requireRowIdForActions,
         ],
     );
 
@@ -625,6 +636,7 @@ export function useDataTableController(
             }
             emptyColSpan={columnDefs.length}
             rowCountLabel={rowCountLabel}
+            pagination={paginationVisibility}
             onDragEnd={handleDragEnd}
             rowValidationMessagesById={rowValidationMessagesById}
             isReordering={sortable.isReordering}

@@ -531,6 +531,7 @@ describe('list composition schema (resources/schema/list.json)', function () {
                 'items' => [
                     'type' => 'table',
                     'label' => 'Items',
+                    'relation' => 'items',
                     'columns' => [
                         [
                             'id' => 'name',
@@ -629,6 +630,106 @@ describe('list composition schema (resources/schema/list.json)', function () {
                     'type' => 'text',
                     'label' => 'Title',
                     'unknown_nested_key' => true,
+                ],
+            ],
+        ]);
+
+        expect($errors)->not->toBeEmpty();
+    });
+
+    it('accepts list-level default_sort', function () {
+        $errors = CompositionSchemaAsserter::validateList([
+            'columns' => [
+                [
+                    'id' => 'published_at',
+                    'type' => 'date',
+                    'label' => 'Published At',
+                    'sortable' => true,
+                ],
+            ],
+            'default_sort' => [
+                'key' => 'published_at',
+                'direction' => 'desc',
+            ],
+        ]);
+
+        expect($errors)->toBeEmpty();
+    });
+
+    it('accepts embedded table field default_sort', function () {
+        $errors = CompositionSchemaAsserter::validateForm([
+            'fields' => [
+                'items' => [
+                    'type' => 'table',
+                    'label' => 'Items',
+                    'relation' => 'items',
+                    'columns' => [
+                        'title' => [
+                            'label' => 'Title',
+                        ],
+                    ],
+                    'default_sort' => [
+                        'key' => 'title',
+                        'direction' => 'asc',
+                    ],
+                ],
+            ],
+        ]);
+
+        expect($errors)->toBeEmpty();
+    });
+
+    it('accepts model-backed embedded table field', function () {
+        $errors = CompositionSchemaAsserter::validateForm([
+            'fields' => [
+                'items' => [
+                    'type' => 'table',
+                    'label' => 'Items',
+                    'model' => 'Flatpack\\Tests\\Models\\Post',
+                    'columns' => [
+                        'title' => [
+                            'label' => 'Title',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        expect($errors)->toBeEmpty();
+    });
+
+    it('rejects embedded table field with both model and relation', function () {
+        $errors = CompositionSchemaAsserter::validateForm([
+            'fields' => [
+                'items' => [
+                    'type' => 'table',
+                    'label' => 'Items',
+                    'model' => 'Flatpack\\Tests\\Models\\Post',
+                    'relation' => 'items',
+                    'columns' => [
+                        'title' => [
+                            'label' => 'Title',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        expect($errors)->not->toBeEmpty();
+    });
+
+    it('rejects embedded table field provider source', function () {
+        $errors = CompositionSchemaAsserter::validateForm([
+            'fields' => [
+                'items' => [
+                    'type' => 'table',
+                    'label' => 'Items',
+                    'provider' => 'items_provider',
+                    'columns' => [
+                        'title' => [
+                            'label' => 'Title',
+                        ],
+                    ],
                 ],
             ],
         ]);
@@ -756,5 +857,166 @@ describe('widget schema contracts', function () {
         ]);
 
         expect($errors)->toBeEmpty();
+    });
+
+    it('accepts table widget with provider xor model', function () {
+        $providerErrors = CompositionSchemaAsserter::validateList([
+            'columns' => [
+                [
+                    'id' => 'title',
+                    'type' => 'text',
+                    'label' => 'Title',
+                ],
+            ],
+            'widgets' => [
+                'posts_table' => [
+                    'type' => 'table',
+                    'provider' => 'posts_table_provider',
+                    'label' => 'Posts',
+                    'columns' => [
+                        'title' => [
+                            'label' => 'Title',
+                            'searchable' => true,
+                            'sortable' => true,
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $modelErrors = CompositionSchemaAsserter::validateList([
+            'columns' => [
+                [
+                    'id' => 'title',
+                    'type' => 'text',
+                    'label' => 'Title',
+                ],
+            ],
+            'widgets' => [
+                'posts_table' => [
+                    'type' => 'table',
+                    'model' => 'Flatpack\\Tests\\Models\\Post',
+                    'label' => 'Posts',
+                    'columns' => [
+                        'title' => [
+                            'label' => 'Title',
+                            'searchable' => true,
+                            'sortable' => true,
+                        ],
+                        'status' => [
+                            'type' => 'select',
+                            'label' => 'Status',
+                            'options' => [
+                                'draft' => 'Draft',
+                                'published' => 'Published',
+                            ],
+                        ],
+                    ],
+                    'default_sort' => [
+                        'key' => 'title',
+                        'direction' => 'asc',
+                    ],
+                ],
+            ],
+        ]);
+
+        expect($providerErrors)->toBeEmpty()
+            ->and($modelErrors)->toBeEmpty();
+    });
+
+    it('accepts table widget without label', function () {
+        $errors = CompositionSchemaAsserter::validateList([
+            'columns' => [
+                [
+                    'id' => 'title',
+                    'type' => 'text',
+                    'label' => 'Title',
+                ],
+            ],
+            'widgets' => [
+                'recent_posts' => [
+                    'type' => 'table',
+                    'provider' => 'recent_posts',
+                    'columns' => [
+                        'title' => [
+                            'label' => 'Title',
+                            'type' => 'text',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        expect($errors)->toBeEmpty();
+    });
+
+    it('rejects table widget when neither or both provider and model are set', function () {
+        $neitherErrors = CompositionSchemaAsserter::validateList([
+            'columns' => [
+                [
+                    'id' => 'title',
+                    'type' => 'text',
+                    'label' => 'Title',
+                ],
+            ],
+            'widgets' => [
+                'posts_table' => [
+                    'type' => 'table',
+                    'label' => 'Posts',
+                    'columns' => [
+                        'title' => [
+                            'label' => 'Title',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $bothErrors = CompositionSchemaAsserter::validateList([
+            'columns' => [
+                [
+                    'id' => 'title',
+                    'type' => 'text',
+                    'label' => 'Title',
+                ],
+            ],
+            'widgets' => [
+                'posts_table' => [
+                    'type' => 'table',
+                    'provider' => 'posts_table_provider',
+                    'model' => 'Flatpack\\Tests\\Models\\Post',
+                    'label' => 'Posts',
+                    'columns' => [
+                        'title' => [
+                            'label' => 'Title',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        expect($neitherErrors)->not->toBeEmpty()
+            ->and($bothErrors)->not->toBeEmpty();
+    });
+
+    it('rejects table widget when columns is missing', function () {
+        $errors = CompositionSchemaAsserter::validateList([
+            'columns' => [
+                [
+                    'id' => 'title',
+                    'type' => 'text',
+                    'label' => 'Title',
+                ],
+            ],
+            'widgets' => [
+                'posts_table' => [
+                    'type' => 'table',
+                    'provider' => 'posts_table_provider',
+                    'label' => 'Posts',
+                ],
+            ],
+        ]);
+
+        expect($errors)->not->toBeEmpty();
     });
 });

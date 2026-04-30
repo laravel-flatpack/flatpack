@@ -90,7 +90,7 @@ export function DashboardWidgets({
                     className={widgetGridSpanClass(entry.widget)}
                     data-widget-id={entry.id}
                 >
-                    {renderWidgetByType(entry.widget)}
+                    {renderWidgetByType(entry.id, entry.widget)}
                 </div>
             ))}
         </div>

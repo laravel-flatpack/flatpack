@@ -223,6 +223,36 @@ describe('mapFormFieldPropsToComponentProps', () => {
         ]);
     });
 
+    it('maps table default_sort to DataTable defaultSort', () => {
+        const props: FormFieldProps = {
+            type: 'table',
+            label: 'Users',
+            columns: [{ id: 'name', label: 'Name', sortable: true }],
+            data: [{ name: 'Ada' }],
+            default_sort: {
+                key: 'name',
+                direction: 'asc',
+            },
+        };
+        const out = mapFormFieldPropsToComponentProps(props, context);
+        expect(out.defaultSort).toEqual({
+            key: 'name',
+            direction: 'asc',
+        });
+    });
+
+    it('maps table pagination visibility when provided', () => {
+        const props: FormFieldProps = {
+            type: 'table',
+            label: 'Users',
+            columns: [{ id: 'name', label: 'Name', sortable: true }],
+            data: [{ name: 'Ada' }],
+            pagination: false,
+        };
+        const out = mapFormFieldPropsToComponentProps(props, context);
+        expect(out.pagination).toBe(false);
+    });
+
     it('defaults table data to empty array when omitted', () => {
         const props: FormFieldProps = {
             type: 'table',
@@ -471,6 +501,36 @@ describe('mapFormFieldPropsToComponentProps', () => {
         };
         const out = mapFormFieldPropsToComponentProps(props, context);
         expect(out.openDetailDrawerOnRowClick).toBe(true);
+    });
+
+    it('wires onRowUpdate for model-backed table fields', () => {
+        const props: FormFieldProps = {
+            type: 'table',
+            label: 'T',
+            model: 'App\\Models\\Post',
+            columns: [{ id: 'name', label: 'Name' }],
+            data: [],
+        };
+        const out = mapFormFieldPropsToComponentProps(props, {
+            ...context,
+            entity: 'posts',
+        });
+        expect(typeof out.onRowUpdate).toBe('function');
+    });
+
+    it('does not wire onRowUpdate for relation-backed table fields', () => {
+        const props: FormFieldProps = {
+            type: 'table',
+            label: 'T',
+            relation: 'items',
+            columns: [{ id: 'name', label: 'Name' }],
+            data: [],
+        };
+        const out = mapFormFieldPropsToComponentProps(props, {
+            ...context,
+            entity: 'posts',
+        });
+        expect(out.onRowUpdate).toBeUndefined();
     });
 
     it('wires onEmbeddedTableToolbarAction to onToolbarAction for table fields', () => {

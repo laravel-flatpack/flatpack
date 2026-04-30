@@ -177,6 +177,70 @@ describe('FlatpackListPage', () => {
         expect(screen.getByRole('cell', { name: 'Hello' })).toBeInTheDocument();
     });
 
+    it('hides pagination controls by default on a single page', () => {
+        render(
+            <FlatpackListPage
+                entity="posts"
+                schema={{
+                    columns: {
+                        id: { label: 'ID' },
+                        title: { label: 'Title' },
+                    },
+                }}
+                records={[{ id: 1, title: 'Hello' }]}
+            />,
+        );
+
+        expect(screen.queryByText('Rows per page')).not.toBeInTheDocument();
+        expect(screen.queryByText(/Page 1 of 1/i)).not.toBeInTheDocument();
+    });
+
+    it('shows pagination controls when schema pagination is true', () => {
+        render(
+            <FlatpackListPage
+                entity="posts"
+                schema={{
+                    pagination: true,
+                    columns: {
+                        id: { label: 'ID' },
+                        title: { label: 'Title' },
+                    },
+                }}
+                records={[{ id: 1, title: 'Hello' }]}
+            />,
+        );
+
+        expect(screen.getByText('Rows per page')).toBeInTheDocument();
+        expect(screen.getByText(/Page 1 of 1/i)).toBeInTheDocument();
+    });
+
+    it('hides pagination controls when schema pagination is false', () => {
+        render(
+            <FlatpackListPage
+                entity="posts"
+                schema={{
+                    pagination: false,
+                    columns: {
+                        id: { label: 'ID' },
+                        title: { label: 'Title' },
+                    },
+                }}
+                records={[{ id: 1, title: 'Hello' }]}
+                pagination={{
+                    current_page: 1,
+                    last_page: 2,
+                    per_page: 10,
+                    total: 20,
+                    from: 1,
+                    to: 10,
+                }}
+            />,
+        );
+
+        expect(screen.queryByText('Rows per page')).not.toBeInTheDocument();
+        expect(screen.queryByText(/Page 1 of 2/i)).not.toBeInTheDocument();
+    });
+
     it('renders list tab triggers when schema includes tab_panels', () => {
         render(
             <FlatpackListPage

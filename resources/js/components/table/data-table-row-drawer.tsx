@@ -27,6 +27,38 @@ import type { SchemaFieldRenderEntry } from '@/types/schema-fields-renderer';
 
 type DrawerMapped = ReturnType<typeof mapDataTableColumnToDrawerField>;
 
+function relationComboboxValue(
+    col: FlatpackDataTableColumn,
+    draft: Record<string, unknown>,
+): { value: unknown; options?: { value: string; label: string }[] } | null {
+    if (
+        col.type !== 'relation' ||
+        !col.relation ||
+        !col.relationName ||
+        !col.relationValue
+    ) {
+        return null;
+    }
+    const relationRaw = draft[col.relation];
+    if (relationRaw == null || typeof relationRaw !== 'object') {
+        return null;
+    }
+    const relation = relationRaw as Record<string, unknown>;
+    const relationId = relation[col.relationValue];
+    const relationLabel = relation[col.relationName];
+    if (
+        (typeof relationId !== 'string' && typeof relationId !== 'number') ||
+        typeof relationLabel !== 'string' ||
+        relationLabel.trim() === ''
+    ) {
+        return null;
+    }
+    return {
+        value: String(relationId),
+        options: [{ value: String(relationId), label: relationLabel }],
+    };
+}
+
 function DrawerRowField({
     col,
     mapped,
@@ -40,7 +72,7 @@ function DrawerRowField({
 }: {
     col: FlatpackDataTableColumn;
     mapped: DrawerMapped;
-    value: unknown;
+    value: Record<string, unknown>;
     onChange: (next: unknown) => void;
     /** Merge multiple keys in one update (e.g. relation FK + nested `row[relation]` for display). */
     patchDraft: (patch: Record<string, unknown>) => void;
@@ -52,12 +84,29 @@ function DrawerRowField({
     if (mapped?.kind !== 'form') {
         return null;
     }
+    const relationValue = relationComboboxValue(col, value);
+    const fieldWithRelationValue =
+        mapped.field.type === 'combobox' &&
+        relationValue?.options != null &&
+        relationValue.options.length > 0
+            ? {
+                  ...mapped.field,
+                  options: [
+                      ...relationValue.options,
+                      ...(mapped.field.options ?? []).filter(
+                          (option) =>
+                              String(option.value) !==
+                              String(relationValue.options?.[0]?.value ?? ''),
+                      ),
+                  ],
+              }
+            : mapped.field;
     const fieldId = `drawer-field-${col.id}`;
     const columnErrors = columnValidationErrorsById?.[col.id] ?? [];
     const baseEntry: SchemaFieldRenderEntry = {
         id: fieldId,
-        field: mapped.field,
-        value,
+        field: fieldWithRelationValue,
+        value: relationValue?.value ?? value[col.id],
         invalid: columnErrors.length > 0,
         errors: columnErrors.map((message) => ({ message })),
         serializeValue: (field, nextValue, currentValue) => {
@@ -216,7 +265,7 @@ export function DataTableRowDrawerPanel({
                         ? DrawerRowField({
                               col: column,
                               mapped,
-                              value: draft[column.id],
+                              value: draft,
                               onChange: (v) => setField(column.id, v),
                               patchDraft,
                               flatpackEntity,

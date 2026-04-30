@@ -128,14 +128,22 @@ final readonly class ListRecordsLoader
             $filters,
         );
         FilterProcessor::applyToQuery($query, $filterDefinitions, $normalizedFilterValues, $schema);
-        $defaultSortBy = $this->defaultSortColumnFromSchema($schema);
-        $defaultSortDirection = $defaultSortBy === null ? 'desc' : 'asc';
+        [$defaultSortBy, $defaultSortDirection, $allowDefaultSortOutsideSortableColumns] = $this->defaultSortFromSchema($schema);
         $sortableColumns = SchemaInspector::sortableColumnIds($schema);
         if (
-            $defaultSortBy !== null
+            $allowDefaultSortOutsideSortableColumns
+            && $defaultSortBy !== null
             && ! in_array($defaultSortBy, $sortableColumns, true)
         ) {
             $sortableColumns[] = $defaultSortBy;
+        }
+        if (
+            $defaultSortBy !== null
+            && ! $allowDefaultSortOutsideSortableColumns
+            && ! in_array($defaultSortBy, $sortableColumns, true)
+        ) {
+            $defaultSortBy = null;
+            $defaultSortDirection = 'desc';
         }
         $normalizedSorting = SortingProcessor::normalizeAndApply(
             $query,
@@ -189,11 +197,42 @@ final readonly class ListRecordsLoader
     /**
      * @param  array<string, mixed>|null  $schema
      */
-    private function defaultSortColumnFromSchema(?array $schema): ?string
+    /**
+     * @param  array<string, mixed>|null  $schema
+     * @return array{0: string|null, 1: 'asc'|'desc', 2: bool}
+     */
+    private function defaultSortFromSchema(?array $schema): array
     {
         if (! is_array($schema)) {
-            return null;
+            return [null, 'desc', false];
         }
+
+        $resolvedReorderableColumn = $this->resolveReorderableColumn($schema);
+
+        $defaultSort = $schema['default_sort'] ?? null;
+        if (is_array($defaultSort)) {
+            $key = trim((string) ($defaultSort['key'] ?? ''));
+            $direction = trim((string) ($defaultSort['direction'] ?? ''));
+            if ($key !== '' && in_array($direction, ['asc', 'desc'], true)) {
+                $allowOutsideSortableColumns =
+                    $resolvedReorderableColumn !== null && $resolvedReorderableColumn === $key;
+
+                return [$key, $direction, $allowOutsideSortableColumns];
+            }
+        }
+
+        if ($resolvedReorderableColumn !== null) {
+            return [$resolvedReorderableColumn, 'asc', true];
+        }
+
+        return [null, 'desc', false];
+    }
+
+    /**
+     * @param  array<string, mixed>  $schema
+     */
+    private function resolveReorderableColumn(array $schema): ?string
+    {
         $resolved = $schema['reorderableColumn'] ?? null;
         if (is_string($resolved) && trim($resolved) !== '') {
             return trim($resolved);

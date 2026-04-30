@@ -8,6 +8,7 @@ import {
 import { normalizeFormTableBulkActionsInput } from '@/lib/form-table-bulk-actions';
 import { normalizeFormTableToolbarActionsInput } from '@/lib/form-table-toolbar-actions';
 import { listYamlColumnsToDataTableColumns } from '@/lib/list-schema';
+import { updateFormTableModelRow } from '@/lib/model-table-row-update';
 import type { FlatpackDataTableColumn } from '@/types/data-table';
 import type {
     FormFieldPropsMapper,
@@ -216,6 +217,8 @@ function mapTable(props: FormFieldProps, ctx: FormFieldRenderContext) {
     const relationName =
         typeof raw.relation === 'string' ? raw.relation.trim() : '';
     const relationBacked = relationName !== '';
+    const modelClass = typeof raw.model === 'string' ? raw.model.trim() : '';
+    const modelBacked = modelClass !== '' && !relationBacked;
     let normalizedTableConfig = normalizedTableConfigBySource.get(rawObj);
     if (normalizedTableConfig == null) {
         let columns: FlatpackDataTableColumn[] =
@@ -270,6 +273,23 @@ function mapTable(props: FormFieldProps, ctx: FormFieldRenderContext) {
         !parentPersisted;
 
     const onEmbeddedTableToolbarAction = ctx.onEmbeddedTableToolbarAction;
+    const flatpackEntity =
+        typeof ctx.entity === 'string' ? ctx.entity.trim() : '';
+    const defaultSortRaw = rawObj.default_sort;
+    const defaultSort =
+        defaultSortRaw != null &&
+        typeof defaultSortRaw === 'object' &&
+        typeof (defaultSortRaw as { key?: unknown }).key === 'string' &&
+        ((defaultSortRaw as { direction?: unknown }).direction === 'asc' ||
+            (defaultSortRaw as { direction?: unknown }).direction === 'desc')
+            ? {
+                  key: ((defaultSortRaw as { key: string }).key ?? '').trim(),
+                  direction: (defaultSortRaw as { direction: 'asc' | 'desc' })
+                      .direction,
+              }
+            : undefined;
+    const pagination =
+        typeof rawObj.pagination === 'boolean' ? rawObj.pagination : undefined;
 
     return {
         ...rest,
@@ -285,9 +305,7 @@ function mapTable(props: FormFieldProps, ctx: FormFieldRenderContext) {
         columns,
         id: ctx.fieldId,
         flatpackTableFieldId: ctx.fieldId,
-        ...(ctx.entity != null && String(ctx.entity).trim() !== ''
-            ? { flatpackEntity: ctx.entity }
-            : {}),
+        ...(flatpackEntity !== '' ? { flatpackEntity } : {}),
         data: raw.data ?? [],
         onValueChange: ctx.onValueChange,
         onToolbarAction:
@@ -300,6 +318,31 @@ function mapTable(props: FormFieldProps, ctx: FormFieldRenderContext) {
                 : undefined,
         rowDetailDrawer: true,
         openDetailDrawerOnRowClick: resolveOpenDetailDrawerOnRowClick(raw),
+        onRowUpdate:
+            modelBacked && flatpackEntity !== ''
+                ? async ({
+                      rowId,
+                      row,
+                  }: {
+                      rowId: string;
+                      row: Record<string, unknown>;
+                  }) => {
+                      const recordId = String(rowId ?? '').trim();
+                      if (recordId === '') {
+                          throw new Error('Row id is required');
+                      }
+                      return await updateFormTableModelRow({
+                          entity: flatpackEntity,
+                          fieldId: ctx.fieldId,
+                          rowId: recordId,
+                          values: row,
+                      });
+                  }
+                : undefined,
+        ...(defaultSort != null && defaultSort.key !== ''
+            ? { defaultSort }
+            : {}),
+        ...(pagination !== undefined ? { pagination } : {}),
         ...(tableRelationType !== undefined ? { tableRelationType } : {}),
     };
 }

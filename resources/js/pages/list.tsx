@@ -49,6 +49,7 @@ export default function FlatpackListPage(props: FlatpackListPageProps) {
         handleReorderError,
         records,
         pagination,
+        paginationVisibility,
         searchTerm,
         serverFilterValues,
         serverSorting,
@@ -164,6 +165,7 @@ export default function FlatpackListPage(props: FlatpackListPageProps) {
                             columns={columns}
                             data={records}
                             serverPagination={pagination}
+                            pagination={paginationVisibility}
                             serverSearch={searchTerm}
                             serverFilters={filterDefinitions}
                             serverFilterValues={serverFilterValues}

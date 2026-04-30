@@ -195,3 +195,31 @@ it('resolves reorderableColumn on root and tab overrides', function (): void {
     expect($state->schema['reorderableColumn'])->toBe('sort_order')
         ->and($state->schema['tab_panels'][0]['reorderableColumn'])->toBe('sorting_order');
 });
+
+it('preserves tab default_sort metadata in tab_panels', function (): void {
+    $pipe = new MergeListTabsIntoColumnsPipe;
+    $state = new ListSchemaPipelineState([
+        'columns' => [
+            'title' => [
+                'label' => 'Title',
+                'sortable' => true,
+            ],
+        ],
+        'tabs' => [
+            'records' => [
+                'label' => 'Records',
+                'default_sort' => [
+                    'key' => 'title',
+                    'direction' => 'asc',
+                ],
+            ],
+        ],
+    ], null);
+
+    $pipe->handle($state, fn ($s) => $s);
+
+    expect($state->schema['tab_panels'][0]['default_sort'])->toBe([
+        'key' => 'title',
+        'direction' => 'asc',
+    ]);
+});
