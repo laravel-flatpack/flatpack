@@ -17,7 +17,7 @@ export type FormFieldRenderContext = {
     parentRecordKey?: string | null;
     /**
      * Custom embedded `type: table` toolbar button ids (non-create/add draft flow).
-     * Set via `FlatpackFormFields` prop or `FlatpackEmbeddedTableToolbarProvider`.
+     * Set via `FormFields` prop or `EmbeddedTableToolbarProvider`.
      */
     onEmbeddedTableToolbarAction?: (args: {
         fieldId: string;

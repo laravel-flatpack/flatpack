@@ -1,5 +1,5 @@
-import { selectOptionLeadingIcon } from '@/components/select-option-leading-icon';
 import { Badge } from '@/components/ui/badge';
+import { selectOptionLeadingIcon } from '@/components/ui/select-option-leading-icon';
 import {
     formatCellValue,
     readOnlyTruncatedDisplay,

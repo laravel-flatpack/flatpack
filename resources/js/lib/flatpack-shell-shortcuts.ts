@@ -18,7 +18,7 @@ const keyboardShortcutsDialogKeyNormalized =
     FLATPACK_SHELL_KEYBOARD_SHORTCUTS_DIALOG_KEY.toLowerCase();
 
 /**
- * Matches `FlatpackKeyboardShortcutsGlobalHotkey` (global Cmd/Ctrl + {@link FLATPACK_SHELL_KEYBOARD_SHORTCUTS_DIALOG_KEY}).
+ * Matches `KeyboardShortcutsGlobalHotkey` (global Cmd/Ctrl + {@link FLATPACK_SHELL_KEYBOARD_SHORTCUTS_DIALOG_KEY}).
  */
 export const FLATPACK_SHELL_KEYBOARD_SHORTCUTS_DIALOG_SHORTCUT: ParsedFlatpackShortcut =
     {

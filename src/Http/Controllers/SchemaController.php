@@ -16,7 +16,7 @@ final class SchemaController
 {
     public function form(Request $request): Response|JsonResponse
     {
-        return FlatpackResponse::inertia('demo/schema', [
+        return FlatpackResponse::inertia('docs/schema', [
             'schemaType' => 'form',
             'query' => $request->query(),
             'document' => $this->buildDocument('form'),
@@ -25,7 +25,7 @@ final class SchemaController
 
     public function list(Request $request): Response|JsonResponse
     {
-        return FlatpackResponse::inertia('demo/schema', [
+        return FlatpackResponse::inertia('docs/schema', [
             'schemaType' => 'list',
             'query' => $request->query(),
             'document' => $this->buildDocument('list'),

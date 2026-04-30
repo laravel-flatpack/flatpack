@@ -3,11 +3,11 @@ import { ChevronDownIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
 import {
-    flatpackActionEnabledState,
-    flatpackActionVisibilityState,
-} from '@/components/flatpack/flatpack-action-dirty-guard';
-import { FlatpackConfirmDialog } from '@/components/flatpack/flatpack-confirm-dialog';
-import { LucideIconByName } from '@/components/icons';
+    actionEnabledState,
+    actionVisibilityState,
+} from '@/components/actions/action-dirty-guard';
+import { ConfirmDialog } from '@/components/actions/confirm-dialog';
+import { LucideIconByName } from '@/components/icons/icons';
 import { DataTableColumnsVisibilityDropdown } from '@/components/table/data-table-columns-visibility-dropdown';
 import { DataTableFiltersDropdown } from '@/components/table/data-table-filters-dropdown';
 import { DataTableSearchInput } from '@/components/table/data-table-search-input';
@@ -100,8 +100,8 @@ export function DataTableToolbar({
             };
             return {
                 action,
-                visible: flatpackActionVisibilityState(action, context),
-                inactive: flatpackActionEnabledState(action, context),
+                visible: actionVisibilityState(action, context),
+                inactive: actionEnabledState(action, context),
             };
         })
         .filter(({ visible }) => visible.visible);
@@ -266,7 +266,7 @@ export function DataTableToolbar({
                     )}
                     <DataTableColumnsVisibilityDropdown table={table} />
                 </div>
-                <FlatpackConfirmDialog
+                <ConfirmDialog
                     open={isConfirmBulkOpen}
                     onOpenChange={(open) => {
                         setIsConfirmBulkOpen(open);

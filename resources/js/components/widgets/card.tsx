@@ -2,13 +2,11 @@
 
 import {
     Card,
-    CardContent,
     CardDescription,
     CardFooter,
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { formatAsRelativeTime } from '@/lib/relative-time';
 import type { FlatpackCardWidget } from '@/types/widgets-composition';
 
 type CardWidgetProps = {

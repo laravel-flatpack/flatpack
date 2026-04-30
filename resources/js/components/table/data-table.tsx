@@ -1,7 +1,7 @@
 /**
  * Data table layout shell. Table behavior and invariants: `useDataTableController`.
  */
-import { FlatpackConfirmDialog } from '@/components/flatpack/flatpack-confirm-dialog';
+import { ConfirmDialog } from '@/components/actions/confirm-dialog';
 import { DATA_TABLE_LABEL } from '@/components/table/data-table-constants';
 import { DataTableRowDrawerPanel } from '@/components/table/data-table-row-drawer';
 import { DataTableToolbar } from '@/components/table/data-table-toolbar';
@@ -95,7 +95,7 @@ export function DataTable(props: DataTableProps) {
                     }
                 />
             ) : null}
-            <FlatpackConfirmDialog
+            <ConfirmDialog
                 open={c.pendingEmbeddedRowConfirm !== null}
                 onOpenChange={(open) => {
                     if (!open) {

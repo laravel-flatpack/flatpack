@@ -1,13 +1,13 @@
 import { usePage } from '@inertiajs/react';
 import { ThemeProvider } from 'next-themes';
-import { AppSidebar } from '@/components/app-sidebar';
-import { FlatpackKeyboardShortcutsGlobalHotkey } from '@/components/flatpack-keyboard-shortcuts-global-hotkey';
-import { FlatpackShellShortcutsRegistration } from '@/components/flatpack-shell-shortcuts-registration';
-import { SiteHeader } from '@/components/site-header';
+import { AppSidebar } from '@/components/shell/app-sidebar';
+import { SiteHeader } from '@/components/shell/site-header';
+import { KeyboardShortcutsGlobalHotkey } from '@/components/shortcuts/keyboard-shortcuts-global-hotkey';
+import { ShellShortcutsRegistration } from '@/components/shortcuts/shell-shortcuts-registration';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { FlatpackKeyboardShortcutsDialogProvider } from '@/contexts/flatpack-keyboard-shortcuts-dialog';
+import { KeyboardShortcutsDialogProvider } from '@/contexts/flatpack-keyboard-shortcuts-dialog';
 import { FlatpackShortcutsProvider } from '@/contexts/flatpack-shortcuts-registry';
 import { getCurrentPath } from '@/lib/utils';
 import type { FlatpackPageProps } from '@/types/flatpack';
@@ -42,7 +42,7 @@ export default function FlatpackLayout({
 
     return (
         <FlatpackShortcutsProvider>
-            <FlatpackKeyboardShortcutsDialogProvider>
+            <KeyboardShortcutsDialogProvider>
                 <SidebarProvider
                     style={
                         {
@@ -51,8 +51,8 @@ export default function FlatpackLayout({
                         } as React.CSSProperties
                     }
                 >
-                    <FlatpackShellShortcutsRegistration />
-                    <FlatpackKeyboardShortcutsGlobalHotkey />
+                    <ShellShortcutsRegistration />
+                    <KeyboardShortcutsGlobalHotkey />
                     <ThemeProvider
                         attribute="class"
                         defaultTheme="system"
@@ -80,7 +80,7 @@ export default function FlatpackLayout({
                         </TooltipProvider>
                     </ThemeProvider>
                 </SidebarProvider>
-            </FlatpackKeyboardShortcutsDialogProvider>
+            </KeyboardShortcutsDialogProvider>
         </FlatpackShortcutsProvider>
     );
 }

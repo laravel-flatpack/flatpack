@@ -7,16 +7,16 @@ import {
     useState,
 } from 'react';
 
-type FlatpackKeyboardShortcutsDialogContextValue = {
+type KeyboardShortcutsDialogContextValue = {
     shortcutsDialogOpen: boolean;
     setShortcutsDialogOpen: (open: boolean) => void;
     toggleShortcutsDialog: () => void;
 };
 
-const FlatpackKeyboardShortcutsDialogContext =
-    createContext<FlatpackKeyboardShortcutsDialogContextValue | null>(null);
+const KeyboardShortcutsDialogContext =
+    createContext<KeyboardShortcutsDialogContextValue | null>(null);
 
-export function FlatpackKeyboardShortcutsDialogProvider({
+export function KeyboardShortcutsDialogProvider({
     children,
 }: {
     children: ReactNode;
@@ -28,7 +28,7 @@ export function FlatpackKeyboardShortcutsDialogProvider({
     }, []);
 
     const value = useMemo(
-        (): FlatpackKeyboardShortcutsDialogContextValue => ({
+        (): KeyboardShortcutsDialogContextValue => ({
             shortcutsDialogOpen,
             setShortcutsDialogOpen,
             toggleShortcutsDialog,
@@ -37,17 +37,17 @@ export function FlatpackKeyboardShortcutsDialogProvider({
     );
 
     return (
-        <FlatpackKeyboardShortcutsDialogContext.Provider value={value}>
+        <KeyboardShortcutsDialogContext.Provider value={value}>
             {children}
-        </FlatpackKeyboardShortcutsDialogContext.Provider>
+        </KeyboardShortcutsDialogContext.Provider>
     );
 }
 
-export function useFlatpackKeyboardShortcutsDialog(): FlatpackKeyboardShortcutsDialogContextValue {
-    const context = useContext(FlatpackKeyboardShortcutsDialogContext);
+export function useKeyboardShortcutsDialog(): KeyboardShortcutsDialogContextValue {
+    const context = useContext(KeyboardShortcutsDialogContext);
     if (!context) {
         throw new Error(
-            'useFlatpackKeyboardShortcutsDialog must be used within FlatpackKeyboardShortcutsDialogProvider.',
+            'useKeyboardShortcutsDialog must be used within KeyboardShortcutsDialogProvider.',
         );
     }
     return context;

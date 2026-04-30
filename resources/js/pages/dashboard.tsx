@@ -1,7 +1,6 @@
 import { Head } from '@inertiajs/react';
 import { lazy, Suspense } from 'react';
-import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
-import { FlatpackDashboardWidgets } from '@/components/widgets/flatpack-dashboard-widgets';
+import { DashboardWidgets } from '@/components/widgets/dashboard-widgets';
 import data from '@/data/data.json';
 import { useCompositionDebugLog } from '@/hooks/use-composition-debug-log';
 import FlatpackLayout from '@/layouts/flatpack-layout';
@@ -9,7 +8,7 @@ import type { DashboardSectionsTableCatalog } from '@/types/dashboard';
 import type { FlatpackDashboardPageProps } from '@/types/pages/flatpack';
 
 const ChartAreaInteractive = lazy(() =>
-    import('@/components/chart-area-interactive').then((module) => ({
+    import('@/components/widgets/chart-area-interactive').then((module) => ({
         default: module.ChartAreaInteractive,
     })),
 );
@@ -28,7 +27,7 @@ export default function FlatpackDashboard(props: FlatpackDashboardPageProps) {
             <Head title="Dashboard" />
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
                 <div className="col-span-1 md:col-span-2 xl:col-span-4">
-                    <FlatpackDashboardWidgets
+                    <DashboardWidgets
                         widgets={props.widgets}
                         tabPanels={props.widgets_schema?.tab_panels}
                     />

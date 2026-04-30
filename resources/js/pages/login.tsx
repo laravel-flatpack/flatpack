@@ -1,6 +1,6 @@
 import { Form, Head, usePage } from '@inertiajs/react';
-import InputError from '@/components/input-error';
-import PasswordInput from '@/components/password-input';
+import { InputError } from '@/components/shell/auth/input-error';
+import { PasswordInput } from '@/components/shell/auth/password-input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';

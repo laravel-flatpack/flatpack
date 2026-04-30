@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { FieldLoading } from '@/components/field-loading';
+import { FieldLoading } from '@/components/loading/field-loading';
 import { FieldError } from '@/components/ui/field';
 import { loadField } from '@/lib/form';
 import { mapFormFieldPropsToComponentProps } from '@/lib/form-field-props';

@@ -17,13 +17,13 @@ final readonly class DiscoverFlatpackIconNamesService
      */
     public function discover(): array
     {
-        $registryPath = dirname(__DIR__, 3) . '/resources/js/components/lucide-menu-icon-registry.ts';
+        $registryPath = dirname(__DIR__, 3) . '/resources/js/components/icons/flatpack-lucide-menu-icon-registry.ts';
         if (! $this->files->exists($registryPath)) {
             return ['folder-open'];
         }
 
         $contents = $this->files->get($registryPath);
-        $start = mb_strpos($contents, 'export const flatpackMenuIcons = {');
+        $start = mb_strpos($contents, 'export const menuIcons = {');
         $end = mb_strpos($contents, '} as const', $start ?: 0);
 
         if ($start === false || $end === false) {

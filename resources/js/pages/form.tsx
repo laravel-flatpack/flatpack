@@ -1,10 +1,10 @@
 import { Head } from '@inertiajs/react';
 import type { ReactElement } from 'react';
-import { FlatpackConfirmDialog } from '@/components/flatpack/flatpack-confirm-dialog';
-import { FlatpackPageHeader } from '@/components/flatpack/flatpack-page-header';
-import { FlatpackFormActions } from '@/components/flatpack-form/flatpack-form-actions';
-import { FlatpackFormFields } from '@/components/flatpack-form/flatpack-form-fields';
-import { FlatpackFormTopErrors } from '@/components/flatpack-form/flatpack-form-top-errors';
+import { ConfirmDialog } from '@/components/actions/confirm-dialog';
+import { FormActions } from '@/components/shell/form/form-actions';
+import { FormFields } from '@/components/shell/form/form-fields';
+import { FormTopErrors } from '@/components/shell/form/form-top-errors';
+import { PageHeader } from '@/components/shell/page-header';
 import { useCompositionDebugLog } from '@/hooks/use-composition-debug-log';
 import { useFlatpackForm } from '@/hooks/use-flatpack-form';
 import { useInertiaLeaveGuard } from '@/hooks/use-inertia-leave-guard';
@@ -51,7 +51,7 @@ export default function FlatpackFormPage(props: FlatpackFormPageProps) {
     return (
         <>
             <Head title={pageTitle} />
-            <FlatpackConfirmDialog
+            <ConfirmDialog
                 open={pendingConfirm !== null}
                 onOpenChange={(open) => {
                     if (!open) {
@@ -73,7 +73,7 @@ export default function FlatpackFormPage(props: FlatpackFormPageProps) {
                     runAction(pending.config);
                 }}
             />
-            <FlatpackConfirmDialog
+            <ConfirmDialog
                 open={leaveGuardOpen}
                 onOpenChange={(open) => {
                     if (!open) {
@@ -87,10 +87,10 @@ export default function FlatpackFormPage(props: FlatpackFormPageProps) {
                 onContinue={confirmLeave}
             />
             <div className="flex flex-col gap-2">
-                <FlatpackPageHeader
+                <PageHeader
                     title={pageTitle}
                     actions={
-                        <FlatpackFormActions
+                        <FormActions
                             formActions={formActions}
                             formId={formId}
                             formProcessing={formProcessing}
@@ -112,12 +112,12 @@ export default function FlatpackFormPage(props: FlatpackFormPageProps) {
                     noValidate
                     onSubmit={handleSubmit}
                 >
-                    <FlatpackFormTopErrors errors={flatpackTopErrors} />
+                    <FormTopErrors errors={flatpackTopErrors} />
 
                     {fields.length > 0 ? (
                         // Root-only fields (YAML `fields` not listed in any tab panel) render above tabs
-                        // when both `fields` and `tabs` exist; see FlatpackFormFields unassignedEntries.
-                        <FlatpackFormFields
+                        // when both `fields` and `tabs` exist; see FormFields unassignedEntries.
+                        <FormFields
                             entity={entity}
                             mode={mode}
                             record={record}

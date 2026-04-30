@@ -17,7 +17,7 @@ final class DemoController
     {
         $catalogId = $this->normalizeCatalogId($request->query('catalog'));
 
-        return FlatpackResponse::inertia('demo/catalog', [
+        return FlatpackResponse::inertia('docs/catalog', [
             'catalogId' => $catalogId,
             'query' => $request->query(),
             'document' => $this->buildDocument($catalogId),

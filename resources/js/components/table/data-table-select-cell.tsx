@@ -1,4 +1,3 @@
-import { selectOptionLeadingIcon } from '@/components/select-option-leading-icon';
 import { DASHBOARD_TABLE_SELECT_TRIGGER_CLASS } from '@/components/table/data-table-constants';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
@@ -10,6 +9,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { selectOptionLeadingIcon } from '@/components/ui/select-option-leading-icon';
 import { readOnlyTruncatedDisplay } from '@/lib/data-table-utils';
 import { CLEAR_SELECT_ITEM_VALUE } from '@/lib/flatpack-select';
 import type { FlatpackDataTableColumn } from '@/types/data-table';

@@ -1,10 +1,10 @@
 import { Head } from '@inertiajs/react';
 import type { ReactElement } from 'react';
-import { FlatpackConfirmDialog } from '@/components/flatpack/flatpack-confirm-dialog';
-import { FlatpackPageHeader } from '@/components/flatpack/flatpack-page-header';
-import { FlatpackListActions } from '@/components/flatpack-list/flatpack-list-actions';
-import type { FlatpackMenuIconName } from '@/components/lucide-menu-icon-registry';
-import { flatpackMenuIcons } from '@/components/lucide-menu-icon-registry';
+import { ConfirmDialog } from '@/components/actions/confirm-dialog';
+import type { MenuIconName } from '@/components/icons/lucide-menu-icon-registry';
+import { menuIcons } from '@/components/icons/lucide-menu-icon-registry';
+import { ListActions } from '@/components/shell/list/list-actions';
+import { PageHeader } from '@/components/shell/page-header';
 import { DataTable } from '@/components/table/data-table';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCompositionDebugLog } from '@/hooks/use-composition-debug-log';
@@ -72,11 +72,8 @@ export default function FlatpackListPage(props: FlatpackListPageProps) {
                     >
                         {listTabPanels.map((panel) => {
                             const Icon =
-                                panel.icon != null &&
-                                panel.icon in flatpackMenuIcons
-                                    ? flatpackMenuIcons[
-                                          panel.icon as FlatpackMenuIconName
-                                      ]
+                                panel.icon != null && panel.icon in menuIcons
+                                    ? menuIcons[panel.icon as MenuIconName]
                                     : null;
                             return (
                                 <TabsTrigger
@@ -102,7 +99,7 @@ export default function FlatpackListPage(props: FlatpackListPageProps) {
     return (
         <>
             <Head title={pageTitle} />
-            <FlatpackConfirmDialog
+            <ConfirmDialog
                 open={
                     pendingListConfirm !== null ||
                     pendingRowActionConfirm !== null
@@ -141,10 +138,10 @@ export default function FlatpackListPage(props: FlatpackListPageProps) {
                 }}
             />
             <div className="flex flex-col gap-2">
-                <FlatpackPageHeader
+                <PageHeader
                     title={displayName}
                     actions={
-                        <FlatpackListActions
+                        <ListActions
                             listActions={listActions}
                             onRequestConfirm={setPendingListConfirm}
                             runListAction={executeListAction}
