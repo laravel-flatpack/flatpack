@@ -169,6 +169,25 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Uploads (file-upload field)
+    |--------------------------------------------------------------------------
+    |
+    | Default storage targets and limits for `type: file-upload` fields.
+    | `media_model` is optional and can point to a host app polymorphic attachment
+    | model (for example, Spatie Media model or a custom equivalent).
+    |
+    */
+    'uploads' => [
+        'media_disk' => env('FLATPACK_UPLOADS_MEDIA_DISK', env('FILESYSTEM_DISK', 'public')),
+        'file_disk' => env('FLATPACK_UPLOADS_FILE_DISK', env('FILESYSTEM_DISK', 'public')),
+        'media_model' => env('FLATPACK_UPLOADS_MEDIA_MODEL'),
+        'visibility' => env('FLATPACK_UPLOADS_VISIBILITY', 'public'),
+        'max_size_kb' => (int) env('FLATPACK_UPLOADS_MAX_SIZE_KB', 10240),
+        'max_files' => (int) env('FLATPACK_UPLOADS_MAX_FILES', 10),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | UI / shell
     |--------------------------------------------------------------------------
     |
