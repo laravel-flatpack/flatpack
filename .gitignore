@@ -9,6 +9,7 @@
 build
 composer.lock
 coverage
+clover.xml
 phpunit.xml
 phpstan.neon
 testbench.yaml

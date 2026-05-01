@@ -17,6 +17,8 @@ on:
 jobs:
   ci:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     strategy:
       matrix:
         php-version: ['8.3', '8.4', '8.5']
@@ -52,5 +54,20 @@ jobs:
       - name: Build Assets
         run: npm run build
 
+      - name: Tests (with coverage)
+        if: matrix.php-version == '8.3'
+        env:
+          XDEBUG_MODE: coverage
+        run: ./vendor/bin/pest --coverage-clover clover.xml
+
       - name: Tests
+        if: matrix.php-version != '8.3'
         run: ./vendor/bin/pest
+
+      - name: Generate test coverage badge
+        if: matrix.php-version == '8.3'
+        uses: timkrase/phpunit-coverage-badge@v1.2.1
+        with:
+          coverage_badge_path: '.github/badge-coverage.svg'
+          push_badge: true
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
