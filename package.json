@@ -6,6 +6,7 @@
         "dev": "vite",
         "clean": "node ./scripts/clean-build.mjs",
         "build": "vite build",
+        "build:analyze": "FLATPACK_BUNDLE_ANALYZE=1 vite build",
         "watch": "vite build --watch",
         "lint": "biome check resources/js resources/css",
         "lint:fix": "biome check --write resources/js resources/css",
@@ -14,10 +15,12 @@
         "types:check:tools": "tsc --project tsconfig.tools.json --noEmit",
         "types:check:all": "npm run types:check && npm run types:check:tools",
         "test": "vitest run",
+        "test:coverage": "vitest run --coverage",
+        "test:coverage:watch": "vitest --coverage",
         "test:watch": "vitest",
         "test:backend": "composer run test",
         "check": "npm run format && npm run lint:fix && npm run types:check:all && npm run test",
-        "check:all": "composer run schema:keys && npm run check && composer run check"
+        "check:all": "composer run schema:keys && composer run check && npm run check"
     },
     "devDependencies": {
         "@biomejs/biome": "^2.4.10",
@@ -31,6 +34,7 @@
         "@vitejs/plugin-react": "^5.2.0",
         "@vitest/coverage-v8": "^4.1.5",
         "jsdom": "^29.0.2",
+        "rollup-plugin-visualizer": "^7.0.1",
         "typescript": "^5.7.2",
         "vitest": "^4.1.4"
     },

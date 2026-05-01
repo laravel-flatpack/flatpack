@@ -5,6 +5,7 @@ import inertia from '@inertiajs/vite';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import laravel from 'laravel-vite-plugin';
+import { visualizer } from 'rollup-plugin-visualizer';
 import { defineConfig, loadEnv } from 'vite';
 import type { Plugin } from 'vite';
 
@@ -113,6 +114,10 @@ export default defineConfig(({ mode, command }) => {
         },
     });
 
+    const bundleAnalyze =
+        env.FLATPACK_BUNDLE_ANALYZE === '1' ||
+        env.FLATPACK_BUNDLE_ANALYZE === 'true';
+
     return {
         root: packageRoot,
         envDir: packageRoot,
@@ -139,8 +144,49 @@ export default defineConfig(({ mode, command }) => {
             inertia({ ssr: false }),
             react(),
             tailwindcss(),
+            ...(bundleAnalyze
+                ? [
+                      visualizer({
+                          filename: resolve(
+                              packageRoot,
+                              'flatpack-bundle-stats.html',
+                          ),
+                          gzipSize: true,
+                          brotliSize: true,
+                          template: 'treemap',
+                      }),
+                  ]
+                : []),
             syncBuildToPackage(),
         ],
+        build: {
+            rollupOptions: {
+                output: {
+                    manualChunks(id: string) {
+                        if (
+                            /[/\\]node_modules[/\\](react|react-dom|scheduler)([/\\]|$)/.test(
+                                id,
+                            )
+                        ) {
+                            return 'vendor-react';
+                        }
+                        if (/[/\\]node_modules[/\\]@inertiajs[/\\]/.test(id)) {
+                            return 'vendor-inertia';
+                        }
+                        if (
+                            /[/\\]node_modules[/\\]@platejs[/\\]/.test(id) ||
+                            /[/\\]node_modules[/\\]platejs[/\\]/.test(id) ||
+                            /[/\\]node_modules[/\\]slate[/\\]/.test(id)
+                        ) {
+                            return 'vendor-plate';
+                        }
+                        if (/[/\\]node_modules[/\\]recharts[/\\]/.test(id)) {
+                            return 'vendor-recharts';
+                        }
+                    },
+                },
+            },
+        },
         resolve: {
             // Force a single React instance (package entry vs resolved deps).
             dedupe: ['react', 'react-dom', 'scheduler'],

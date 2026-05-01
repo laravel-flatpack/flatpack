@@ -15,6 +15,7 @@ phpstan.neon
 testbench.yaml
 vendor
 node_modules
+flatpack-bundle-stats.html
 .php-cs-fixer.cache
 .phpunit.result.cache
 /public/*

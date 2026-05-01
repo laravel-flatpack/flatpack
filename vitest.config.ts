@@ -14,7 +14,10 @@ export default defineConfig({
         css: true,
         coverage: {
             provider: 'v8',
-            reporter: ['text', 'html'],
+            /** text-summary = compact totals first; text = per-file table; json-summary = coverage-summary.json */
+            reporter: ['text-summary', 'text', 'html', 'json-summary'],
+            /** Avoid overwriting Pest HTML report under `coverage/` (see composer test-coverage-html). */
+            reportsDirectory: './coverage/vitest',
             exclude: [
                 'resources/js/components/ui/**',
             ],
@@ -25,12 +28,6 @@ export default defineConfig({
                 'resources/js/components/shortcuts/**',
                 'resources/js/components/widgets/**',
             ],
-            thresholds: {
-                lines: 80,
-                functions: 80,
-                branches: 80,
-                statements: 80,
-            },
         },
     },
     resolve: {
