@@ -31,7 +31,7 @@
   - `useFlatpackForm` and `useFlatpackList` map page props + schema into UI behavior.
 - **Typed contracts**
   - Page props in `resources/js/types/pages/flatpack.ts`
-  - Raw YAML composition types in `resources/js/types/form-composition.ts` and `resources/js/types/list-composition.ts`
+  - Normalized schema + composition helper types in `resources/js/types/form-composition.ts` and `resources/js/types/list-composition.ts` (what Inertia sends matches normalizer output, not authoring-only YAML shortcuts)
 
 ## Design Principles
 
@@ -42,6 +42,6 @@
 
 ## Tabs Behavior (Important)
 
-- **Form tabs**: top-level `fields` and `tabs.*.fields` coexist; fields are merged into a single values payload.
-- **List tabs**: tab columns are merged into one column registry; active tab controls visible/useful subset plus optional scope/filter/bulk-action overrides.
+- **Form tabs**: authoring may split `tabs.*.fields` from top-level `fields`; normalizers merge these for the runtime schema (`fields` + `tab_panels`) before Inertia.
+- **List tabs**: tab columns merge into one column registry server-side; active tab selects visible columns plus optional scope/filter/bulk-action overrides.
 

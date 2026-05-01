@@ -406,7 +406,133 @@ Each provider class implements `Flatpack\Widgets\Contracts\WidgetDataProvider`. 
 - **Card** widgets expect `Flatpack\Widgets\Data\CardWidgetData` (optional value, context, footer).
 - **Status** widgets expect `Flatpack\Widgets\Data\StatusWidgetData` (status enum, value, context, updated label, optional description).
 - **Chart** widgets expect `Flatpack\Widgets\Data\ChartWidgetData` (`points` as a list of row objects matching the chart `x_key` and series keys).
-- **Table** widgets with `provider` must not declare `columns` in YAML. Columns and row payloads are returned together from `Flatpack\Widgets\Data\TableWidgetData` (`columns` as `TableColumnData` rows, plus `rows`, sorting, pagination, and search metadata).
+- **Table** widgets with `provider` accept an optional `columns` map in YAML using the same shape as model-backed table widgets. When `columns` is present in YAML, it takes precedence over any `columns` returned by the widget provider at runtime; the provider should focus on returning `rows`. If a provider also returns `columns` while YAML supplies them, the provider columns are silently dropped and a debug log line records the conflict. Without YAML columns, the provider may supply them at runtime as before. The widget provider returns a `Flatpack\Widgets\Data\TableWidgetData` snapshot with required `rows` and an optional `columns` map. Pagination and sorting on provider-backed tables are client-side; if you need server-driven paging or sorting, use a model-backed table widget instead. Build the snapshot directly with `new TableWidgetData(rows: [...], columns: [...])`, or use `Flatpack\Widgets\Data\Table\TableWidgetDataResolver::resolve(...)` to coerce arrays, `Collection`s, `Model` instances (optionally projected via `columnIds`), or `JsonResource`/`ResourceCollection` results into the right shape. Cells whose keys do not match a declared column id are simply ignored at the UI layer.
 
 Model-backed table widgets (`model` without `provider`) still declare `columns` in YAML as before.
+
+### Provider-backed table widget example
+
+**1. YAML widget (e.g. `flatpack/dashboard/list.yaml`)**
+
+```yaml
+widgets:
+    recent_orders:
+        type: table
+        provider: recent_orders
+        label: Recent orders
+        pagination: true
+        showColumnsVisibility: true
+```
+
+**2. Register the provider in `config/flatpack.php`**
+
+```php
+'widget_providers' => [
+    'recent_orders' => App\Widgets\RecentOrdersWidgetProvider::class,
+],
+```
+
+**3a. Provider implementation using the resolver (typical case)**
+
+```php
+namespace App\Widgets;
+
+use App\Models\Order;
+use Flatpack\Widgets\Contracts\WidgetDataProvider;
+use Flatpack\Widgets\Data\Table\TableWidgetDataResolver;
+use Flatpack\Widgets\Data\TableWidgetData;
+use Flatpack\Widgets\Data\WidgetPayload;
+use Flatpack\Widgets\WidgetContext;
+use Illuminate\Contracts\Auth\Authenticatable;
+
+final readonly class RecentOrdersWidgetProvider implements WidgetDataProvider
+{
+    public function __construct(private TableWidgetDataResolver $resolver) {}
+
+    public function authorize(Authenticatable $user, WidgetContext $context): bool
+    {
+        return $user->can('viewAny', Order::class);
+    }
+
+    public function handle(WidgetContext $context): WidgetPayload
+    {
+        $orders = Order::query()->latest()->limit(20)->get();
+
+        $snapshot = $this->resolver->resolve(
+            $orders,
+            columnIds: ['id', 'reference', 'total', 'href'],
+        );
+
+        return new TableWidgetData(
+            rows: $snapshot->rows,
+            columns: [
+                'reference' => ['label' => 'Order'],
+                'total' => ['label' => 'Total', 'type' => 'currency'],
+                'href' => ['label' => '', 'hidden' => true],
+            ],
+        );
+    }
+}
+```
+
+**3b. Provider implementation without the resolver (manual rows)**
+
+For ad-hoc shapes (composite metrics, third-party APIs, etc.) skip the resolver entirely:
+
+```php
+public function handle(WidgetContext $context): WidgetPayload
+{
+    return new TableWidgetData(
+        rows: [
+            ['id' => 1, 'reference' => 'ORD-001', 'total' => '$120.00', 'href' => '/flatpack/orders/1/edit'],
+            ['id' => 2, 'reference' => 'ORD-002', 'total' => '$48.50', 'href' => '/flatpack/orders/2/edit'],
+        ],
+    );
+}
+```
+
+**3c. Provider-backed table with YAML columns (recommended)**
+
+Move the column definitions to YAML to keep them versioned and reviewable; the provider becomes a rows-only fetcher.
+
+```yaml
+widgets:
+    recent_posts:
+        type: table
+        provider: recent_posts
+        label: Recent posts
+        columns:
+            title:
+                label: Title
+                sortable: true
+            status:
+                label: Status
+                type: badge
+                options:
+                    draft: { value: draft, label: Draft, status: pending }
+                    published: { value: published, label: Published, status: success }
+            href:
+                label: ''
+                hidden: true
+```
+
+```php
+public function handle(WidgetContext $context): WidgetPayload
+{
+    $posts = Post::query()->latest()->limit(5)->get();
+
+    return new TableWidgetData(
+        rows: $this->resolver
+            ->resolve($posts, columnIds: ['id', 'title', 'status', 'href'])
+            ->rows,
+    );
+}
+```
+
+Notes:
+
+- **Snapshot, not paginated.** Ship a fixed top-N (`limit(20)` above) and let the YAML `pagination: true` paginate that snapshot in the browser.
+- **`href` row navigation.** Provider-backed table widgets navigate on row click when a row carries an `href` string.
+- **YAML wins over provider columns.** If both YAML and the provider return `columns`, YAML is used and provider columns are dropped (with a debug log entry). Pick one place to define them.
+- **Columns are optional.** Omitting `columns` in both YAML and the provider is fine; the runtime emits an empty columns map and the widget renders the keys it finds in `rows`. Provide `columns` whenever the labels, types, or visibility need to be controlled.
 
