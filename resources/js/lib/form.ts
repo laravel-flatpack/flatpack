@@ -1,7 +1,11 @@
 import { type ComponentType, type LazyExoticComponent, lazy } from 'react';
 import type { FormFieldType } from '@/types/form-fields';
 
-const fieldModules = import.meta.glob('../components/form-fields/*.tsx');
+const fieldModules = import.meta.glob([
+    '../components/form-fields/*.tsx',
+    '!../components/form-fields/*.test.tsx',
+    '!../components/form-fields/schema-fields-renderer.tsx',
+]);
 
 function fieldComponentExportName(type: FormFieldType): string {
     return `${type

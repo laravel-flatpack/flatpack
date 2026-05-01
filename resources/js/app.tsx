@@ -7,7 +7,10 @@ import { createRoot } from 'react-dom/client';
 import { registerInertiaHttpExceptionToast } from '@/lib/inertia-http-error';
 
 const appName = import.meta.env.FLATPACK_APP_NAME || 'Flatpack';
-const pages = import.meta.glob<{ default: ComponentType }>('./pages/**/*.tsx');
+const pages = import.meta.glob<{ default: ComponentType }>([
+    './pages/**/*.tsx',
+    '!./pages/**/*.test.tsx',
+]);
 
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),

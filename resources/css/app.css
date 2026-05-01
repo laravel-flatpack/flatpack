@@ -7,8 +7,12 @@
 @import '@fontsource-variable/inter';
 
 @source '../js/**/*.tsx';
+@source not '../js/**/*.test.tsx';
+@source not '../js/**/*.test.ts';
 @source '../views/**/*.blade.php';
 @source '../../../resources/js/**/*.tsx';
+@source not '../../../resources/js/**/*.test.tsx';
+@source not '../../../resources/js/**/*.test.ts';
 @source '../../../resources/views/**/*.blade.php';
 @source '../../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 
