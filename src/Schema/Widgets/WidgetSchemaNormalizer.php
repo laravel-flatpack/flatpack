@@ -6,11 +6,7 @@ namespace Flatpack\Schema\Widgets;
 
 use Flatpack\Schema\ResolvesLaravelPipeline;
 use Flatpack\Schema\Widgets\Normalization\Pipes\CollectWidgetDefinitionsPipe;
-use Flatpack\Schema\Widgets\Normalization\Pipes\NormalizeCardWidgetsPipe;
-use Flatpack\Schema\Widgets\Normalization\Pipes\NormalizeChartWidgetsPipe;
-use Flatpack\Schema\Widgets\Normalization\Pipes\NormalizeMetricWidgetsPipe;
-use Flatpack\Schema\Widgets\Normalization\Pipes\NormalizeStatusWidgetsPipe;
-use Flatpack\Schema\Widgets\Normalization\Pipes\NormalizeTableWidgetsPipe;
+use Flatpack\Schema\Widgets\Normalization\Pipes\NormalizeWidgetDefinitionsPipe;
 use Flatpack\Schema\Widgets\Normalization\WidgetSchemaNormalizationSupport;
 use Flatpack\Schema\Widgets\Normalization\WidgetSchemaPipelineState;
 use Flatpack\Support\CompositionDebugContext;
@@ -47,11 +43,7 @@ final readonly class WidgetSchemaNormalizer
             ->send($state)
             ->through([
                 CollectWidgetDefinitionsPipe::class,
-                NormalizeChartWidgetsPipe::class,
-                NormalizeMetricWidgetsPipe::class,
-                NormalizeCardWidgetsPipe::class,
-                NormalizeTableWidgetsPipe::class,
-                NormalizeStatusWidgetsPipe::class,
+                NormalizeWidgetDefinitionsPipe::class,
             ])
             ->thenReturn();
 
