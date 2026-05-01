@@ -83,6 +83,7 @@
         "schema:contract:strict": "pest tests/Unit/CompositionSchemaContractTest.php",
         "schema:ci:strict": "composer run schema:keys && composer run schema:contract:strict && pest tests/Unit/CompositionSchemaTypeScriptKeysGeneratorTest.php",
         "test": "pest",
+        "coverage:summary": "php tools/coverage-from-clover.php",
         "test-coverage": "XDEBUG_MODE=coverage php -d memory_limit=512M ./vendor/bin/pest --coverage --coverage-clover clover.xml",
         "test-coverage-html": "XDEBUG_MODE=coverage php -d memory_limit=512M ./vendor/bin/pest --coverage --coverage-html coverage",
         "check": "composer run lint && composer run rector && composer run phpstan && composer run test"

@@ -15,6 +15,8 @@ use Illuminate\Foundation\Exceptions\Handler;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+// Laravel does not expose registration of shouldRenderJsonWhenCallback on the exception handler;
+// reflection verifies Flatpack wired JSON rendering rules for flatpack routes as intended.
 test('flatpack registers shouldRenderJsonWhen on the exception handler', function () {
     $handler = app(ExceptionHandler::class);
     $reflection = new ReflectionClass(Handler::class);
