@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Flatpack\Schema\Widgets\Normalization\WidgetSchemaNormalizationSupport;
 use Flatpack\Schema\Widgets\WidgetSchemaNormalizer;
 
 test('table widget normalizes model-backed definition', function () {

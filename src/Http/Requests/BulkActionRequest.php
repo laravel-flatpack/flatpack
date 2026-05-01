@@ -29,6 +29,7 @@ final class BulkActionRequest extends FormRequest
             'selection' => ['nullable'],
             'filters' => ['nullable', 'array'],
             'search' => ['nullable', 'string', 'max:65535'],
+            'tab' => ['nullable', 'string', 'max:255'],
         ];
     }
 }

@@ -26,6 +26,7 @@ final readonly class BulkDeleteService
         Authenticatable $user,
         string $search = '',
         array $filters = [],
+        string $scope = '',
     ): int {
         return $this->bulkErasureService->erase(
             $modelClass,
@@ -38,6 +39,7 @@ final readonly class BulkDeleteService
             invalidModelTypeMessage: 'Bulk delete model must extend Eloquent Model.',
             search: $search,
             filters: $filters,
+            scope: $scope,
         );
     }
 }

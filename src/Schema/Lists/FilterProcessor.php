@@ -90,7 +90,7 @@ final class FilterProcessor
                 continue;
             }
 
-            if (! preg_match('/^[A-Za-z0-9_.]+$/', $id)) {
+            if (! preg_match('/^[A-Za-z0-9_]+$/', $id)) {
                 continue;
             }
             $wrapped = DB::raw($grammar->wrap($id));

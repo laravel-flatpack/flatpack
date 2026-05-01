@@ -51,6 +51,8 @@ final readonly class BulkQueryBuilder
 
     /**
      * Applies list search/filters for select-all, or {@see whereIn} on primary keys for explicit IDs.
+     * When $scope is provided and $records is 'all', the named Eloquent scope is applied first so that
+     * the operation is constrained to the same records visible on the active tab.
      *
      * @param  'all'|list<string|int>  $records
      */
@@ -60,12 +62,17 @@ final readonly class BulkQueryBuilder
         ?array $schema,
         string $search,
         array $filters,
+        string $scope = '',
     ): bool {
         $query = $selection->query;
         $model = $selection->model;
         $keyName = $model->getKeyName();
 
         if ($records === 'all') {
+            if ($scope !== '' && method_exists($model, 'scope' . ucfirst($scope))) {
+                $query->{$scope}();
+            }
+
             $searchTerm = trim($search);
             if ($searchTerm !== '') {
                 SearchApplier::apply(

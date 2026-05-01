@@ -23,6 +23,7 @@ final readonly class FlatpackBulkActionContext
         public ?array $schema = null,
         public string $search = '',
         public array $filters = [],
+        public string $scope = '',
     ) {}
 
     /**
@@ -34,6 +35,7 @@ final readonly class FlatpackBulkActionContext
         string $entity,
         string $modelClass,
         ?array $schema = null,
+        string $scope = '',
     ): self {
         $selection = $request->input('selection');
         if ($selection !== 'all') {
@@ -52,6 +54,7 @@ final readonly class FlatpackBulkActionContext
             schema: $schema,
             search: trim((string) $request->input('search', '')),
             filters: $filters,
+            scope: $scope,
         );
     }
 }

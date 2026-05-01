@@ -26,6 +26,7 @@ final readonly class WidgetSchemaNormalizer
     use ResolvesLaravelPipeline;
 
     public function __construct(
+        private WidgetSchemaNormalizationSupport $support,
         private ?Pipeline $pipeline = null,
     ) {}
 
@@ -62,7 +63,7 @@ final readonly class WidgetSchemaNormalizer
      */
     public function normalizeWidgetStatusValue(mixed $raw): ?string
     {
-        return WidgetSchemaNormalizationSupport::normalizeWidgetStatusValue($raw);
+        return $this->support->normalizeWidgetStatusValue($raw);
     }
 
     /**
@@ -73,6 +74,6 @@ final readonly class WidgetSchemaNormalizer
      */
     public function normalizeProviderResolvedTableColumns(mixed $columns): array
     {
-        return WidgetSchemaNormalizationSupport::normalizeProviderResolvedTableColumns($columns);
+        return $this->support->normalizeProviderResolvedTableColumns($columns);
     }
 }

@@ -10,13 +10,17 @@ use Flatpack\Schema\Widgets\Normalization\WidgetSchemaPipelineState;
 
 final class NormalizeChartWidgetsPipe
 {
+    public function __construct(
+        private readonly WidgetSchemaNormalizationSupport $support,
+    ) {}
+
     public function handle(WidgetSchemaPipelineState $state, Closure $next): mixed
     {
         foreach ($state->pendingEntries as $entry) {
             if ($entry['type'] !== 'chart') {
                 continue;
             }
-            $result = WidgetSchemaNormalizationSupport::normalizeChartWidgetDefinition(
+            $result = $this->support->normalizeChartWidgetDefinition(
                 $entry['definition'],
                 $entry['provider'],
                 $entry['label'],

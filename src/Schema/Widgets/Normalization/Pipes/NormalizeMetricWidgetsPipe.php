@@ -10,13 +10,17 @@ use Flatpack\Schema\Widgets\Normalization\WidgetSchemaPipelineState;
 
 final class NormalizeMetricWidgetsPipe
 {
+    public function __construct(
+        private readonly WidgetSchemaNormalizationSupport $support,
+    ) {}
+
     public function handle(WidgetSchemaPipelineState $state, Closure $next): mixed
     {
         foreach ($state->pendingEntries as $entry) {
             if ($entry['type'] !== 'metric') {
                 continue;
             }
-            $result = WidgetSchemaNormalizationSupport::normalizeMetricWidgetDefinition(
+            $result = $this->support->normalizeMetricWidgetDefinition(
                 $entry['definition'],
                 $entry['provider'],
                 $entry['label'],

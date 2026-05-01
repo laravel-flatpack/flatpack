@@ -10,13 +10,17 @@ use Flatpack\Schema\Widgets\Normalization\WidgetSchemaPipelineState;
 
 final class NormalizeCardWidgetsPipe
 {
+    public function __construct(
+        private readonly WidgetSchemaNormalizationSupport $support,
+    ) {}
+
     public function handle(WidgetSchemaPipelineState $state, Closure $next): mixed
     {
         foreach ($state->pendingEntries as $entry) {
             if ($entry['type'] !== 'card') {
                 continue;
             }
-            $result = WidgetSchemaNormalizationSupport::normalizeCardWidgetDefinition(
+            $result = $this->support->normalizeCardWidgetDefinition(
                 $entry['definition'],
                 $entry['provider'],
                 $entry['label'],

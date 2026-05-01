@@ -10,13 +10,17 @@ use Flatpack\Schema\Widgets\Normalization\WidgetSchemaPipelineState;
 
 final class NormalizeStatusWidgetsPipe
 {
+    public function __construct(
+        private readonly WidgetSchemaNormalizationSupport $support,
+    ) {}
+
     public function handle(WidgetSchemaPipelineState $state, Closure $next): mixed
     {
         foreach ($state->pendingEntries as $entry) {
             if ($entry['type'] !== 'status') {
                 continue;
             }
-            $result = WidgetSchemaNormalizationSupport::normalizeStatusWidgetDefinition(
+            $result = $this->support->normalizeStatusWidgetDefinition(
                 $entry['definition'],
                 $entry['provider'],
                 $entry['label'],

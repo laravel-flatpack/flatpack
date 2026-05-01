@@ -28,6 +28,7 @@ final readonly class BulkRestoreService
         Authenticatable $user,
         string $search = '',
         array $filters = [],
+        string $scope = '',
     ): int {
         $this->bulkQueryBuilder->assertValidEloquentModel(
             $modelClass,
@@ -48,6 +49,7 @@ final readonly class BulkRestoreService
             $schema,
             $search,
             $filters,
+            $scope,
         )) {
             return 0;
         }

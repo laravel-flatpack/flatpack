@@ -26,6 +26,7 @@ final readonly class BulkForceDeleteService
         Authenticatable $user,
         string $search = '',
         array $filters = [],
+        string $scope = '',
     ): int {
         return $this->bulkErasureService->erase(
             $modelClass,
@@ -39,6 +40,7 @@ final readonly class BulkForceDeleteService
             force: true,
             search: $search,
             filters: $filters,
+            scope: $scope,
         );
     }
 }

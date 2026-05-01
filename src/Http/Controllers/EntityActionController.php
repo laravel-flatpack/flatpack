@@ -41,12 +41,17 @@ final readonly class EntityActionController
         $user = $this->requireUserOrAbort($request);
         $handler = $this->resolveBulkActionHandlerOrAbort($action);
         $this->actionRuntime()->ensureBulkActionAuthorized($handler, $user, $listModelClass);
+
+        $tab = trim((string) $request->input('tab', ''));
+        $resolvedTab = $this->activeTabResolver->resolveWithSchema($schema, $tab);
+
         $result = $handler->handle(FlatpackBulkActionContext::fromRequest(
             request: $request,
             user: $user,
             entity: $entity,
             modelClass: $listModelClass,
             schema: $schema,
+            scope: $resolvedTab->scope ?? '',
         ));
 
         $target = SuccessRedirectSchema::findForBulkAction($schema, $action);

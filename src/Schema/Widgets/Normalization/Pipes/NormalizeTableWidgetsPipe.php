@@ -10,13 +10,17 @@ use Flatpack\Schema\Widgets\Normalization\WidgetSchemaPipelineState;
 
 final class NormalizeTableWidgetsPipe
 {
+    public function __construct(
+        private readonly WidgetSchemaNormalizationSupport $support,
+    ) {}
+
     public function handle(WidgetSchemaPipelineState $state, Closure $next): mixed
     {
         foreach ($state->pendingEntries as $entry) {
             if ($entry['type'] !== 'table') {
                 continue;
             }
-            $result = WidgetSchemaNormalizationSupport::normalizeTableWidgetConfig(
+            $result = $this->support->normalizeTableWidgetConfig(
                 $entry['definition'],
                 $state->log,
                 $entry['widgetId'],

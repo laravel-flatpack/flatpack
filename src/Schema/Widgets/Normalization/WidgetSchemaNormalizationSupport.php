@@ -10,13 +10,14 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Shared normalization logic for widget schema (used by {@see WidgetSchemaNormalizer} and pipeline pipes).
+ * Injectable — bind via the IoC container or inject directly; methods are instance methods to allow mocking.
  */
 final class WidgetSchemaNormalizationSupport
 {
     /**
      * @return 'warning'|'error'|'success'|'info'|'default'|null
      */
-    public static function normalizeWidgetStatusValue(mixed $raw): ?string
+    public function normalizeWidgetStatusValue(mixed $raw): ?string
     {
         if (! is_string($raw)) {
             return null;
@@ -36,7 +37,7 @@ final class WidgetSchemaNormalizationSupport
      * @param  list<array<string, mixed>>|array<string, mixed>  $columns
      * @return array<string, mixed>
      */
-    public static function normalizeProviderResolvedTableColumns(mixed $columns): array
+    public function normalizeProviderResolvedTableColumns(mixed $columns): array
     {
         if (! is_array($columns) || $columns === []) {
             return [];
@@ -54,17 +55,17 @@ final class WidgetSchemaNormalizationSupport
                 $keyed[$id] = $column;
             }
 
-            return $keyed === [] ? [] : self::normalizeProviderBackedTableWidgetColumns($keyed);
+            return $keyed === [] ? [] : $this->normalizeProviderBackedTableWidgetColumns($keyed);
         }
 
-        return self::normalizeProviderBackedTableWidgetColumns($columns);
+        return $this->normalizeProviderBackedTableWidgetColumns($columns);
     }
 
     /**
      * @param  array<string, mixed>  $definition
      * @return array<string, mixed>|null
      */
-    public static function normalizeChartWidgetDefinition(
+    public function normalizeChartWidgetDefinition(
         array $definition,
         string $provider,
         string $label,
@@ -76,7 +77,7 @@ final class WidgetSchemaNormalizationSupport
 
             return null;
         }
-        $chartConfig = self::normalizeChartWidgetConfig($definition['chart'] ?? null, $debug, $widgetId);
+        $chartConfig = $this->normalizeChartWidgetConfig($definition['chart'] ?? null, $debug, $widgetId);
         if ($chartConfig === null) {
             return null;
         }
@@ -94,7 +95,7 @@ final class WidgetSchemaNormalizationSupport
      * @param  array<string, mixed>  $definition
      * @return array<string, mixed>|null
      */
-    public static function normalizeMetricWidgetDefinition(
+    public function normalizeMetricWidgetDefinition(
         array $definition,
         string $provider,
         string $label,
@@ -122,7 +123,7 @@ final class WidgetSchemaNormalizationSupport
      * @param  array<string, mixed>  $definition
      * @return array<string, mixed>|null
      */
-    public static function normalizeCardWidgetDefinition(
+    public function normalizeCardWidgetDefinition(
         array $definition,
         string $provider,
         string $label,
@@ -140,7 +141,7 @@ final class WidgetSchemaNormalizationSupport
             'provider' => $provider,
             'label' => $label,
             'description' => isset($definition['description']) ? (string) $definition['description'] : null,
-            'data' => self::normalizeStatusWidgetData($definition['data'] ?? null),
+            'data' => $this->normalizeStatusWidgetData($definition['data'] ?? null),
         ];
     }
 
@@ -148,7 +149,7 @@ final class WidgetSchemaNormalizationSupport
      * @param  array<string, mixed>  $definition
      * @return array<string, mixed>|null
      */
-    public static function normalizeStatusWidgetDefinition(
+    public function normalizeStatusWidgetDefinition(
         array $definition,
         string $provider,
         string $label,
@@ -166,7 +167,7 @@ final class WidgetSchemaNormalizationSupport
             'provider' => $provider,
             'label' => $label,
             'description' => isset($definition['description']) ? (string) $definition['description'] : null,
-            'data' => self::normalizeStatusWidgetData($definition['data'] ?? null),
+            'data' => $this->normalizeStatusWidgetData($definition['data'] ?? null),
         ];
     }
 
@@ -174,7 +175,7 @@ final class WidgetSchemaNormalizationSupport
      * @param  array<string, mixed>  $definition
      * @return array<string, mixed>|null
      */
-    public static function normalizeTableWidgetConfig(array $definition, ?CompositionDebugLog $debug, string $widgetId): ?array
+    public function normalizeTableWidgetConfig(array $definition, ?CompositionDebugLog $debug, string $widgetId): ?array
     {
         $provider = trim((string) ($definition['provider'] ?? ''));
         $model = trim((string) ($definition['model'] ?? ''));
@@ -192,7 +193,7 @@ final class WidgetSchemaNormalizationSupport
         $columns = $definition['columns'] ?? null;
         if ($provider !== '') {
             $normalizedColumns = is_array($columns) && $columns !== []
-                ? self::normalizeProviderBackedTableWidgetColumns($columns)
+                ? $this->normalizeProviderBackedTableWidgetColumns($columns)
                 : null;
         } else {
             if (! is_array($columns) || $columns === []) {
@@ -200,12 +201,12 @@ final class WidgetSchemaNormalizationSupport
 
                 return null;
             }
-            $normalizedColumns = self::normalizeModelBackedTableWidgetColumns($columns);
+            $normalizedColumns = $this->normalizeModelBackedTableWidgetColumns($columns);
         }
 
         $normalized = [
             'type' => 'table',
-            'label' => self::normalizeOptionalWidgetLabel($definition['label'] ?? null),
+            'label' => $this->normalizeOptionalWidgetLabel($definition['label'] ?? null),
             'description' => isset($definition['description']) ? (string) $definition['description'] : null,
             'icon' => isset($definition['icon']) ? (string) $definition['icon'] : null,
             'showColumnsVisibility' => is_bool($definition['showColumnsVisibility'] ?? null)
@@ -229,7 +230,7 @@ final class WidgetSchemaNormalizationSupport
         }
         $rawBulkActions = $definition['bulk_actions'] ?? $definition['bulkActions'] ?? null;
         if (is_array($rawBulkActions)) {
-            $bulkActions = self::normalizeTableWidgetBulkActions($rawBulkActions);
+            $bulkActions = $this->normalizeTableWidgetBulkActions($rawBulkActions);
             if ($bulkActions !== []) {
                 $normalized['bulk_actions'] = $bulkActions;
             }
@@ -259,7 +260,7 @@ final class WidgetSchemaNormalizationSupport
      * @param  array<int|string, mixed>  $rawBulkActions
      * @return list<array{id: string, label: string, action: string, icon: string, variant: string, success_message?: string, confirm?: bool, success_redirect?: string}>
      */
-    public static function normalizeTableWidgetBulkActions(array $rawBulkActions): array
+    public function normalizeTableWidgetBulkActions(array $rawBulkActions): array
     {
         $out = [];
         foreach ($rawBulkActions as $key => $definition) {
@@ -278,7 +279,7 @@ final class WidgetSchemaNormalizationSupport
                 'label' => $label,
                 'action' => $action,
                 'icon' => $icon,
-                'variant' => self::normalizeActionVariant($definition['variant'] ?? null),
+                'variant' => $this->normalizeActionVariant($definition['variant'] ?? null),
             ];
             if (($definition['confirm'] ?? null) === true) {
                 $entry['confirm'] = true;
@@ -297,7 +298,7 @@ final class WidgetSchemaNormalizationSupport
         return $out;
     }
 
-    public static function normalizeActionVariant(mixed $raw): string
+    public function normalizeActionVariant(mixed $raw): string
     {
         if (! is_string($raw)) {
             return 'outline';
@@ -319,7 +320,7 @@ final class WidgetSchemaNormalizationSupport
      * @param  array<string, mixed>  $columns
      * @return array<string, mixed>
      */
-    public static function normalizeProviderBackedTableWidgetColumns(array $columns): array
+    public function normalizeProviderBackedTableWidgetColumns(array $columns): array
     {
         $normalized = [];
         foreach ($columns as $columnId => $columnDefinition) {
@@ -339,7 +340,7 @@ final class WidgetSchemaNormalizationSupport
      * @param  array<string, mixed>  $columns
      * @return array<string, mixed>
      */
-    public static function normalizeModelBackedTableWidgetColumns(array $columns): array
+    public function normalizeModelBackedTableWidgetColumns(array $columns): array
     {
         $normalized = [];
         foreach ($columns as $columnId => $columnDefinition) {
@@ -385,7 +386,7 @@ final class WidgetSchemaNormalizationSupport
         return $normalized;
     }
 
-    public static function normalizeOptionalWidgetLabel(mixed $rawLabel): ?string
+    public function normalizeOptionalWidgetLabel(mixed $rawLabel): ?string
     {
         $label = is_string($rawLabel) ? trim($rawLabel) : '';
         if ($label !== '') {
@@ -398,7 +399,7 @@ final class WidgetSchemaNormalizationSupport
     /**
      * @return array<string, mixed>|null
      */
-    public static function normalizeChartWidgetConfig(mixed $raw, ?CompositionDebugLog $debug, string $widgetId): ?array
+    public function normalizeChartWidgetConfig(mixed $raw, ?CompositionDebugLog $debug, string $widgetId): ?array
     {
         if (! is_array($raw)) {
             $debug?->add(sprintf('widgets.%s ignored: chart widget requires a chart configuration object.', $widgetId));
@@ -506,14 +507,14 @@ final class WidgetSchemaNormalizationSupport
     /**
      * @return array<string, mixed>|null
      */
-    public static function normalizeStatusWidgetData(mixed $raw): ?array
+    public function normalizeStatusWidgetData(mixed $raw): ?array
     {
         if (! is_array($raw)) {
             return null;
         }
 
         $normalized = [];
-        $status = self::normalizeWidgetStatusValue($raw['status'] ?? null);
+        $status = $this->normalizeWidgetStatusValue($raw['status'] ?? null);
         if ($status !== null) {
             $normalized['status'] = $status;
         }

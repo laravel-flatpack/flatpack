@@ -35,6 +35,7 @@ final readonly class BulkErasureService
         bool $force = false,
         string $search = '',
         array $filters = [],
+        string $scope = '',
     ): int {
         $this->bulkQueryBuilder->assertValidEloquentModel(
             $modelClass,
@@ -49,6 +50,7 @@ final readonly class BulkErasureService
             $schema,
             $search,
             $filters,
+            $scope,
         )) {
             return 0;
         }

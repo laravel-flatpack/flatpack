@@ -36,6 +36,7 @@ final class BulkRestoreHandler extends FlatpackBulkActionHandler
             user: $context->user,
             search: $context->search,
             filters: $context->filters,
+            scope: $context->scope,
         );
     }
 }
