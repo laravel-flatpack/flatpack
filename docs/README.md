@@ -4,6 +4,7 @@ This folder documents the package internals and YAML composition contracts used 
 
 ## Contents
 
+- [Composer and backend tooling](./tooling.md) (Pest, checks, schema keys, code coverage)
 - [Package Description and Purpose](./package-description.md)
 - [Design and Architecture](./design-and-architecture.md)
 - [Form Page YAML (Page-Level) Props](./form-page-props.md)
