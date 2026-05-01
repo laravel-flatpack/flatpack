@@ -6,7 +6,7 @@ use Flatpack\Schema\Widgets\Normalization\WidgetSchemaNormalizationSupport;
 use Flatpack\Schema\Widgets\WidgetSchemaNormalizer;
 
 test('table widget normalizes model-backed definition', function () {
-    $normalizer = new WidgetSchemaNormalizer();
+    $normalizer = new WidgetSchemaNormalizer(new WidgetSchemaNormalizationSupport());
     $out = $normalizer->normalize([
         'widgets' => [
             'posts_table' => [
@@ -38,7 +38,7 @@ test('table widget normalizes model-backed definition', function () {
 });
 
 test('table widget accepts showColumnsVisibility override for provider-backed widget without yaml columns', function () {
-    $normalizer = new WidgetSchemaNormalizer();
+    $normalizer = new WidgetSchemaNormalizer(new WidgetSchemaNormalizationSupport());
     $out = $normalizer->normalize([
         'widgets' => [
             'posts_table' => [
@@ -54,7 +54,7 @@ test('table widget accepts showColumnsVisibility override for provider-backed wi
 });
 
 test('table widget keeps pagination per_page config', function () {
-    $normalizer = new WidgetSchemaNormalizer();
+    $normalizer = new WidgetSchemaNormalizer(new WidgetSchemaNormalizationSupport());
     $out = $normalizer->normalize([
         'widgets' => [
             'posts_table' => [
@@ -78,7 +78,7 @@ test('table widget keeps pagination per_page config', function () {
 });
 
 test('table widget normalizes bulk_actions for model-backed widgets', function () {
-    $normalizer = new WidgetSchemaNormalizer();
+    $normalizer = new WidgetSchemaNormalizer(new WidgetSchemaNormalizationSupport());
     $out = $normalizer->normalize([
         'widgets' => [
             'comments_table' => [
@@ -112,7 +112,7 @@ test('table widget normalizes bulk_actions for model-backed widgets', function (
 });
 
 test('table widget adds relation edit_form_field for model-backed widgets', function () {
-    $normalizer = new WidgetSchemaNormalizer();
+    $normalizer = new WidgetSchemaNormalizer(new WidgetSchemaNormalizationSupport());
     $out = $normalizer->normalize([
         'widgets' => [
             'comments_table' => [
@@ -140,7 +140,7 @@ test('table widget adds relation edit_form_field for model-backed widgets', func
 });
 
 test('table widget relation edit_form_field allows explicit overrides', function () {
-    $normalizer = new WidgetSchemaNormalizer();
+    $normalizer = new WidgetSchemaNormalizer(new WidgetSchemaNormalizationSupport());
     $out = $normalizer->normalize([
         'widgets' => [
             'comments_table' => [
@@ -172,7 +172,7 @@ test('table widget relation edit_form_field allows explicit overrides', function
 });
 
 test('table widget normalizes provider-backed definition without yaml columns', function () {
-    $normalizer = new WidgetSchemaNormalizer();
+    $normalizer = new WidgetSchemaNormalizer(new WidgetSchemaNormalizationSupport());
     $out = $normalizer->normalize([
         'widgets' => [
             'posts_table' => [
@@ -189,7 +189,7 @@ test('table widget normalizes provider-backed definition without yaml columns', 
 });
 
 test('table widget is skipped when both model and provider are set', function () {
-    $normalizer = new WidgetSchemaNormalizer();
+    $normalizer = new WidgetSchemaNormalizer(new WidgetSchemaNormalizationSupport());
     $out = $normalizer->normalize([
         'widgets' => [
             'posts_table' => [
@@ -210,7 +210,7 @@ test('table widget is skipped when both model and provider are set', function ()
 });
 
 test('table widget is skipped when model-backed columns are missing', function () {
-    $normalizer = new WidgetSchemaNormalizer();
+    $normalizer = new WidgetSchemaNormalizer(new WidgetSchemaNormalizationSupport());
     $out = $normalizer->normalize([
         'widgets' => [
             'posts_table' => [
@@ -225,7 +225,7 @@ test('table widget is skipped when model-backed columns are missing', function (
 });
 
 test('table widget accepts yaml columns on provider-backed widget and forces editable false', function () {
-    $normalizer = new WidgetSchemaNormalizer();
+    $normalizer = new WidgetSchemaNormalizer(new WidgetSchemaNormalizationSupport());
     $out = $normalizer->normalize([
         'widgets' => [
             'posts_table' => [
@@ -255,7 +255,7 @@ test('table widget accepts yaml columns on provider-backed widget and forces edi
 });
 
 test('table widget preserves yaml badge options on provider-backed widget', function () {
-    $normalizer = new WidgetSchemaNormalizer();
+    $normalizer = new WidgetSchemaNormalizer(new WidgetSchemaNormalizationSupport());
     $out = $normalizer->normalize([
         'widgets' => [
             'posts_table' => [
@@ -299,7 +299,7 @@ test('table widget preserves yaml badge options on provider-backed widget', func
 });
 
 test('table widget is skipped when model is not a valid eloquent class', function () {
-    $normalizer = new WidgetSchemaNormalizer();
+    $normalizer = new WidgetSchemaNormalizer(new WidgetSchemaNormalizationSupport());
     $out = $normalizer->normalize([
         'widgets' => [
             'posts_table' => [
@@ -318,7 +318,7 @@ test('table widget is skipped when model is not a valid eloquent class', functio
 });
 
 test('table widget allows missing label without fallback', function () {
-    $normalizer = new WidgetSchemaNormalizer();
+    $normalizer = new WidgetSchemaNormalizer(new WidgetSchemaNormalizationSupport());
     $out = $normalizer->normalize([
         'widgets' => [
             'recent_posts' => [

@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
+use Flatpack\Schema\Widgets\Normalization\WidgetSchemaNormalizationSupport;
 use Flatpack\Schema\Widgets\WidgetSchemaNormalizer;
 
 test('chart widget is normalized with defaults', function () {
-    $normalizer = new WidgetSchemaNormalizer();
+    $normalizer = new WidgetSchemaNormalizer(new WidgetSchemaNormalizationSupport());
     $out = $normalizer->normalize([
         'widgets' => [
             't' => [
@@ -29,7 +30,7 @@ test('chart widget is normalized with defaults', function () {
 });
 
 test('chart widget normalizes series semantic colors', function () {
-    $normalizer = new WidgetSchemaNormalizer();
+    $normalizer = new WidgetSchemaNormalizer(new WidgetSchemaNormalizationSupport());
     $out = $normalizer->normalize([
         'widgets' => [
             't' => [
@@ -52,7 +53,7 @@ test('chart widget normalizes series semantic colors', function () {
 });
 
 test('chart widget is skipped without series', function () {
-    $normalizer = new WidgetSchemaNormalizer();
+    $normalizer = new WidgetSchemaNormalizer(new WidgetSchemaNormalizationSupport());
     $out = $normalizer->normalize([
         'widgets' => [
             't' => [
@@ -71,7 +72,7 @@ test('chart widget is skipped without series', function () {
 });
 
 test('chart widget supports bar mode', function () {
-    $normalizer = new WidgetSchemaNormalizer();
+    $normalizer = new WidgetSchemaNormalizer(new WidgetSchemaNormalizationSupport());
     $out = $normalizer->normalize([
         'widgets' => [
             't' => [
@@ -94,7 +95,7 @@ test('chart widget supports bar mode', function () {
 });
 
 test('chart widget is skipped with invalid mode', function () {
-    $normalizer = new WidgetSchemaNormalizer();
+    $normalizer = new WidgetSchemaNormalizer(new WidgetSchemaNormalizationSupport());
     $out = $normalizer->normalize([
         'widgets' => [
             't' => [
