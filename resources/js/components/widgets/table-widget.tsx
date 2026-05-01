@@ -43,7 +43,7 @@ export function TableWidget({ widgetId, widget }: TableWidgetProps) {
     const modelBacked =
         typeof widget.model === 'string' && widget.model.trim() !== '';
     const columns = useMemo(
-        () => listYamlColumnsToDataTableColumns(widget.columns),
+        () => listYamlColumnsToDataTableColumns(widget.columns ?? {}),
         [widget.columns],
     );
     const rows = useMemo(() => {

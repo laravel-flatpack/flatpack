@@ -2,12 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Flatpack\Widgets\Payloads;
+namespace Flatpack\Widgets\Data;
 
-use Flatpack\Widgets\Data\MetricTrend;
-use Illuminate\Contracts\Support\Arrayable;
-
-final readonly class MetricWidgetData implements Arrayable
+final readonly class MetricWidgetData implements WidgetPayload
 {
     public function __construct(
         public float|int $value,
@@ -21,9 +18,9 @@ final readonly class MetricWidgetData implements Arrayable
      *     trend: array{
      *         direction: 'up'|'down'|'flat',
      *         percent: float|int,
-     *         comment: string
+     *         comment: string|null
      *     },
-     *     description: string
+     *     description: string|null
      * }
      */
     public function toArray(): array
@@ -33,5 +30,10 @@ final readonly class MetricWidgetData implements Arrayable
             'trend' => $this->trend->toArray(),
             'description' => $this->description,
         ];
+    }
+
+    public function toJson($options = 0): string
+    {
+        return json_encode($this->toArray(), JSON_THROW_ON_ERROR | (int) $options);
     }
 }

@@ -130,7 +130,8 @@ return [
     | Provider map for dashboard widgets that require backend data resolution.
     | Widgets in list.yaml/form.yaml reference these keys via `provider`.
     |
-    | Must implement Flatpack\Widgets\Contracts\WidgetDataProvider.
+    | Must implement Flatpack\Widgets\Contracts\WidgetDataProvider; handle() must return
+    | a Flatpack\Widgets\Data\WidgetPayload (Arrayable + Jsonable with inline toJson()).
     |
     | Example:
     | 'total_revenue' => \App\Flatpack\Widgets\TotalRevenueWidget::class,

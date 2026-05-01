@@ -118,9 +118,6 @@ final class WidgetSchemaNormalizer
     /**
      * @return 'warning'|'error'|'success'|'info'|'default'|null
      */
-    /**
-     * @return 'warning'|'error'|'success'|'info'|'default'|null
-     */
     public function normalizeWidgetStatusValue(mixed $raw): ?string
     {
         if (! is_string($raw)) {
@@ -133,6 +130,36 @@ final class WidgetSchemaNormalizer
         }
 
         return $status;
+    }
+
+    /**
+     * Normalizes column definitions returned from a provider-backed table widget (list or keyed map).
+     *
+     * @param  list<array<string, mixed>>|array<string, mixed>  $columns
+     * @return array<string, mixed>
+     */
+    public function normalizeProviderResolvedTableColumns(mixed $columns): array
+    {
+        if (! is_array($columns) || $columns === []) {
+            return [];
+        }
+        if (array_is_list($columns)) {
+            $keyed = [];
+            foreach ($columns as $column) {
+                if (! is_array($column)) {
+                    continue;
+                }
+                $id = trim((string) ($column['id'] ?? $column['key'] ?? ''));
+                if ($id === '') {
+                    continue;
+                }
+                $keyed[$id] = $column;
+            }
+
+            return $keyed === [] ? [] : $this->normalizeProviderBackedTableWidgetColumns($keyed);
+        }
+
+        return $this->normalizeProviderBackedTableWidgetColumns($columns);
     }
 
     /**
@@ -287,16 +314,19 @@ final class WidgetSchemaNormalizer
         }
 
         $columns = $definition['columns'] ?? null;
-        if (! is_array($columns) || $columns === []) {
-            $debug?->add(sprintf('widgets.%s ignored: table widget requires a non-empty columns map.', $widgetId));
-
-            return null;
-        }
-
-        $normalizedColumns = $columns;
         if ($provider !== '') {
-            $normalizedColumns = $this->normalizeProviderBackedTableWidgetColumns($columns);
-        } elseif ($model !== '') {
+            if (is_array($columns) && $columns !== []) {
+                $debug?->add(sprintf('widgets.%s ignored: provider-backed table widgets must not define columns in YAML (columns come from the widget provider).', $widgetId));
+
+                return null;
+            }
+            $normalizedColumns = null;
+        } else {
+            if (! is_array($columns) || $columns === []) {
+                $debug?->add(sprintf('widgets.%s ignored: model-backed table widget requires a non-empty columns map.', $widgetId));
+
+                return null;
+            }
             $normalizedColumns = $this->normalizeModelBackedTableWidgetColumns($columns);
         }
 
@@ -305,11 +335,13 @@ final class WidgetSchemaNormalizer
             'label' => $this->normalizeOptionalWidgetLabel($definition['label'] ?? null),
             'description' => isset($definition['description']) ? (string) $definition['description'] : null,
             'icon' => isset($definition['icon']) ? (string) $definition['icon'] : null,
-            'columns' => $normalizedColumns,
             'showColumnsVisibility' => is_bool($definition['showColumnsVisibility'] ?? null)
                 ? $definition['showColumnsVisibility']
                 : false,
         ];
+        if ($normalizedColumns !== null) {
+            $normalized['columns'] = $normalizedColumns;
+        }
         if ($provider !== '') {
             $normalized['provider'] = $provider;
         }

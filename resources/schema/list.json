@@ -1159,7 +1159,10 @@
                     "$ref": "#/$defs/chartWidget"
                 },
                 {
-                    "$ref": "#/$defs/tableWidget"
+                    "$ref": "#/$defs/tableWidgetProviderBacked"
+                },
+                {
+                    "$ref": "#/$defs/tableWidgetModelBacked"
                 }
             ]
         },
@@ -1211,11 +1214,11 @@
                 "$ref": "#/$defs/tableWidgetColumnDefinition"
             }
         },
-        "tableWidget": {
+        "tableWidgetProviderBacked": {
             "type": "object",
             "required": [
                 "type",
-                "columns"
+                "provider"
             ],
             "properties": {
                 "type": {
@@ -1224,6 +1227,58 @@
                 "provider": {
                     "type": "string",
                     "minLength": 1
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "description": {
+                    "type": "string"
+                },
+                "icon": {
+                    "type": "string"
+                },
+                "actions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/columnActionButton"
+                    }
+                },
+                "filters": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/$defs/filterDefinition"
+                    }
+                },
+                "pagination": {
+                    "$ref": "#/$defs/tableWidgetPagination"
+                },
+                "showColumnsVisibility": {
+                    "type": "boolean",
+                    "description": "Show or hide the column visibility dropdown in the widget table toolbar."
+                },
+                "empty_state": {
+                    "$ref": "#/$defs/tableWidgetEmptyState"
+                },
+                "default_sort": {
+                    "$ref": "#/$defs/defaultSort"
+                },
+                "data": {
+                    "$ref": "#/$defs/tableWidgetResolvedData"
+                }
+            },
+            "additionalProperties": false
+        },
+        "tableWidgetModelBacked": {
+            "type": "object",
+            "required": [
+                "type",
+                "model",
+                "columns"
+            ],
+            "properties": {
+                "type": {
+                    "const": "table"
                 },
                 "model": {
                     "type": "string",
@@ -1271,28 +1326,6 @@
                     "$ref": "#/$defs/tableWidgetResolvedData"
                 }
             },
-            "oneOf": [
-                {
-                    "required": [
-                        "provider"
-                    ],
-                    "not": {
-                        "required": [
-                            "model"
-                        ]
-                    }
-                },
-                {
-                    "required": [
-                        "model"
-                    ],
-                    "not": {
-                        "required": [
-                            "provider"
-                        ]
-                    }
-                }
-            ],
             "additionalProperties": false
         },
         "tableWidgetResolvedData": {
@@ -1534,7 +1567,7 @@
         },
         "chartWidgetResolvedData": {
             "type": "object",
-            "description": "Shape returned from WidgetDataProvider (merged into the widget as `data`).",
+            "description": "Shape returned from a WidgetPayload provider (merged into the widget as `data`; table widgets also merge `columns` from the provider onto the widget definition).",
             "properties": {
                 "points": {
                     "type": "array",

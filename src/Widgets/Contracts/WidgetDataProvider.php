@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Flatpack\Widgets\Contracts;
 
+use Flatpack\Widgets\Data\WidgetPayload;
 use Flatpack\Widgets\WidgetContext;
 use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Contracts\Support\Arrayable;
 
 interface WidgetDataProvider
 {
@@ -18,5 +18,5 @@ interface WidgetDataProvider
     /**
      * Returns resolved widget data payload for frontend rendering.
      */
-    public function handle(WidgetContext $context): Arrayable|array;
+    public function handle(WidgetContext $context): WidgetPayload;
 }

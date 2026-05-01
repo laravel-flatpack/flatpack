@@ -6,6 +6,12 @@ namespace Flatpack\Services\Runtime;
 
 use Flatpack\Support\Exceptions\WidgetRuntimeException;
 use Flatpack\Widgets\Contracts\WidgetDataProvider;
+use Flatpack\Widgets\Data\CardWidgetData;
+use Flatpack\Widgets\Data\ChartWidgetData;
+use Flatpack\Widgets\Data\MetricWidgetData;
+use Flatpack\Widgets\Data\StatusWidgetData;
+use Flatpack\Widgets\Data\TableWidgetData;
+use Flatpack\Widgets\Data\WidgetPayload;
 use Flatpack\Widgets\WidgetContext;
 use Illuminate\Auth\Access\AuthorizationException;
 
@@ -46,6 +52,39 @@ final readonly class WidgetRuntime
 
         $data = $provider->handle($context);
 
-        return is_array($data) ? $data : $data->toArray();
+        $this->assertPayloadMatchesWidgetType($context, $data);
+
+        return $data->toArray();
+    }
+
+    private function assertPayloadMatchesWidgetType(WidgetContext $context, WidgetPayload $payload): void
+    {
+        $type = trim((string) ($context->definition['type'] ?? ''));
+        $hasProvider = trim((string) ($context->definition['provider'] ?? '')) !== '';
+
+        $expected = match ($type) {
+            'metric' => MetricWidgetData::class,
+            'card' => CardWidgetData::class,
+            'status' => StatusWidgetData::class,
+            'chart' => ChartWidgetData::class,
+            'table' => $hasProvider ? TableWidgetData::class : null,
+            default => null,
+        };
+
+        if ($expected === null) {
+            return;
+        }
+
+        if (! $payload instanceof $expected) {
+            throw new WidgetRuntimeException(
+                500,
+                sprintf(
+                    'Flatpack widget provider returned %s but %s was expected for widget type "%s".',
+                    $payload::class,
+                    $expected,
+                    $type,
+                ),
+            );
+        }
     }
 }

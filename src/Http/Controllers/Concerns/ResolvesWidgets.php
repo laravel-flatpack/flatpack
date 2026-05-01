@@ -105,10 +105,19 @@ trait ResolvesWidgets
                 $data = $this->resolveModelBackedTableWidgetData($request, $widgetId, $definition);
             }
 
-            $resolved[$widgetId] = [
-                ...$definition,
-                'data' => $this->normalizeResolvedWidgetData($definition, $data),
-            ];
+            $entry = [...$definition];
+            if ($type === 'table' && $providerKey !== '' && array_key_exists('columns', $data)) {
+                $columnPayload = $data['columns'];
+                unset($data['columns']);
+                $entry['columns'] = $this->widgetSchemaNormalizer()->normalizeProviderResolvedTableColumns($columnPayload);
+            }
+            if ($type === 'table' && $providerKey !== '' && ! isset($entry['columns'])) {
+                $entry['columns'] = [];
+            }
+
+            $entry['data'] = $this->normalizeResolvedWidgetData($definition, $data);
+
+            $resolved[$widgetId] = $entry;
         }
 
         return $resolved;

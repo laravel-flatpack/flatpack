@@ -6,9 +6,10 @@ use Flatpack\Tests\Models\User;
 use Flatpack\Tests\TestCase;
 use Flatpack\Widgets\Contracts\WidgetDataProvider;
 use Flatpack\Widgets\Data\MetricTrend;
+use Flatpack\Widgets\Data\MetricWidgetData;
 use Flatpack\Widgets\Data\Status;
-use Flatpack\Widgets\Payloads\MetricWidgetData;
-use Flatpack\Widgets\Payloads\StatusWidgetData;
+use Flatpack\Widgets\Data\StatusWidgetData;
+use Flatpack\Widgets\Data\WidgetPayload;
 use Flatpack\Widgets\WidgetContext;
 use Illuminate\Http\Request;
 
@@ -22,7 +23,7 @@ test('metric providers can return arrayable normalized payloads', function () {
             return true;
         }
 
-        public function handle(WidgetContext $context): Illuminate\Contracts\Support\Arrayable
+        public function handle(WidgetContext $context): WidgetPayload
         {
             return new MetricWidgetData(
                 value: 1250,

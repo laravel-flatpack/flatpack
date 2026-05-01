@@ -909,13 +909,6 @@ describe('widget schema contracts', function () {
                     'type' => 'table',
                     'provider' => 'posts_table_provider',
                     'label' => 'Posts',
-                    'columns' => [
-                        'title' => [
-                            'label' => 'Title',
-                            'searchable' => true,
-                            'sortable' => true,
-                        ],
-                    ],
                 ],
             ],
         ]);
@@ -973,12 +966,6 @@ describe('widget schema contracts', function () {
                 'recent_posts' => [
                     'type' => 'table',
                     'provider' => 'recent_posts',
-                    'columns' => [
-                        'title' => [
-                            'label' => 'Title',
-                            'type' => 'text',
-                        ],
-                    ],
                 ],
             ],
         ]);
@@ -1000,12 +987,6 @@ describe('widget schema contracts', function () {
                     'type' => 'table',
                     'provider' => 'recent_posts',
                     'showColumnsVisibility' => true,
-                    'columns' => [
-                        'title' => [
-                            'label' => 'Title',
-                            'type' => 'text',
-                        ],
-                    ],
                 ],
             ],
         ]);
@@ -1062,7 +1043,28 @@ describe('widget schema contracts', function () {
             ->and($bothErrors)->not->toBeEmpty();
     });
 
-    it('rejects table widget when columns is missing', function () {
+    it('rejects table widget model when columns is missing', function () {
+        $errors = CompositionSchemaAsserter::validateList([
+            'columns' => [
+                [
+                    'id' => 'title',
+                    'type' => 'text',
+                    'label' => 'Title',
+                ],
+            ],
+            'widgets' => [
+                'posts_table' => [
+                    'type' => 'table',
+                    'model' => 'Flatpack\\Tests\\Models\\Post',
+                    'label' => 'Posts',
+                ],
+            ],
+        ]);
+
+        expect($errors)->not->toBeEmpty();
+    });
+
+    it('accepts table widget provider when yaml columns are omitted', function () {
         $errors = CompositionSchemaAsserter::validateList([
             'columns' => [
                 [
@@ -1080,7 +1082,7 @@ describe('widget schema contracts', function () {
             ],
         ]);
 
-        expect($errors)->not->toBeEmpty();
+        expect($errors)->toBeEmpty();
     });
 });
 

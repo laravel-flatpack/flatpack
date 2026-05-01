@@ -129,7 +129,8 @@ export type FlatpackTableWidget = {
     icon?: string | null;
     provider?: string;
     model?: string;
-    columns: Record<string, FlatpackDataTableColumn>;
+    /** Model-backed tables define columns in YAML; provider-backed tables receive columns from the widget provider at runtime. */
+    columns?: Record<string, FlatpackDataTableColumn>;
     showColumnsVisibility?: boolean;
     bulk_actions?: FlatpackDataTableBulkAction[];
     pagination?: boolean | { per_page?: number; page_sizes?: number[] };

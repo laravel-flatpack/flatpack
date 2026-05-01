@@ -36,24 +36,20 @@ test('table widget normalizes model-backed definition', function () {
         ]);
 });
 
-test('table widget accepts showColumnsVisibility override', function () {
+test('table widget accepts showColumnsVisibility override for provider-backed widget without yaml columns', function () {
     $normalizer = new WidgetSchemaNormalizer();
     $out = $normalizer->normalize([
         'widgets' => [
             'posts_table' => [
                 'type' => 'table',
                 'provider' => 'posts_table_provider',
-                'columns' => [
-                    'title' => [
-                        'label' => 'Title',
-                    ],
-                ],
                 'showColumnsVisibility' => true,
             ],
         ],
     ]);
 
-    expect($out['widgets']['posts_table']['showColumnsVisibility'])->toBeTrue();
+    expect($out['widgets']['posts_table']['showColumnsVisibility'])->toBeTrue()
+        ->and($out['widgets']['posts_table'])->not->toHaveKey('columns');
 });
 
 test('table widget keeps pagination per_page config', function () {
@@ -174,7 +170,7 @@ test('table widget relation edit_form_field allows explicit overrides', function
     ]);
 });
 
-test('table widget normalizes provider-backed definition', function () {
+test('table widget normalizes provider-backed definition without yaml columns', function () {
     $normalizer = new WidgetSchemaNormalizer();
     $out = $normalizer->normalize([
         'widgets' => [
@@ -182,19 +178,13 @@ test('table widget normalizes provider-backed definition', function () {
                 'type' => 'table',
                 'provider' => 'posts_table_provider',
                 'label' => 'Posts',
-                'columns' => [
-                    'title' => [
-                        'label' => 'Title',
-                        'editable' => true,
-                    ],
-                ],
             ],
         ],
     ]);
 
     expect($out['widgets']['posts_table']['provider'])->toBe('posts_table_provider')
         ->and($out['widgets']['posts_table'])->not->toHaveKey('model')
-        ->and($out['widgets']['posts_table']['columns']['title']['editable'])->toBeFalse();
+        ->and($out['widgets']['posts_table'])->not->toHaveKey('columns');
 });
 
 test('table widget is skipped when both model and provider are set', function () {
@@ -218,7 +208,7 @@ test('table widget is skipped when both model and provider are set', function ()
     expect($out['widgets'])->toBeEmpty();
 });
 
-test('table widget is skipped when columns are missing', function () {
+test('table widget is skipped when model-backed columns are missing', function () {
     $normalizer = new WidgetSchemaNormalizer();
     $out = $normalizer->normalize([
         'widgets' => [
@@ -226,6 +216,25 @@ test('table widget is skipped when columns are missing', function () {
                 'type' => 'table',
                 'model' => 'Flatpack\\Tests\\Models\\Post',
                 'label' => 'Posts',
+            ],
+        ],
+    ]);
+
+    expect($out['widgets'])->toBeEmpty();
+});
+
+test('table widget is skipped when provider-backed yaml defines columns', function () {
+    $normalizer = new WidgetSchemaNormalizer();
+    $out = $normalizer->normalize([
+        'widgets' => [
+            'posts_table' => [
+                'type' => 'table',
+                'provider' => 'posts_table_provider',
+                'columns' => [
+                    'title' => [
+                        'label' => 'Title',
+                    ],
+                ],
             ],
         ],
     ]);
@@ -259,11 +268,6 @@ test('table widget allows missing label without fallback', function () {
             'recent_posts' => [
                 'type' => 'table',
                 'provider' => 'recent_posts',
-                'columns' => [
-                    'title' => [
-                        'label' => 'Title',
-                    ],
-                ],
             ],
         ],
     ]);

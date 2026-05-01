@@ -396,3 +396,17 @@ Persistence requirements:
 - The configured reorder column must exist on the related model table.
 - Existing rows should already have contiguous values (`1..n`) in that column before enabling reordering.
 
+## Dashboard widgets (`type: widget`) and `widget_providers`
+
+List and form compositions can define read-only **widgets** (metrics, cards, status, charts, and dashboard tables). Widgets that declare `provider` resolve data from PHP classes registered in `config('flatpack.widget_providers')`.
+
+Each provider class implements `Flatpack\Widgets\Contracts\WidgetDataProvider`. Its `handle()` method must return a **typed payload** implementing `Flatpack\Widgets\Data\WidgetPayload` (Laravel `Arrayable` + `Jsonable` with an explicit `toArray()` / `toJson()` on each concrete class).
+
+- **Metric** widgets expect `Flatpack\Widgets\Data\MetricWidgetData` (value, trend, optional description).
+- **Card** widgets expect `Flatpack\Widgets\Data\CardWidgetData` (optional value, context, footer).
+- **Status** widgets expect `Flatpack\Widgets\Data\StatusWidgetData` (status enum, value, context, updated label, optional description).
+- **Chart** widgets expect `Flatpack\Widgets\Data\ChartWidgetData` (`points` as a list of row objects matching the chart `x_key` and series keys).
+- **Table** widgets with `provider` must not declare `columns` in YAML. Columns and row payloads are returned together from `Flatpack\Widgets\Data\TableWidgetData` (`columns` as `TableColumnData` rows, plus `rows`, sorting, pagination, and search metadata).
+
+Model-backed table widgets (`model` without `provider`) still declare `columns` in YAML as before.
+

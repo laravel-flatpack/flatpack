@@ -8,11 +8,11 @@ use Flatpack\Tests\Models\User;
 use Flatpack\Tests\TestCase;
 use Flatpack\Widgets\Contracts\WidgetDataProvider;
 use Flatpack\Widgets\Data\MetricTrend;
-use Flatpack\Widgets\Payloads\MetricWidgetData;
+use Flatpack\Widgets\Data\MetricWidgetData;
+use Flatpack\Widgets\Data\WidgetPayload;
 use Flatpack\Widgets\WidgetContext;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
-use Illuminate\Support\Fluent;
 
 uses(TestCase::class);
 
@@ -46,6 +46,27 @@ test('resolveData throws authorization exception when provider denies access', f
     ))->toThrow(AuthorizationException::class);
 });
 
+test('resolveData throws when payload type does not match widget type', function () {
+    config()->set('flatpack.widget_providers', [
+        'bad_chart' => BadChartWidgetProvider::class,
+    ]);
+
+    $provider = app(WidgetRuntime::class)->resolveProvider('bad_chart');
+    $request = Request::create('/flatpack');
+    $user = User::factory()->createOne();
+    $request->setUserResolver(static fn () => $user);
+
+    expect(fn () => app(WidgetRuntime::class)->resolveData(
+        $provider,
+        new WidgetContext(
+            request: $request,
+            entity: 'dashboard',
+            widgetId: 'traffic',
+            definition: ['type' => 'chart', 'provider' => 'bad_chart'],
+        ),
+    ))->toThrow(WidgetRuntimeException::class, 'ChartWidgetData');
+});
+
 test('resolveData returns provider payload', function () {
     config()->set('flatpack.widget_providers', [
         'total_revenue' => TestWidgetProvider::class,
@@ -71,6 +92,23 @@ test('resolveData returns provider payload', function () {
         ->and($data['trend']['direction'])->toBe('up');
 });
 
+final class BadChartWidgetProvider implements WidgetDataProvider
+{
+    public function authorize(Illuminate\Contracts\Auth\Authenticatable $user, WidgetContext $context): bool
+    {
+        return true;
+    }
+
+    public function handle(WidgetContext $context): WidgetPayload
+    {
+        return new MetricWidgetData(
+            value: 1,
+            trend: new MetricTrend(direction: 'flat', percent: 0),
+            description: null,
+        );
+    }
+}
+
 final class TestWidgetProvider implements WidgetDataProvider
 {
     public function authorize(Illuminate\Contracts\Auth\Authenticatable $user, WidgetContext $context): bool
@@ -78,7 +116,7 @@ final class TestWidgetProvider implements WidgetDataProvider
         return true;
     }
 
-    public function handle(WidgetContext $context): Illuminate\Contracts\Support\Arrayable
+    public function handle(WidgetContext $context): WidgetPayload
     {
         return new MetricWidgetData(
             value: 1250.0,
@@ -99,8 +137,12 @@ final class DeniedWidgetProvider implements WidgetDataProvider
         return false;
     }
 
-    public function handle(WidgetContext $context): Illuminate\Contracts\Support\Arrayable
+    public function handle(WidgetContext $context): WidgetPayload
     {
-        return new Fluent([]);
+        return new MetricWidgetData(
+            value: 0,
+            trend: new MetricTrend(direction: 'flat', percent: 0),
+            description: null,
+        );
     }
 }
