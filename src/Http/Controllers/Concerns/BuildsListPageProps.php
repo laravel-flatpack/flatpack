@@ -7,7 +7,7 @@ namespace Flatpack\Http\Controllers\Concerns;
 use Flatpack\Composition\ListComposition;
 use Flatpack\Schema\HeaderActions;
 use Flatpack\Schema\Lists\BulkActions;
-use Flatpack\Support\CompositionDebugLog;
+use Flatpack\Schema\Lists\NormalizedListSchema;
 use Flatpack\Support\ModelKeyResolver;
 
 /**
@@ -16,7 +16,6 @@ use Flatpack\Support\ModelKeyResolver;
 trait BuildsListPageProps
 {
     /**
-     * @param  array<string, mixed>|null  $schema
      * @param  array<string, mixed>  $result
      * @param  array<string, array<string, mixed>>  $widgets
      * @param  array<string, mixed>|null  $widgetsSchema
@@ -25,14 +24,15 @@ trait BuildsListPageProps
     private function listPageProps(
         string $entity,
         ListComposition $list,
-        ?array $schema,
+        ?NormalizedListSchema $schema,
         array $result,
         string $searchTerm,
         ?string $activeTabId = null,
-        ?CompositionDebugLog $debugLog = null,
         array $widgets = [],
         ?array $widgetsSchema = null,
     ): array {
+        $schemaArray = $schema?->toArray();
+
         return [
             'entity' => $entity,
             'name' => $list->name,
@@ -40,7 +40,7 @@ trait BuildsListPageProps
             'model_key' => $this->modelKeyResolver()->resolve($list->model),
             'icon' => $list->icon,
             'nav_order' => $list->nav_order,
-            'schema' => $schema,
+            'schema' => $schemaArray,
             'records' => $result['records'],
             'pagination' => $result['pagination'],
             'search_term' => $searchTerm,
@@ -48,8 +48,8 @@ trait BuildsListPageProps
             'filters' => $result['filters'],
             'filter_values' => $result['filter_values'],
             'sorting' => $result['sorting'],
-            'list_actions' => HeaderActions::fromSchema($schema, $debugLog),
-            'bulk_actions' => BulkActions::fromSchema($schema, $debugLog),
+            'list_actions' => HeaderActions::fromSchema($schemaArray),
+            'bulk_actions' => BulkActions::fromSchema($schemaArray),
             'widgets' => $widgets,
             'widgets_schema' => $widgetsSchema,
         ];

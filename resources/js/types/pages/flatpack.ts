@@ -11,11 +11,11 @@ import type {
     FlatpackListServerSorting,
     FlatpackSuccessRedirect,
 } from '@/types/data-table';
-import type { FlatpackFormCompositionSchema } from '@/types/form-composition';
-import type { FlatpackListCompositionSchema } from '@/types/list-composition';
+import type { FlatpackFormSchema } from '@/types/form-composition';
+import type { FlatpackListSchema } from '@/types/list-composition';
 import type { FlatpackWidgetsCompositionSchema } from '@/types/widgets-composition';
 
-export type { FlatpackFormCompositionSchema, FlatpackListCompositionSchema };
+export type { FlatpackFormSchema, FlatpackListSchema };
 
 export type FlatpackListHeaderAction = {
     id: string;
@@ -37,9 +37,9 @@ export type FlatpackListHeaderAction = {
 export type FlatpackDashboardPageProps = {
     model?: string;
     model_key?: string;
-    schema?: Record<string, unknown> | null;
     widgets?: FlatpackWidgetsCompositionSchema['widgets'];
-    widgets_schema?: FlatpackWidgetsCompositionSchema | null;
+    schema?: FlatpackWidgetsCompositionSchema | null;
+    /** Non-sensitive debug messages from composition normalization (APP_DEBUG). */
     composition_debug?: string[];
 };
 
@@ -50,7 +50,7 @@ export type FlatpackListPageProps = {
     model_key?: string;
     icon?: string;
     nav_order?: number;
-    schema?: FlatpackListCompositionSchema | null;
+    schema?: FlatpackListSchema | null;
     records?: Record<string, unknown>[];
     pagination?: FlatpackListServerPagination;
     search_term?: string;
@@ -62,7 +62,7 @@ export type FlatpackListPageProps = {
     bulk_actions?: FlatpackDataTableBulkAction[];
     widgets?: FlatpackWidgetsCompositionSchema['widgets'];
     widgets_schema?: FlatpackWidgetsCompositionSchema | null;
-    /** Non-sensitive debug messages when composition YAML was sanitized (APP_DEBUG). */
+    /** Non-sensitive debug messages from composition normalization (APP_DEBUG). */
     composition_debug?: string[];
 };
 
@@ -78,11 +78,11 @@ export type FlatpackFormPageProps = {
     icon?: string;
     record: string | null;
     mode: 'create' | 'edit';
-    schema?: FlatpackFormCompositionSchema | null;
+    schema?: FlatpackFormSchema | null;
     values?: Record<string, unknown>;
     form_actions?: FlatpackListHeaderAction[];
     widgets?: FlatpackWidgetsCompositionSchema['widgets'];
     widgets_schema?: FlatpackWidgetsCompositionSchema | null;
-    /** Non-sensitive debug messages when composition YAML was sanitized (APP_DEBUG). */
+    /** Non-sensitive debug messages from composition normalization (APP_DEBUG). */
     composition_debug?: string[];
 };

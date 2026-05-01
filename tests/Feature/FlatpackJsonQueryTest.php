@@ -21,12 +21,11 @@ test('flatpack dashboard returns minimal JSON resource when json query is true a
         ->assertOk()
         ->json();
 
-    expect($payload)->toBe([
-        'schema' => null,
-        'widgets' => [],
-        'widgets_schema' => null,
+    expect($payload)->toMatchArray([
         'model' => null,
         'model_key' => 'id',
+        'widgets' => [],
+        'schema' => ['widgets' => []],
         'composition_debug' => [],
     ]);
 });
@@ -51,10 +50,8 @@ YAML);
             ->assertJson([
                 'model' => null,
                 'model_key' => 'id',
-                'schema' => [
-                    'name' => 'Overview',
-                    'widgets' => [],
-                ],
+                'widgets' => [],
+                'schema' => ['widgets' => []],
             ]);
     } finally {
         File::deleteDirectory($tempPath);

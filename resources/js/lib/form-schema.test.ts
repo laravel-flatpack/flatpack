@@ -1,69 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import {
     buildInitialValues,
-    type FlatpackFormTabPanelLayout,
     fieldErrorMessages,
     fieldHasValidationError,
     firstVisibleFieldEntryWithValidationError,
-    mergeFormTabsIntoSchemaFields,
     normalizeFields,
     validationErrorsFingerprint,
 } from '@/lib/form-schema';
 import { FORM_FIELD_TYPES_CANONICAL } from '@/lib/generated/composition-schema-keys';
 import type { SchemaFieldRenderEntry } from '@/types/schema-fields-renderer';
-
-describe('mergeFormTabsIntoSchemaFields', () => {
-    it('merges tab fields into flat fields and builds tab_panels', () => {
-        const out = mergeFormTabsIntoSchemaFields({
-            tabs: {
-                profile: {
-                    label: 'Profile',
-                    fields: { name: { type: 'text', label: 'Name' } },
-                },
-                settings: {
-                    label: 'Settings',
-                    icon: 'cog',
-                    fields: { status: { type: 'text', label: 'Status' } },
-                },
-            },
-        });
-        expect(out.tabs).toBeUndefined();
-        expect(out.tab_panels).toHaveLength(2);
-        expect(out.fields).toMatchObject({
-            name: expect.objectContaining({ type: 'text' }),
-            status: expect.objectContaining({ type: 'text' }),
-        });
-        const ids = normalizeFields(out as Record<string, unknown>)
-            .map((e) => e.id)
-            .sort();
-        expect(ids).toEqual(['name', 'status']);
-    });
-
-    it('merges top-level fields then tab fields into one map', () => {
-        const out = mergeFormTabsIntoSchemaFields({
-            fields: {
-                title: { type: 'text', label: 'Title' },
-            },
-            tabs: {
-                body: {
-                    label: 'Body',
-                    fields: {
-                        content: { type: 'textarea', label: 'Content' },
-                    },
-                },
-            },
-        });
-        expect(out.fields).toMatchObject({
-            title: expect.objectContaining({ type: 'text' }),
-            content: expect.objectContaining({ type: 'textarea' }),
-        });
-        const tabPanels = out.tab_panels as
-            | FlatpackFormTabPanelLayout[]
-            | undefined;
-        expect(tabPanels).toHaveLength(1);
-        expect(tabPanels?.[0]?.field_ids).toEqual(['content']);
-    });
-});
 
 describe('normalizeFields', () => {
     it('normalizes every canonical generated form field type', () => {
@@ -138,7 +83,7 @@ describe('normalizeFields', () => {
         expect(only?.id).toBe('fallback');
     });
 
-    it('merges tabs-only schema into field entries', () => {
+    it('ignores tabs when fields are missing', () => {
         const entries = normalizeFields({
             tabs: {
                 one: {
@@ -147,7 +92,22 @@ describe('normalizeFields', () => {
                 },
             },
         });
-        expect(entries.map((e) => e.id)).toEqual(['alpha']);
+        expect(entries).toEqual([]);
+    });
+
+    it('does not merge tabs into fields; only reads schema.fields', () => {
+        const entries = normalizeFields({
+            fields: {
+                a: { id: 'a', type: 'text', label: 'A' },
+            },
+            tabs: {
+                one: {
+                    label: 'One',
+                    fields: { b: { id: 'b', type: 'text', label: 'B' } },
+                },
+            },
+        });
+        expect(entries.map((e) => e.id)).toEqual(['a']);
     });
 });
 

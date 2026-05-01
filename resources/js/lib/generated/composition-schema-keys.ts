@@ -69,6 +69,11 @@ export const LIST_ROOT_PROPERTY_KEYS = [
 ] as const;
 
 /**
+ * Default form field type used when YAML field type is omitted. Mirrors PHP `CompositionSchemaKeys::FORM_DEFAULT_FIELD_TYPE`.
+ */
+export const FORM_DEFAULT_FIELD_TYPE = 'text' as const;
+
+/**
  * Canonical field types (yamlFormFieldType minus date). Mirrors PHP `CompositionSchemaKeys::FORM_FIELD_TYPES_CANONICAL`.
  */
 export const FORM_FIELD_TYPES_CANONICAL = [

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Flatpack\Services\Lists\ListQueryParams;
 use Flatpack\Services\Lists\ListRecordsLoader;
 use Flatpack\Tests\Models\Category;
 use Flatpack\Tests\Models\Post;
@@ -32,7 +33,7 @@ test('list records eager-load relations in a bounded number of queries', functio
     $loader = app(ListRecordsLoader::class);
 
     DB::enableQueryLog();
-    $result = $loader->load(Post::class, $schema, 1, 15);
+    $result = $loader->load(Post::class, $schema, new ListQueryParams(page: 1, perPage: 15));
     $records = $result['records'];
     $queryCount = count(DB::getQueryLog());
     DB::disableQueryLog();

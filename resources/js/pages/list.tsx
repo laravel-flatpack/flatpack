@@ -7,7 +7,6 @@ import { ListActions } from '@/components/shell/list/list-actions';
 import { PageHeader } from '@/components/shell/page-header';
 import { DataTable } from '@/components/table/data-table';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useCompositionDebugLog } from '@/hooks/use-composition-debug-log';
 import { useFlatpackList } from '@/hooks/use-flatpack-list';
 import FlatpackLayout from '@/layouts/flatpack-layout';
 import type { FlatpackListPageProps } from '@/types/pages/flatpack';
@@ -21,7 +20,6 @@ const NoColumnsMessage = ({ entity }: { entity: string }) => (
 );
 
 export default function FlatpackListPage(props: FlatpackListPageProps) {
-    useCompositionDebugLog(props.composition_debug);
     const {
         displayName,
         pageTitle,

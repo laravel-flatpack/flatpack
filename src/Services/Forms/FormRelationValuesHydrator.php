@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Flatpack\Services\Forms;
 
 use Flatpack\Schema\RelationFieldQuery;
+use Flatpack\Support\CompositionDebugContext;
 use Flatpack\Support\CompositionDebugLog;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -97,6 +98,8 @@ final class FormRelationValuesHydrator
         array $fieldDefinition,
         ?CompositionDebugLog $log,
     ): array {
+        $log = CompositionDebugContext::resolveOptional($log);
+
         $relationName = isset($fieldDefinition['relation'])
             ? trim((string) $fieldDefinition['relation'])
             : '';

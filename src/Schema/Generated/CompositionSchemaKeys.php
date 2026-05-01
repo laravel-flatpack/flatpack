@@ -82,6 +82,11 @@ final class CompositionSchemaKeys
     ];
 
     /**
+     * Default form field type used when YAML field type is omitted.
+     */
+    public const string FORM_DEFAULT_FIELD_TYPE = 'text';
+
+    /**
      * Canonical field types after YAML aliases are stripped (see yamlFormFieldType enum minus date).
      *
      * @var list<string>

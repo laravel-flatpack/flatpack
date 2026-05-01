@@ -309,6 +309,79 @@ describe('widgets basic rendering', () => {
         ]);
     });
 
+    it('renders provider-backed TableWidget with YAML columns and provider rows', () => {
+        lastDataTableProps = null;
+        lastDataTableColumns = null;
+        lastDataTableData = null;
+
+        render(
+            <TableWidget
+                widgetId="Recent Posts"
+                widget={makeTableWidget({
+                    provider: 'recent_posts',
+                    label: 'Recent posts',
+                    columns: {
+                        title: {
+                            id: 'title',
+                            label: 'Title',
+                            type: 'text',
+                            sortable: true,
+                        },
+                        status: {
+                            id: 'status',
+                            label: 'Status',
+                            type: 'badge',
+                            options: [
+                                {
+                                    value: 'draft',
+                                    label: 'Draft',
+                                    status: 'pending',
+                                },
+                                {
+                                    value: 'published',
+                                    label: 'Published',
+                                    status: 'success',
+                                },
+                            ],
+                        },
+                    },
+                    data: {
+                        rows: [
+                            { id: 1, title: 'Hello', status: 'draft' },
+                            { id: 2, title: 'World', status: 'published' },
+                        ],
+                    },
+                })}
+            />,
+        );
+
+        expect(lastDataTableData).toEqual([
+            { id: 1, title: 'Hello', status: 'draft' },
+            { id: 2, title: 'World', status: 'published' },
+        ]);
+        expect(lastDataTableColumns).toEqual([
+            expect.objectContaining({
+                id: 'title',
+                label: 'Title',
+                type: 'text',
+                sortable: true,
+            }),
+            expect.objectContaining({
+                id: 'status',
+                label: 'Status',
+                type: 'badge',
+                options: [
+                    { value: 'draft', label: 'Draft', status: 'pending' },
+                    {
+                        value: 'published',
+                        label: 'Published',
+                        status: 'success',
+                    },
+                ],
+            }),
+        ]);
+    });
+
     it('uses row href for row-click navigation on provider-backed tables', () => {
         lastDataTableProps = null;
 

@@ -56,12 +56,14 @@ it('records unknown keys under list column row actions in debug log', function (
 it('records unknown top-level list keys in debug log', function (): void {
     $log = new CompositionDebugLog('posts/list.yaml');
     $normalizer = new ListSchemaNormalizer;
-    $normalizer->normalizedListSchema([
+    $schema = $normalizer->normalizedListSchema([
         'name' => 'Posts',
         'asdasdasd' => 'noise',
         'columns' => [],
     ], $log);
 
+    expect($schema)->not->toBeNull()
+        ->and(isset($schema['asdasdasd']))->toBeFalse();
     expect($log->all())->not->toBeEmpty();
     expect(implode(' ', $log->all()))->toContain('asdasdasd');
     expect(implode(' ', $log->all()))->toContain('Unknown top-level list key');
@@ -100,9 +102,9 @@ it('resolves reorderableColumn in normalized list schema', function (): void {
                 'type' => 'text',
             ],
         ],
-    ]);
+    ])?->toArray();
 
-    expect($schema)->toBeArray()
+    expect($schema)->not->toBeNull()
         ->and($schema)->toHaveKey('reorderableColumn')
         ->and($schema['reorderableColumn'])->toBe('sorting_order');
 });
@@ -115,9 +117,9 @@ it('coerces invalid list menu to main and logs when debug log is present', funct
         'name' => 'Posts',
         'menu' => 'sidebar',
         'columns' => [],
-    ], $log);
+    ], $log)?->toArray();
 
-    expect($schema)->toBeArray()
+    expect($schema)->not->toBeNull()
         ->and($schema['menu'])->toBe('main')
         ->and(implode(' ', $log->all()))->toContain('Invalid list `menu`');
 });

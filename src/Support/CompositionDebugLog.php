@@ -7,8 +7,9 @@ namespace Flatpack\Support;
 /**
  * Collects developer-facing messages when optional composition YAML is sanitized.
  * The `context` string is shown in brackets before each line (e.g. `[posts/form.yaml]`).
- * In HTTP requests, {@see \Flatpack\Http\FlatpackResponse} supplies a path-style context when
- * {@see config('app.debug')} is true so it matches the YAML file under the flatpack directory.
+ * Prefer {@see CompositionDebugContext} for request flows so callers append via the scoped sink;
+ * {@see \Flatpack\Http\FlatpackResponse} reads collected lines into the `composition_debug` prop when
+ * {@see config('app.debug')} is true.
  */
 final class CompositionDebugLog
 {

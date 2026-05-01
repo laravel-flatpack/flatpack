@@ -5,14 +5,15 @@ declare(strict_types=1);
 namespace Flatpack\Schema\Forms;
 
 use Flatpack\Schema\Forms\Normalization\FormSchemaPipelineState;
-use Flatpack\Schema\Forms\Normalization\Pipes\LogUnknownFormRootKeysPipe;
 use Flatpack\Schema\Forms\Normalization\Pipes\MergeFormTabsIntoFieldsPipe;
 use Flatpack\Schema\Forms\Normalization\Pipes\NormalizeFormFieldDefinitionsPipe;
 use Flatpack\Schema\Forms\Normalization\Pipes\StripInvalidFormPresetsPipe;
+use Flatpack\Schema\Forms\Normalization\Pipes\StripUnknownFormRootKeysPipe;
 use Flatpack\Schema\Forms\Normalization\Pipes\WarnUnknownFormActionsNestedKeysPipe;
 use Flatpack\Schema\RelationFieldQuery;
 use Flatpack\Schema\ResolvesLaravelPipeline;
 use Flatpack\Services\Forms\FormRelationValuesHydrator;
+use Flatpack\Support\CompositionDebugContext;
 use Flatpack\Support\CompositionDebugLog;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pipeline\Pipeline;
@@ -30,30 +31,30 @@ final readonly class FormSchemaNormalizer
         private ?Pipeline $pipeline = null,
         private ?FormRelationValuesHydrator $relationValuesHydrator = null,
         private ?FormEmbeddedTableRelationTypeResolver $tableRelationTypeResolver = null,
+        private ?CompositionDebugContext $compositionDebugContext = null,
     ) {}
 
     /**
      * @param  array<string, mixed>|null  $schema
-     * @return array<string, mixed>|null
      */
     public function normalizedFormSchema(
         ?array $schema,
         ?CompositionDebugLog $debug = null,
         ?string $formModelClass = null,
         ?Model $formModel = null,
-    ): ?array {
+    ): ?NormalizedFormSchema {
         if ($schema === null) {
             return null;
         }
 
-        $state = new FormSchemaPipelineState($schema, $debug);
+        $state = new FormSchemaPipelineState($schema, CompositionDebugContext::resolveOptional($debug));
 
         /** @var FormSchemaPipelineState $out */
         $out = $this->resolvePipeline()
             ->send($state)
             ->through([
                 MergeFormTabsIntoFieldsPipe::class,
-                LogUnknownFormRootKeysPipe::class,
+                StripUnknownFormRootKeysPipe::class,
                 WarnUnknownFormActionsNestedKeysPipe::class,
                 NormalizeFormFieldDefinitionsPipe::class,
                 StripInvalidFormPresetsPipe::class,
@@ -73,7 +74,7 @@ final readonly class FormSchemaNormalizer
             }
         }
 
-        return $out->schema;
+        return new NormalizedFormSchema($out->schema);
     }
 
     /**
@@ -84,31 +85,30 @@ final readonly class FormSchemaNormalizer
         string $debugContext,
         ?string $formModelClass = null,
         ?Model $formModel = null,
-    ): FormSchemaNormalizationResult {
-        $debugLog = config('app.debug') ? new CompositionDebugLog($debugContext) : null;
-        $normalized = $this->normalizedFormSchema(
+    ): ?NormalizedFormSchema {
+        $this->compositionDebug()->activate($debugContext);
+        if ($schema === null) {
+            return null;
+        }
+
+        return $this->normalizedFormSchema(
             schema: $schema,
-            debug: $debugLog,
+            debug: null,
             formModelClass: $formModelClass,
             formModel: $formModel,
         );
-
-        return new FormSchemaNormalizationResult(
-            schema: $normalized,
-            debugLog: $debugLog,
-        );
     }
 
-    /**
-     * @param  array<string, mixed>|null  $schema
-     */
-    public function formValuesFromModel(?Model $model, ?array $schema, ?CompositionDebugLog $debug = null): array
+    public function formValuesFromModel(?Model $model, ?NormalizedFormSchema $schema, ?CompositionDebugLog $debug = null): array
     {
         if (! $model instanceof Model || $schema === null) {
             return [];
         }
 
-        $fields = $schema['fields'] ?? null;
+        $debug = CompositionDebugContext::resolveOptional($debug);
+
+        $schemaArray = $schema->toArray();
+        $fields = $schemaArray['fields'] ?? null;
         if (! is_array($fields)) {
             return [];
         }
@@ -138,6 +138,11 @@ final readonly class FormSchemaNormalizer
         }
 
         return $values;
+    }
+
+    private function compositionDebug(): CompositionDebugContext
+    {
+        return $this->compositionDebugContext ?? app(CompositionDebugContext::class);
     }
 
     /**

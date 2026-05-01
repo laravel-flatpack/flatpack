@@ -1,6 +1,7 @@
 import { router } from '@inertiajs/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
+import { useFlatpackPage } from '@/hooks/use-flatpack-page';
 import { firstErrorMessage } from '@/lib/form-errors';
 import {
     inertiaPatchMutation,
@@ -131,21 +132,23 @@ function buildListQueryParams({
     return payload;
 }
 
-export function useFlatpackList({
-    entity,
-    name,
-    model_key: modelKey,
-    schema,
-    records = [],
-    pagination,
-    search_term: searchTerm = '',
-    active_tab: serverActiveTab = null,
-    filters: serverFilters = [],
-    filter_values: serverFilterValues = {},
-    sorting: serverSorting = { sort_by: null, sort_direction: null },
-    list_actions: listActions = [],
-    bulk_actions: bulkActions = [],
-}: FlatpackListPageProps) {
+export function useFlatpackList(props: FlatpackListPageProps) {
+    useFlatpackPage(props);
+    const {
+        entity,
+        name,
+        model_key: modelKey,
+        schema,
+        records = [],
+        pagination,
+        search_term: searchTerm = '',
+        active_tab: serverActiveTab = null,
+        filters: serverFilters = [],
+        filter_values: serverFilterValues = {},
+        sorting: serverSorting = { sort_by: null, sort_direction: null },
+        list_actions: listActions = [],
+        bulk_actions: bulkActions = [],
+    } = props;
     const displayName = name ?? entity ?? '';
     const pageTitle = displayName ? `${displayName} list` : '';
 

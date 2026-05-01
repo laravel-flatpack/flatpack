@@ -6,6 +6,7 @@ namespace Flatpack\Schema;
 
 use Flatpack\Schema\Generated\CompositionSchemaKeys;
 use Flatpack\Services\Navigation\NavigationUrl;
+use Flatpack\Support\CompositionDebugContext;
 use Flatpack\Support\CompositionDebugLog;
 use Flatpack\Support\SuccessRedirect;
 
@@ -25,6 +26,8 @@ final class HeaderActions
         if ($schema === null) {
             return [];
         }
+
+        $debug = CompositionDebugContext::resolveOptional($debug);
 
         $raw = $schema['actions'] ?? null;
         if (! is_array($raw)) {

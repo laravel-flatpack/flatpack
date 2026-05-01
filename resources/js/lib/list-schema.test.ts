@@ -203,6 +203,57 @@ describe('listYamlColumnsToDataTableColumns', () => {
             variant: 'destructive',
         });
     });
+
+    it('normalizes badge options from keyed map of option objects (provider-style)', () => {
+        const cols = listYamlColumnsToDataTableColumns({
+            status: {
+                label: 'Status',
+                type: 'badge',
+                sortable: true,
+                options: {
+                    draft: {
+                        value: 'draft',
+                        label: 'Draft',
+                        status: 'pending',
+                    },
+                    published: {
+                        value: 'published',
+                        label: 'Published',
+                        status: 'success',
+                    },
+                    archived: {
+                        value: 'archived',
+                        label: 'Archived',
+                        status: 'warning',
+                    },
+                },
+            },
+        });
+
+        expect(cols[0]?.options).toEqual([
+            { value: 'draft', label: 'Draft', status: 'pending' },
+            { value: 'published', label: 'Published', status: 'success' },
+            { value: 'archived', label: 'Archived', status: 'warning' },
+        ]);
+    });
+
+    it('normalizes keyed map shorthand options (value key -> label string)', () => {
+        const cols = listYamlColumnsToDataTableColumns({
+            status: {
+                label: 'Status',
+                type: 'badge',
+                options: {
+                    a: 'Alpha',
+                    b: 'Beta',
+                },
+            },
+        });
+
+        expect(cols[0]?.options).toEqual([
+            { value: 'a', label: 'Alpha' },
+            { value: 'b', label: 'Beta' },
+        ]);
+    });
 });
 
 describe('listYamlFiltersToDataTableFilters', () => {

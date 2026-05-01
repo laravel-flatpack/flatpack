@@ -20,10 +20,7 @@ import type {
     FlatpackListCompositionColumnsYaml,
 } from '@/types/list-composition';
 
-/**
- * Raw form composition from `form.yaml` (decoded JSON). Parity with `resources/schema/form.json`.
- * Runtime normalizes aliases (e.g. `date` → `date-picker`). Relation pickers use `type: combobox` with `relation`.
- */
+/** Form schema shape consumed by the React form page (already normalized by PHP). */
 
 export type FlatpackFormCompositionValidationRulesYaml = string | string[];
 
@@ -300,27 +297,11 @@ export type FlatpackFormCompositionFieldsYaml = Record<
     FlatpackFormCompositionFieldYaml
 >;
 
-export type FlatpackFormCompositionTabPanelYaml = {
-    label: string;
-    icon?: string;
-    fields: FlatpackFormCompositionFieldsYaml;
-};
-
-export type FlatpackFormCompositionTabsYaml = Record<
-    string,
-    FlatpackFormCompositionTabPanelYaml
->;
-
-/**
- * Entity form composition from form.yaml (decoded JSON). Structural contract: `resources/schema/form.json`.
- */
-export type FlatpackFormCompositionSchema = {
-    [key: string]: unknown;
+export type FlatpackFormSchema = {
     name?: string;
     model?: string;
     icon?: string;
     fields?: FlatpackFormCompositionFieldsYaml;
-    tabs?: FlatpackFormCompositionTabsYaml;
     tab_panels?: FlatpackFormTabPanelLayout[];
     actions?: FlatpackFormCompositionActionsYaml;
 };

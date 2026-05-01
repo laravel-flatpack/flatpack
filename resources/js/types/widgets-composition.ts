@@ -116,9 +116,11 @@ export type FlatpackChartWidget = {
 
 export type FlatpackTableWidgetResolvedData = {
     rows?: Record<string, unknown>[];
-    /** Echo of the server-side search filter for this widget (query round-trip). */
+    /** Model-backed only: echo of the server-side search filter for this widget. */
     search?: string;
+    /** Model-backed only: server-driven sort metadata for query-string round-trips. */
     sorting?: FlatpackListServerSorting;
+    /** Model-backed only: server-driven pagination metadata for query-string round-trips. */
     pagination?: FlatpackListServerPagination;
 };
 
@@ -129,7 +131,11 @@ export type FlatpackTableWidget = {
     icon?: string | null;
     provider?: string;
     model?: string;
-    /** Model-backed tables define columns in YAML; provider-backed tables receive columns from the widget provider at runtime. */
+    /**
+     * Model-backed: columns are required in YAML.
+     * Provider-backed: columns are optional in YAML; when present they take precedence
+     * over any columns returned at runtime by the widget provider.
+     */
     columns?: Record<string, FlatpackDataTableColumn>;
     showColumnsVisibility?: boolean;
     bulk_actions?: FlatpackDataTableBulkAction[];

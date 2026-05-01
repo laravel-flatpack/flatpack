@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Flatpack\Http\Controllers\Concerns;
 
 use Flatpack\Composition\FormComposition;
+use Flatpack\Schema\Forms\NormalizedFormSchema;
 use Flatpack\Schema\HeaderActions;
-use Flatpack\Support\CompositionDebugLog;
 use Illuminate\Support\MessageBag;
 use Illuminate\Support\ViewErrorBag;
 
@@ -16,7 +16,6 @@ use Illuminate\Support\ViewErrorBag;
 trait BuildsFormPageProps
 {
     /**
-     * @param  array<string, mixed>|null  $schema
      * @param  array<string, array<string, mixed>>  $widgets
      * @param  array<string, mixed>|null  $widgetsSchema
      * @return array<string, mixed>
@@ -24,11 +23,10 @@ trait BuildsFormPageProps
     private function formPageProps(
         string $entity,
         FormComposition $form,
-        ?array $schema,
+        ?NormalizedFormSchema $schema,
         string $mode,
         ?string $record,
         array $values,
-        ?CompositionDebugLog $debugLog = null,
         array $widgets = [],
         ?array $widgetsSchema = null,
     ): array {
@@ -37,6 +35,8 @@ trait BuildsFormPageProps
             $values = $oldValues;
         }
 
+        $schemaArray = $schema?->toArray();
+
         return [
             'entity' => $entity,
             'name' => $form->name,
@@ -44,9 +44,9 @@ trait BuildsFormPageProps
             'icon' => $form->icon,
             'record' => $record,
             'mode' => $mode,
-            'schema' => $schema,
+            'schema' => $schemaArray,
             'values' => $values,
-            'form_actions' => HeaderActions::fromSchema($schema, $debugLog),
+            'form_actions' => HeaderActions::fromSchema($schemaArray),
             'widgets' => $widgets,
             'widgets_schema' => $widgetsSchema,
         ];

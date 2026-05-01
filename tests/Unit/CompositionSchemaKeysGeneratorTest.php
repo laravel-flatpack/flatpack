@@ -21,6 +21,7 @@ it('keeps generated CompositionSchemaKeys aligned with the JSON schema files', f
 
     expect($sets['formRootPropertyKeys'])->toBe(CompositionSchemaKeys::FORM_ROOT_PROPERTY_KEYS)
         ->and($sets['listRootPropertyKeys'])->toBe(CompositionSchemaKeys::LIST_ROOT_PROPERTY_KEYS)
+        ->and($sets['formDefaultFieldType'])->toBe(CompositionSchemaKeys::FORM_DEFAULT_FIELD_TYPE)
         ->and($sets['formFieldTypesCanonical'])->toBe(CompositionSchemaKeys::FORM_FIELD_TYPES_CANONICAL)
         ->and($sets['headerActionEntryKeys'])->toBe(CompositionSchemaKeys::HEADER_ACTION_ENTRY_KEYS)
         ->and($sets['listBulkActionEntryKeys'])->toBe(CompositionSchemaKeys::LIST_BULK_ACTION_ENTRY_KEYS)

@@ -5,7 +5,6 @@ import { FormActions } from '@/components/shell/form/form-actions';
 import { FormFields } from '@/components/shell/form/form-fields';
 import { FormTopErrors } from '@/components/shell/form/form-top-errors';
 import { PageHeader } from '@/components/shell/page-header';
-import { useCompositionDebugLog } from '@/hooks/use-composition-debug-log';
 import { useFlatpackForm } from '@/hooks/use-flatpack-form';
 import { useInertiaLeaveGuard } from '@/hooks/use-inertia-leave-guard';
 import FlatpackLayout from '@/layouts/flatpack-layout';
@@ -20,7 +19,6 @@ const NoFieldsMessage = ({ entity }: { entity: string }) => (
 );
 
 export default function FlatpackFormPage(props: FlatpackFormPageProps) {
-    useCompositionDebugLog(props.composition_debug);
     const { entity, name, record, mode } = props;
     const {
         form,

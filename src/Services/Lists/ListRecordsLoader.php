@@ -58,26 +58,8 @@ final readonly class ListRecordsLoader
     public function load(
         ?string $modelClass,
         ?array $schema,
-        int|ListQueryParams $params = 1,
-        ?int $perPage = null,
-        ?string $search = null,
-        array $filters = [],
-        ?string $sortBy = null,
-        string $sortDirection = 'desc',
-        ?string $scope = null,
+        ListQueryParams $params,
     ): array {
-        if (is_int($params)) {
-            $params = new ListQueryParams(
-                page: $params,
-                perPage: $perPage,
-                search: $search,
-                filters: $filters,
-                sortBy: $sortBy,
-                sortDirection: $sortDirection,
-                scope: $scope,
-            );
-        }
-
         $page = $params->page;
         $perPage = $params->perPage;
         $search = $params->search;

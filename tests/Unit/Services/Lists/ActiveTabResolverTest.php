@@ -94,7 +94,9 @@ test('resolveWithSchema returns active tab effective schema and scope', function
     expect($resolved->activeTab)->not->toBeNull()
         ->and($resolved->activeTab['id'])->toBe('drafts')
         ->and($resolved->scope)->toBe('draftOnly')
-        ->and($resolved->effectiveSchema)->toBeArray()
-        ->and($resolved->effectiveSchema['columns'])->toBeArray()
-        ->and($resolved->effectiveSchema['columns'][0]['id'] ?? null)->toBe('title');
+        ->and($resolved->effectiveSchema)->not->toBeNull();
+
+    $effectiveSchema = $resolved->effectiveSchema?->toArray() ?? [];
+    expect($effectiveSchema['columns'])->toBeArray()
+        ->and($effectiveSchema['columns'][0]['id'] ?? null)->toBe('title');
 });

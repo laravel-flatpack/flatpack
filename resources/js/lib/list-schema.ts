@@ -5,6 +5,7 @@ import {
     LIST_COLUMN_YAML_TYPES,
     LIST_FILTER_DATE_MODES,
     LIST_FILTER_TYPES,
+    OPTION_STATUS_VALUES,
     SUCCESS_REDIRECT_VALUES,
 } from '@/lib/generated/composition-schema-keys';
 import type {
@@ -17,6 +18,7 @@ import type {
     FlatpackDataTableFilter,
     FlatpackDataTableFilterDateMode,
     FlatpackDataTableFilterType,
+    FlatpackDataTableSelectOptionStatus,
     FlatpackSuccessRedirect,
 } from '@/types/data-table';
 
@@ -148,6 +150,7 @@ function normalizeColumnRecord(
         edit_form_field: rawEditFormFieldSnake,
         editFormField: rawEditFormFieldCamel,
         actions: rawActions,
+        options: rawOptions,
         relation_name: _rn,
         relation_value: _rv,
         relationName: _rnc,
@@ -163,6 +166,9 @@ function normalizeColumnRecord(
     );
     const rel = pickRelationColumnFields(col);
     const actions = normalizeColumnActions(rawActions);
+    const optionsList = Object.hasOwn(col, 'options')
+        ? normalizeColumnOptions(rawOptions)
+        : null;
 
     return {
         ...rest,
@@ -172,7 +178,38 @@ function normalizeColumnRecord(
         ...(editFormField !== undefined ? { editFormField } : {}),
         ...(rel !== null ? rel : {}),
         ...(actions.length > 0 ? { actions } : {}),
+        ...(optionsList !== null && optionsList.length > 0
+            ? { options: optionsList }
+            : {}),
     } as FlatpackDataTableColumn;
+}
+
+function normalizeColumnOptionObject(
+    rec: Record<string, unknown>,
+    fallbackValue: string,
+): FlatpackDataTableColumnOption | null {
+    const valueRaw = rec.value;
+    const value =
+        valueRaw != null && String(valueRaw).trim() !== ''
+            ? String(valueRaw)
+            : fallbackValue;
+    const label = rec.label == null ? '' : String(rec.label);
+    if (value === '' || label === '') {
+        return null;
+    }
+    const out: FlatpackDataTableColumnOption = { value, label };
+    const status = rec.status;
+    if (
+        typeof status === 'string' &&
+        (OPTION_STATUS_VALUES as readonly string[]).includes(status)
+    ) {
+        out.status = status as FlatpackDataTableSelectOptionStatus;
+    }
+    if (typeof rec.icon === 'string' && rec.icon.trim() !== '') {
+        out.icon = rec.icon.trim();
+    }
+
+    return out;
 }
 
 function normalizeColumnOptions(raw: unknown): FlatpackDataTableColumnOption[] {
@@ -182,13 +219,10 @@ function normalizeColumnOptions(raw: unknown): FlatpackDataTableColumnOption[] {
                 if (option == null || typeof option !== 'object') {
                     return null;
                 }
-                const rec = option as Record<string, unknown>;
-                const value = rec.value == null ? '' : String(rec.value);
-                const label = rec.label == null ? '' : String(rec.label);
-                if (!value || !label) {
-                    return null;
-                }
-                return { value, label };
+                return normalizeColumnOptionObject(
+                    option as Record<string, unknown>,
+                    '',
+                );
             })
             .filter(
                 (option): option is FlatpackDataTableColumnOption =>
@@ -199,14 +233,21 @@ function normalizeColumnOptions(raw: unknown): FlatpackDataTableColumnOption[] {
         return [];
     }
     return Object.entries(raw as Record<string, unknown>)
-        .map(([value, label]) => {
-            if (typeof label !== 'string') {
-                return null;
+        .map(([mapKey, entry]) => {
+            if (typeof entry === 'string') {
+                return {
+                    value: String(mapKey),
+                    label: entry,
+                };
             }
-            return {
-                value: String(value),
-                label,
-            };
+            if (entry != null && typeof entry === 'object') {
+                return normalizeColumnOptionObject(
+                    entry as Record<string, unknown>,
+                    String(mapKey),
+                );
+            }
+
+            return null;
         })
         .filter(
             (option): option is FlatpackDataTableColumnOption => option != null,

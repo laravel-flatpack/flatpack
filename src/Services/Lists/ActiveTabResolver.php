@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace Flatpack\Services\Lists;
 
 use Flatpack\Schema\Lists\ListSchemaNormalizer;
+use Flatpack\Schema\Lists\NormalizedListSchema;
 
 /**
- * Resolves which list tab is active and derives the effective list schema (columns, filters, etc.).
+ * Runs every list composition through {@see ListSchemaNormalizer} before tab resolution.
  */
 final readonly class ActiveTabResolver
 {
@@ -20,14 +21,15 @@ final readonly class ActiveTabResolver
      */
     public function resolveWithSchema(?array $schema, string $requestedTabId): TabResolutionResult
     {
-        $normalizedSchema = $this->normalizeSchema($schema);
-        $activeTab = $this->resolve($normalizedSchema, $requestedTabId);
-        $effectiveSchema = $this->schemaForTab($normalizedSchema, $activeTab);
+        $normalizedDto = $this->normalizeSchema($schema);
+        $normalizedArray = $normalizedDto?->toArray();
+        $activeTab = $this->resolveActiveTab($normalizedArray, $requestedTabId);
+        $effectiveArray = $this->schemaForTab($normalizedArray, $activeTab);
         $scope = trim((string) ($activeTab['scope'] ?? ''));
 
         return new TabResolutionResult(
             activeTab: $activeTab,
-            effectiveSchema: $effectiveSchema,
+            effectiveSchema: $effectiveArray !== null ? new NormalizedListSchema($effectiveArray) : null,
             scope: $scope !== '' ? $scope : null,
         );
     }
@@ -38,38 +40,9 @@ final readonly class ActiveTabResolver
      */
     public function resolve(?array $schema, string $requestedTabId): ?array
     {
-        $schema = $this->normalizeSchema($schema);
-        $tabPanels = $schema['tab_panels'] ?? null;
-        if (! is_array($tabPanels) || $tabPanels === []) {
-            return null;
-        }
+        $normalizedDto = $this->normalizeSchema($schema);
 
-        /** @var list<array{id: string, scope?: string, reorderable?: bool|string, reorderableColumn?: string, row_click?: string, columns?: mixed, filters?: mixed, bulk_actions?: mixed, default_sort?: array{key: string, direction: 'asc'|'desc'}, pagination?: bool, column_ids?: list<string>}> $panels */
-        $panels = [];
-        foreach ($tabPanels as $panel) {
-            if (! is_array($panel)) {
-                continue;
-            }
-            $id = trim((string) ($panel['id'] ?? ''));
-            if ($id === '') {
-                continue;
-            }
-            $panels[] = $panel;
-        }
-
-        if ($panels === []) {
-            return null;
-        }
-
-        if ($requestedTabId !== '') {
-            foreach ($panels as $entry) {
-                if ($entry['id'] === $requestedTabId) {
-                    return $entry;
-                }
-            }
-        }
-
-        return $panels[0];
+        return $this->resolveActiveTab($normalizedDto?->toArray(), $requestedTabId);
     }
 
     /**
@@ -129,18 +102,53 @@ final readonly class ActiveTabResolver
 
     /**
      * @param  array<string, mixed>|null  $schema
-     * @return array<string, mixed>|null
      */
-    private function normalizeSchema(?array $schema): ?array
+    private function normalizeSchema(?array $schema): ?NormalizedListSchema
     {
         if ($schema === null) {
             return null;
         }
-        if (is_array($schema['tab_panels'] ?? null)) {
-            return $schema;
-        }
 
         return $this->listSchemaNormalizer->normalizedListSchema($schema);
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $normalizedSchema
+     * @return array{id: string, scope?: string, reorderable?: bool|string, reorderableColumn?: string, row_click?: string, columns?: mixed, filters?: mixed, bulk_actions?: mixed, default_sort?: array{key: string, direction: 'asc'|'desc'}, pagination?: bool, column_ids?: list<string>}|null
+     */
+    private function resolveActiveTab(?array $normalizedSchema, string $requestedTabId): ?array
+    {
+        $tabPanels = $normalizedSchema['tab_panels'] ?? null;
+        if (! is_array($tabPanels) || $tabPanels === []) {
+            return null;
+        }
+
+        /** @var list<array{id: string, scope?: string, reorderable?: bool|string, reorderableColumn?: string, row_click?: string, columns?: mixed, filters?: mixed, bulk_actions?: mixed, default_sort?: array{key: string, direction: 'asc'|'desc'}, pagination?: bool, column_ids?: list<string>}> $panels */
+        $panels = [];
+        foreach ($tabPanels as $panel) {
+            if (! is_array($panel)) {
+                continue;
+            }
+            $id = trim((string) ($panel['id'] ?? ''));
+            if ($id === '') {
+                continue;
+            }
+            $panels[] = $panel;
+        }
+
+        if ($panels === []) {
+            return null;
+        }
+
+        if ($requestedTabId !== '') {
+            foreach ($panels as $entry) {
+                if ($entry['id'] === $requestedTabId) {
+                    return $entry;
+                }
+            }
+        }
+
+        return $panels[0];
     }
 
     /**

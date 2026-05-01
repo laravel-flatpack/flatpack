@@ -10,4 +10,9 @@ final class ValidationMessages
     {
         return sprintf('%s is required.', str_replace('_', ' ', ucfirst($field)));
     }
+
+    public static function unique(string $field): string
+    {
+        return sprintf('%s must be unique.', str_replace('_', ' ', ucfirst($field)));
+    }
 }

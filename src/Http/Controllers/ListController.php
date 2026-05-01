@@ -15,6 +15,7 @@ use Flatpack\Schema\Widgets\WidgetSchemaNormalizer;
 use Flatpack\Services\Lists\ActiveTabResolver;
 use Flatpack\Services\Lists\ListRecordsLoader;
 use Flatpack\Services\Runtime\WidgetRuntime;
+use Flatpack\Support\CompositionDebugContext;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -35,6 +36,7 @@ final readonly class ListController
         private WidgetSchemaNormalizer $widgetSchemaNormalizer,
         private WidgetRuntime $widgetRuntime,
         private ListRecordsLoader $listRecordsLoader,
+        private CompositionDebugContext $compositionDebug,
     ) {}
 
     /**
@@ -46,25 +48,24 @@ final readonly class ListController
         $schema = $this->loadListSchema($entity);
         $modelClass = $this->listModelClass($list);
         $this->ensureModelAbility($request, $modelClass, 'viewAny');
+        $this->compositionDebug->activate(FlatpackResponse::compositionDebugContextForEntity($entity, 'list.yaml'));
         $query = $this->listQueryFromRequest($request);
         $resolvedTab = $this->activeTabResolver->resolveWithSchema($schema, $query['tab']);
         $activeTab = $resolvedTab->activeTab;
         $this->assertValidTabScope($modelClass, $activeTab);
         $effectiveSchema = $resolvedTab->effectiveSchema;
+        $effectiveSchemaArray = $effectiveSchema?->toArray();
         $result = $this->loadRecordsForList(
             $modelClass,
-            $effectiveSchema,
+            $effectiveSchemaArray,
             $query,
             $resolvedTab->scope,
         );
-        $debugContext = FlatpackResponse::compositionDebugContextForEntity($entity, 'list.yaml');
-        $debugLog = FlatpackResponse::compositionDebugLog($debugContext);
-        $widgetsSchema = $this->normalizedWidgetsSchema($effectiveSchema, $debugLog);
+        $widgetsSchema = $this->normalizedWidgetsSchema($effectiveSchemaArray);
         $resolvedWidgets = $this->resolveWidgetDataWhenPresent(
             $request,
             $entity,
             $widgetsSchema['widgets'] ?? [],
-            $debugLog,
         );
 
         return FlatpackResponse::inertia(
@@ -76,11 +77,9 @@ final readonly class ListController
                 $result,
                 $query['searchTerm'],
                 $activeTab['id'] ?? null,
-                $debugLog,
                 $resolvedWidgets,
                 $widgetsSchema,
             ),
-            compositionDebugLog: $debugLog,
         );
     }
 

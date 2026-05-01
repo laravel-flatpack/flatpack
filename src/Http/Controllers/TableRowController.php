@@ -235,7 +235,7 @@ final readonly class TableRowController
             $rawSchema,
             formModelClass: $formModelClass !== '' ? $formModelClass : null,
         );
-        $definition = FormSchemaFields::fieldDefinitionById($schema, $field);
+        $definition = FormSchemaFields::fieldDefinitionById($schema?->toArray(), $field);
         if (! is_array($definition) || (($definition['type'] ?? null) !== 'table')) {
             abort(404);
         }

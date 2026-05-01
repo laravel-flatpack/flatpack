@@ -121,6 +121,7 @@ trait DispatchesActions
         string $actionName,
         string $modelClass,
         ?string $record,
+        string $compositionType,
         ?array $schema,
         ?Model $model,
     ): mixed {
@@ -131,7 +132,7 @@ trait DispatchesActions
                 actionName: $actionName,
                 modelClass: $modelClass,
                 record: $record,
-                compositionType: 'list',
+                compositionType: $compositionType,
                 schema: $schema,
                 model: $model,
             )

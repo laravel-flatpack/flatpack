@@ -52,17 +52,16 @@ final readonly class FormController
         $modelClass = $this->formModelClass($form);
         $this->ensureModelAbility($request, $modelClass, 'create');
 
-        $normalized = $this->normalizeSchemaForFormPage(
+        $normalizedSchema = $this->normalizeSchemaForFormPage(
             entity: $entity,
             schema: $schema,
             modelClass: $modelClass,
         );
-        $widgetsSchema = $this->normalizedWidgetsSchema($normalized->schema, $normalized->debugLog);
+        $widgetsSchema = $this->normalizedWidgetsSchema($normalizedSchema?->toArray());
         $resolvedWidgets = $this->resolveWidgetDataWhenPresent(
             $request,
             $entity,
             $widgetsSchema['widgets'] ?? [],
-            $normalized->debugLog,
         );
 
         return FlatpackResponse::inertia(
@@ -70,15 +69,13 @@ final readonly class FormController
             data: $this->formPageProps(
                 $entity,
                 $form,
-                $normalized->schema,
+                $normalizedSchema,
                 'create',
                 null,
                 [],
-                $normalized->debugLog,
                 $resolvedWidgets,
                 $widgetsSchema,
             ),
-            compositionDebugLog: $normalized->debugLog,
         );
     }
 
@@ -92,13 +89,15 @@ final readonly class FormController
         $modelClass = $this->formModelClass($form);
 
         if (! $this->hasRenderableFields($schema)) {
-            $debugContext = FlatpackResponse::compositionDebugContextForEntity($entity, 'form.yaml');
-            $debugLog = FlatpackResponse::compositionDebugLog($debugContext);
+            $normalizedSchema = $this->normalizeSchemaForFormPage(
+                entity: $entity,
+                schema: $schema,
+                modelClass: $modelClass,
+            );
 
             return FlatpackResponse::inertia(
                 view: 'form',
-                data: $this->formPageProps($entity, $form, $schema, 'edit', $record, [], $debugLog),
-                compositionDebugLog: $debugLog,
+                data: $this->formPageProps($entity, $form, $normalizedSchema, 'edit', $record, []),
             );
         }
         $model = $this->resolveOptionalRecordModel($modelClass, $record);
@@ -108,7 +107,7 @@ final readonly class FormController
         }
         $this->ensureModelAbility($request, $modelClass, 'view', $model);
 
-        $normalized = $this->normalizeSchemaForFormPage(
+        $normalizedSchema = $this->normalizeSchemaForFormPage(
             entity: $entity,
             schema: $schema,
             modelClass: $modelClass,
@@ -116,15 +115,13 @@ final readonly class FormController
         );
         $values = $this->formSchemaNormalizer()->formValuesFromModel(
             $model,
-            $normalized->schema,
-            $normalized->debugLog,
+            $normalizedSchema,
         );
-        $widgetsSchema = $this->normalizedWidgetsSchema($normalized->schema, $normalized->debugLog);
+        $widgetsSchema = $this->normalizedWidgetsSchema($normalizedSchema?->toArray());
         $resolvedWidgets = $this->resolveWidgetDataWhenPresent(
             $request,
             $entity,
             $widgetsSchema['widgets'] ?? [],
-            $normalized->debugLog,
         );
 
         return FlatpackResponse::inertia(
@@ -132,15 +129,13 @@ final readonly class FormController
             data: $this->formPageProps(
                 $entity,
                 $form,
-                $normalized->schema,
+                $normalizedSchema,
                 'edit',
                 $record,
                 $values,
-                $normalized->debugLog,
                 $resolvedWidgets,
                 $widgetsSchema,
             ),
-            compositionDebugLog: $normalized->debugLog,
         );
     }
 

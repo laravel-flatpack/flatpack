@@ -11,10 +11,7 @@ import type {
 } from '@/types/data-table';
 import type { FlatpackListRowClickMode } from '@/types/list-shared';
 
-/**
- * Raw list composition from `list.yaml` (decoded JSON). Parity with `resources/schema/list.json`.
- * These are pre-normalization shapes; see `list-schema.ts` and `useFlatpackList` for runtime types.
- */
+/** List schema shape consumed by the React list page (already normalized by PHP). */
 
 type ListCompositionColumnSharedYaml = {
     id?: string;
@@ -163,31 +160,6 @@ export type FlatpackListCompositionBulkActionsYaml = Record<
     FlatpackListCompositionBulkActionYaml
 >;
 
-/**
- * Entity list composition from list.yaml (decoded JSON). Structural contract: `resources/schema/list.json`.
- *
- * Index signature keeps forward-compatible with YAML additions; known keys match the schema file.
- */
-export type FlatpackListCompositionTabPanelYaml = {
-    label: string;
-    icon?: string;
-    scope?: string;
-    reorderable?: boolean | string;
-    reorderableColumn?: string;
-    row_click?: FlatpackListRowClickMode;
-    pagination?: boolean;
-    default_sort?: FlatpackDataTableDefaultSort;
-    columns?: FlatpackListCompositionColumnsYaml;
-    filters?: FlatpackListCompositionFiltersYaml;
-    bulk_actions?: FlatpackListCompositionBulkActionsYaml;
-    bulkActions?: FlatpackListCompositionBulkActionsYaml;
-};
-
-export type FlatpackListCompositionTabsYaml = Record<
-    string,
-    FlatpackListCompositionTabPanelYaml
->;
-
 /** After PHP normalization: tab layout for list column visibility groups. */
 export type FlatpackListTabPanelLayout = {
     id: string;
@@ -205,8 +177,7 @@ export type FlatpackListTabPanelLayout = {
     column_ids: string[];
 };
 
-export type FlatpackListCompositionSchema = {
-    [key: string]: unknown;
+export type FlatpackListSchema = {
     name?: string;
     model?: string;
     icon?: string;
@@ -219,7 +190,6 @@ export type FlatpackListCompositionSchema = {
     pagination?: boolean;
     showColumnsVisibility?: boolean;
     columns?: FlatpackListCompositionColumnsYaml;
-    tabs?: FlatpackListCompositionTabsYaml;
     tab_panels?: FlatpackListTabPanelLayout[];
     filters?: FlatpackListCompositionFiltersYaml;
     actions?: FlatpackListCompositionListActionsYaml;

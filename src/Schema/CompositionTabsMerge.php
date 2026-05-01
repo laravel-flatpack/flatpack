@@ -10,8 +10,9 @@ use Flatpack\Schema\Lists\Normalization\ListSchemaPipelineState;
 use Flatpack\Schema\Lists\Normalization\Pipes\MergeListTabsIntoColumnsPipe;
 
 /**
- * Applies the same tab-flattening transforms as the Inertia normalizers so code paths that
- * read raw YAML (submit validation, save resolution, …) see merged {@code fields} / {@code columns}.
+ * Applies the same tab-flattening transforms as the form/list normalizers so server paths that
+ * run before or beside a full normalize pass (submit validation, save resolution, …) still see
+ * merged {@code fields} / {@code columns}.
  */
 final class CompositionTabsMerge
 {

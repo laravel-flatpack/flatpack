@@ -39,21 +39,13 @@ final readonly class EntityComposition
         );
     }
 
-    /**
-     * Raw list composition YAML (null if missing).
-     *
-     * @return array<string, mixed>|null
-     */
+    /** @return array<string, mixed>|null Source list schema array for normalizers. */
     public function listSchema(string $entity): ?array
     {
         return $this->compositions->optional($entity, 'list');
     }
 
-    /**
-     * Raw form composition YAML (null if missing).
-     *
-     * @return array<string, mixed>|null
-     */
+    /** @return array<string, mixed>|null Source form schema array for normalizers. */
     public function formSchema(string $entity): ?array
     {
         return $this->compositions->optional($entity, 'form');

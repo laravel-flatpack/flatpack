@@ -84,85 +84,13 @@ function canonicalInitialFieldValue(
     return value;
 }
 
-/**
- * When raw schema still has {@code tabs} (e.g. JSON debug), merge nested fields into
- * {@code fields} and build {@code tab_panels} the same way as the PHP normalizer.
- *
- * Top-level {@code fields} and {@code tabs.*.fields} are combined: root keys are applied first, then tab
- * keys (overwriting on duplicate ids). The form UI renders fields that are not listed in any
- * {@code tab_panels.field_ids} above the tab strip.
- */
-export function mergeFormTabsIntoSchemaFields(
-    schema: Record<string, unknown>,
-): Record<string, unknown> {
-    const tabs = schema.tabs;
-    if (!isRecord(tabs)) {
-        return schema;
-    }
-
-    const merged: Record<string, unknown> = {};
-    if (isRecord(schema.fields)) {
-        Object.assign(merged, schema.fields);
-    }
-
-    const tab_panels: FlatpackFormTabPanelLayout[] = [];
-
-    for (const [tabId, panel] of Object.entries(tabs)) {
-        if (!isRecord(panel)) {
-            continue;
-        }
-        const label = typeof panel.label === 'string' ? panel.label.trim() : '';
-        if (label === '') {
-            continue;
-        }
-        const iconRaw = panel.icon;
-        const icon =
-            typeof iconRaw === 'string' && iconRaw.trim() !== ''
-                ? iconRaw.trim()
-                : undefined;
-
-        const tabFields = panel.fields;
-        const field_ids: string[] = [];
-        if (isRecord(tabFields)) {
-            for (const [yamlKey, definition] of Object.entries(tabFields)) {
-                if (!isRecord(definition)) {
-                    continue;
-                }
-                const resolvedId = String(definition.id ?? yamlKey).trim();
-                if (resolvedId === '') {
-                    continue;
-                }
-                merged[resolvedId] = definition;
-                field_ids.push(resolvedId);
-            }
-        }
-
-        tab_panels.push({
-            id: tabId.trim(),
-            label,
-            ...(icon !== undefined ? { icon } : {}),
-            field_ids,
-        });
-    }
-
-    const { tabs: _omit, ...rest } = schema;
-    return {
-        ...rest,
-        fields: merged,
-        tab_panels,
-    };
-}
-
 export function normalizeFields(
     schema?: Record<string, unknown> | null,
 ): FormFieldEntry[] {
     if (!isRecord(schema)) {
         return [];
     }
-    const effective = isRecord(schema.tabs)
-        ? mergeFormTabsIntoSchemaFields(schema)
-        : schema;
-    const rawFields = effective.fields;
+    const rawFields = schema.fields;
     if (!isRecord(rawFields)) {
         return [];
     }

@@ -31,7 +31,7 @@ export function BadgeCell({
     value: unknown;
     truncate?: number;
 }) {
-    const options = column.options ?? [];
+    const options = Array.isArray(column.options) ? column.options : [];
     const valueAsString = value == null ? '' : String(value);
     const selectedOption = options.find(
         (option) => option.value === valueAsString,

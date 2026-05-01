@@ -9,7 +9,7 @@ use Flatpack\Schema\Widgets\WidgetSchemaNormalizer;
 use Flatpack\Services\Lists\ListQueryParams;
 use Flatpack\Services\Lists\ListRecordsLoader;
 use Flatpack\Services\Runtime\WidgetRuntime;
-use Flatpack\Support\CompositionDebugLog;
+use Flatpack\Support\CompositionDebugContext;
 use Flatpack\Support\Exceptions\WidgetRuntimeException;
 use Flatpack\Widgets\WidgetContext;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -29,9 +29,9 @@ trait ResolvesWidgets
      * @param  array<string, mixed>|null  $schema
      * @return array<string, mixed>|null
      */
-    private function normalizedWidgetsSchema(?array $schema, ?CompositionDebugLog $debugLog = null): ?array
+    private function normalizedWidgetsSchema(?array $schema): ?array
     {
-        return $this->widgetSchemaNormalizer()->normalize($schema, $debugLog);
+        return $this->widgetSchemaNormalizer()->normalize($schema);
     }
 
     /**
@@ -46,13 +46,12 @@ trait ResolvesWidgets
         Request $request,
         string $entity,
         array $widgets,
-        ?CompositionDebugLog $debugLog = null,
     ): array {
         if ($widgets === []) {
             return [];
         }
 
-        return $this->resolveWidgetData($request, $entity, $widgets, $debugLog);
+        return $this->resolveWidgetData($request, $entity, $widgets);
     }
 
     /**
@@ -63,9 +62,9 @@ trait ResolvesWidgets
         Request $request,
         string $entity,
         array $widgets,
-        ?CompositionDebugLog $debugLog = null,
     ): array {
         $resolved = [];
+        $compositionDebug = app(CompositionDebugContext::class);
 
         foreach ($widgets as $widgetId => $definition) {
             if (! is_string($widgetId) || ! is_array($definition)) {
@@ -77,7 +76,7 @@ trait ResolvesWidgets
             $modelClass = trim((string) ($definition['model'] ?? ''));
 
             if ($providerKey === '' && ! ($type === 'table' && $modelClass !== '')) {
-                $debugLog?->add(sprintf('widgets.%s ignored: missing provider.', $widgetId));
+                $compositionDebug->add(sprintf('widgets.%s ignored: missing provider.', $widgetId));
 
                 continue;
             }
@@ -95,10 +94,10 @@ trait ResolvesWidgets
                         ),
                     );
                 } catch (WidgetRuntimeException $exception) {
-                    $debugLog?->add(sprintf('widgets.%s provider error: %s', $widgetId, $exception->getMessage()));
+                    $compositionDebug->add(sprintf('widgets.%s provider error: %s', $widgetId, $exception->getMessage()));
                     $data = [];
                 } catch (AuthorizationException $exception) {
-                    $debugLog?->add(sprintf('widgets.%s unauthorized: %s', $widgetId, $exception->getMessage()));
+                    $compositionDebug->add(sprintf('widgets.%s unauthorized: %s', $widgetId, $exception->getMessage()));
                     $data = [];
                 }
             } else {
@@ -109,7 +108,14 @@ trait ResolvesWidgets
             if ($type === 'table' && $providerKey !== '' && array_key_exists('columns', $data)) {
                 $columnPayload = $data['columns'];
                 unset($data['columns']);
-                $entry['columns'] = $this->widgetSchemaNormalizer()->normalizeProviderResolvedTableColumns($columnPayload);
+                if (isset($entry['columns']) && is_array($entry['columns']) && $entry['columns'] !== []) {
+                    $compositionDebug->add(sprintf(
+                        'widgets.%s: ignoring provider-returned columns; YAML columns take precedence.',
+                        $widgetId,
+                    ));
+                } else {
+                    $entry['columns'] = $this->widgetSchemaNormalizer()->normalizeProviderResolvedTableColumns($columnPayload);
+                }
             }
             if ($type === 'table' && $providerKey !== '' && ! isset($entry['columns'])) {
                 $entry['columns'] = [];
@@ -135,7 +141,11 @@ trait ResolvesWidgets
             return $this->normalizeChartWidgetResolvedData($data);
         }
         if ($type === 'table') {
-            return $this->normalizeTableWidgetResolvedData($data);
+            $hasProvider = trim((string) ($definition['provider'] ?? '')) !== '';
+
+            return $hasProvider
+                ? $this->normalizeProviderTableWidgetResolvedData($data)
+                : $this->normalizeModelTableWidgetResolvedData($data);
         }
 
         if ($type !== 'status') {
@@ -146,6 +156,29 @@ trait ResolvesWidgets
         $data['status'] = $status ?? 'default';
 
         return $data;
+    }
+
+    /**
+     * Provider-backed table widgets are snapshots: only `rows` is produced; pagination/sorting/search
+     * are client-side concerns and never round-trip through the resolved data.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array{rows: list<array<string, mixed>>}
+     */
+    private function normalizeProviderTableWidgetResolvedData(array $data): array
+    {
+        $rowsRaw = $data['rows'] ?? null;
+        if (! is_array($rowsRaw)) {
+            $rowsRaw = array_is_list($data) ? $data : [];
+        }
+        $rows = [];
+        foreach ($rowsRaw as $row) {
+            if (is_array($row)) {
+                $rows[] = $row;
+            }
+        }
+
+        return ['rows' => $rows];
     }
 
     /**
@@ -331,7 +364,7 @@ trait ResolvesWidgets
      *     },
      * }
      */
-    private function normalizeTableWidgetResolvedData(array $data): array
+    private function normalizeModelTableWidgetResolvedData(array $data): array
     {
         $rowsRaw = $data['rows'] ?? null;
         if (! is_array($rowsRaw)) {

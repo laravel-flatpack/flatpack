@@ -223,23 +223,78 @@ test('table widget is skipped when model-backed columns are missing', function (
     expect($out['widgets'])->toBeEmpty();
 });
 
-test('table widget is skipped when provider-backed yaml defines columns', function () {
+test('table widget accepts yaml columns on provider-backed widget and forces editable false', function () {
     $normalizer = new WidgetSchemaNormalizer();
     $out = $normalizer->normalize([
         'widgets' => [
             'posts_table' => [
                 'type' => 'table',
                 'provider' => 'posts_table_provider',
+                'label' => 'Posts',
                 'columns' => [
                     'title' => [
                         'label' => 'Title',
+                        'sortable' => true,
+                    ],
+                    'status' => [
+                        'label' => 'Status',
+                        'type' => 'badge',
                     ],
                 ],
             ],
         ],
     ]);
 
-    expect($out['widgets'])->toBeEmpty();
+    expect($out['widgets']['posts_table']['provider'])->toBe('posts_table_provider')
+        ->and($out['widgets']['posts_table']['columns'])->toHaveKeys(['title', 'status'])
+        ->and($out['widgets']['posts_table']['columns']['title']['editable'])->toBeFalse()
+        ->and($out['widgets']['posts_table']['columns']['title']['sortable'])->toBeTrue()
+        ->and($out['widgets']['posts_table']['columns']['status']['editable'])->toBeFalse()
+        ->and($out['widgets']['posts_table']['columns']['status']['type'])->toBe('badge');
+});
+
+test('table widget preserves yaml badge options on provider-backed widget', function () {
+    $normalizer = new WidgetSchemaNormalizer();
+    $out = $normalizer->normalize([
+        'widgets' => [
+            'posts_table' => [
+                'type' => 'table',
+                'provider' => 'posts_table_provider',
+                'label' => 'Posts',
+                'columns' => [
+                    'status' => [
+                        'label' => 'Status',
+                        'type' => 'badge',
+                        'options' => [
+                            'draft' => [
+                                'value' => 'draft',
+                                'label' => 'Draft',
+                                'status' => 'pending',
+                            ],
+                            'published' => [
+                                'value' => 'published',
+                                'label' => 'Published',
+                                'status' => 'success',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ]);
+
+    expect($out['widgets']['posts_table']['columns']['status']['options'])->toBe([
+        'draft' => [
+            'value' => 'draft',
+            'label' => 'Draft',
+            'status' => 'pending',
+        ],
+        'published' => [
+            'value' => 'published',
+            'label' => 'Published',
+            'status' => 'success',
+        ],
+    ]);
 });
 
 test('table widget is skipped when model is not a valid eloquent class', function () {

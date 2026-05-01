@@ -12,6 +12,7 @@ use Flatpack\Schema\Lists\ListSchemaNormalizer;
 use Flatpack\Schema\Widgets\WidgetSchemaNormalizer;
 use Flatpack\Services\Lists\ListRecordsLoader;
 use Flatpack\Services\Runtime\WidgetRuntime;
+use Flatpack\Support\CompositionDebugContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Response;
@@ -26,30 +27,34 @@ final readonly class DashboardController
         private WidgetSchemaNormalizer $widgetSchemaNormalizer,
         private WidgetRuntime $widgetRuntime,
         private ListRecordsLoader $listRecordsLoader,
+        private CompositionDebugContext $compositionDebug,
     ) {}
 
     public function index(Request $request): Response|JsonResponse
     {
         $widgetDebugEnabled = $request->boolean('flatpack_widget_debug');
-        $debugLog = FlatpackResponse::compositionDebugLog(FlatpackResponse::compositionDebugContextForDashboard());
+        $this->compositionDebug->activate(FlatpackResponse::compositionDebugContextForDashboard());
 
         /** @var array<string, mixed>|null $schema */
         $schema = $this->compositions->optional(
             Flatpack::dashboardEntity(),
             'list'
         );
-        $normalizedSchema = $this->listSchemaNormalizer->normalizedListSchema($schema, $debugLog);
+        $normalizedSchema = $this->listSchemaNormalizer->normalizedListSchema($schema);
+        $normalizedSchemaArray = $normalizedSchema?->toArray() ?? [];
+        $modelClass = is_string($normalizedSchemaArray['model'] ?? null)
+            ? trim((string) $normalizedSchemaArray['model'])
+            : null;
 
-        $normalizedWidgets = $this->normalizedWidgetsSchema($normalizedSchema, $debugLog);
+        $normalizedWidgets = $this->normalizedWidgetsSchema($normalizedSchemaArray);
         $resolvedWidgets = $this->resolveWidgetDataWhenPresent(
             $request,
             Flatpack::dashboardEntity(),
             $normalizedWidgets['widgets'] ?? [],
-            $debugLog,
         );
         if ($widgetDebugEnabled) {
             // `resolveWidgetData` returns a flat map: widgetId => definition+data (not nested under `widgets`).
-            // Tab layout lives on the normalized schema (`widgets_schema`), not on resolved data.
+            // Tab layout lives on the normalized widget schema (`schema`), not on resolved data.
             /** @var array<string, mixed> $normalizedForLog */
             $normalizedForLog = is_array($normalizedWidgets) ? $normalizedWidgets : [];
             logger()->info('[Flatpack][Dashboard] widget payload resolved', [
@@ -74,11 +79,10 @@ final readonly class DashboardController
         return FlatpackResponse::inertia(
             'dashboard',
             [
-                'schema' => $normalizedSchema,
+                'model' => $modelClass,
                 'widgets' => $resolvedWidgets,
-                'widgets_schema' => $normalizedWidgets,
+                'schema' => $normalizedWidgets,
             ],
-            compositionDebugLog: $debugLog,
         );
     }
 

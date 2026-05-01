@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace Flatpack\Schema\Lists;
 
 use Flatpack\Schema\Lists\Normalization\ListSchemaPipelineState;
-use Flatpack\Schema\Lists\Normalization\Pipes\LogUnknownListRootKeysPipe;
 use Flatpack\Schema\Lists\Normalization\Pipes\MergeListTabsIntoColumnsPipe;
+use Flatpack\Schema\Lists\Normalization\Pipes\StripUnknownListRootKeysPipe;
 use Flatpack\Schema\Lists\Normalization\Pipes\WarnInvalidListMenuPipe;
 use Flatpack\Schema\Lists\Normalization\Pipes\WarnUnknownListBulkActionsNestedKeysPipe;
 use Flatpack\Schema\Lists\Normalization\Pipes\WarnUnknownListColumnActionButtonsNestedKeysPipe;
 use Flatpack\Schema\Lists\Normalization\Pipes\WarnUnknownListHeaderActionsNestedKeysPipe;
 use Flatpack\Schema\ResolvesLaravelPipeline;
+use Flatpack\Support\CompositionDebugContext;
 use Flatpack\Support\CompositionDebugLog;
 use Illuminate\Pipeline\Pipeline;
 
@@ -29,15 +30,14 @@ final readonly class ListSchemaNormalizer
 
     /**
      * @param  array<string, mixed>|null  $schema
-     * @return array<string, mixed>|null
      */
-    public function normalizedListSchema(?array $schema, ?CompositionDebugLog $debug = null): ?array
+    public function normalizedListSchema(?array $schema, ?CompositionDebugLog $debug = null): ?NormalizedListSchema
     {
         if ($schema === null) {
             return null;
         }
 
-        $state = new ListSchemaPipelineState($schema, $debug);
+        $state = new ListSchemaPipelineState($schema, CompositionDebugContext::resolveOptional($debug));
 
         /** @var ListSchemaPipelineState $out */
         $out = $this->resolvePipeline()
@@ -45,13 +45,13 @@ final readonly class ListSchemaNormalizer
             ->through([
                 MergeListTabsIntoColumnsPipe::class,
                 WarnInvalidListMenuPipe::class,
-                LogUnknownListRootKeysPipe::class,
+                StripUnknownListRootKeysPipe::class,
                 WarnUnknownListHeaderActionsNestedKeysPipe::class,
                 WarnUnknownListBulkActionsNestedKeysPipe::class,
                 WarnUnknownListColumnActionButtonsNestedKeysPipe::class,
             ])
             ->thenReturn();
 
-        return $out->schema;
+        return new NormalizedListSchema($out->schema);
     }
 }

@@ -38,6 +38,7 @@ final class CompositionSchemaKeysGenerator
      * @return array{
      *     formRootPropertyKeys: list<string>,
      *     listRootPropertyKeys: list<string>,
+     *     formDefaultFieldType: string,
      *     formFieldTypesCanonical: list<string>,
      *     headerActionEntryKeys: list<string>,
      *     listBulkActionEntryKeys: list<string>,
@@ -106,6 +107,7 @@ final class CompositionSchemaKeysGenerator
             array_map(strval(...), $yamlTypes),
             self::YAML_ONLY_FORM_FIELD_TYPE_ALIASES,
         )));
+        $formDefaultFieldType = self::defaultFormFieldType($formDefs, $canonicalTypes);
 
         $formHeaderKeys = self::propertyKeysSorted($formDefs['headerActionDefinition'] ?? []);
         $listHeaderKeys = self::propertyKeysSorted($listDefs['headerActionEntry'] ?? []);
@@ -122,6 +124,7 @@ final class CompositionSchemaKeysGenerator
         return [
             'formRootPropertyKeys' => $formRoot,
             'listRootPropertyKeys' => $listRoot,
+            'formDefaultFieldType' => $formDefaultFieldType,
             'formFieldTypesCanonical' => $canonicalTypes,
             'headerActionEntryKeys' => $headerUnion,
             'listBulkActionEntryKeys' => $bulkKeys,
@@ -149,6 +152,7 @@ final class CompositionSchemaKeysGenerator
         $keys = $this->extractKeySets($formSchema, $listSchema);
         $formRoot = $keys['formRootPropertyKeys'];
         $listRoot = $keys['listRootPropertyKeys'];
+        $formDefaultFieldType = $keys['formDefaultFieldType'];
         $canonicalTypes = $keys['formFieldTypesCanonical'];
         $headerUnion = $keys['headerActionEntryKeys'];
         $bulkKeys = $keys['listBulkActionEntryKeys'];
@@ -187,6 +191,7 @@ PHP;
         $body .= self::listRootAssocPhp($listRoot);
         $body .= self::defaultListRowReorderColumnPhp();
         $body .= self::constBlock('Top-level keys from list.json `properties` (entity list.yaml). Same names as keys of `LIST_ROOT`, sorted.', 'LIST_ROOT_PROPERTY_KEYS', $listRoot);
+        $body .= self::stringConstBlock('Default form field type used when YAML field type is omitted.', 'FORM_DEFAULT_FIELD_TYPE', $formDefaultFieldType);
         $body .= self::constBlock('Canonical field types after YAML aliases are stripped (see yamlFormFieldType enum minus date).', 'FORM_FIELD_TYPES_CANONICAL', $canonicalTypes);
         $body .= self::constBlock('Union of nested keys allowed on toolbar/header action entries (form headerActionDefinition ∪ list headerActionEntry).', 'HEADER_ACTION_ENTRY_KEYS', $headerUnion);
         $body .= self::constBlock('Nested keys for each bulk_actions entry (list.json bulkActionDefinition).', 'LIST_BULK_ACTION_ENTRY_KEYS', $bulkKeys);
@@ -236,6 +241,11 @@ PHP;
             'Top-level list.yaml keys from list.json `properties`. Same names as keys of `LIST_ROOT`, sorted.',
             'LIST_ROOT_PROPERTY_KEYS',
             $keys['listRootPropertyKeys'],
+        );
+        $out .= self::tsStringConst(
+            'Default form field type used when YAML field type is omitted. Mirrors PHP `CompositionSchemaKeys::FORM_DEFAULT_FIELD_TYPE`.',
+            'FORM_DEFAULT_FIELD_TYPE',
+            $keys['formDefaultFieldType'],
         );
         $out .= self::tsConstAsConst(
             'Canonical field types (yamlFormFieldType minus date). Mirrors PHP `CompositionSchemaKeys::FORM_FIELD_TYPES_CANONICAL`.',
@@ -328,6 +338,19 @@ PHP;
         $block .= 'export const ' . $name . ' = ';
         $block .= self::exportTsStringTupleAsConst($strings);
         $block .= ";\n\n";
+
+        return $block;
+    }
+
+    private static function tsStringConst(string $doc, string $name, string $value): string
+    {
+        $json = json_encode($value, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
+
+        $block = '';
+        $block .= '/**' . "\n";
+        $block .= ' * ' . $doc . "\n";
+        $block .= ' */' . "\n";
+        $block .= 'export const ' . $name . ' = ' . $json . " as const;\n\n";
 
         return $block;
     }
@@ -548,6 +571,35 @@ PHP;
         $out .= ';' . "\n\n";
 
         return $out;
+    }
+
+    private static function stringConstBlock(string $doc, string $name, string $value): string
+    {
+        $out = '    /**' . "\n";
+        $out .= '     * ' . $doc . "\n";
+        $out .= '     */' . "\n";
+        $out .= '    public const string ' . $name . ' = ' . var_export($value, true) . ';' . "\n\n";
+
+        return $out;
+    }
+
+    /**
+     * @param  array<string, mixed>  $formDefs
+     * @param  list<string>  $canonicalTypes
+     */
+    private static function defaultFormFieldType(array $formDefs, array $canonicalTypes): string
+    {
+        $candidate = $formDefs['fieldText']['properties']['type']['const'] ?? null;
+        if (! is_string($candidate)) {
+            throw new RuntimeException('Unable to derive default form field type from form.json ($defs.fieldText.properties.type.const).');
+        }
+
+        $candidate = trim($candidate);
+        if ($candidate === '' || ! in_array($candidate, $canonicalTypes, true)) {
+            throw new RuntimeException('Derived default form field type is missing or not present in canonical field types.');
+        }
+
+        return $candidate;
     }
 
     /**

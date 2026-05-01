@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Flatpack\Schema\Forms;
 
+use Flatpack\Support\CompositionDebugContext;
 use Flatpack\Support\CompositionDebugLog;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -40,6 +41,8 @@ final class FormEmbeddedTableRelationTypeResolver
         if ($schema === null) {
             return null;
         }
+
+        $log = CompositionDebugContext::resolveOptional($log);
 
         $formModelClass = trim($formModelClass);
         if ($formModelClass === '' || ! class_exists($formModelClass) || ! is_subclass_of($formModelClass, Model::class)) {

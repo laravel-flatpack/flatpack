@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Flatpack\Services\Runtime;
 
 use Flatpack\Support\DatabaseConstraintParser;
+use Flatpack\Support\ValidationMessages;
 use Illuminate\Database\Eloquent\MassAssignmentException;
 use Illuminate\Database\QueryException;
 use Illuminate\Validation\ValidationException;
@@ -55,7 +56,7 @@ final class DatabaseExceptionTranslator
 
             return [
                 'field' => $field,
-                'message' => sprintf('%s is required.', str_replace('_', ' ', ucfirst($field))),
+                'message' => ValidationMessages::required($field),
             ];
         }
 
@@ -64,7 +65,7 @@ final class DatabaseExceptionTranslator
 
             return [
                 'field' => $field,
-                'message' => sprintf('%s must be unique.', str_replace('_', ' ', ucfirst($field))),
+                'message' => ValidationMessages::unique($field),
             ];
         }
 

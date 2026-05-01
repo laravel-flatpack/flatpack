@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Flatpack\Schema\Forms\FormSchemaNormalizer;
+use Flatpack\Schema\Generated\CompositionSchemaKeys;
 use Flatpack\Support\CompositionDebugLog;
 use Flatpack\Tests\TestCase;
 
@@ -25,6 +26,19 @@ it('keeps preset on text when source field exists', function (): void {
         'field' => 'title',
         'type' => 'slug',
     ]);
+});
+
+it('uses generated default form field type when type is omitted', function (): void {
+    $normalizer = new FormSchemaNormalizer;
+    $schema = $normalizer->normalizedFormSchema([
+        'fields' => [
+            'title' => [
+                'label' => 'Title',
+            ],
+        ],
+    ]);
+
+    expect($schema['fields']['title']['type'])->toBe(CompositionSchemaKeys::FORM_DEFAULT_FIELD_TYPE);
 });
 
 it('omits fields with unknown types and warns in debug log', function (): void {
@@ -193,7 +207,7 @@ it('records unknown keys under actions in debug log', function (): void {
 it('records unknown top-level form keys in debug log', function (): void {
     $log = new CompositionDebugLog('posts/form.yaml');
     $normalizer = new FormSchemaNormalizer;
-    $normalizer->normalizedFormSchema([
+    $schema = $normalizer->normalizedFormSchema([
         'name' => 'Post',
         'asdasdasd' => 'asd ad asd a',
         'fields' => [
@@ -201,6 +215,8 @@ it('records unknown top-level form keys in debug log', function (): void {
         ],
     ], $log);
 
+    expect($schema)->not->toBeNull()
+        ->and(isset($schema['asdasdasd']))->toBeFalse();
     expect($log->all())->not->toBeEmpty();
     expect(implode(' ', $log->all()))->toContain('asdasdasd');
     expect(implode(' ', $log->all()))->toContain('Unknown top-level form key');

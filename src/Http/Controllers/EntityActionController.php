@@ -80,6 +80,7 @@ final readonly class EntityActionController
             actionName: $action,
             modelClass: $listModelClass,
             record: null,
+            compositionType: 'list',
             schema: $schema,
             model: null,
         );
@@ -127,6 +128,7 @@ final readonly class EntityActionController
             actionName: $action,
             modelClass: $listModelClass,
             record: $record,
+            compositionType: 'list',
             schema: $schema,
             model: $model,
         );
@@ -165,6 +167,7 @@ final readonly class EntityActionController
             actionName: 'save',
             modelClass: $listModelClass,
             record: $record,
+            compositionType: 'list',
             schema: $schema,
             model: $model,
         );
@@ -183,7 +186,7 @@ final readonly class EntityActionController
         $requestedTabId = trim((string) $request->query('tab', ''));
         $resolvedTab = $this->activeTabResolver->resolveWithSchema($schema, $requestedTabId);
         $resolved = $this->resolveReorderSchemaAndModelClass(
-            schema: $resolvedTab->effectiveSchema,
+            schema: $resolvedTab->effectiveSchema?->toArray(),
             fallbackModelClass: $fallbackModelClass,
         );
         if ($resolved instanceof JsonResponse) {

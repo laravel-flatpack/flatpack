@@ -6,6 +6,7 @@ namespace Flatpack\Schema\Lists;
 
 use Flatpack\Schema\Generated\CompositionSchemaKeys;
 use Flatpack\Schema\InactiveConditionNormalizer;
+use Flatpack\Support\CompositionDebugContext;
 use Flatpack\Support\CompositionDebugLog;
 use Flatpack\Support\SuccessRedirect;
 
@@ -20,6 +21,8 @@ final class BulkActions
         if ($schema === null) {
             return [];
         }
+
+        $debug = CompositionDebugContext::resolveOptional($debug);
 
         $raw = $schema['bulk_actions'] ?? null;
         if (! is_array($raw)) {

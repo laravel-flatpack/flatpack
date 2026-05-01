@@ -13,6 +13,6 @@ trait ResolvesLaravelPipeline
 {
     private function resolvePipeline(): Pipeline
     {
-        return $this->pipeline ?? app(Pipeline::class);
+        return $this->pipeline ?? new Pipeline(app());
     }
 }

@@ -16,7 +16,9 @@ use Flatpack\Services\Demo\DemoCatalogFactory;
 use Flatpack\Services\Navigation\BreadcrumbsBuilder;
 use Flatpack\Services\Navigation\MenuBuilder;
 use Flatpack\Support\AuthenticationRedirectCallbacks;
+use Flatpack\Support\CompositionDebugContext;
 use Flatpack\Support\PolicyAwareAuthorizer;
+use Flatpack\Widgets\Data\Table\TableWidgetDataResolver;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Debug\ExceptionHandler;
@@ -55,6 +57,8 @@ final class FlatpackServiceProvider extends ServiceProvider
         $this->app->register(FlatpackCompositionServiceProvider::class);
         $this->app->register(FlatpackNavigationServiceProvider::class);
         $this->app->singleton(DemoCatalogFactory::class);
+        $this->app->singleton(TableWidgetDataResolver::class);
+        $this->app->scoped(CompositionDebugContext::class);
         $this->registerContractBindings();
         $this->registerFlatpackSingleton();
     }

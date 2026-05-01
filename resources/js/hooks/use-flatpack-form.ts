@@ -3,6 +3,7 @@ import { router, useForm } from '@inertiajs/react';
 import type { FormEvent } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { useFlatpackPage } from '@/hooks/use-flatpack-page';
 import { useFormFieldPresets } from '@/hooks/use-form-field-presets';
 import { bypassNextInertiaLeaveGuard } from '@/hooks/use-inertia-leave-guard';
 import { loadField } from '@/lib/form';
@@ -11,7 +12,6 @@ import {
     buildInitialValues,
     type FlatpackFormTabPanelLayout,
     fieldErrorMessages,
-    mergeFormTabsIntoSchemaFields,
     normalizeFields,
 } from '@/lib/form-schema';
 import { clientValidationErrors } from '@/lib/form-validation';
@@ -59,55 +59,48 @@ export type FlatpackFormPendingConfirm = {
     config: FlatpackListHeaderAction & { action: string };
 };
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-    return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
 function isTabPanelLayout(value: unknown): value is FlatpackFormTabPanelLayout {
-    if (!isRecord(value)) {
+    if (typeof value !== 'object' || value === null || Array.isArray(value)) {
         return false;
     }
-    if (typeof value.id !== 'string' || value.id.trim() === '') {
+    const recordValue = value as Record<string, unknown>;
+    if (typeof recordValue.id !== 'string' || recordValue.id.trim() === '') {
         return false;
     }
-    if (typeof value.label !== 'string' || value.label.trim() === '') {
+    if (
+        typeof recordValue.label !== 'string' ||
+        recordValue.label.trim() === ''
+    ) {
         return false;
     }
-    if (!Array.isArray(value.field_ids)) {
+    if (!Array.isArray(recordValue.field_ids)) {
         return false;
     }
     return true;
 }
 
-export function useFlatpackForm({
-    entity,
-    record,
-    mode,
-    schema,
-    values = {},
-    form_actions: formActions = [],
-}: FlatpackFormPageProps) {
-    const effectiveSchema = useMemo(() => {
-        if (!isRecord(schema)) {
-            return null;
-        }
-        return isRecord(schema.tabs)
-            ? mergeFormTabsIntoSchemaFields(schema)
-            : schema;
-    }, [schema]);
-
+export function useFlatpackForm(props: FlatpackFormPageProps) {
+    useFlatpackPage(props);
+    const {
+        entity,
+        record,
+        mode,
+        schema,
+        values = {},
+        form_actions: formActions = [],
+    } = props;
     const fields = useMemo(
-        () => normalizeFields(effectiveSchema ?? undefined),
-        [effectiveSchema],
+        () => normalizeFields(schema ?? undefined),
+        [schema],
     );
 
     const tabPanels = useMemo((): FlatpackFormTabPanelLayout[] => {
-        const raw = effectiveSchema?.tab_panels;
+        const raw = schema?.tab_panels;
         if (!Array.isArray(raw)) {
             return [];
         }
         return raw.filter(isTabPanelLayout);
-    }, [effectiveSchema]);
+    }, [schema]);
     const fieldComponents = useMemo(
         () =>
             Object.fromEntries(

@@ -40,6 +40,13 @@ it('keeps generated TypeScript composition schema keys aligned with schema files
 
         return $out;
     };
+    $extractStringConst = static function (string $name) use ($actual): string {
+        if (preg_match('/export const ' . preg_quote($name, '/') . '\s*=\s*[\'"]([^\'"]+)[\'"]\s*as const;/', $actual, $matches) !== 1) {
+            throw new RuntimeException("Missing TS string const export: {$name}");
+        }
+
+        return $matches[1];
+    };
 
     $expectedListRoot = array_combine(
         $sets['listRootPropertyKeys'],
@@ -48,6 +55,7 @@ it('keeps generated TypeScript composition schema keys aligned with schema files
     expect($extractTuple('FORM_ROOT_PROPERTY_KEYS'))->toBe($sets['formRootPropertyKeys'])
         ->and($extractListRoot())->toBe($expectedListRoot === false ? [] : $expectedListRoot)
         ->and($extractTuple('LIST_ROOT_PROPERTY_KEYS'))->toBe($sets['listRootPropertyKeys'])
+        ->and($extractStringConst('FORM_DEFAULT_FIELD_TYPE'))->toBe($sets['formDefaultFieldType'])
         ->and($extractTuple('FORM_FIELD_TYPES_CANONICAL'))->toBe($sets['formFieldTypesCanonical'])
         ->and($extractTuple('HEADER_ACTION_ENTRY_KEYS'))->toBe($sets['headerActionEntryKeys'])
         ->and($extractTuple('LIST_BULK_ACTION_ENTRY_KEYS'))->toBe($sets['listBulkActionEntryKeys'])

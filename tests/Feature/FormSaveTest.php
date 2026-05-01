@@ -319,6 +319,31 @@ YAML, function (): void {
     });
 });
 
+test('flatpack entity edit with no renderable fields returns normalized schema without unknown root keys', function () {
+    withTempFormSchema(<<<'YAML'
+name: Post
+model: Flatpack\Tests\Models\Post
+unexpected_author_root_key: true
+fields: {}
+YAML, function (): void {
+        config()->set('app.debug', true);
+        /** @var User $user */
+        $user = User::factory()->createOne();
+        $post = Post::factory()->createOne();
+
+        actingAs($user)
+            ->get(route('flatpack.entities.edit', [
+                'entity' => 'posts',
+                'record' => (string) $post->getKey(),
+            ]))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('form', false)
+                ->has('schema')
+                ->missing('schema.unexpected_author_root_key'));
+    });
+});
+
 test('flatpack entity edit form returns values for configured fields', function () {
     withTempFormSchema(<<<'YAML'
 name: Post
