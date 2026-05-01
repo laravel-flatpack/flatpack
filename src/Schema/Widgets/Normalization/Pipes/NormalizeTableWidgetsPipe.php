@@ -8,10 +8,10 @@ use Closure;
 use Flatpack\Schema\Widgets\Normalization\WidgetSchemaNormalizationSupport;
 use Flatpack\Schema\Widgets\Normalization\WidgetSchemaPipelineState;
 
-final class NormalizeTableWidgetsPipe
+final readonly class NormalizeTableWidgetsPipe
 {
     public function __construct(
-        private readonly WidgetSchemaNormalizationSupport $support,
+        private WidgetSchemaNormalizationSupport $support,
     ) {}
 
     public function handle(WidgetSchemaPipelineState $state, Closure $next): mixed
