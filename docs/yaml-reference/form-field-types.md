@@ -379,6 +379,8 @@ Repeating groups of sub-fields stored as an **array of objects** in the form pay
 
 Exactly **one** of: **`groups`**, **`form`**, or **`fields`** (inline map)—see schema `oneOf`.
 
+When **`groups`** is an inlined map or array (not a path string), the form UI renders a **block type** control per row and the nested fields for the selected template. Rows store the chosen template id under **`groupKeyFrom`** (default **`_group`**). Changing the block type replaces that row’s payload with only the new group key (previous field values are cleared).
+
 ### `repeaterGroupDefinition` (each group template)
 
 | Key | Required | Description |

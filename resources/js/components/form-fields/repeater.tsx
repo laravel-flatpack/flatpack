@@ -33,8 +33,22 @@ import {
     FieldDescription,
     FieldTitle,
 } from '@/components/ui/field';
+import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import { selectOptionLeadingIcon } from '@/components/ui/select-option-leading-icon';
 import { serializeFieldValue } from '@/lib/form-page-field-values';
 import { normalizeYamlFieldType } from '@/lib/form-schema';
+import {
+    mapRepeaterGroupsById,
+    type ParsedRepeaterGroup,
+    parseRepeaterGroups,
+} from '@/lib/repeater-groups';
 import { cn } from '@/lib/utils';
 import type { FormFieldProps } from '@/types/form-fields';
 import type { SchemaFieldRenderEntry } from '@/types/schema-fields-renderer';
@@ -75,6 +89,58 @@ function repeaterTitleForRow(
         return String(row[titleFrom]);
     }
     return `Item ${index + 1}`;
+}
+
+function RepeaterGroupTypePicker({
+    rowIndex,
+    row,
+    repeaterId,
+    groupsList,
+    groupKeyAttr,
+    onSelectType,
+}: {
+    rowIndex: number;
+    row: Record<string, unknown>;
+    repeaterId: string;
+    groupsList: ParsedRepeaterGroup[];
+    groupKeyAttr: string;
+    onSelectType: (rowIndex: number, groupId: string) => void;
+}) {
+    const raw = row[groupKeyAttr];
+    const gid = typeof raw === 'string' ? raw.trim() : '';
+    const validIds = new Set(groupsList.map((g) => g.id));
+    const value = gid !== '' && validIds.has(gid) ? gid : '';
+
+    const controlId = `${repeaterId}-row-${rowIndex}-group-type`;
+
+    return (
+        <div className="col-span-full mb-1 space-y-2">
+            <Label
+                htmlFor={controlId}
+                className="text-muted-foreground text-xs"
+            >
+                Block type
+            </Label>
+            <Select
+                value={value}
+                onValueChange={(v) => onSelectType(rowIndex, v)}
+            >
+                <SelectTrigger id={controlId} className="w-full max-w-md">
+                    <SelectValue placeholder="Choose block type…" />
+                </SelectTrigger>
+                <SelectContent>
+                    {groupsList.map((g) => (
+                        <SelectItem key={g.id} value={g.id}>
+                            <span className="flex items-center gap-2">
+                                {selectOptionLeadingIcon({ icon: g.icon })}
+                                <span>{g.label}</span>
+                            </span>
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+        </div>
+    );
 }
 
 type RepeaterSortableRowProps = {
@@ -154,6 +220,7 @@ export const RepeaterField = ({
     parentRecordKey,
     required = false,
     invalid = false,
+    groupKeyFrom,
 }: {
     id: string;
     label: string;
@@ -178,6 +245,25 @@ export const RepeaterField = ({
     invalid?: boolean;
 }) => {
     const labelId = `${id}-label`;
+
+    const groupKeyAttr =
+        typeof groupKeyFrom === 'string' && groupKeyFrom.trim() !== ''
+            ? groupKeyFrom.trim()
+            : '_group';
+
+    const resolvedGroups = useMemo(() => parseRepeaterGroups(groups), [groups]);
+
+    const isGroupMode =
+        groups != null &&
+        resolvedGroups.status === 'inline' &&
+        resolvedGroups.groups.length > 0;
+
+    const groupById = useMemo(() => {
+        if (!isGroupMode || resolvedGroups.status !== 'inline') {
+            return null;
+        }
+        return mapRepeaterGroupsById(resolvedGroups.groups);
+    }, [isGroupMode, resolvedGroups]);
 
     const formFields = useMemo(() => {
         if (
@@ -240,6 +326,19 @@ export const RepeaterField = ({
         [rows, commitRows],
     );
 
+    const selectGroupForRow = useCallback(
+        (rowIndex: number, newGroupId: string) => {
+            const next = rows.map((row, i) => {
+                if (i !== rowIndex) {
+                    return row;
+                }
+                return { [groupKeyAttr]: newGroupId };
+            });
+            commitRows(next);
+        },
+        [rows, commitRows, groupKeyAttr],
+    );
+
     const removeRow = useCallback(
         (rowIndex: number) => {
             if (rows.length <= minItems) {
@@ -286,10 +385,20 @@ export const RepeaterField = ({
             rowIndex: number,
             row: Record<string, unknown>,
         ): SchemaFieldRenderEntry[] => {
-            if (formFields == null) {
+            let source: Record<string, Record<string, unknown>> | null = null;
+            if (isGroupMode && groupById) {
+                const rawGk = row[groupKeyAttr];
+                const gid = typeof rawGk === 'string' ? rawGk.trim() : '';
+                if (gid !== '') {
+                    source = groupById.get(gid)?.fields ?? null;
+                }
+            } else {
+                source = formFields;
+            }
+            if (source == null || Object.keys(source).length === 0) {
                 return [];
             }
-            return Object.entries(formFields).flatMap(([subKey, raw]) => {
+            return Object.entries(source).flatMap(([subKey, raw]) => {
                 if (!isRecord(raw)) {
                     return [];
                 }
@@ -315,7 +424,7 @@ export const RepeaterField = ({
                 ];
             });
         },
-        [formFields, id, patchRowField],
+        [formFields, groupById, groupKeyAttr, id, isGroupMode, patchRowField],
     );
 
     const canAdd = maxItems == null || rows.length < maxItems;
@@ -356,7 +465,7 @@ export const RepeaterField = ({
         [rowIds, rows, commitRows],
     );
 
-    if (groups != null) {
+    if (groups != null && resolvedGroups.status === 'yaml-path') {
         return (
             <Field data-invalid={invalid || undefined}>
                 <FieldTitle id={labelId}>{label}</FieldTitle>
@@ -365,14 +474,55 @@ export const RepeaterField = ({
                 ) : null}
                 <FieldContent>
                     <FieldDescription>
-                        Repeater group mode is not implemented in the UI yet.
+                        This repeater references a YAML path for{' '}
+                        <code className="rounded bg-muted px-1 py-0.5 text-xs">
+                            groups
+                        </code>{' '}
+                        ({resolvedGroups.path}). The panel needs group
+                        definitions inlined from the server (resolved{' '}
+                        <code className="rounded bg-muted px-1 py-0.5 text-xs">
+                            groups:
+                        </code>{' '}
+                        map or array on the repeater field).
                     </FieldDescription>
                 </FieldContent>
             </Field>
         );
     }
 
-    if (typeof form === 'string') {
+    if (
+        groups != null &&
+        !isGroupMode &&
+        resolvedGroups.status !== 'yaml-path'
+    ) {
+        return (
+            <Field data-invalid={invalid || undefined}>
+                <FieldTitle id={labelId}>{label}</FieldTitle>
+                {helperText != null && helperText !== '' ? (
+                    <FieldDescription>{helperText}</FieldDescription>
+                ) : null}
+                <FieldContent>
+                    <FieldDescription>
+                        Repeater{' '}
+                        <code className="rounded bg-muted px-1 py-0.5 text-xs">
+                            groups
+                        </code>{' '}
+                        are missing or invalid (each group needs{' '}
+                        <code className="rounded bg-muted px-1 py-0.5 text-xs">
+                            label
+                        </code>{' '}
+                        and non-empty{' '}
+                        <code className="rounded bg-muted px-1 py-0.5 text-xs">
+                            fields
+                        </code>
+                        ).
+                    </FieldDescription>
+                </FieldContent>
+            </Field>
+        );
+    }
+
+    if (!isGroupMode && typeof form === 'string') {
         return (
             <Field data-invalid={invalid || undefined}>
                 <FieldTitle id={labelId}>{label}</FieldTitle>
@@ -390,7 +540,10 @@ export const RepeaterField = ({
         );
     }
 
-    if (formFields == null || Object.keys(formFields).length === 0) {
+    if (
+        !isGroupMode &&
+        (formFields == null || Object.keys(formFields).length === 0)
+    ) {
         return (
             <Field data-invalid={invalid || undefined}>
                 <FieldTitle id={labelId}>{label}</FieldTitle>
@@ -407,8 +560,23 @@ export const RepeaterField = ({
         );
     }
 
+    const inlineGroupList =
+        isGroupMode && resolvedGroups.status === 'inline'
+            ? resolvedGroups.groups
+            : [];
+
     const bodyForRow = (rowIndex: number, row: Record<string, unknown>) => (
         <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4">
+            {isGroupMode && inlineGroupList.length > 0 ? (
+                <RepeaterGroupTypePicker
+                    rowIndex={rowIndex}
+                    row={row}
+                    repeaterId={id}
+                    groupsList={inlineGroupList}
+                    groupKeyAttr={groupKeyAttr}
+                    onSelectType={selectGroupForRow}
+                />
+            ) : null}
             <SchemaFieldsRenderer
                 entries={nestedEntries(rowIndex, row)}
                 spanContext="repeater"
