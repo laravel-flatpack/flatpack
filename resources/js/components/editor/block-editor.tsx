@@ -20,7 +20,7 @@ export type BlockEditorProps = {
     className?: string;
     placeholder?: string;
     readOnly?: boolean;
-    showFixedToolbar?: boolean;
+    toolbar?: boolean;
     initialValue?: Value;
     onValueChange?: (value: Value) => void;
 };
@@ -29,7 +29,7 @@ export function BlockEditor({
     className,
     placeholder = 'Type / for commands, or use + and drag ⋮⋮…',
     readOnly,
-    showFixedToolbar = false,
+    toolbar = false,
     initialValue,
     onValueChange,
 }: BlockEditorProps) {
@@ -66,7 +66,7 @@ export function BlockEditor({
             }}
         >
             <BlockSelectionShadowInputA11y />
-            {showFixedToolbar ? (
+            {toolbar ? (
                 <div
                     className={cn(
                         'flex flex-col overflow-hidden rounded-md border border-input bg-background ring-offset-background',

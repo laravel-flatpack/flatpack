@@ -1,4 +1,5 @@
 import type { ComponentType, LazyExoticComponent } from 'react';
+import type { FieldSpanContext } from '@/lib/field-span';
 import type { FormFieldProps } from '@/types/form-fields';
 
 export type SchemaFieldError = { message: string };
@@ -31,6 +32,8 @@ export type SchemaFieldRenderEntry = {
 
 export type SchemaFieldsRendererProps = {
     entries: SchemaFieldRenderEntry[];
+    /** Grid layout context for {@link FormFieldProps.span} (default `page`). */
+    spanContext?: FieldSpanContext;
     entity?: string;
     parentRecordKey?: string | null;
     modeKey?: string;

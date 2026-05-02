@@ -4,14 +4,14 @@ import { cn } from '@/lib/utils';
 export type PlateEditorFallbackProps = {
     /** Matches {@link RichTextEditor} vs {@link BlockEditor} content height. */
     variant: 'rich-text' | 'block';
-    showFixedToolbar?: boolean;
+    toolbar?: boolean;
     className?: string;
 };
 
 /** Shown while a Plate-based editor chunk is loading (rich text / block editor). */
 export function PlateEditorFallback({
     variant,
-    showFixedToolbar = false,
+    toolbar = false,
     className,
 }: PlateEditorFallbackProps) {
     const contentHeight =
@@ -27,7 +27,7 @@ export function PlateEditorFallback({
             )}
             data-slot="plate-editor-fallback"
         >
-            {showFixedToolbar ? (
+            {toolbar ? (
                 <div
                     className="h-10 shrink-0 border-b border-border bg-background/95 backdrop-blur-sm supports-backdrop-blur:bg-background/60"
                     aria-hidden
@@ -38,7 +38,7 @@ export function PlateEditorFallback({
                     'flex w-full flex-1 items-center justify-center',
                     contentHeight,
                     variant === 'block' && 'py-2',
-                    variant === 'rich-text' && showFixedToolbar && 'py-2',
+                    variant === 'rich-text' && toolbar && 'py-2',
                 )}
             >
                 <Spinner className="size-6 text-muted-foreground" />

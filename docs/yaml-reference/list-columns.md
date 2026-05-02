@@ -33,6 +33,8 @@ Minimal object: `{ type: ... }`. The `type` selects which form field renderer ru
 
 Only these keys are allowed in the schema’s minimal definition; embed extra options only if your normalizer / client parser supports them beyond the strict schema.
 
+The embedded-table schema also allows optional **`span`** on `edit_form_field` / `editFormField` (same values as top-level form fields). The row drawer uses a single-column grid, so spans are accepted but clamped to full width in the UI.
+
 ---
 
 ## Column types (`columnDefinition`)

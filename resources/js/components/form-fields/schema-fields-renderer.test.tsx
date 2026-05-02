@@ -79,4 +79,24 @@ describe('SchemaFieldsRenderer', () => {
         expect(onValueChange).toHaveBeenCalledWith('Serialized');
         expect(extraOnValueChange).not.toHaveBeenCalled();
     });
+
+    it('applies grid span classes from field.span', async () => {
+        const entries: SchemaFieldRenderEntry[] = [
+            {
+                id: 'status',
+                field: {
+                    type: 'text',
+                    label: 'Status',
+                    span: 'half',
+                },
+                value: '',
+                onValueChange: vi.fn(),
+            },
+        ];
+        const { container } = render(
+            <SchemaFieldsRenderer entries={entries} spanContext="page" />,
+        );
+        const wrapper = container.firstChild as HTMLElement;
+        expect(wrapper.className).toContain('lg:col-span-2');
+    });
 });

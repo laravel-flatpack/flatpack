@@ -227,15 +227,18 @@ export function FormFields({
     }, [focusAfterTabChangeTick]);
 
     const renderFields = (subset: SchemaFieldRenderEntry[]) => (
-        <SchemaFieldsRenderer
-            entries={subset}
-            entity={entity}
-            parentRecordKey={record}
-            modeKey={`${mode}:${record ?? 'new'}`}
-            onEmbeddedTableToolbarAction={onEmbeddedTableToolbarAction}
-            fieldComponents={fieldComponents}
-            showErrors
-        />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-5 gap-6">
+            <SchemaFieldsRenderer
+                entries={subset}
+                spanContext="page"
+                entity={entity}
+                parentRecordKey={record}
+                modeKey={`${mode}:${record ?? 'new'}`}
+                onEmbeddedTableToolbarAction={onEmbeddedTableToolbarAction}
+                fieldComponents={fieldComponents}
+                showErrors
+            />
+        </div>
     );
 
     if (tabPanels === undefined || tabPanels.length === 0) {

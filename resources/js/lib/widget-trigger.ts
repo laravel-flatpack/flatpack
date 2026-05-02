@@ -4,9 +4,15 @@ import { ChartWidget } from '@/components/widgets/chart';
 import { MetricWidget } from '@/components/widgets/metric';
 import { StatusWidget } from '@/components/widgets/status';
 import { TableWidget } from '@/components/widgets/table-widget';
+import { canonicalizeSpan, spanClassFor } from '@/lib/field-span';
 import type { FlatpackWidget } from '@/types/widgets-composition';
 
 export function widgetGridSpanClass(widget: FlatpackWidget): string {
+    const resolved = canonicalizeSpan(widget.span);
+    if (resolved !== undefined) {
+        return spanClassFor(resolved, 'dashboard') ?? 'col-span-1';
+    }
+
     switch (widget.type) {
         case 'chart':
         case 'table':

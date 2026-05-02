@@ -7,13 +7,14 @@ namespace Flatpack\Schema\Widgets\Normalization;
 use Flatpack\Composition\ModelClassEntitySlugResolver;
 use Flatpack\Schema\Generated\CompositionSchemaKeys;
 use Flatpack\Support\CompositionDebugLog;
+use Flatpack\Support\FieldSpanCanonicalizer;
 use Illuminate\Database\Eloquent\Model;
 
 /**
  * Shared normalization logic for widget schema (used by {@see WidgetSchemaNormalizer} and pipeline pipes).
  * Injectable — bind via the IoC container or inject directly; methods are instance methods to allow mocking.
  */
-final class WidgetSchemaNormalizationSupport
+final readonly class WidgetSchemaNormalizationSupport
 {
     public function __construct(
         private ?ModelClassEntitySlugResolver $modelEntitySlugResolver = null,
@@ -87,13 +88,21 @@ final class WidgetSchemaNormalizationSupport
             return null;
         }
 
-        return [
+        $result = [
             'type' => 'chart',
             'provider' => $provider,
             'label' => $label,
             'description' => isset($definition['description']) ? (string) $definition['description'] : null,
             'chart' => $chartConfig,
         ];
+        FieldSpanCanonicalizer::mergeIntoIfPresent(
+            $definition,
+            $result,
+            sprintf('widgets.%s', $widgetId),
+            $debug,
+        );
+
+        return $result;
     }
 
     /**
@@ -113,7 +122,7 @@ final class WidgetSchemaNormalizationSupport
             return null;
         }
 
-        return [
+        $result = [
             'type' => 'metric',
             'provider' => $provider,
             'label' => $label,
@@ -122,6 +131,14 @@ final class WidgetSchemaNormalizationSupport
             'period' => is_array($definition['period'] ?? null) ? $definition['period'] : ['kind' => 'custom'],
             'trend' => is_array($definition['trend'] ?? null) ? $definition['trend'] : null,
         ];
+        FieldSpanCanonicalizer::mergeIntoIfPresent(
+            $definition,
+            $result,
+            sprintf('widgets.%s', $widgetId),
+            $debug,
+        );
+
+        return $result;
     }
 
     /**
@@ -141,13 +158,21 @@ final class WidgetSchemaNormalizationSupport
             return null;
         }
 
-        return [
+        $result = [
             'type' => 'card',
             'provider' => $provider,
             'label' => $label,
             'description' => isset($definition['description']) ? (string) $definition['description'] : null,
             'data' => $this->normalizeStatusWidgetData($definition['data'] ?? null),
         ];
+        FieldSpanCanonicalizer::mergeIntoIfPresent(
+            $definition,
+            $result,
+            sprintf('widgets.%s', $widgetId),
+            $debug,
+        );
+
+        return $result;
     }
 
     /**
@@ -167,13 +192,21 @@ final class WidgetSchemaNormalizationSupport
             return null;
         }
 
-        return [
+        $result = [
             'type' => 'status',
             'provider' => $provider,
             'label' => $label,
             'description' => isset($definition['description']) ? (string) $definition['description'] : null,
             'data' => $this->normalizeStatusWidgetData($definition['data'] ?? null),
         ];
+        FieldSpanCanonicalizer::mergeIntoIfPresent(
+            $definition,
+            $result,
+            sprintf('widgets.%s', $widgetId),
+            $debug,
+        );
+
+        return $result;
     }
 
     /**
@@ -269,6 +302,13 @@ final class WidgetSchemaNormalizationSupport
                 }
             }
         }
+
+        FieldSpanCanonicalizer::mergeIntoIfPresent(
+            $definition,
+            $normalized,
+            sprintf('widgets.%s', $widgetId),
+            $debug,
+        );
 
         return $normalized;
     }

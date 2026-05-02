@@ -408,13 +408,16 @@ export const RepeaterField = ({
     }
 
     const bodyForRow = (rowIndex: number, row: Record<string, unknown>) => (
-        <SchemaFieldsRenderer
-            entries={nestedEntries(rowIndex, row)}
-            entity={flatpackEntity}
-            parentRecordKey={parentRecordKey ?? undefined}
-            modeKey={`${id}-row-${rowIndex}`}
-            showErrors={false}
-        />
+        <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4">
+            <SchemaFieldsRenderer
+                entries={nestedEntries(rowIndex, row)}
+                spanContext="repeater"
+                entity={flatpackEntity}
+                parentRecordKey={parentRecordKey ?? undefined}
+                modeKey={`${id}-row-${rowIndex}`}
+                showErrors={false}
+            />
+        </div>
     );
 
     const renderRepeaterRow = (

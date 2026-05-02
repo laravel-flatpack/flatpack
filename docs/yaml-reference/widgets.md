@@ -7,6 +7,26 @@ Flatpack supports read-only **widgets** (metrics, cards, status, charts, tables)
 
 The discriminated union is `widgetDefinition`. **Dashboard YAML** should follow [`list.json`](../../resources/schema/list.json). **`form.json` duplicates** the same union with small differences for embedded table widgets (for example `actions` and `filters` shapes on `type: table`); when authoring widgets inside forms, match [`resources/schema/form.json`](../../resources/schema/form.json) `$defs/widgetDefinition`.
 
+### Layout (`span`)
+
+Optional **`span`** on any widget uses the same tokens as form fields: `full`, `half`, `two_thirds`, `third`, `quarter`, plus aliases `1/2`, `2/3`, `1/3`, `1/4` (normalized server-side). The dashboard renders widgets in a **1 / 2 / 4** column grid (default / `md` / `xl`). When `span` is omitted, **chart** and **table** widgets still default to a full-width row at `xl`; **metric**, **card**, and **status** default to a single column.
+
+```yaml
+widgets:
+  revenue_chart:
+    type: chart
+    provider: sales_chart
+    label: Revenue
+    span: full
+  active_users:
+    type: metric
+    provider: active_users
+    label: Active users
+    value_format: { kind: number }
+    period: { kind: day }
+    span: 1/4
+```
+
 ---
 
 ## Provider resolution

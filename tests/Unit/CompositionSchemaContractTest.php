@@ -21,6 +21,34 @@ describe('form composition schema (resources/schema/form.json)', function () {
         expect($errors)->toBeEmpty();
     });
 
+    it('accepts optional span on fields (named or fraction alias)', function () {
+        $errors = CompositionSchemaAsserter::validateForm([
+            'fields' => [
+                'title' => [
+                    'type' => 'text',
+                    'label' => 'Title',
+                    'span' => '1/2',
+                ],
+            ],
+        ]);
+
+        expect($errors)->toBeEmpty();
+    });
+
+    it('rejects unknown span string on fields', function () {
+        $errors = CompositionSchemaAsserter::validateForm([
+            'fields' => [
+                'title' => [
+                    'type' => 'text',
+                    'label' => 'Title',
+                    'span' => 'invalid_span_value',
+                ],
+            ],
+        ]);
+
+        expect($errors)->not->toBeEmpty();
+    });
+
     it('accepts tabs-only form with nested fields', function () {
         $errors = CompositionSchemaAsserter::validateForm([
             'name' => 'Post',
@@ -883,6 +911,35 @@ describe('widget schema contracts', function () {
                     'type' => 'metric',
                     'provider' => 'total_revenue',
                     'label' => 'Total Revenue',
+                    'value_format' => [
+                        'kind' => 'currency',
+                        'currency' => 'USD',
+                    ],
+                    'period' => [
+                        'kind' => 'month',
+                    ],
+                ],
+            ],
+        ]);
+
+        expect($errors)->toBeEmpty();
+    });
+
+    it('accepts optional span on dashboard widgets', function () {
+        $errors = CompositionSchemaAsserter::validateList([
+            'columns' => [
+                [
+                    'id' => 'title',
+                    'type' => 'text',
+                    'label' => 'Title',
+                ],
+            ],
+            'widgets' => [
+                'revenue' => [
+                    'type' => 'metric',
+                    'provider' => 'total_revenue',
+                    'label' => 'Total Revenue',
+                    'span' => 'quarter',
                     'value_format' => [
                         'kind' => 'currency',
                         'currency' => 'USD',

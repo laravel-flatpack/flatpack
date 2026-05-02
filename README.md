@@ -176,6 +176,11 @@ Current `type` values for form fields:
 - `block-editor`
 - `table`
 
+Optional **`span`** on any field (and on dashboard **`widgets`**) controls responsive grid width:
+
+- Named: `full`, `half`, `two_thirds`, `third`, `quarter`
+- Aliases: `1/2`, `2/3`, `1/3`, `1/4` (normalized server-side to the named tokens above)
+
 ### Supported Table Column Types
 
 Current `type` values for list/table columns:
@@ -195,8 +200,7 @@ Relation columns require:
 
 ### Dashboard Widgets
 
-Dashboard widget schema support is evolving and not yet documented as a stable public contract in this file.
-When widget types are finalized, add them here with required and optional keys.
+Supported widget `type` values include `metric`, `card`, `status`, `chart`, and `table` (see package docs). Optional **`span`** uses the same values as form fields for dashboard grid layout.
 
 ## Requirements
 

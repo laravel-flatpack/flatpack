@@ -14,12 +14,26 @@ Not every key is valid for every `type`. The table below lists keys that appear 
 | `helperText` | most | Secondary explanatory text (hint), typically below the label or input. |
 | `placeholder` | text-like controls where listed below | Grey placeholder text inside an empty input (HTML placeholder). Not present on checkbox, switch, or file-upload in schema. |
 | `required` | most | When true, marks the field as required in the UI and feeds validation intent / rules composition. |
-| `rules` | most | Laravel validation rules: a single pipe-delimited string or an array of rule strings (`validationRules`). |
+| `rules` | most | Laravel validation rules: a single pipe-delimited string or an array of rule strings (`validationRules`). Merged with [type-based defaults](#automatic-validation-rules-for-values) for `values.{id}` on submit. |
 | `value` | most | Initial or default value for the field (shape depends on type: string, boolean, array, etc.). |
 | `trigger` | most | Conditional UI behavior tied to another field (`fieldTrigger`): show/hide, enable/disable, or clear—see [Triggers](#triggers). |
 | `preset` | text, textarea only | Auto-fill this field from another field using `preset` (exact copy or derived slug/url/camel/file)—see [Preset](#preset). |
+| `span` | all | Responsive grid width on the form page, in repeaters, and in metadata for embedded-table drawer fields (see [Layout grid](#layout-grid)). Named: `full`, `half`, `two_thirds`, `third`, `quarter`. Aliases: `1/2`, `2/3`, `1/3`, `1/4` (normalized server-side). |
 
 **Checkbox and switch** do not declare `placeholder`. **File upload** does not declare `placeholder` in the schema.
+
+### Automatic validation rules for `values`
+
+On form submit, Flatpack builds Laravel rules for each `values.{fieldId}` from field **`type`**, **`required`**, and optional relation/list helpers, then merges optional YAML **`rules`**.
+
+- **`rich-text`** and **`block-editor`** default to **`array`** (the client sends a Plate/Slate **JSON array of nodes**). Do not treat these as plain strings in passthrough rules.
+- **`text`** and **`textarea`** default to **`string`**.
+
+See [Available Form Fields — Built-in Laravel validation](../form-fields.md#built-in-laravel-validation-for-submitted-values) for a broader summary.
+
+### Layout grid (`span`)
+
+The form page lays fields out in a responsive CSS grid: **1 / 2 / 4 / 5** columns at default / `md` / `lg` / `2xl` breakpoints. When `span` is omitted, each field spans the full row (same as today’s stacked layout). Repeater item bodies use a narrower grid (**1 / 2 / 3** at default / `md` / `2xl`). Row-edit drawers use a single column; `span` is accepted on `edit_form_field` but always renders full width there.
 
 ### Triggers (`trigger` / `fieldTrigger`)
 
@@ -239,13 +253,13 @@ WYSIWYG / Plate-style rich text editor.
 | --- | --- | --- |
 | `type` | yes | Must be `rich-text`. |
 | `label` | yes | Display label. |
-| `showFixedToolbar` | no | When true, keeps a fixed toolbar visible; when false/omitted, toolbar behavior follows the default editor layout. |
+| `toolbar` | no | When true, shows the pinned formatting toolbar (text styles, **H1–H3** headings, lists, indent, table/toggle, media); when false/omitted, uses the default editor layout. |
 | `id` | no | Explicit field id. |
 | `helperText` | no | Hint text. |
 | `placeholder` | no | Placeholder in the editable area. |
 | `required` | no | Required when true. |
-| `rules` | no | Validation rules. |
-| `value` | no | Serialized HTML or JSON content per editor contract. |
+| `rules` | no | Validation rules (merged with defaults; base rule is **`array`**, not `string`). |
+| `value` | no | Initial Plate document: **JSON array of Slate/Plate nodes** (same structure as the submitted `values.{id}` payload). |
 | `trigger` | no | Conditional rules. |
 
 ---
@@ -258,13 +272,13 @@ Block-based editor (structured content).
 | --- | --- | --- |
 | `type` | yes | Must be `block-editor`. |
 | `label` | yes | Display label. |
-| `showFixedToolbar` | no | Same as `rich-text`: pin the formatting toolbar for consistent discovery. |
+| `toolbar` | no | Same as `rich-text`: pin the formatting toolbar (includes **H1–H3** and other controls) for consistent discovery. |
 | `id` | no | Explicit field id. |
 | `helperText` | no | Hint text. |
 | `placeholder` | no | Placeholder for empty document. |
 | `required` | no | Required when true. |
-| `rules` | no | Validation rules. |
-| `value` | no | Block document value (shape per editor). |
+| `rules` | no | Validation rules (merged with defaults; base rule is **`array`**, not `string`). |
+| `value` | no | Initial document: **JSON array of Slate/Plate nodes** (same as `rich-text`; structured blocks, not HTML). |
 | `trigger` | no | Conditional rules. |
 
 ---

@@ -40,9 +40,23 @@ export type FormFieldTrigger = {
     condition: FormFieldTriggerCondition;
 };
 
+/** Canonical tokens after PHP normalization; fraction aliases may appear before normalize. */
+export type FieldSpanNamed =
+    | 'full'
+    | 'half'
+    | 'two_thirds'
+    | 'third'
+    | 'quarter';
+
+export type FieldSpanFraction = '1/2' | '2/3' | '1/3' | '1/4';
+
+export type FieldSpan = FieldSpanNamed | FieldSpanFraction;
+
 type FormFieldBase = {
     label: string;
     helperText?: string;
+    /** Responsive grid span (YAML `span`); normalized server-side to {@link FieldSpanNamed}. */
+    span?: FieldSpan;
     /**
      * When set, the field auto-fills from {@link FormFieldPreset.field} until the user edits this field
      * or the field was non-empty when the form loaded (e.g. existing record).
@@ -98,11 +112,11 @@ type SwitchFieldProps = FormFieldBase & {
 };
 type RichTextFieldProps = FormFieldBase &
     WithPlaceholder & {
-        showFixedToolbar?: boolean;
+        toolbar?: boolean;
     };
 type BlockEditorFieldProps = FormFieldBase &
     WithPlaceholder & {
-        showFixedToolbar?: boolean;
+        toolbar?: boolean;
     };
 export type FileUploadStoredFile = {
     disk?: string;

@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import { FieldLoading } from '@/components/loading/field-loading';
 import { FieldError } from '@/components/ui/field';
+import { canonicalizeSpan, spanClassFor } from '@/lib/field-span';
 import { loadField } from '@/lib/form';
 import { mapFormFieldPropsToComponentProps } from '@/lib/form-field-props';
 import {
@@ -8,10 +9,18 @@ import {
     relationRemoteProps,
     serializeFieldValue,
 } from '@/lib/form-page-field-values';
+import { cn } from '@/lib/utils';
+import type { FormFieldProps } from '@/types/form-fields';
 import type {
     SchemaFieldRenderEntry,
     SchemaFieldsRendererProps,
 } from '@/types/schema-fields-renderer';
+
+function spanFromField(field: FormFieldProps): unknown {
+    const record = field as Record<string, unknown>;
+
+    return record.span;
+}
 
 function buildFieldComponentProps(
     entry: SchemaFieldRenderEntry,
@@ -51,6 +60,7 @@ function buildFieldComponentProps(
 
 export function SchemaFieldsRenderer({
     entries,
+    spanContext = 'page',
     entity,
     parentRecordKey,
     modeKey,
@@ -71,14 +81,19 @@ export function SchemaFieldsRenderer({
                     parentRecordKey,
                     onEmbeddedTableToolbarAction,
                 });
+                const spanClass = spanClassFor(
+                    canonicalizeSpan(spanFromField(entry.field)),
+                    spanContext,
+                );
                 return (
                     <div
                         key={`${entry.id}:${modeKey ?? 'default'}`}
-                        className={
+                        className={cn(
                             entry.disabled === true
                                 ? 'space-y-2 pointer-events-none opacity-60'
-                                : 'space-y-2'
-                        }
+                                : 'space-y-2',
+                            spanClass,
+                        )}
                         aria-disabled={entry.disabled === true || undefined}
                     >
                         <Suspense fallback={<FieldLoading {...entry.field} />}>

@@ -17,7 +17,7 @@ const DEMO_QUERY_FIELD_KEYS = new Set([
     'options',
     'multiple',
     'defaultChecked',
-    'showFixedToolbar',
+    'toolbar',
     'dateLabel',
     'timeLabel',
     'datePlaceholder',

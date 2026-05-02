@@ -5,6 +5,7 @@ import type {
     FlatpackListServerPagination,
     FlatpackListServerSorting,
 } from '@/types/data-table';
+import type { FieldSpanNamed } from '@/types/form-fields';
 
 export type FlatpackMetricValueFormat = {
     kind: 'number' | 'currency' | 'percentage';
@@ -84,6 +85,7 @@ export type FlatpackMetricWidget = {
     period: FlatpackMetricPeriod;
     trend?: FlatpackMetricTrendOptions | null;
     data?: FlatpackMetricWidgetResolvedData;
+    span?: FieldSpanNamed;
 };
 
 export type FlatpackCardWidget = {
@@ -95,6 +97,7 @@ export type FlatpackCardWidget = {
         context?: string;
         footer?: string;
     };
+    span?: FieldSpanNamed;
 };
 
 export type FlatpackStatusWidget = {
@@ -103,6 +106,7 @@ export type FlatpackStatusWidget = {
     label: string;
     description?: string | null;
     data?: FlatpackStatusWidgetResolvedData;
+    span?: FieldSpanNamed;
 };
 
 export type FlatpackChartWidget = {
@@ -112,6 +116,7 @@ export type FlatpackChartWidget = {
     description?: string | null;
     chart: FlatpackChartConfig;
     data?: FlatpackChartWidgetResolvedData;
+    span?: FieldSpanNamed;
 };
 
 export type FlatpackTableWidgetResolvedData = {
@@ -151,6 +156,7 @@ export type FlatpackTableWidget = {
     pagination?: boolean | { per_page?: number; page_sizes?: number[] };
     default_sort?: FlatpackDataTableDefaultSort;
     data?: FlatpackTableWidgetResolvedData;
+    span?: FieldSpanNamed;
 };
 
 export type FlatpackWidget =

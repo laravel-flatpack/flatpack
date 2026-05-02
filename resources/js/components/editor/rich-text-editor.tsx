@@ -19,7 +19,7 @@ export type RichTextEditorProps = {
     className?: string;
     placeholder?: string;
     readOnly?: boolean;
-    showFixedToolbar?: boolean;
+    toolbar?: boolean;
     initialValue?: Value;
     onValueChange?: (value: Value) => void;
 };
@@ -29,7 +29,7 @@ export function RichTextEditor({
     className,
     placeholder = 'Type / for commands…',
     readOnly,
-    showFixedToolbar = false,
+    toolbar = false,
     initialValue,
     onValueChange,
 }: RichTextEditorProps) {
@@ -65,7 +65,7 @@ export function RichTextEditor({
                 onValueChange?.(next);
             }}
         >
-            {showFixedToolbar ? (
+            {toolbar ? (
                 <div
                     className={cn(
                         'flex flex-col overflow-hidden rounded-md border border-input bg-background ring-offset-background',

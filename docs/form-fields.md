@@ -60,6 +60,23 @@ These are widely shared across field types.
 | `rules` | `string \| string[]` | Laravel validation rules. |
 | `value` | `unknown` | Initial/default value. |
 | `trigger` | `object` | Reactive behavior (`show`, `hide`, `enable`, `disable`, `empty`) for another field based on condition. |
+| `span` | `string` | Optional grid span: `full`, `half`, `two_thirds`, `third`, `quarter`, or aliases `1/2`, `2/3`, `1/3`, `1/4`. See [YAML reference — field types](./yaml-reference/form-field-types.md#layout-grid-span). |
+
+### Built-in Laravel validation for submitted values
+
+For actions with `submit: true`, Flatpack composes Laravel rules for each `values.{fieldId}` from the merged form schema (`fields` + tab `fields`). Base rules depend on field **`type`** and **`required`** (and relation helpers where applicable); optional YAML **`rules`** are **merged** on top.
+
+Notable defaults:
+
+| Field type | Typical built-in rule (after `required` / `nullable`) |
+| --- | --- |
+| `rich-text`, `block-editor` | **`array`** — the browser submits a **Plate/Slate document** as a JSON **array of nodes**, not a scalar string. |
+| `text`, `textarea` | `string` |
+| `repeater`, `table`, `date-range-picker`, … | `array` (where applicable) |
+
+Use an Eloquent **`array`** or **`json`** cast (or a JSON column) for model attributes that store `rich-text` / `block-editor` payloads.
+
+If you add passthrough **`rules`** in YAML, avoid conflicting overrides—for example, do **not** append `string` to editor fields.
 
 `trigger.condition` supports:
 
@@ -271,13 +288,15 @@ fields:
   body:
     type: rich-text
     label: Body
-    showFixedToolbar: true
+    toolbar: true
 ```
 
 | Option | Type | Description |
 | --- | --- | --- |
 | `placeholder` | `string` | Editor placeholder. |
-| `showFixedToolbar` | `boolean` | Pin/fix toolbar behavior. |
+| `toolbar` | `boolean` | When true, shows the pinned formatting toolbar; when false or omitted, uses the default editor chrome. |
+
+**Persistence:** the submitted value is a JSON **array** (Plate document). Map it to a cast such as `'body' => 'array'` or `'body' => 'json'` on your model (see [built-in validation](#built-in-laravel-validation-for-submitted-values)).
 
 ## 12) `block-editor`
 
@@ -291,7 +310,9 @@ fields:
 | Option | Type | Description |
 | --- | --- | --- |
 | `placeholder` | `string` | Editor placeholder. |
-| `showFixedToolbar` | `boolean` | Fixed toolbar behavior. |
+| `toolbar` | `boolean` | Same as `rich-text`: pinned formatting toolbar when true. |
+
+**Persistence:** same as `rich-text` — submitted value is a JSON **array** (Plate document); use an **`array`** / **`json`** model cast or JSON column. See [built-in validation](#built-in-laravel-validation-for-submitted-values).
 
 ## 13) `file-upload`
 

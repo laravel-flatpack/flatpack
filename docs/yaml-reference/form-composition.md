@@ -17,6 +17,14 @@ All keys are optional at the schema level, but in practice you typically define 
 
 No other root keys are allowed (`additionalProperties: false`).
 
+## Layout
+
+Root and tab fields are rendered in a responsive grid (see `span` on each field in [form-field-types.md](./form-field-types.md)). Omitting `span` keeps each field full width on its row.
+
+## Validation
+
+Submit actions (`submit: true` on [header actions](#header-actions-actions)) post `values` to the form save endpoint. Laravel validates `values.*` using rules composed from each field’s **`type`** and **`required`** (plus optional YAML **`rules`**). **`rich-text`** and **`block-editor`** fields validate as **`array`** because the panel sends a Plate/Slate **JSON document** (array of nodes), not a plain string—persist with a matching model **`array`** / **`json`** cast or JSON column. Details: [Available Form Fields — Built-in Laravel validation](../form-fields.md#built-in-laravel-validation-for-submitted-values) and [form-field-types — Automatic validation](./form-field-types.md#automatic-validation-rules-for-values).
+
 ## Tab panel (`formTabPanel`)
 
 | Key | Required | Type | Description |

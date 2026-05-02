@@ -4,6 +4,11 @@ import { Bold, Code2, Italic, Strikethrough, Underline } from 'lucide-react';
 import { KEYS } from 'platejs';
 import { FixedToolbar } from '@/components/ui/fixed-toolbar';
 import {
+    Heading1ToolbarButton,
+    Heading2ToolbarButton,
+    Heading3ToolbarButton,
+} from '@/components/ui/heading-toolbar-button';
+import {
     IndentToolbarButton,
     OutdentToolbarButton,
 } from '@/components/ui/indent-toolbar-button';
@@ -20,7 +25,7 @@ import { ToolbarGroup } from '@/components/ui/toolbar';
 
 /**
  * Must render inside `<Plate>` (same scope as the editor). Used by
- * {@link RichTextEditor} and {@link BlockEditor} when `showFixedToolbar` is true.
+ * {@link RichTextEditor} and {@link BlockEditor} when `toolbar` is true.
  */
 export function RichTextToolbar() {
     return (
@@ -47,6 +52,12 @@ export function RichTextToolbar() {
                 <MarkToolbarButton nodeType={KEYS.code} tooltip="Code">
                     <Code2 className="size-4" />
                 </MarkToolbarButton>
+            </ToolbarGroup>
+
+            <ToolbarGroup>
+                <Heading1ToolbarButton />
+                <Heading2ToolbarButton />
+                <Heading3ToolbarButton />
             </ToolbarGroup>
 
             <ToolbarGroup>

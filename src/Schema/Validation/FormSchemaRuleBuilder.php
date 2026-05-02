@@ -130,7 +130,8 @@ final class FormSchemaRuleBuilder
         }
 
         return match ($type) {
-            'text', 'textarea', 'rich-text', 'block-editor' => array_merge($rules, ['string']),
+            'text', 'textarea' => array_merge($rules, ['string']),
+            'rich-text', 'block-editor' => array_merge($rules, ['array']),
             'checkbox', 'switch' => array_merge($rules, ['boolean']),
             'date-picker' => array_merge($rules, ['date']),
             'date-range-picker' => array_merge($rules, ['array']),

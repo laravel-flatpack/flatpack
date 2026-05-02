@@ -194,7 +194,7 @@ export type FlatpackFormCompositionFieldRichTextYaml = {
     required?: boolean;
     rules?: FlatpackFormCompositionValidationRulesYaml;
     value?: unknown;
-    showFixedToolbar?: boolean;
+    toolbar?: boolean;
     trigger?: FormFieldTrigger;
 };
 
@@ -207,7 +207,7 @@ export type FlatpackFormCompositionFieldBlockEditorYaml = {
     required?: boolean;
     rules?: FlatpackFormCompositionValidationRulesYaml;
     value?: unknown;
-    showFixedToolbar?: boolean;
+    toolbar?: boolean;
     trigger?: FormFieldTrigger;
 };
 

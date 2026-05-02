@@ -14,7 +14,7 @@ export const BlockEditorField = ({
     placeholder,
     helperText,
     className,
-    showFixedToolbar,
+    toolbar,
     initialValue,
     onValueChange,
 }: {
@@ -23,7 +23,7 @@ export const BlockEditorField = ({
     placeholder?: string;
     helperText?: string;
     className?: string;
-    showFixedToolbar?: boolean;
+    toolbar?: boolean;
     initialValue?: Value;
     onValueChange?: (value: Value) => void;
 }) => {
@@ -36,7 +36,7 @@ export const BlockEditorField = ({
                     fallback={
                         <PlateEditorFallback
                             variant="block"
-                            showFixedToolbar={showFixedToolbar}
+                            toolbar={toolbar}
                             className={className}
                         />
                     }
@@ -45,7 +45,7 @@ export const BlockEditorField = ({
                         labelId={labelId}
                         className={className}
                         placeholder={placeholder}
-                        showFixedToolbar={showFixedToolbar}
+                        toolbar={toolbar}
                         initialValue={initialValue}
                         onValueChange={onValueChange}
                     />

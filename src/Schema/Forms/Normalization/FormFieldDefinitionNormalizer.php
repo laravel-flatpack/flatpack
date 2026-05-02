@@ -7,6 +7,7 @@ namespace Flatpack\Schema\Forms\Normalization;
 use Flatpack\Schema\Forms\FormFieldType;
 use Flatpack\Schema\Generated\CompositionSchemaKeys;
 use Flatpack\Support\CompositionDebugLog;
+use Flatpack\Support\FieldSpanCanonicalizer;
 
 /**
  * Normalizes a single form field definition and drops fields with unsupported types.
@@ -37,6 +38,13 @@ final class FormFieldDefinitionNormalizer
         $fieldDefinition = $this->normalizePresetRules($fieldDefinition, $yamlKey, $log);
 
         $label = $this->fieldDisplayLabel($fieldDefinition, $yamlKey);
+        FieldSpanCanonicalizer::applyToDefinition(
+            $fieldDefinition,
+            sprintf('Form field "%s"', $label),
+            $log,
+        );
+        $this->normalizeNestedSpansInFieldDefinition($fieldDefinition, $yamlKey, $log);
+
         if (! in_array($canonicalType, CompositionSchemaKeys::FORM_FIELD_TYPES_CANONICAL, true)) {
             $typeLabel = $rawType !== '' ? $rawType : (string) $fieldDefinition['type'];
             $log?->add(sprintf(
@@ -363,5 +371,116 @@ final class FormFieldDefinitionNormalizer
         }
 
         return false;
+    }
+
+    /**
+     * Canonicalizes `span` on nested structures (repeater item fields, embedded table edit fields, nested widgets).
+     *
+     * @param  array<string, mixed>  $fieldDefinition
+     */
+    private function normalizeNestedSpansInFieldDefinition(
+        array &$fieldDefinition,
+        string $yamlKey,
+        ?CompositionDebugLog $log,
+    ): void {
+        $type = isset($fieldDefinition['type']) ? trim((string) $fieldDefinition['type']) : '';
+
+        if ($type === 'repeater') {
+            $parentLabel = $this->fieldDisplayLabel($fieldDefinition, $yamlKey);
+            $inlineFields = $fieldDefinition['fields'] ?? null;
+            if (is_array($inlineFields)) {
+                foreach ($inlineFields as $nestedKey => &$nested) {
+                    if (! is_array($nested)) {
+                        continue;
+                    }
+                    $nestedYamlKey = is_string($nestedKey) ? $nestedKey : (string) $nestedKey;
+                    $nl = $this->fieldDisplayLabel($nested, $nestedYamlKey);
+                    FieldSpanCanonicalizer::applyToDefinition(
+                        $nested,
+                        sprintf('Form repeater "%s" item field "%s"', $parentLabel, $nl),
+                        $log,
+                    );
+                    $this->normalizeNestedSpansInFieldDefinition($nested, $nestedYamlKey, $log);
+                }
+                unset($nested);
+            }
+
+            $groups = $fieldDefinition['groups'] ?? null;
+            if (is_array($groups)) {
+                foreach ($groups as $groupKey => &$group) {
+                    if (! is_array($group)) {
+                        continue;
+                    }
+                    $innerFields = $group['fields'] ?? null;
+                    if (! is_array($innerFields)) {
+                        continue;
+                    }
+                    foreach ($innerFields as $nestedKey => &$nested) {
+                        if (! is_array($nested)) {
+                            continue;
+                        }
+                        $nestedYamlKey = is_string($nestedKey) ? $nestedKey : (string) $nestedKey;
+                        $nl = $this->fieldDisplayLabel($nested, $nestedYamlKey);
+                        FieldSpanCanonicalizer::applyToDefinition(
+                            $nested,
+                            sprintf(
+                                'Form repeater "%s" group "%s" item field "%s"',
+                                $parentLabel,
+                                is_string($groupKey) ? $groupKey : (string) $groupKey,
+                                $nl,
+                            ),
+                            $log,
+                        );
+                        $this->normalizeNestedSpansInFieldDefinition($nested, $nestedYamlKey, $log);
+                    }
+                    unset($nested);
+                }
+                unset($group);
+            }
+        }
+
+        if ($type === 'table') {
+            if (! isset($fieldDefinition['columns']) || ! is_array($fieldDefinition['columns'])) {
+                return;
+            }
+
+            foreach ($fieldDefinition['columns'] as $columnKey => &$column) {
+                if (! is_array($column)) {
+                    continue;
+                }
+                $colId = is_string($columnKey) ? $columnKey : (string) $columnKey;
+                foreach (['edit_form_field', 'editFormField'] as $editKey) {
+                    if (! isset($column[$editKey]) || ! is_array($column[$editKey])) {
+                        continue;
+                    }
+                    FieldSpanCanonicalizer::applyToDefinition(
+                        $column[$editKey],
+                        sprintf('Embedded table column "%s" edit field (%s)', $colId, $editKey),
+                        $log,
+                    );
+                }
+            }
+            unset($column);
+        }
+
+        if ($type === 'widget') {
+            $widgets = $fieldDefinition['widget'] ?? null;
+            if (! is_array($widgets)) {
+                return;
+            }
+            $parentLabel = $this->fieldDisplayLabel($fieldDefinition, $yamlKey);
+            foreach ($widgets as $widgetId => &$widgetDef) {
+                if (! is_array($widgetDef)) {
+                    continue;
+                }
+                $wid = is_string($widgetId) ? $widgetId : (string) $widgetId;
+                FieldSpanCanonicalizer::applyToDefinition(
+                    $widgetDef,
+                    sprintf('Form field "%s" nested widget "%s"', $parentLabel, $wid),
+                    $log,
+                );
+            }
+            unset($widgetDef);
+        }
     }
 }
