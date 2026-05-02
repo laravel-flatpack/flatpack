@@ -148,6 +148,8 @@ export function useFlatpackList(props: FlatpackListPageProps) {
         sorting: serverSorting = { sort_by: null, sort_direction: null },
         list_actions: listActions = [],
         bulk_actions: bulkActions = [],
+        widgets,
+        widgets_schema: widgetsSchema,
     } = props;
     const displayName = name ?? entity ?? '';
     const pageTitle = displayName ? `${displayName} list` : '';
@@ -556,5 +558,7 @@ export function useFlatpackList(props: FlatpackListPageProps) {
         listActions,
         entity,
         modelKey,
+        widgets,
+        widgetsSchema,
     };
 }

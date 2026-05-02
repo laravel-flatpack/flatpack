@@ -3,6 +3,7 @@ import type { MenuIconName } from '@/components/icons/lucide-menu-icon-registry'
 import { menuIcons } from '@/components/icons/lucide-menu-icon-registry';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { WidgetErrorBoundary } from '@/components/widgets/widget-error-boundary';
+import { cn } from '@/lib/utils';
 import { renderWidgetByType, widgetGridSpanClass } from '@/lib/widget-trigger';
 import type {
     FlatpackWidget,
@@ -10,9 +11,10 @@ import type {
     FlatpackWidgetTabPanelLayout,
 } from '@/types/widgets-composition';
 
-type DashboardWidgetsProps = {
+type WidgetsRendererProps = {
     widgets?: FlatpackWidgetsCompositionSchema['widgets'];
     tabPanels?: FlatpackWidgetTabPanelLayout[];
+    className?: string;
 };
 
 type WidgetEntry = {
@@ -20,10 +22,11 @@ type WidgetEntry = {
     widget: FlatpackWidget;
 };
 
-export function DashboardWidgets({
+export function WidgetsRenderer({
     widgets,
     tabPanels,
-}: DashboardWidgetsProps) {
+    className,
+}: WidgetsRendererProps) {
     const entries = useMemo<WidgetEntry[]>(
         () =>
             Object.entries(widgets ?? {}).map(([id, widget]) => ({
@@ -84,7 +87,12 @@ export function DashboardWidgets({
     }, [tabPanels]);
 
     const renderWidgetGrid = (subset: WidgetEntry[]) => (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div
+            className={cn(
+                'grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4',
+                className,
+            )}
+        >
             {subset.map((entry) => (
                 <div
                     key={entry.id}

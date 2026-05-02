@@ -396,6 +396,113 @@ Persistence requirements:
 - The configured reorder column must exist on the related model table.
 - Existing rows should already have contiguous values (`1..n`) in that column before enabling reordering.
 
+## 15) `repeater`
+
+A repeater stores **JSON/array-shaped form data**: each item is an object whose keys match nested field ids. Values persist on the parent attribute your YAML field id maps to (typically a JSON cast or array column).
+
+You must supply **exactly one** of:
+
+- **`fields`** — Inline nested field map (same shapes as top-level `fields` in `resources/schema/form.json`).
+- **`form`** — Non-empty **string**: relative path from the entity’s composition directory to a YAML fragment that defines the item fields (only a path is allowed; inline `{ fields: ... }` here is invalid).
+- **`groups`** — Grouped templates: a path string, ordered list, or keyed map of group definitions (each group has its own `label` and `fields` map). Mutually exclusive with `fields` and `form`.
+
+Nested `fields` support the same `type` values as the rest of the form, including **nested `repeater`** fields.
+
+### Example (inline `fields`)
+
+```yaml
+fields:
+  line_items:
+    type: repeater
+    label: Line items
+    minItems: 1
+    maxItems: 20
+    titleFrom: name
+    displayMode: accordion
+    itemsExpanded: true
+    fields:
+      name:
+        type: text
+        label: Name
+        required: true
+      quantity:
+        type: text
+        label: Qty
+      price:
+        type: text
+        label: Price
+```
+
+### Example (`form` fragment path)
+
+```yaml
+fields:
+  steps:
+    type: repeater
+    label: Steps
+    titleFrom: title
+    form: step_item.yaml
+```
+
+Place `step_item.yaml` beside that entity’s `form.yaml` (under `flatpack/{entity}/` by default). The fragment carries the **same nested field map** you would have put under `fields` on the repeater when inlining.
+
+**`step_item.yaml`** (fragment referenced by `form`):
+
+```yaml
+fields:
+  title:
+    type: text
+    label: Step title
+  notes:
+    type: textarea
+    label: Notes
+    rows: 4
+```
+
+Each key (`title`, `notes`, …) becomes an attribute on each repeater item. Your loader / normalizer should merge this file into the repeater’s item `fields` before the UI runs (same end shape as the inline example above).
+
+### Example (group mode)
+
+```yaml
+fields:
+  blocks:
+    type: repeater
+    label: Blocks
+    groupKeyFrom: _group
+    groups:
+      hero:
+        label: Hero
+        fields:
+          title:
+            type: text
+            label: Title
+      quote:
+        label: Quote
+        fields:
+          body:
+            type: textarea
+            label: Quote
+```
+
+| Option | Type | Description |
+| --- | --- | --- |
+| `fields` | `object` | Per-item field map. Exclusive with `form` and `groups`. |
+| `form` | `string` | Path to YAML fragment (string only). Exclusive with `fields` and `groups`. |
+| `groups` | `string \| array \| object` | Group definitions or path to them. Exclusive with `fields` and `form`. |
+| `groupKeyFrom` | `string` | Attribute on each saved item that stores the selected group key. Default: `_group`. |
+| `displayMode` | `accordion \| builder` | Row UI: collapsible rows vs stacked builder layout. Default: `accordion`. |
+| `itemsExpanded` | `boolean` | When `displayMode` is `accordion`, whether rows start expanded. Default: `true`. |
+| `titleFrom` | `string \| false` | Item attribute used as the collapsed row title. With `minItems: 1` and `maxItems: 1`, set to `false` to hide the per-row title bar. |
+| `minItems` | `integer` | Minimum items; `minItems: 1` can show one initial row. |
+| `maxItems` | `integer` | Maximum items. |
+| `prompt` | `string` | Label for the control that adds a new item. Default: Add new item. |
+| `showReorder` | `boolean` | Show move up/down controls. Default: `true`. |
+| `showDuplicate` | `boolean` | Show duplicate-row control. Default: `true`. |
+
+### Fixed single row (`minItems` and `maxItems` both `1`)
+
+When only one row is allowed, the UI omits **Add**, **reorder**, **duplicate**, and **delete** for that repeater. Set **`titleFrom: false`** if you also want to hide the accordion/builder row title strip (nested fields only).
+
 ## Dashboard widgets (`type: widget`) and `widget_providers`
 
 List and form compositions can define read-only **widgets** (metrics, cards, status, charts, and dashboard tables). Widgets that declare `provider` resolve data from PHP classes registered in `config('flatpack.widget_providers')`.

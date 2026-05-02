@@ -98,6 +98,7 @@ final class CompositionSchemaKeys
         'date-picker',
         'date-range-picker',
         'file-upload',
+        'repeater',
         'rich-text',
         'select',
         'switch',

@@ -7,6 +7,7 @@ export {
 export { DatePickerField } from './date-picker';
 export { DateRangePickerField } from './date-range-picker';
 export { FileUploadField } from './file-upload';
+export { RepeaterField } from './repeater';
 export { RichTextField } from './rich-text';
 export { SelectField, type SelectFieldOption } from './select';
 export { SwitchField } from './switch';

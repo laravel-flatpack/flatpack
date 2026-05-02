@@ -19,7 +19,13 @@ function isRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-function normalizeFieldType(value: unknown): FormFieldType | undefined {
+/**
+ * Maps raw YAML / PHP `type` strings to canonical {@link FormFieldType}
+ * (same rules as root form fields). Used for nested definitions such as repeater items.
+ */
+export function normalizeYamlFieldType(
+    value: unknown,
+): FormFieldType | undefined {
     if (value === 'date') {
         return 'date-picker';
     }
@@ -47,6 +53,14 @@ function defaultValueForField(field: FormFieldProps): unknown {
             return field.multiple ? [] : null;
         case 'file-upload':
             return field.multiple ? [] : null;
+        case 'repeater': {
+            const minRaw = (field as { minItems?: unknown }).minItems;
+            const min =
+                typeof minRaw === 'number' && minRaw >= 0
+                    ? Math.floor(minRaw)
+                    : 0;
+            return Array.from({ length: min }, () => ({}));
+        }
         default:
             return undefined;
     }
@@ -99,7 +113,7 @@ export function normalizeFields(
         if (!isRecord(fieldDefinition)) {
             return [];
         }
-        const type = normalizeFieldType(fieldDefinition.type);
+        const type = normalizeYamlFieldType(fieldDefinition.type);
         if (type === undefined) {
             return [];
         }

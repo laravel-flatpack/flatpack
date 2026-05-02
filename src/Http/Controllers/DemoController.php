@@ -10,6 +10,12 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Response;
 
+/**
+ * Inertia docs/catalog page for Flatpack UI primitives.
+ *
+ * Field entries for {@code catalog=fields} (including repeater, table, …) are defined in
+ * {@see DemoCatalogFactory::fieldsCatalog()}.
+ */
 final readonly class DemoController
 {
     public function __construct(

@@ -176,6 +176,100 @@ describe('form composition schema (resources/schema/form.json)', function () {
 
         expect($errors)->not->toBeEmpty();
     });
+
+    it('accepts repeater field with top-level fields map', function () {
+        $errors = CompositionSchemaAsserter::validateForm([
+            'fields' => [
+                'lines' => [
+                    'type' => 'repeater',
+                    'label' => 'Lines',
+                    'titleFrom' => 'title_when_collapsed',
+                    'fields' => [
+                        'added_at' => [
+                            'type' => 'date-picker',
+                            'label' => 'Date added',
+                        ],
+                        'details' => [
+                            'type' => 'textarea',
+                            'label' => 'Details',
+                        ],
+                        'title_when_collapsed' => [
+                            'type' => 'text',
+                            'label' => 'Collapsed title',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        expect($errors)->toBeEmpty();
+    });
+
+    it('rejects repeater when both form and groups are set', function () {
+        $errors = CompositionSchemaAsserter::validateForm([
+            'fields' => [
+                'items' => [
+                    'type' => 'repeater',
+                    'label' => 'Items',
+                    'form' => 'fragments/repeater-items.yaml',
+                    'groups' => [
+                        [
+                            'label' => 'Group A',
+                            'fields' => [
+                                'a' => [
+                                    'type' => 'text',
+                                    'label' => 'A',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        expect($errors)->not->toBeEmpty();
+    });
+
+    it('rejects repeater when both form and fields are set', function () {
+        $errors = CompositionSchemaAsserter::validateForm([
+            'fields' => [
+                'items' => [
+                    'type' => 'repeater',
+                    'label' => 'Items',
+                    'form' => 'fragments/items.yaml',
+                    'fields' => [
+                        'b' => [
+                            'type' => 'text',
+                            'label' => 'B',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        expect($errors)->not->toBeEmpty();
+    });
+
+    it('rejects repeater with legacy inline form object', function () {
+        $errors = CompositionSchemaAsserter::validateForm([
+            'fields' => [
+                'legacy' => [
+                    'type' => 'repeater',
+                    'label' => 'Legacy',
+                    'form' => [
+                        'fields' => [
+                            'x' => [
+                                'type' => 'text',
+                                'label' => 'X',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        expect($errors)->not->toBeEmpty();
+    });
 });
 
 describe('list composition schema (resources/schema/list.json)', function () {

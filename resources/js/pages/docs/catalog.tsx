@@ -82,8 +82,9 @@ function DemoFieldPreview({
             buildDemoFieldRenderProps(entry, {
                 queryOverrides,
                 onValueChange,
+                liveValue,
             }),
-        [entry, queryOverrides, onValueChange],
+        [entry, liveValue, queryOverrides, onValueChange],
     );
 
     const LazyField = lazyByType[entry.props.type];

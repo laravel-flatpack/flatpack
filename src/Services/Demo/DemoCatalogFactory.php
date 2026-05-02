@@ -499,6 +499,44 @@ final class DemoCatalogFactory
                 'value' => null,
             ],
             [
+                'id' => 'repeater',
+                'title' => 'Repeater',
+                'description' => 'A repeating group of sub-fields, stored as an array of objects.',
+                'props' => [
+                    'type' => 'repeater',
+                    'label' => 'Repeater label',
+                    'helperText' => 'Add rows, reorder, duplicate, or remove. Accordion mode with title from the first text field.',
+                    'titleFrom' => 'item_title',
+                    'displayMode' => 'accordion',
+                    'itemsExpanded' => true,
+                    'minItems' => 0,
+                    'prompt' => 'Add new item',
+                    'fields' => [
+                        'item_title' => [
+                            'type' => 'text',
+                            'label' => 'Item title',
+                            'placeholder' => 'Shown when row is collapsed',
+                        ],
+                        'item_detail' => [
+                            'type' => 'textarea',
+                            'label' => 'Item detail',
+                            'rows' => 3,
+                        ],
+                    ],
+                ],
+                'showValue' => true,
+                'value' => [
+                    [
+                        'item_title' => 'First item',
+                        'item_detail' => 'First item body text.',
+                    ],
+                    [
+                        'item_title' => 'Second item',
+                        'item_detail' => 'Second item body text.',
+                    ],
+                ],
+            ],
+            [
                 'id' => 'data-table',
                 'title' => 'Data table',
                 'description' => 'A data table input field.',

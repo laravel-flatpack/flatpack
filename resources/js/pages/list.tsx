@@ -7,6 +7,7 @@ import { ListActions } from '@/components/shell/list/list-actions';
 import { PageHeader } from '@/components/shell/page-header';
 import { DataTable } from '@/components/table/data-table';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { WidgetsRenderer } from '@/components/widgets/widgets-renderer';
 import { useFlatpackList } from '@/hooks/use-flatpack-list';
 import FlatpackLayout from '@/layouts/flatpack-layout';
 import type { FlatpackListPageProps } from '@/types/pages/flatpack';
@@ -57,7 +58,14 @@ export default function FlatpackListPage(props: FlatpackListPageProps) {
         listActions,
         entity,
         modelKey,
+        widgets,
+        widgetsSchema,
     } = useFlatpackList(props);
+
+    const hasListWidgets =
+        widgets != null &&
+        typeof widgets === 'object' &&
+        Object.keys(widgets).length > 0;
 
     const listTabsToolbar =
         listTabPanels.length > 0 ? (
@@ -151,6 +159,13 @@ export default function FlatpackListPage(props: FlatpackListPageProps) {
                         />
                     }
                 />
+                {hasListWidgets ? (
+                    <WidgetsRenderer
+                        widgets={widgets}
+                        tabPanels={widgetsSchema?.tab_panels}
+                        className="mb-4"
+                    />
+                ) : null}
                 <div className="flex flex-col gap-6">
                     {allColumns.length > 0 ? (
                         <DataTable

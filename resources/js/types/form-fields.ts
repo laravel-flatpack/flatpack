@@ -167,6 +167,28 @@ type TableFieldProps = FormFieldBase & {
     openDetailDrawerOnRowClick?: boolean;
 };
 
+export type RepeaterDisplayMode = 'accordion' | 'builder';
+
+export type RepeaterFieldProps = FormFieldBase & {
+    /** Hydrated row list from the parent record; omitted in YAML, present at runtime. */
+    value?: unknown;
+    /** Inline per-item field definitions. Mutually exclusive with `form`. */
+    fields?: Record<string, Record<string, unknown>>;
+    /** Relative YAML fragment path (resolved server-side); mutually exclusive with `fields`. */
+    form?: string;
+    groups?: unknown;
+    prompt?: string;
+    displayMode?: RepeaterDisplayMode;
+    itemsExpanded?: boolean;
+    /** Field key for collapsed title, or `false` with min/max 1 to hide the row title bar. */
+    titleFrom?: string | false;
+    minItems?: number;
+    maxItems?: number;
+    groupKeyFrom?: string;
+    showReorder?: boolean;
+    showDuplicate?: boolean;
+};
+
 export type FormFieldProps =
     | ({ type: 'text' } & TextFieldProps)
     | ({ type: 'textarea' } & TextareaFieldProps)
@@ -180,6 +202,7 @@ export type FormFieldProps =
     | ({ type: 'rich-text' } & RichTextFieldProps)
     | ({ type: 'block-editor' } & BlockEditorFieldProps)
     | ({ type: 'file-upload' } & FileUploadFieldProps)
-    | ({ type: 'table' } & TableFieldProps);
+    | ({ type: 'table' } & TableFieldProps)
+    | ({ type: 'repeater' } & RepeaterFieldProps);
 
 export type FormFieldType = FormFieldProps['type'];

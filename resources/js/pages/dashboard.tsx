@@ -1,5 +1,5 @@
 import { Head } from '@inertiajs/react';
-import { DashboardWidgets } from '@/components/widgets/dashboard-widgets';
+import { WidgetsRenderer } from '@/components/widgets/widgets-renderer';
 import { useFlatpackDashboard } from '@/hooks/use-flatpack-dashboard';
 import FlatpackLayout from '@/layouts/flatpack-layout';
 import type { FlatpackDashboardPageProps } from '@/types/pages/flatpack';
@@ -12,7 +12,7 @@ export default function FlatpackDashboard(props: FlatpackDashboardPageProps) {
             <Head title="Dashboard" />
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
                 <div className="col-span-1 md:col-span-2 xl:col-span-4">
-                    <DashboardWidgets widgets={widgets} tabPanels={tabPanels} />
+                    <WidgetsRenderer widgets={widgets} tabPanels={tabPanels} />
                 </div>
             </div>
         </div>

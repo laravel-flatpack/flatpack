@@ -73,12 +73,19 @@ export function buildDemoFieldRenderProps(
     options: {
         queryOverrides: Record<string, string>;
         onValueChange: (value: unknown) => void;
+        /** When set (e.g. catalog live preview), overrides static `entry.value` for repeater rows. */
+        liveValue?: unknown;
     },
 ): Record<string, unknown> {
     const merged = mergeQueryOverridesIntoFormFieldProps(
         entry.props,
         options.queryOverrides,
     );
+    const repeaterRowsFromEntry = Array.isArray(entry.value) ? entry.value : [];
+    const repeaterRowsLive =
+        options.liveValue !== undefined && options.liveValue !== null
+            ? options.liveValue
+            : undefined;
     const propsForField: FormFieldProps =
         merged.type === 'table'
             ? {
@@ -87,9 +94,16 @@ export function buildDemoFieldRenderProps(
                       ? (entry.value as Record<string, unknown>[])
                       : [],
               }
-            : merged.type === 'select'
-              ? { ...merged, value: entry.value }
-              : merged;
+            : merged.type === 'repeater'
+              ? {
+                    ...merged,
+                    value: Array.isArray(repeaterRowsLive)
+                        ? repeaterRowsLive
+                        : repeaterRowsFromEntry,
+                }
+              : merged.type === 'select'
+                ? { ...merged, value: entry.value }
+                : merged;
     return mapFormFieldPropsToComponentProps(propsForField, {
         fieldId: entry.id,
         onValueChange: options.onValueChange,

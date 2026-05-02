@@ -75,5 +75,8 @@ describe('emptyValueForField', () => {
         expect(emptyValueForField({ type: 'checkbox', label: 'Enabled' })).toBe(
             false,
         );
+        expect(
+            emptyValueForField({ type: 'repeater', label: 'Items' }),
+        ).toEqual([]);
     });
 });

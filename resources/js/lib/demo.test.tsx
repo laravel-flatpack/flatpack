@@ -116,4 +116,28 @@ describe('buildDemoFieldRenderProps', () => {
         expect(out.onValueChange).toBe(onValueChange);
         expect(out.id).toBe('e-text');
     });
+
+    it('uses liveValue for repeater rows when provided', () => {
+        const entry = {
+            id: 'e-repeater',
+            title: 'Repeater',
+            description: '',
+            props: {
+                type: 'repeater' as const,
+                label: 'R',
+                fields: {
+                    a: { type: 'text' as const, label: 'A' },
+                },
+            },
+            showValue: true,
+            value: [{ a: 'seed' }],
+        };
+        const liveRows = [{ a: 'live' }];
+        const out = buildDemoFieldRenderProps(entry, {
+            queryOverrides: {},
+            onValueChange: vi.fn(),
+            liveValue: liveRows,
+        });
+        expect(out.value).toEqual(liveRows);
+    });
 });

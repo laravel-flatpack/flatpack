@@ -373,6 +373,26 @@ function mapTable(props: FormFieldProps, ctx: FormFieldRenderContext) {
     };
 }
 
+function mapRepeater(props: FormFieldProps, ctx: FormFieldRenderContext) {
+    const { type: _t, ...rest } = props as Extract<
+        FormFieldProps,
+        { type: 'repeater' }
+    >;
+    const entity =
+        typeof ctx.entity === 'string' && ctx.entity.trim() !== ''
+            ? ctx.entity.trim()
+            : undefined;
+    return {
+        ...rest,
+        id: ctx.fieldId,
+        onValueChange: ctx.onValueChange,
+        ...(entity !== undefined ? { flatpackEntity: entity } : {}),
+        ...(ctx.parentRecordKey !== undefined
+            ? { parentRecordKey: ctx.parentRecordKey }
+            : {}),
+    };
+}
+
 const formFieldTypeToMapper: Record<FormFieldType, FormFieldPropsMapper> = {
     text: mapTextTextareaSelect,
     textarea: mapTextTextareaSelect,
@@ -387,6 +407,7 @@ const formFieldTypeToMapper: Record<FormFieldType, FormFieldPropsMapper> = {
     'time-picker': mapTimePicker,
     'file-upload': mapFileUpload,
     table: mapTable,
+    repeater: mapRepeater,
 };
 
 /**

@@ -136,6 +136,7 @@ final class FormSchemaRuleBuilder
             'date-range-picker' => array_merge($rules, ['array']),
             'time-picker' => array_merge($rules, ['array']),
             'table' => array_merge($rules, ['array']),
+            'repeater' => array_merge($rules, ['array']),
             default => array_merge($rules, ['string']),
         };
     }

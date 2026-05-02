@@ -131,6 +131,19 @@ export function componentValueProps(
             return {
                 data: Array.isArray(value) ? value : (field.data ?? []),
             };
+        case 'repeater': {
+            if (Array.isArray(value)) {
+                return { value };
+            }
+            const minRaw = (field as { minItems?: unknown }).minItems;
+            const min =
+                typeof minRaw === 'number' && minRaw >= 0
+                    ? Math.floor(minRaw)
+                    : 0;
+            return {
+                value: min > 0 ? Array.from({ length: min }, () => ({})) : [],
+            };
+        }
         default:
             return {};
     }

@@ -160,6 +160,32 @@ describe('FlatpackListPage', () => {
         expect(screen.getByText('No results.')).toBeInTheDocument();
     });
 
+    it('renders list widgets above the table when widgets prop is provided', () => {
+        render(
+            <FlatpackListPage
+                entity="posts"
+                name="Posts"
+                schema={{
+                    columns: {
+                        id: { label: 'ID', sortable: true },
+                    },
+                }}
+                records={[]}
+                widgets={{
+                    welcome: {
+                        type: 'card',
+                        label: 'Welcome',
+                        provider: 'welcome',
+                        data: { value: 'Hello' },
+                    },
+                }}
+            />,
+        );
+
+        expect(screen.getByText('Welcome')).toBeInTheDocument();
+        expect(screen.getByRole('table')).toBeInTheDocument();
+    });
+
     it('passes server data through to the table', () => {
         render(
             <FlatpackListPage

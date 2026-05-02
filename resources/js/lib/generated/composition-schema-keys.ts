@@ -83,6 +83,7 @@ export const FORM_FIELD_TYPES_CANONICAL = [
     'date-picker',
     'date-range-picker',
     'file-upload',
+    'repeater',
     'rich-text',
     'select',
     'switch',

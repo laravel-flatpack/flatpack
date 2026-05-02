@@ -22,10 +22,7 @@
         }
     },
     "files": {
-        "includes": [
-            "resources/js/**",
-            "resources/css/**"
-        ]
+        "includes": ["resources/js/**", "resources/css/**"]
     },
     "formatter": {
         "enabled": true,
@@ -49,6 +46,16 @@
         }
     },
     "overrides": [
+        {
+            "includes": ["resources/js/components/form-fields/repeater.tsx"],
+            "linter": {
+                "rules": {
+                    "suspicious": {
+                        "noArrayIndexKey": "off"
+                    }
+                }
+            }
+        },
         {
             "includes": ["resources/js/components/ui/**/*.tsx"],
             "linter": {

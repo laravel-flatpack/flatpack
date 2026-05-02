@@ -311,7 +311,78 @@
                 "block-editor",
                 "file-upload",
                 "table",
-                "widget"
+                "widget",
+                "repeater"
+            ]
+        },
+        "repeaterDisplayMode": {
+            "type": "string",
+            "enum": ["accordion", "builder"],
+            "description": "accordion uses collapsible rows; builder uses an alternate stacked editing layout."
+        },
+        "repeaterFieldsYamlPath": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Relative path to a YAML fragment under the entity composition directory that defines repeater item fields (resolved when loading compositions)."
+        },
+        "repeaterGroupDefinition": {
+            "type": "object",
+            "required": ["label", "fields"],
+            "description": "One selectable template group when the repeater runs in group mode.",
+            "properties": {
+                "key": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Stable id written to each item (see `groupKeyFrom`). If omitted, the map key may be used when `groups` is an object."
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "icon": {
+                    "type": "string",
+                    "description": "Optional Lucide icon name for the group picker."
+                },
+                "fields": {
+                    "type": "object",
+                    "minProperties": 1,
+                    "additionalProperties": {
+                        "$ref": "#/$defs/fieldDefinition"
+                    }
+                }
+            },
+            "additionalProperties": false
+        },
+        "repeaterInlineFieldsMap": {
+            "type": "object",
+            "minProperties": 1,
+            "additionalProperties": {
+                "$ref": "#/$defs/fieldDefinition"
+            },
+            "description": "Per-item field definitions inlined on the repeater. Mutually exclusive with `form` (path string)."
+        },
+        "repeaterGroupsReferenceOrInline": {
+            "description": "Group definitions as a path, ordered list, or keyed map.",
+            "oneOf": [
+                {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Path to a YAML file defining groups (array or map of group definitions)."
+                },
+                {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/$defs/repeaterGroupDefinition"
+                    }
+                },
+                {
+                    "type": "object",
+                    "minProperties": 1,
+                    "additionalProperties": {
+                        "$ref": "#/$defs/repeaterGroupDefinition"
+                    }
+                }
             ]
         },
         "selectOption": {
@@ -500,6 +571,9 @@
                 },
                 {
                     "$ref": "#/$defs/fieldWidget"
+                },
+                {
+                    "$ref": "#/$defs/fieldRepeater"
                 }
             ]
         },
@@ -1234,6 +1308,152 @@
             },
             "additionalProperties": false,
             "description": "Read-only widget field definition rendered inside forms."
+        },
+        "fieldRepeater": {
+            "type": "object",
+            "required": ["type", "label"],
+            "description": "Repeating block of sub-fields persisted as an array of objects. Use `groups` for group mode, or for a single template use top-level `fields` (inline) or `form` (string path to a YAML fragment only).",
+            "properties": {
+                "type": {
+                    "const": "repeater"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "helperText": {
+                    "type": "string"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "rules": {
+                    "$ref": "#/$defs/validationRules"
+                },
+                "value": {},
+                "fields": {
+                    "$ref": "#/$defs/repeaterInlineFieldsMap",
+                    "description": "Inline item field map. Mutually exclusive with `form` (path string)."
+                },
+                "form": {
+                    "$ref": "#/$defs/repeaterFieldsYamlPath"
+                },
+                "prompt": {
+                    "type": "string",
+                    "description": "Label for the control that adds a new item. Default: Add new item."
+                },
+                "displayMode": {
+                    "$ref": "#/$defs/repeaterDisplayMode",
+                    "description": "Default: accordion."
+                },
+                "itemsExpanded": {
+                    "type": "boolean",
+                    "description": "When `displayMode` is accordion, whether items start expanded. Default: true."
+                },
+                "titleFrom": {
+                    "description": "Item attribute key used as the collapsed row title. Use boolean false with minItems and maxItems both 1 to omit the per-row title bar.",
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "minLength": 1
+                        },
+                        {
+                            "type": "boolean",
+                            "enum": [false]
+                        }
+                    ]
+                },
+                "minItems": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Minimum rows; may pre-render empty rows when not using groups (e.g. minItems: 1 shows one row)."
+                },
+                "maxItems": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Maximum number of items allowed."
+                },
+                "groups": {
+                    "$ref": "#/$defs/repeaterGroupsReferenceOrInline"
+                },
+                "groupKeyFrom": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Attribute on each saved item that stores the selected group key. Default: _group."
+                },
+                "showReorder": {
+                    "type": "boolean",
+                    "description": "Show reorder / sort controls. Default: true."
+                },
+                "showDuplicate": {
+                    "type": "boolean",
+                    "description": "Show duplicate-row control. Default: true."
+                },
+                "trigger": {
+                    "$ref": "#/$defs/fieldTrigger"
+                }
+            },
+            "additionalProperties": false,
+            "allOf": [
+                {
+                    "oneOf": [
+                        {
+                            "allOf": [
+                                {
+                                    "required": ["groups"]
+                                },
+                                {
+                                    "not": {
+                                        "required": ["form"]
+                                    }
+                                },
+                                {
+                                    "not": {
+                                        "required": ["fields"]
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "allOf": [
+                                {
+                                    "required": ["form"]
+                                },
+                                {
+                                    "not": {
+                                        "required": ["groups"]
+                                    }
+                                },
+                                {
+                                    "not": {
+                                        "required": ["fields"]
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "allOf": [
+                                {
+                                    "required": ["fields"]
+                                },
+                                {
+                                    "not": {
+                                        "required": ["groups"]
+                                    }
+                                },
+                                {
+                                    "not": {
+                                        "required": ["form"]
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
         },
         "fieldTableActions": {
             "description": "Embedded table toolbar actions as keyed map or ordered array.",

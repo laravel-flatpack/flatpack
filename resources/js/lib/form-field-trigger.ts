@@ -87,6 +87,8 @@ export function emptyValueForField(field: FormFieldProps): unknown {
             return field.multiple ? [] : null;
         case 'table':
             return [];
+        case 'repeater':
+            return [];
         case 'select':
         case 'date-picker':
         case 'date-range-picker':
