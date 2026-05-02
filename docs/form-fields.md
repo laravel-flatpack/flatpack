@@ -1,6 +1,6 @@
 # Available Form Fields
 
-Supported field `type` values are defined in `resources/schema/form.json`.
+For the full normative field reference (every key and type-level option), see [YAML reference — Form field types](./yaml-reference/form-field-types.md). Supported field `type` values are defined in `resources/schema/form.json`.
 
 ## Relation-Capable Fields
 

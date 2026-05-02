@@ -1,6 +1,6 @@
 # Available Table Columns
 
-Supported column `type` values are defined in `resources/schema/list.json`.
+For the full normative column reference (shared options and each column type), see [YAML reference — List columns](./yaml-reference/list-columns.md). Supported column `type` values are defined in `resources/schema/list.json`.
 
 ## Relation-Capable Column Types
 

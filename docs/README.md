@@ -7,6 +7,7 @@ This folder documents the package internals and YAML composition contracts used 
 - [Composer and backend tooling](./tooling.md) (Pest, checks, schema keys, code coverage)
 - [Package Description and Purpose](./package-description.md)
 - [Design and Architecture](./design-and-architecture.md)
+- [YAML reference](./yaml-reference/README.md) — normative `form.yaml` / `list.yaml` keys, fields, columns, widgets
 - [Form Page YAML (Page-Level) Props](./form-page-props.md)
 - [List Page YAML (Page-Level) Props](./list-page-props.md)
 - [Available Form Fields](./form-fields.md)
