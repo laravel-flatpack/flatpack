@@ -43,6 +43,35 @@ describe('useDataTableCreateRowFlow', () => {
         expect(onToolbarAction).not.toHaveBeenCalled();
     });
 
+    it('delegates create toolbar to parent when skipEmbeddedTableCreateDraft is true', () => {
+        vi.spyOn(Date, 'now').mockReturnValue(1700000000000);
+        const onToolbarAction = vi.fn();
+        const { result } = renderHook(() =>
+            useDataTableCreateRowFlow({
+                rowDetailDrawer: true,
+                skipEmbeddedTableCreateDraft: true,
+                toolbarActions: [
+                    { id: 'create', label: 'Create', action: 'create' },
+                ],
+                schemaColumns: columns,
+                rowIdentity: {
+                    getStableRowId: (row) => String(row.id ?? ''),
+                },
+                mutations: {
+                    data: [],
+                    onToolbarAction,
+                },
+            }),
+        );
+
+        act(() => {
+            result.current.handleToolbarActionClick('create');
+        });
+
+        expect(onToolbarAction).toHaveBeenCalledWith('create');
+        expect(result.current.detailDrawerOpen).toBe(false);
+    });
+
     it('delegates unknown toolbar actions to parent handler', () => {
         const onToolbarAction = vi.fn();
         const { result } = renderHook(() =>

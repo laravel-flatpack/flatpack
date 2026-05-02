@@ -308,6 +308,42 @@
             "additionalProperties": false,
             "description": "List header action definition. Requires exactly one of `action` or `href`."
         },
+        "tableWidgetToolbarActionsYaml": {
+            "oneOf": [
+                {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/columnActionButton"
+                    }
+                },
+                {
+                    "type": "object",
+                    "minProperties": 1,
+                    "additionalProperties": {
+                        "$ref": "#/$defs/columnActionButton"
+                    }
+                }
+            ],
+            "description": "Table widget toolbar: array of buttons or keyed map (same as embedded form table `actions`)."
+        },
+        "tableWidgetBulkActionsYaml": {
+            "oneOf": [
+                {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/bulkActionDefinition"
+                    }
+                },
+                {
+                    "type": "object",
+                    "minProperties": 1,
+                    "additionalProperties": {
+                        "$ref": "#/$defs/bulkActionDefinition"
+                    }
+                }
+            ],
+            "description": "Widget table bulk actions: array or keyed map."
+        },
         "bulkActionDefinition": {
             "type": "object",
             "required": [
@@ -1243,10 +1279,7 @@
                     "description": "Optional YAML column definitions. When present, take precedence over any columns returned by the widget provider at runtime."
                 },
                 "actions": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/$defs/columnActionButton"
-                    }
+                    "$ref": "#/$defs/tableWidgetToolbarActionsYaml"
                 },
                 "filters": {
                     "type": "object",
@@ -1288,6 +1321,16 @@
                     "type": "string",
                     "minLength": 1
                 },
+                "entity": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Flatpack entity slug for toolbar list actions; alias of list_entity."
+                },
+                "list_entity": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Flatpack entity slug for toolbar list actions (create, …). May be inferred when omitted."
+                },
                 "label": {
                     "type": "string",
                     "minLength": 1
@@ -1302,10 +1345,10 @@
                     "$ref": "#/$defs/tableWidgetColumns"
                 },
                 "actions": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/$defs/columnActionButton"
-                    }
+                    "$ref": "#/$defs/tableWidgetToolbarActionsYaml"
+                },
+                "bulk_actions": {
+                    "$ref": "#/$defs/tableWidgetBulkActionsYaml"
                 },
                 "filters": {
                     "type": "object",

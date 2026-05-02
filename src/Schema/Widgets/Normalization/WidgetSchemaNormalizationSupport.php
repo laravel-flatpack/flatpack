@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Flatpack\Schema\Widgets\Normalization;
 
+use Flatpack\Composition\ModelClassEntitySlugResolver;
 use Flatpack\Schema\Generated\CompositionSchemaKeys;
 use Flatpack\Support\CompositionDebugLog;
 use Illuminate\Database\Eloquent\Model;
@@ -14,6 +15,10 @@ use Illuminate\Database\Eloquent\Model;
  */
 final class WidgetSchemaNormalizationSupport
 {
+    public function __construct(
+        private ?ModelClassEntitySlugResolver $modelEntitySlugResolver = null,
+    ) {}
+
     /**
      * @return 'warning'|'error'|'success'|'info'|'default'|null
      */
@@ -250,6 +255,18 @@ final class WidgetSchemaNormalizationSupport
                     'key' => $key,
                     'direction' => $direction,
                 ];
+            }
+        }
+
+        if ($model !== '') {
+            $explicitEntity = trim((string) ($definition['entity'] ?? $definition['list_entity'] ?? ''));
+            if ($explicitEntity !== '') {
+                $normalized['list_entity'] = $explicitEntity;
+            } elseif ($this->modelEntitySlugResolver !== null) {
+                $resolved = $this->modelEntitySlugResolver->firstEntitySlugForModel($model);
+                if ($resolved !== null) {
+                    $normalized['list_entity'] = $resolved;
+                }
             }
         }
 

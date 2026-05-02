@@ -496,7 +496,7 @@ fields:
 | `minItems` | `integer` | Minimum items; `minItems: 1` can show one initial row. |
 | `maxItems` | `integer` | Maximum items. |
 | `prompt` | `string` | Label for the control that adds a new item. Default: Add new item. |
-| `showReorder` | `boolean` | Show move up/down controls. Default: `true`. |
+| `showReorder` | `boolean` | When `true` and there are at least two items (and not a fixed single row), each row shows a drag handle for vertical reordering. Default: `true`. |
 | `showDuplicate` | `boolean` | Show duplicate-row control. Default: `true`. |
 
 ### Fixed single row (`minItems` and `maxItems` both `1`)

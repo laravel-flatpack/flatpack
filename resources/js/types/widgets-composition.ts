@@ -132,6 +132,15 @@ export type FlatpackTableWidget = {
     provider?: string;
     model?: string;
     /**
+     * Flatpack entity slug for toolbar list actions (`create`, …). Set `entity` / `list_entity`
+     * in YAML or rely on server inference from list compositions matching {@link model}.
+     */
+    list_entity?: string | null;
+    /**
+     * Toolbar buttons (e.g. Create). Accepts the same map/array shapes as embedded form tables.
+     */
+    actions?: unknown;
+    /**
      * Model-backed: columns are required in YAML.
      * Provider-backed: columns are optional in YAML; when present they take precedence
      * over any columns returned at runtime by the widget provider.

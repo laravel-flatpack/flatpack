@@ -38,6 +38,7 @@ function blankTableRowFromColumns(
 
 export function useDataTableCreateRowFlow({
     rowDetailDrawer,
+    skipEmbeddedTableCreateDraft = false,
     toolbarActions,
     schemaColumns,
     rowIdentity,
@@ -88,6 +89,9 @@ export function useDataTableCreateRowFlow({
 
     const beginCreateRowInDrawer = React.useCallback(
         (actionId: string): boolean => {
+            if (skipEmbeddedTableCreateDraft) {
+                return false;
+            }
             if (!rowDetailDrawer) {
                 return false;
             }
@@ -105,7 +109,12 @@ export function useDataTableCreateRowFlow({
             setDetailDrawerOpen(true);
             return true;
         },
-        [rowDetailDrawer, schemaColumns, toolbarActions],
+        [
+            rowDetailDrawer,
+            schemaColumns,
+            skipEmbeddedTableCreateDraft,
+            toolbarActions,
+        ],
     );
 
     const beginAttachRowInDrawer = React.useCallback(

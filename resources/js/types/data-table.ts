@@ -199,6 +199,11 @@ export type DataTableBulkDeletePayload = {
 
 export type UseDataTableCreateRowFlowOptions = {
     rowDetailDrawer: boolean;
+    /**
+     * When true, toolbar `create` / `add` do not open the embedded draft row drawer; they
+     * delegate to `onToolbarAction` (e.g. dashboard model table widgets that run list actions).
+     */
+    skipEmbeddedTableCreateDraft?: boolean;
     toolbarActions: FlatpackFormTableToolbarAction[];
     schemaColumns: FlatpackDataTableColumn[];
     rowIdentity: {
@@ -340,6 +345,11 @@ export type DataTableProps<TRow extends DataTableRow = DataTableRow> = {
     toolbarActionsDisabled?: boolean;
     toolbarActionsDisabledTitle?: string;
     onToolbarAction?: (actionId: string) => void;
+    /**
+     * When true, toolbar `create` / `add` skip the embedded draft row drawer and call
+     * {@link onToolbarAction} (used by model-backed dashboard table widgets).
+     */
+    skipEmbeddedTableCreateDraft?: boolean;
     reorderable?: boolean | string;
     /**
      * When true, the row detail drawer is available (toolbar `create` draft flow, and

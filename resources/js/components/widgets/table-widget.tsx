@@ -11,8 +11,15 @@ import {
     FieldDescription,
     FieldTitle,
 } from '@/components/ui/field';
+import {
+    isEmbeddedTableBelongsToManyAttachToolbarAction,
+    isEmbeddedTableCreateDraftToolbarAction,
+} from '@/lib/data-table-action-semantics';
 import { buildDashboardWidgetTableVisitSearch } from '@/lib/dashboard-widget-table-url';
+import { normalizeFormTableToolbarActionsInput } from '@/lib/form-table-toolbar-actions';
+import { inertiaPostMutation } from '@/lib/inertia-mutation';
 import { listYamlColumnsToDataTableColumns } from '@/lib/list-schema';
+import { route } from '@/lib/route';
 import {
     bulkDashboardWidgetModelRows,
     runDashboardWidgetModelRowAction,
@@ -59,6 +66,20 @@ export function TableWidget({ widgetId, widget }: TableWidgetProps) {
                 : EMPTY_BULK_ACTIONS,
         [widget.bulk_actions],
     );
+    const toolbarActions = useMemo(
+        () =>
+            normalizeFormTableToolbarActionsInput(widget.actions, undefined) ??
+            [],
+        [widget.actions],
+    );
+    const listEntity = useMemo(() => {
+        const raw = widget.list_entity;
+        if (typeof raw !== 'string') {
+            return undefined;
+        }
+        const t = raw.trim();
+        return t !== '' ? t : undefined;
+    }, [widget.list_entity]);
     const resolvedDefaultSort = useMemo(() => {
         const sorting = widget.data?.sorting;
         if (
@@ -215,6 +236,41 @@ export function TableWidget({ widgetId, widget }: TableWidgetProps) {
         },
         [executeRowAction],
     );
+    /** List-level actions other than create/add/attach (e.g. custom export) post to the entity. */
+    const onToolbarAction = useCallback(
+        async (actionId: string) => {
+            const def = toolbarActions.find((b) => b.id === actionId);
+            if (def == null) {
+                return;
+            }
+            if (
+                isEmbeddedTableCreateDraftToolbarAction(def.action) ||
+                isEmbeddedTableBelongsToManyAttachToolbarAction(def.action)
+            ) {
+                return;
+            }
+            if (listEntity == null) {
+                toast.error(
+                    'Set `entity` or `list_entity` on this table widget for custom toolbar actions.',
+                );
+                return;
+            }
+            try {
+                await inertiaPostMutation(
+                    route('flatpack.entities.action', { entity: listEntity }),
+                    { action: def.action },
+                    {
+                        errorMessage: 'Action failed',
+                    },
+                );
+            } catch (error) {
+                const message =
+                    error instanceof Error ? error.message : 'Action failed';
+                toast.error(message);
+            }
+        },
+        [listEntity, toolbarActions],
+    );
     const tableId = `widget-table-${widgetId.toLowerCase().replaceAll(/\s+/g, '-')}`;
     const labelId = `${tableId}-label`;
     const labelText =
@@ -256,6 +312,12 @@ export function TableWidget({ widgetId, widget }: TableWidgetProps) {
             onBulkAction={
                 modelBacked && bulkActions.length > 0 ? onBulkAction : undefined
             }
+            {...(toolbarActions.length > 0
+                ? {
+                      toolbarActions,
+                      onToolbarAction,
+                  }
+                : {})}
         />
     );
 

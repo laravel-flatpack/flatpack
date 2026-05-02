@@ -512,3 +512,48 @@ test('flatpack schema list docs return normalized JSON when json query is true',
             ],
         ]);
 });
+
+test('dashboard widget table patch creates a row for embedded draft id __new__', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-widget-create-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/dashboard');
+        File::put($tempPath . '/dashboard/list.yaml', <<<'YAML'
+name: Overview
+widgets:
+  recent_posts:
+    type: table
+    model: Flatpack\Tests\Models\Post
+    columns:
+      title:
+        label: Title
+        type: text
+        editable: true
+      slug:
+        label: Slug
+        type: text
+        editable: true
+YAML);
+        config()->set('flatpack.composition.path', $tempPath);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+
+        actingAs($user)
+            ->patch(route('flatpack.dashboard.widgets.update-row', [
+                'widget' => 'recent_posts',
+                'record' => '__new__:1700000000000',
+            ]), [
+                'values' => [
+                    'title' => 'Created from widget drawer',
+                    'slug' => 'created-from-widget-drawer',
+                ],
+            ])
+            ->assertSessionDoesntHaveErrors()
+            ->assertStatus(303);
+
+        expect(Post::query()->where('title', 'Created from widget drawer')->exists())->toBeTrue();
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});

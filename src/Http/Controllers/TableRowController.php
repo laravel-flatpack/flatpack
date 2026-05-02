@@ -16,6 +16,7 @@ use Flatpack\Schema\Forms\FormSchemaFields;
 use Flatpack\Schema\Forms\FormSchemaNormalizer;
 use Flatpack\Schema\Widgets\WidgetSchemaNormalizer;
 use Flatpack\Services\Runtime\ActionRuntime;
+use Flatpack\Support\EloquentModelResolver;
 use Flatpack\Support\Exceptions\ActionRuntimeException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
@@ -254,6 +255,14 @@ final readonly class TableRowController
         );
     }
 
+    /**
+     * Matches embedded / dashboard table draft rows ({@code __new__:…}) from the row drawer toolbar.
+     */
+    private static function isEmbeddedTableDraftRecordId(string $record): bool
+    {
+        return str_starts_with(trim($record), '__new__:');
+    }
+
     private function updateModelRow(
         Request $request,
         string $entity,
@@ -284,7 +293,15 @@ final readonly class TableRowController
         }
         try {
             $handler = $this->actionRuntime->resolveRecordActionHandler('save');
-            $model = $this->actionRuntime->resolveRecordModel($modelClass, $record, 'table row');
+            if (self::isEmbeddedTableDraftRecordId($record)) {
+                $prototype = EloquentModelResolver::fromClass($modelClass);
+                if ($prototype === null) {
+                    throw new ActionRuntimeException(404, 'Flatpack table row model is not configured.');
+                }
+                $model = new $modelClass();
+            } else {
+                $model = $this->actionRuntime->resolveRecordModel($modelClass, $record, 'table row');
+            }
         } catch (ActionRuntimeException $exception) {
             abort($exception->statusCode(), $exception->getMessage());
         }

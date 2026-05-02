@@ -39,9 +39,9 @@ final class DemoCatalogFactory
                 default => 'Components',
             },
             'description' => match ($id) {
-                'fields' => 'Form fields available to Flatpack compositions. Use <code>?type=text</code> to embed a single field.',
+                'fields' => 'Form fields available to Flatpack compositions. Use <code>?type=text</code> to embed a single field. Use <code>?showValue=true</code> to show the live value panel below each preview.',
                 'widgets' => 'Dashboard and detail-page widgets. Use <code>?catalog=widgets&type=metric</code> to embed a single widget.',
-                default => 'Full catalog of Flatpack form fields and widgets. Use <code>?type=</code> to embed a single component.',
+                default => 'Full catalog of Flatpack form fields and widgets. Use <code>?type=</code> to embed a single component. Use <code>?showValue=true</code> to show the live value panel below each preview.',
             },
             'meta' => [
                 'fieldCount' => count($fields),
@@ -65,8 +65,8 @@ final class DemoCatalogFactory
         return [
             [
                 'id' => 'total_revenue',
-                'title' => 'Metric card (currency format)',
-                'description' => 'Metric widget with a currency value format and a monthly period.',
+                'title' => 'Metric',
+                'description' => 'Metric widget with a currency value format and trend indicator.',
                 'props' => [
                     'type' => 'metric',
                     'provider' => 'demo_total_revenue',
@@ -97,8 +97,8 @@ final class DemoCatalogFactory
             ],
             [
                 'id' => 'new_customers',
-                'title' => 'Metric card (number format)',
-                'description' => 'Metric widget with a number value format and a monthly period.',
+                'title' => 'Metric',
+                'description' => 'Metric widget with a number value format and trend indicator.',
                 'props' => [
                     'type' => 'metric',
                     'provider' => 'demo_new_customers',
@@ -128,7 +128,7 @@ final class DemoCatalogFactory
             ],
             [
                 'id' => 'status_card',
-                'title' => 'Status card',
+                'title' => 'Status',
                 'description' => 'Operational status card with state, key value, and last update.',
                 'props' => [
                     'type' => 'status',
@@ -145,7 +145,7 @@ final class DemoCatalogFactory
             ],
             [
                 'id' => 'status_card_2',
-                'title' => 'Status card',
+                'title' => 'Status',
                 'description' => 'Operational status card with state, key value, and last update.',
                 'props' => [
                     'type' => 'status',
@@ -162,7 +162,7 @@ final class DemoCatalogFactory
             ],
             [
                 'id' => 'traffic_chart',
-                'title' => 'Chart widget (stacked area)',
+                'title' => 'Chart (stacked area)',
                 'description' => 'Time-series chart with provider-resolved points and YAML-driven series.',
                 'props' => [
                     'type' => 'chart',
@@ -197,7 +197,7 @@ final class DemoCatalogFactory
             ],
             [
                 'id' => 'traffic_chart_bar',
-                'title' => 'Chart widget (grouped bar)',
+                'title' => 'Chart (grouped bar)',
                 'description' => 'Bar chart mode using the same widget data shape.',
                 'props' => [
                     'type' => 'chart',
@@ -232,7 +232,7 @@ final class DemoCatalogFactory
             ],
             [
                 'id' => 'traffic_chart_line',
-                'title' => 'Chart widget (line)',
+                'title' => 'Chart (line)',
                 'description' => 'Line chart mode using the same widget data shape.',
                 'props' => [
                     'type' => 'chart',
@@ -267,7 +267,7 @@ final class DemoCatalogFactory
             ],
             [
                 'id' => 'recent-activity',
-                'title' => 'Table widget',
+                'title' => 'Table Widget',
                 'description' => 'Table widget can display data from a provider (read-only) or a model (editable).',
                 'props' => [
                     'type' => 'table',

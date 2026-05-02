@@ -1,5 +1,25 @@
-import { ChevronDown, Copy, Plus, Trash2 } from 'lucide-react';
-import { useCallback, useMemo } from 'react';
+import {
+    closestCenter,
+    DndContext,
+    type DragEndEvent,
+    KeyboardSensor,
+    MouseSensor,
+    TouchSensor,
+    useSensor,
+    useSensors,
+} from '@dnd-kit/core';
+import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
+import { arrayMove, SortableContext, useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { ChevronDown, Copy, GripVertical, Plus, Trash2 } from 'lucide-react';
+import {
+    type CSSProperties,
+    type ReactNode,
+    useCallback,
+    useLayoutEffect,
+    useMemo,
+    useState,
+} from 'react';
 import { SchemaFieldsRenderer } from '@/components/form-fields/schema-fields-renderer';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,6 +41,10 @@ import type { SchemaFieldRenderEntry } from '@/types/schema-fields-renderer';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function newRowId(): string {
+    return crypto.randomUUID();
 }
 
 function normalizeRepeaterRows(
@@ -51,6 +75,62 @@ function repeaterTitleForRow(
         return String(row[titleFrom]);
     }
     return `Item ${index + 1}`;
+}
+
+type RepeaterSortableRowProps = {
+    sortableId: string;
+    children: (args: {
+        setNodeRef: (node: HTMLElement | null) => void;
+        rowStyle: CSSProperties;
+        isDragging: boolean;
+        dragHandle: ReactNode;
+    }) => ReactNode;
+};
+
+function RepeaterSortableRow({
+    sortableId,
+    children,
+}: RepeaterSortableRowProps) {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging,
+    } = useSortable({ id: sortableId });
+
+    const rowStyle: CSSProperties = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+    };
+
+    const dragHandle = (
+        <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className={cn(
+                'h-8 w-8 shrink-0 cursor-grab text-muted-foreground hover:bg-transparent active:cursor-grabbing',
+            )}
+            {...attributes}
+            {...listeners}
+            aria-label="Drag to reorder row"
+        >
+            <GripVertical className="size-4" aria-hidden />
+        </Button>
+    );
+
+    return (
+        <>
+            {children({
+                setNodeRef,
+                rowStyle,
+                isDragging,
+                dragHandle,
+            })}
+        </>
+    );
 }
 
 export const RepeaterField = ({
@@ -116,6 +196,30 @@ export const RepeaterField = ({
         [value, minItems],
     );
 
+    const [rowIds, setRowIds] = useState<string[]>(() =>
+        Array.from(
+            { length: normalizeRepeaterRows(value, minItems).length },
+            () => newRowId(),
+        ),
+    );
+
+    /** Stable ids for sortable rows and React keys; length tracks `rows` (never persisted). */
+    useLayoutEffect(() => {
+        setRowIds((prev) => {
+            if (prev.length === rows.length) {
+                return prev;
+            }
+            if (prev.length < rows.length) {
+                const pad = Array.from(
+                    { length: rows.length - prev.length },
+                    () => newRowId(),
+                );
+                return [...prev, ...pad];
+            }
+            return prev.slice(0, rows.length);
+        });
+    }, [rows.length]);
+
     const commitRows = useCallback(
         (next: Record<string, unknown>[]) => {
             onValueChange?.(next);
@@ -141,6 +245,7 @@ export const RepeaterField = ({
             if (rows.length <= minItems) {
                 return;
             }
+            setRowIds((ids) => ids.filter((_, i) => i !== rowIndex));
             commitRows(rows.filter((_, i) => i !== rowIndex));
         },
         [rows, minItems, commitRows],
@@ -151,35 +256,28 @@ export const RepeaterField = ({
             if (maxItems != null && rows.length >= maxItems) {
                 return;
             }
+            const newId = newRowId();
             const clone = { ...rows[rowIndex] };
             const next = [
                 ...rows.slice(0, rowIndex + 1),
                 clone,
                 ...rows.slice(rowIndex + 1),
             ];
+            setRowIds((ids) => [
+                ...ids.slice(0, rowIndex + 1),
+                newId,
+                ...ids.slice(rowIndex + 1),
+            ]);
             commitRows(next);
         },
         [rows, maxItems, commitRows],
-    );
-
-    const moveRow = useCallback(
-        (from: number, delta: number) => {
-            const to = from + delta;
-            if (to < 0 || to >= rows.length) {
-                return;
-            }
-            const next = [...rows];
-            const [removed] = next.splice(from, 1);
-            next.splice(to, 0, removed);
-            commitRows(next);
-        },
-        [rows, commitRows],
     );
 
     const addRow = useCallback(() => {
         if (maxItems != null && rows.length >= maxItems) {
             return;
         }
+        setRowIds((ids) => [...ids, newRowId()]);
         commitRows([...rows, {}]);
     }, [rows, maxItems, commitRows]);
 
@@ -226,6 +324,37 @@ export const RepeaterField = ({
     const singleFixedRow = minItems === 1 && maxItems === 1;
     /** Single-row repeater with `titleFrom: false`: no per-row title bar. */
     const hideSingleRowTitleBar = singleFixedRow && titleFrom === false;
+
+    const showDragReorder = showReorder && !singleFixedRow && rows.length > 1;
+
+    const dndSensors = useSensors(
+        useSensor(MouseSensor, {
+            activationConstraint: { distance: 8 },
+        }),
+        useSensor(TouchSensor, {}),
+        useSensor(KeyboardSensor, {}),
+    );
+
+    const dndContextId = `${id}-repeater-dnd`;
+
+    const onDragEnd = useCallback(
+        (event: DragEndEvent) => {
+            const { active, over } = event;
+            if (!over || active.id === over.id) {
+                return;
+            }
+            const activeId = String(active.id);
+            const overId = String(over.id);
+            const oldIndex = rowIds.indexOf(activeId);
+            const newIndex = rowIds.indexOf(overId);
+            if (oldIndex < 0 || newIndex < 0) {
+                return;
+            }
+            setRowIds((ids) => arrayMove(ids, oldIndex, newIndex));
+            commitRows(arrayMove(rows, oldIndex, newIndex));
+        },
+        [rowIds, rows, commitRows],
+    );
 
     if (groups != null) {
         return (
@@ -288,6 +417,150 @@ export const RepeaterField = ({
         />
     );
 
+    const renderRepeaterRow = (
+        row: Record<string, unknown>,
+        rowIndex: number,
+        dragHandle: ReactNode | null,
+    ) => {
+        const title = repeaterTitleForRow(row, titleFrom, rowIndex);
+        const toolbar = singleFixedRow ? null : (
+            <div className="flex flex-wrap items-center gap-1 shrink-0">
+                {showDuplicate ? (
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        disabled={maxItems != null && rows.length >= maxItems}
+                        onClick={() => duplicateRow(rowIndex)}
+                        aria-label="Duplicate row"
+                    >
+                        <Copy className="size-4" />
+                    </Button>
+                ) : null}
+                <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-destructive hover:text-destructive"
+                    disabled={!canRemove}
+                    onClick={() => removeRow(rowIndex)}
+                    aria-label="Remove row"
+                >
+                    <Trash2 className="size-4" />
+                </Button>
+            </div>
+        );
+
+        if (displayMode === 'builder') {
+            return (
+                <div
+                    className={cn(
+                        'rounded-lg border border-border bg-card p-4 space-y-3',
+                    )}
+                >
+                    {hideSingleRowTitleBar ? null : (
+                        <div className="flex flex-wrap items-start justify-between gap-2">
+                            <span className="font-medium text-sm flex items-center gap-2 min-w-0">
+                                {dragHandle}
+                                <span className="min-w-0">{title}</span>
+                            </span>
+                            {toolbar}
+                        </div>
+                    )}
+                    {bodyForRow(rowIndex, row)}
+                </div>
+            );
+        }
+
+        if (hideSingleRowTitleBar) {
+            return (
+                <div className="rounded-lg border border-border bg-card px-3 py-3 space-y-3">
+                    {bodyForRow(rowIndex, row)}
+                </div>
+            );
+        }
+
+        return (
+            <Collapsible
+                className="group/repeater-row"
+                defaultOpen={itemsExpanded}
+            >
+                <div className="rounded-lg border border-border bg-card">
+                    <div className="flex flex-wrap items-center gap-2 px-3 py-2">
+                        {dragHandle}
+                        <CollapsibleTrigger
+                            className={cn(
+                                'flex flex-1 min-w-0 items-center gap-2 text-left font-medium text-sm',
+                                'hover:underline underline-offset-4',
+                            )}
+                        >
+                            <ChevronDown className="size-4 shrink-0 transition-transform group-data-[state=open]/repeater-row:rotate-180" />
+                            <span className="truncate">{title}</span>
+                        </CollapsibleTrigger>
+                        {toolbar}
+                    </div>
+                    <CollapsibleContent>
+                        <div className="border-t border-border px-3 py-3 space-y-3">
+                            {bodyForRow(rowIndex, row)}
+                        </div>
+                    </CollapsibleContent>
+                </div>
+            </Collapsible>
+        );
+    };
+
+    const rowKeys = rows.map(
+        (__, rowIndex) => rowIds[rowIndex] ?? `${id}-row-${rowIndex}`,
+    );
+
+    const rowsBlock = showDragReorder ? (
+        <DndContext
+            id={dndContextId}
+            sensors={dndSensors}
+            collisionDetection={closestCenter}
+            modifiers={[restrictToVerticalAxis]}
+            onDragEnd={onDragEnd}
+        >
+            <SortableContext items={rowIds}>
+                {rows.map((row, rowIndex) => {
+                    const rowKey = rowKeys[rowIndex];
+                    return (
+                        <RepeaterSortableRow key={rowKey} sortableId={rowKey}>
+                            {({
+                                setNodeRef,
+                                rowStyle,
+                                isDragging,
+                                dragHandle,
+                            }) => (
+                                <div
+                                    ref={setNodeRef}
+                                    style={rowStyle}
+                                    className={cn(
+                                        isDragging &&
+                                            'relative z-10 opacity-80',
+                                    )}
+                                >
+                                    {renderRepeaterRow(
+                                        row,
+                                        rowIndex,
+                                        dragHandle,
+                                    )}
+                                </div>
+                            )}
+                        </RepeaterSortableRow>
+                    );
+                })}
+            </SortableContext>
+        </DndContext>
+    ) : (
+        rows.map((row, rowIndex) => (
+            <div key={rowKeys[rowIndex]} className="space-y-3">
+                {renderRepeaterRow(row, rowIndex, null)}
+            </div>
+        ))
+    );
+
     return (
         <Field
             className="pointer-events-auto"
@@ -306,136 +579,7 @@ export const RepeaterField = ({
                 <FieldDescription>{helperText}</FieldDescription>
             ) : null}
             <FieldContent className="space-y-3">
-                <div className="space-y-3">
-                    {rows.map((row, rowIndex) => {
-                        const title = repeaterTitleForRow(
-                            row,
-                            titleFrom,
-                            rowIndex,
-                        );
-                        const toolbar = singleFixedRow ? null : (
-                            <div className="flex flex-wrap items-center gap-1 shrink-0">
-                                {showReorder ? (
-                                    <>
-                                        <Button
-                                            type="button"
-                                            variant="ghost"
-                                            size="sm"
-                                            className="h-8 px-2"
-                                            disabled={rowIndex === 0}
-                                            onClick={() =>
-                                                moveRow(rowIndex, -1)
-                                            }
-                                        >
-                                            Up
-                                        </Button>
-                                        <Button
-                                            type="button"
-                                            variant="ghost"
-                                            size="sm"
-                                            className="h-8 px-2"
-                                            disabled={
-                                                rowIndex >= rows.length - 1
-                                            }
-                                            onClick={() => moveRow(rowIndex, 1)}
-                                        >
-                                            Down
-                                        </Button>
-                                    </>
-                                ) : null}
-                                {showDuplicate ? (
-                                    <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-8 w-8"
-                                        disabled={
-                                            maxItems != null &&
-                                            rows.length >= maxItems
-                                        }
-                                        onClick={() => duplicateRow(rowIndex)}
-                                        aria-label="Duplicate row"
-                                    >
-                                        <Copy className="size-4" />
-                                    </Button>
-                                ) : null}
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8 text-destructive hover:text-destructive"
-                                    disabled={!canRemove}
-                                    onClick={() => removeRow(rowIndex)}
-                                    aria-label="Remove row"
-                                >
-                                    <Trash2 className="size-4" />
-                                </Button>
-                            </div>
-                        );
-
-                        if (displayMode === 'builder') {
-                            return (
-                                <div
-                                    key={`${id}-builder-${rowIndex}`}
-                                    className={cn(
-                                        'rounded-lg border border-border bg-card p-4 space-y-3',
-                                    )}
-                                >
-                                    {hideSingleRowTitleBar ? null : (
-                                        <div className="flex flex-wrap items-start justify-between gap-2">
-                                            <span className="font-medium text-sm">
-                                                {title}
-                                            </span>
-                                            {toolbar}
-                                        </div>
-                                    )}
-                                    {bodyForRow(rowIndex, row)}
-                                </div>
-                            );
-                        }
-
-                        if (hideSingleRowTitleBar) {
-                            return (
-                                <div
-                                    key={`${id}-acc-plain-${rowIndex}`}
-                                    className="rounded-lg border border-border bg-card px-3 py-3 space-y-3"
-                                >
-                                    {bodyForRow(rowIndex, row)}
-                                </div>
-                            );
-                        }
-
-                        return (
-                            <Collapsible
-                                key={`${id}-acc-${rowIndex}`}
-                                className="group/repeater-row"
-                                defaultOpen={itemsExpanded}
-                            >
-                                <div className="rounded-lg border border-border bg-card">
-                                    <div className="flex flex-wrap items-center gap-2 px-3 py-2">
-                                        <CollapsibleTrigger
-                                            className={cn(
-                                                'flex flex-1 min-w-0 items-center gap-2 text-left font-medium text-sm',
-                                                'hover:underline underline-offset-4',
-                                            )}
-                                        >
-                                            <ChevronDown className="size-4 shrink-0 transition-transform group-data-[state=open]/repeater-row:rotate-180" />
-                                            <span className="truncate">
-                                                {title}
-                                            </span>
-                                        </CollapsibleTrigger>
-                                        {toolbar}
-                                    </div>
-                                    <CollapsibleContent>
-                                        <div className="border-t border-border px-3 py-3 space-y-3">
-                                            {bodyForRow(rowIndex, row)}
-                                        </div>
-                                    </CollapsibleContent>
-                                </div>
-                            </Collapsible>
-                        );
-                    })}
-                </div>
+                <div className="space-y-3">{rowsBlock}</div>
                 {singleFixedRow ? null : (
                     <Button
                         type="button"

@@ -77,6 +77,55 @@ test('table widget keeps pagination per_page config', function () {
     ]);
 });
 
+test('table widget copies list_entity and actions for model-backed widgets', function () {
+    $normalizer = new WidgetSchemaNormalizer(new WidgetSchemaNormalizationSupport());
+    $out = $normalizer->normalize([
+        'widgets' => [
+            'recent' => [
+                'type' => 'table',
+                'model' => 'Flatpack\\Tests\\Models\\Post',
+                'list_entity' => 'posts',
+                'columns' => [
+                    'title' => [
+                        'label' => 'Title',
+                    ],
+                ],
+                'actions' => [
+                    'create' => [
+                        'label' => 'Create Post',
+                        'action' => 'create',
+                        'variant' => 'primary',
+                        'icon' => 'plus',
+                    ],
+                ],
+            ],
+        ],
+    ]);
+
+    expect($out['widgets']['recent']['list_entity'])->toBe('posts')
+        ->and($out['widgets']['recent']['actions']['create']['label'])->toBe('Create Post');
+});
+
+test('table widget maps entity alias to list_entity', function () {
+    $normalizer = new WidgetSchemaNormalizer(new WidgetSchemaNormalizationSupport());
+    $out = $normalizer->normalize([
+        'widgets' => [
+            'recent' => [
+                'type' => 'table',
+                'model' => 'Flatpack\\Tests\\Models\\Post',
+                'entity' => 'posts',
+                'columns' => [
+                    'title' => [
+                        'label' => 'Title',
+                    ],
+                ],
+            ],
+        ],
+    ]);
+
+    expect($out['widgets']['recent']['list_entity'])->toBe('posts');
+});
+
 test('table widget normalizes bulk_actions for model-backed widgets', function () {
     $normalizer = new WidgetSchemaNormalizer(new WidgetSchemaNormalizationSupport());
     $out = $normalizer->normalize([

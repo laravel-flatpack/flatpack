@@ -16,7 +16,7 @@ async function patchWithInertia(
         url,
         { values },
         {
-            only: ['composition_debug'],
+            only: ['widgets', 'schema', 'composition_debug'],
             successMessage: options?.successMessage,
             errorMessage: options?.errorMessage ?? 'Row update failed',
         },

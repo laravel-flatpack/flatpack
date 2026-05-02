@@ -23,6 +23,8 @@ let lastDataTableProps: DataTableProps | null = null;
 let lastDataTableId: string | null = null;
 let lastDataTableData: unknown[] | null = null;
 let lastDataTableBulkActions: unknown[] | null = null;
+let lastDataTableToolbarActions: unknown[] | null = null;
+let lastDataTableSkipEmbeddedCreate: boolean | null = null;
 let lastDataTableWidgetId: string | null = null;
 let lastDataTableColumns: unknown[] | null = null;
 const getLastDataTableProps = (): DataTableProps | null => lastDataTableProps;
@@ -51,6 +53,11 @@ vi.mock('@/components/table/data-table', () => ({
         lastDataTableBulkActions = Array.isArray(props.bulkActions)
             ? props.bulkActions
             : null;
+        lastDataTableToolbarActions = Array.isArray(props.toolbarActions)
+            ? props.toolbarActions
+            : null;
+        lastDataTableSkipEmbeddedCreate =
+            props.skipEmbeddedTableCreateDraft === true ? true : null;
         lastDataTableColumns = Array.isArray(props.columns)
             ? props.columns
             : null;
@@ -307,6 +314,40 @@ describe('widgets basic rendering', () => {
                 variant: 'destructive',
             },
         ]);
+    });
+
+    it('passes toolbar actions for model-backed widgets (create opens row drawer)', () => {
+        lastDataTableProps = null;
+        lastDataTableToolbarActions = null;
+        lastDataTableSkipEmbeddedCreate = null;
+
+        render(
+            <TableWidget
+                widgetId="recent_comments"
+                widget={makeTableWidget({
+                    model: 'App\\Models\\Comment',
+                    list_entity: 'comments',
+                    actions: {
+                        create: {
+                            label: 'Create Comment',
+                            action: 'create',
+                            variant: 'primary',
+                            icon: 'plus',
+                        },
+                    },
+                })}
+            />,
+        );
+
+        expect(lastDataTableToolbarActions).toEqual([
+            expect.objectContaining({
+                id: 'create',
+                label: 'Create Comment',
+                action: 'create',
+                icon: 'plus',
+            }),
+        ]);
+        expect(lastDataTableSkipEmbeddedCreate).toBeNull();
     });
 
     it('renders provider-backed TableWidget with YAML columns and provider rows', () => {

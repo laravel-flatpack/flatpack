@@ -230,9 +230,9 @@ function DemoComponents() {
 
     const headTitle =
         lookupCatalog === 'widgets' && selectedWidgetEntry !== undefined
-            ? `${selectedWidgetEntry.title} — Widgets`
+            ? `Widgets / ${selectedWidgetEntry.title}`
             : selectedFieldEntry !== undefined
-              ? `${selectedFieldEntry.title} — Components`
+              ? `Components / ${selectedFieldEntry.title}`
               : document.title;
 
     if (requestedUnknown) {

@@ -148,6 +148,7 @@ export function useDataTableController(
         toolbarActionsDisabled = false,
         toolbarActionsDisabledTitle,
         onToolbarAction,
+        skipEmbeddedTableCreateDraft = false,
         rowDetailDrawer = false,
         openDetailDrawerOnRowClick: openDetailDrawerOnRowClickProp = true,
         reorderable: reorderableProp,
@@ -221,6 +222,7 @@ export function useDataTableController(
         handleToolbarActionClick,
     } = useDataTableCreateRowFlow({
         rowDetailDrawer,
+        skipEmbeddedTableCreateDraft,
         toolbarActions,
         schemaColumns,
         rowIdentity: {
