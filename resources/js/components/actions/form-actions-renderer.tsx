@@ -251,44 +251,42 @@ function FormActionsRendererRow({
     const submitFormId = action.confirm || !isSubmitAction ? undefined : formId;
 
     return (
-        <div className="bg-background/90 rounded-4xl">
-            <Button
-                type={submitType}
-                form={submitFormId}
-                size="lg"
-                variant={variant}
-                disabled={disabled}
-                className={actionClassName}
-                data-flatpack-action-id={action.id}
-                onClick={
-                    handlerMissing
-                        ? undefined
-                        : action.confirm
-                        ? () => {
-                                setActiveSubmittingActionId(action.id);
-                                if (isSubmitAction) {
-                                    onFormSubmitIntent(actionRow);
-                                }
-                                onFormSubmitConfirmClick(actionRow);
+        <Button
+            type={submitType}
+            form={submitFormId}
+            size="lg"
+            variant={variant}
+            disabled={disabled}
+            className={actionClassName}
+            data-flatpack-action-id={action.id}
+            onClick={
+                handlerMissing
+                    ? undefined
+                    : action.confirm
+                    ? () => {
+                            setActiveSubmittingActionId(action.id);
+                            if (isSubmitAction) {
+                                onFormSubmitIntent(actionRow);
                             }
-                        : () => {
-                                setActiveSubmittingActionId(action.id);
-                                if (isSubmitAction) {
-                                    onFormSubmitIntent(actionRow);
-                                    return;
-                                }
-                                onRunAction(actionRow);
+                            onFormSubmitConfirmClick(actionRow);
+                        }
+                    : () => {
+                            setActiveSubmittingActionId(action.id);
+                            if (isSubmitAction) {
+                                onFormSubmitIntent(actionRow);
+                                return;
                             }
+                            onRunAction(actionRow);
+                        }
+            }
+        >
+            <ActionButtonContent
+                {...bodyProps}
+                showSpinner={
+                    formProcessing && activeSubmittingActionId === action.id
                 }
-            >
-                <ActionButtonContent
-                    {...bodyProps}
-                    showSpinner={
-                        formProcessing && activeSubmittingActionId === action.id
-                    }
-                    hideLabelOnMobileWhenIcon
-                />
-            </Button>
-        </div>
+                hideLabelOnMobileWhenIcon
+            />
+        </Button>
     );
 }
