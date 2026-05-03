@@ -12,15 +12,17 @@ use Flatpack\Schema\HeaderActions;
 final class FormSubmitActionAllowed
 {
     /**
-     * Distinct handler names declared on non-{@code href} form actions. When the form defines no such actions, only {@code save} is allowed (implicit default toolbar).
+     * Distinct handler names declared on non-{@code href} form actions: top-level {@code actions}
+     * plus every {@code type: toolbar} field’s {@code actions} map (after normalization, toolbar
+     * rows live under {@code fields.*.actions}). When the form defines no such actions, only
+     * {@code save} is allowed (implicit default toolbar).
      *
      * @return list<string>
      */
     public static function allowedActionStrings(?array $schema): array
     {
-        $actions = HeaderActions::fromSchema($schema);
         $out = [];
-        foreach ($actions as $row) {
+        foreach (HeaderActions::fromSchema($schema) as $row) {
             if (isset($row['href'])) {
                 continue;
             }
@@ -29,9 +31,58 @@ final class FormSubmitActionAllowed
                 $out[] = $action;
             }
         }
+        foreach (self::actionStringsFromToolbarFields($schema) as $action) {
+            $out[] = $action;
+        }
         $out = array_values(array_unique($out, SORT_STRING));
         if ($out === []) {
             return ['save'];
+        }
+
+        return $out;
+    }
+
+    /**
+     * Collects {@code action} handler names from normalized {@code type: toolbar} fields.
+     *
+     * @return list<string>
+     */
+    private static function actionStringsFromToolbarFields(?array $schema): array
+    {
+        if ($schema === null) {
+            return [];
+        }
+        $fields = $schema['fields'] ?? null;
+        if (! is_array($fields)) {
+            return [];
+        }
+        $out = [];
+        foreach ($fields as $fieldDefinition) {
+            if (! is_array($fieldDefinition)) {
+                continue;
+            }
+            $type = isset($fieldDefinition['type'])
+                ? trim((string) $fieldDefinition['type'])
+                : '';
+            if ($type !== 'toolbar') {
+                continue;
+            }
+            $rows = $fieldDefinition['actions'] ?? null;
+            if (! is_array($rows)) {
+                continue;
+            }
+            foreach ($rows as $row) {
+                if (! is_array($row)) {
+                    continue;
+                }
+                if (isset($row['href'])) {
+                    continue;
+                }
+                $action = isset($row['action']) ? trim((string) $row['action']) : '';
+                if ($action !== '') {
+                    $out[] = $action;
+                }
+            }
         }
 
         return $out;

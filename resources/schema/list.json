@@ -556,6 +556,161 @@
                         }
                     },
                     "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "required": [
+                        "form.field_eq"
+                    ],
+                    "properties": {
+                        "form.field_eq": {
+                            "type": "object",
+                            "required": [
+                                "field",
+                                "value"
+                            ],
+                            "properties": {
+                                "field": {
+                                    "type": "string",
+                                    "minLength": 1
+                                },
+                                "value": {
+                                    "description": "Compared with deep equality to the live form value for that field.",
+                                    "oneOf": [
+                                        {
+                                            "type": "null"
+                                        },
+                                        {
+                                            "type": "boolean"
+                                        },
+                                        {
+                                            "type": "number"
+                                        },
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "array"
+                                        },
+                                        {
+                                            "type": "object"
+                                        }
+                                    ]
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "required": [
+                        "form.field_in"
+                    ],
+                    "properties": {
+                        "form.field_in": {
+                            "type": "object",
+                            "required": [
+                                "field",
+                                "values"
+                            ],
+                            "properties": {
+                                "field": {
+                                    "type": "string",
+                                    "minLength": 1
+                                },
+                                "values": {
+                                    "type": "array",
+                                    "minItems": 1,
+                                    "items": {
+                                        "oneOf": [
+                                            {
+                                                "type": "null"
+                                            },
+                                            {
+                                                "type": "boolean"
+                                            },
+                                            {
+                                                "type": "number"
+                                            },
+                                            {
+                                                "type": "string"
+                                            }
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "required": [
+                        "form.field_truthy"
+                    ],
+                    "properties": {
+                        "form.field_truthy": {
+                            "type": "object",
+                            "required": [
+                                "field"
+                            ],
+                            "properties": {
+                                "field": {
+                                    "type": "string",
+                                    "minLength": 1
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "required": [
+                        "form.field_present"
+                    ],
+                    "properties": {
+                        "form.field_present": {
+                            "type": "object",
+                            "required": [
+                                "field"
+                            ],
+                            "properties": {
+                                "field": {
+                                    "type": "string",
+                                    "minLength": 1
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "required": [
+                        "form.field_null"
+                    ],
+                    "properties": {
+                        "form.field_null": {
+                            "type": "object",
+                            "required": [
+                                "field"
+                            ],
+                            "properties": {
+                                "field": {
+                                    "type": "string",
+                                    "minLength": 1
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    },
+                    "additionalProperties": false
                 }
             ],
             "description": "Single predicate used by `enabled_if` or `visible_if` gating rules."

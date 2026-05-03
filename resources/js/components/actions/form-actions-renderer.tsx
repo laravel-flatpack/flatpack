@@ -26,6 +26,8 @@ export type FormActionsRendererProps = {
     formIsDirty?: boolean;
     formMode: 'create' | 'edit';
     fieldsLength: number;
+    /** Live form attribute values for `form.field_*` action predicates. */
+    formValues?: Record<string, unknown>;
     onFormSubmitIntent: (action: FlatpackListSubmitAction) => void;
     onFormSubmitConfirmClick: (
         action: FlatpackListHeaderAction & { action: string },
@@ -66,6 +68,7 @@ export function FormActionsRenderer({
     formIsDirty = true,
     formMode,
     fieldsLength,
+    formValues,
     onFormSubmitIntent,
     onFormSubmitConfirmClick,
     onRunAction,
@@ -121,6 +124,7 @@ export function FormActionsRenderer({
                     action={action}
                     formId={formId}
                     fieldsLength={fieldsLength}
+                    formValues={formValues}
                     formIsDirty={formIsDirty ?? true}
                     formMode={formMode}
                     formProcessing={formProcessing}
@@ -146,6 +150,7 @@ type FormActionsRendererRowProps = {
     formIsDirty: boolean;
     formMode: 'create' | 'edit';
     fieldsLength: number;
+    formValues?: Record<string, unknown>;
     isMacPlatform: boolean;
     shortcut?: ParsedFlatpackShortcut;
     onFormSubmitIntent: FormActionsRendererProps['onFormSubmitIntent'];
@@ -159,6 +164,7 @@ function FormActionsRendererRow({
     action,
     formId,
     fieldsLength,
+    formValues,
     formIsDirty,
     formMode,
     formProcessing,
@@ -177,6 +183,7 @@ function FormActionsRendererRow({
     const visibilityState = actionVisibilityState(action, {
         formIsDirty,
         formMode,
+        formValues,
     });
     if (!visibilityState.visible) {
         return null;
@@ -186,6 +193,7 @@ function FormActionsRendererRow({
         const inactiveState = actionEnabledState(action, {
             formIsDirty,
             formMode,
+            formValues,
         });
         const disabled = formProcessing || inactiveState.inactive;
 
@@ -231,6 +239,7 @@ function FormActionsRendererRow({
     const inactiveState = actionEnabledState(action, {
         formIsDirty,
         formMode,
+        formValues,
     });
     const disabled =
         handlerMissing ||

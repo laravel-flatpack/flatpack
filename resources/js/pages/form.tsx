@@ -1,6 +1,6 @@
 import { Head, usePage } from '@inertiajs/react';
 import type { ReactElement } from 'react';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { ConfirmDialog } from '@/components/actions/confirm-dialog';
 import { FormActions } from '@/components/shell/form/form-actions';
 import { FormFields } from '@/components/shell/form/form-fields';
@@ -13,7 +13,10 @@ import { useFlatpackForm } from '@/hooks/use-flatpack-form';
 import { useInertiaLeaveGuard } from '@/hooks/use-inertia-leave-guard';
 import FlatpackLayout from '@/layouts/flatpack-layout';
 import type { FlatpackPageProps } from '@/types/flatpack';
-import type { FlatpackFormPageProps } from '@/types/pages/flatpack';
+import type {
+    FlatpackFormPageProps,
+    FlatpackListHeaderAction,
+} from '@/types/pages/flatpack';
 
 const NoFieldsMessage = ({ entity }: { entity: string }) => (
     <p className="text-sm text-muted-foreground">
@@ -71,9 +74,61 @@ export default function FlatpackFormPage(props: FlatpackFormPageProps) {
     const hasSidebarColumn = sidebarFields.length > 0 || hasSidebarWidgets;
     const hasMainColumn = mainFields.length > 0 || tabPanels.length > 0;
 
+    const formValues = form.data.values as Record<string, unknown>;
+
+    const [pendingDirtyAction, setPendingDirtyAction] = useState<
+        (FlatpackListHeaderAction & { action: string }) | null
+    >(null);
+
+    const requestRunAction = useCallback(
+        (action: FlatpackListHeaderAction & { action: string }) => {
+            if (isDirty && action.submit !== true) {
+                setPendingDirtyAction(action);
+                return;
+            }
+            runAction(action);
+        },
+        [isDirty, runAction],
+    );
+
+    const requestConfirmForAction = useCallback(
+        (action: FlatpackListHeaderAction & { action: string }) => {
+            if (isDirty && action.submit !== true) {
+                setPendingDirtyAction(action);
+                return;
+            }
+            setPendingConfirm({ config: action });
+        },
+        [isDirty, setPendingConfirm],
+    );
+
     return (
         <>
             <Head title={pageTitle} />
+            <ConfirmDialog
+                open={pendingDirtyAction !== null}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        setPendingDirtyAction(null);
+                    }
+                }}
+                title="Discard unsaved changes?"
+                description="You have unsaved changes. Continuing will run this action and your edits will not be saved."
+                continueLabel="Continue anyway"
+                continueVariant="default"
+                onContinue={() => {
+                    const action = pendingDirtyAction;
+                    setPendingDirtyAction(null);
+                    if (action === null) {
+                        return;
+                    }
+                    if (action.confirm === true) {
+                        setPendingConfirm({ config: action });
+                    } else {
+                        runAction(action);
+                    }
+                }}
+            />
             <ConfirmDialog
                 open={pendingConfirm !== null}
                 onOpenChange={(open) => {
@@ -121,11 +176,10 @@ export default function FlatpackFormPage(props: FlatpackFormPageProps) {
                         formIsDirty={isDirty}
                         formMode={mode}
                         fieldsLength={fields.length}
+                        formValues={formValues}
                         onFormSubmitIntent={prepareFormSubmit}
-                        onFormSubmitConfirmClick={(action) =>
-                            setPendingConfirm({ config: action })
-                        }
-                        onRunAction={runAction}
+                        onFormSubmitConfirmClick={requestConfirmForAction}
+                        onRunAction={requestRunAction}
                     />
                 }
             />
@@ -141,12 +195,13 @@ export default function FlatpackFormPage(props: FlatpackFormPageProps) {
                             value={{
                                 formId,
                                 prepareFormSubmit,
-                                setPendingConfirm,
-                                runAction,
+                                requestConfirmForAction,
+                                requestRunAction,
                                 formProcessing,
                                 formIsDirty: isDirty,
                                 mode,
                                 fieldsLength: fields.length,
+                                formValues,
                             }}
                         >
                             <FormTopErrors errors={flatpackTopErrors} />

@@ -91,9 +91,116 @@ final class InactiveConditionNormalizer
 
             if (array_key_exists('list.filters_applied', $entry) && is_bool($entry['list.filters_applied'])) {
                 $predicates[] = ['list.filters_applied' => $entry['list.filters_applied']];
+
+                continue;
+            }
+
+            if (array_key_exists('form.field_eq', $entry)) {
+                $payload = $entry['form.field_eq'];
+                if (! is_array($payload)) {
+                    continue;
+                }
+                $field = isset($payload['field']) ? trim((string) $payload['field']) : '';
+                if ($field === '' || ! array_key_exists('value', $payload)) {
+                    continue;
+                }
+                $normalizedValue = self::tryNormalizeFieldEqValue($payload['value']);
+                if ($normalizedValue === false) {
+                    continue;
+                }
+                $predicates[] = [
+                    'form.field_eq' => [
+                        'field' => $field,
+                        'value' => $normalizedValue,
+                    ],
+                ];
+
+                continue;
+            }
+
+            if (array_key_exists('form.field_in', $entry)) {
+                $payload = $entry['form.field_in'];
+                if (! is_array($payload)) {
+                    continue;
+                }
+                $field = isset($payload['field']) ? trim((string) $payload['field']) : '';
+                $rawValues = $payload['values'] ?? null;
+                if ($field === '' || ! is_array($rawValues)) {
+                    continue;
+                }
+                $values = [];
+                foreach ($rawValues as $value) {
+                    if ($value === null || is_bool($value) || is_int($value) || is_float($value) || is_string($value)) {
+                        $values[] = $value;
+                    }
+                }
+                if ($values === []) {
+                    continue;
+                }
+                $predicates[] = [
+                    'form.field_in' => [
+                        'field' => $field,
+                        'values' => $values,
+                    ],
+                ];
+
+                continue;
+            }
+
+            if (array_key_exists('form.field_truthy', $entry)) {
+                $field = self::normalizeSingleFieldPayload($entry['form.field_truthy']);
+                if ($field !== null) {
+                    $predicates[] = ['form.field_truthy' => ['field' => $field]];
+                }
+
+                continue;
+            }
+
+            if (array_key_exists('form.field_present', $entry)) {
+                $field = self::normalizeSingleFieldPayload($entry['form.field_present']);
+                if ($field !== null) {
+                    $predicates[] = ['form.field_present' => ['field' => $field]];
+                }
+
+                continue;
+            }
+
+            if (array_key_exists('form.field_null', $entry)) {
+                $field = self::normalizeSingleFieldPayload($entry['form.field_null']);
+                if ($field !== null) {
+                    $predicates[] = ['form.field_null' => ['field' => $field]];
+                }
             }
         }
 
         return $predicates === [] ? null : $predicates;
+    }
+
+    private static function normalizeSingleFieldPayload(mixed $payload): ?string
+    {
+        if (! is_array($payload)) {
+            return null;
+        }
+        $field = isset($payload['field']) ? trim((string) $payload['field']) : '';
+
+        return $field !== '' ? $field : null;
+    }
+
+    /**
+     * @return array<mixed>|bool|float|int|string|null|false False when the value must be dropped.
+     */
+    private static function tryNormalizeFieldEqValue(mixed $value): mixed
+    {
+        if ($value === null || is_bool($value)) {
+            return $value;
+        }
+        if (is_int($value) || is_float($value) || is_string($value)) {
+            return $value;
+        }
+        if (is_array($value)) {
+            return $value;
+        }
+
+        return false;
     }
 }

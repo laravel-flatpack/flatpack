@@ -33,9 +33,32 @@ final readonly class ShareFlatpackInertiaData
                 'showActionShortcutHints' => Flatpack::showActionShortcutHints(),
                 'breadcrumbs' => Flatpack::breadcrumbs($request),
                 'user' => $request->user() ? FlatpackUser::make($request->user()) : null,
+                /** Session flash from redirect->with(...) — surfaced as toasts in the shell layout. */
+                'flash' => self::sessionFlashPayload($request),
             ]);
         }
 
         return $next($request);
+    }
+
+    /**
+     * Keys commonly flashed from controllers and host action handlers (redirect {@code ->with(...)}).
+     *
+     * @return array<string, string>
+     */
+    private static function sessionFlashPayload(Request $request): array
+    {
+        $session = $request->session();
+        $keys = ['success', 'error', 'warning', 'info', 'message'];
+        $payload = [];
+
+        foreach ($keys as $key) {
+            $value = $session->get($key);
+            if (is_string($value) && $value !== '') {
+                $payload[$key] = $value;
+            }
+        }
+
+        return $payload;
     }
 }

@@ -42,11 +42,12 @@ export const ToolbarField = ({
             formIsDirty={ctx.formIsDirty}
             formMode={ctx.mode}
             fieldsLength={ctx.fieldsLength}
+            formValues={ctx.formValues}
             onFormSubmitIntent={ctx.prepareFormSubmit}
             onFormSubmitConfirmClick={(action) =>
-                ctx.setPendingConfirm({ config: action })
+                ctx.requestConfirmForAction(action)
             }
-            onRunAction={ctx.runAction}
+            onRunAction={ctx.requestRunAction}
             align={align}
             shortcutRegistration={{
                 scope: `toolbar-${id}`,

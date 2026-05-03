@@ -4,11 +4,13 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { evaluateFormFieldPredicate } from '@/lib/form-action-field-predicates';
 import type { FlatpackActionCondition } from '@/types/flatpack-actions';
 
 export type ActionInactiveContext = {
     formIsDirty?: boolean;
     formMode?: 'create' | 'edit' | null;
+    formValues?: Record<string, unknown>;
     listSelectionCount?: number;
     listSearchTerm?: string;
     listFilterState?: Record<string, string | string[] | null> | null;
@@ -49,6 +51,42 @@ function evaluateInactivePredicate(
                 : value != null && value !== '',
         );
         return hasFilters === predicate['list.filters_applied'];
+    }
+
+    if ('form.field_eq' in predicate) {
+        return evaluateFormFieldPredicate(
+            'form.field_eq',
+            predicate['form.field_eq'],
+            context.formValues,
+        );
+    }
+    if ('form.field_in' in predicate) {
+        return evaluateFormFieldPredicate(
+            'form.field_in',
+            predicate['form.field_in'],
+            context.formValues,
+        );
+    }
+    if ('form.field_truthy' in predicate) {
+        return evaluateFormFieldPredicate(
+            'form.field_truthy',
+            predicate['form.field_truthy'],
+            context.formValues,
+        );
+    }
+    if ('form.field_present' in predicate) {
+        return evaluateFormFieldPredicate(
+            'form.field_present',
+            predicate['form.field_present'],
+            context.formValues,
+        );
+    }
+    if ('form.field_null' in predicate) {
+        return evaluateFormFieldPredicate(
+            'form.field_null',
+            predicate['form.field_null'],
+            context.formValues,
+        );
     }
 
     return false;

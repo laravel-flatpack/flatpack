@@ -20,6 +20,11 @@ export type FlatpackBreadcrumb = {
     href: string | null;
 };
 
+/** Laravel {@code redirect()->with('success', ...)} (and sibling keys) shared on Flatpack Inertia responses. */
+export type FlatpackSessionFlash = Partial<
+    Record<'success' | 'error' | 'warning' | 'info' | 'message', string>
+>;
+
 export type FlatpackPageProps = {
     flatpack: {
         logo: string | null;
@@ -33,5 +38,7 @@ export type FlatpackPageProps = {
         /** Current page trail: last item is the active page (`href` null). */
         breadcrumbs?: FlatpackBreadcrumb[];
         user?: FlatpackUser;
+        /** Session flash strings for one-shot toasts (see shell layout). */
+        flash?: FlatpackSessionFlash;
     };
 };

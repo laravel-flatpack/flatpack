@@ -53,3 +53,23 @@ test('normalizeInactivePredicates collects supported single-key predicates', fun
         ['list.filters_applied' => false],
     ]);
 });
+
+test('normalizeInactivePredicates collects form field predicates', function () {
+    $out = InactiveConditionNormalizer::normalizeInactivePredicates([
+        ['form.field_eq' => ['field' => 'status', 'value' => 'draft']],
+        ['form.field_eq' => ['field' => ' ', 'value' => 'x']],
+        ['form.field_in' => ['field' => 'tags', 'values' => ['a', 'b', null, 1]]],
+        ['form.field_in' => ['field' => 'x', 'values' => []]],
+        ['form.field_truthy' => ['field' => 'published']],
+        ['form.field_present' => ['field' => 'note']],
+        ['form.field_null' => ['field' => 'archived_at']],
+    ]);
+
+    expect($out)->toBe([
+        ['form.field_eq' => ['field' => 'status', 'value' => 'draft']],
+        ['form.field_in' => ['field' => 'tags', 'values' => ['a', 'b', null, 1]]],
+        ['form.field_truthy' => ['field' => 'published']],
+        ['form.field_present' => ['field' => 'note']],
+        ['form.field_null' => ['field' => 'archived_at']],
+    ]);
+});

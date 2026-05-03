@@ -9,6 +9,7 @@ import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { KeyboardShortcutsDialogProvider } from '@/contexts/flatpack-keyboard-shortcuts-dialog';
 import { FlatpackShortcutsProvider } from '@/contexts/flatpack-shortcuts-registry';
+import { useFlatpackSessionFlashToast } from '@/hooks/use-flatpack-session-flash-toast';
 import { getCurrentPath } from '@/lib/utils';
 import type { FlatpackPageProps } from '@/types/flatpack';
 
@@ -30,7 +31,9 @@ export default function FlatpackLayout({
         bottomMenu,
         user,
         breadcrumbs,
+        flash,
     } = flatpack;
+    useFlatpackSessionFlashToast(flash);
     const navigation = {
         quickAction,
         menu: Array.isArray(menu) ? menu : [],

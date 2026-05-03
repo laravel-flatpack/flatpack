@@ -6,7 +6,17 @@ export type FlatpackActionConditionPredicate =
     | { 'form.mode_in': Array<'create' | 'edit'> }
     | { 'list.selection.min': number }
     | { 'list.search_present': boolean }
-    | { 'list.filters_applied': boolean };
+    | { 'list.filters_applied': boolean }
+    | { 'form.field_eq': { field: string; value: unknown } }
+    | {
+          'form.field_in': {
+              field: string;
+              values: Array<boolean | number | string | null>;
+          };
+      }
+    | { 'form.field_truthy': { field: string } }
+    | { 'form.field_present': { field: string } }
+    | { 'form.field_null': { field: string } };
 
 export type FlatpackActionCondition = {
     all?: FlatpackActionConditionPredicate[];

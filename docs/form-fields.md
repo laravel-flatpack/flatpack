@@ -120,6 +120,46 @@ actions:
         - form.mode_in: [edit]
 ```
 
+### `enabled_if` / `visible_if` predicates
+
+Actions stay **disabled** (`enabled_if`) or **hidden** (`visible_if`) until every clause in `all` passes and at least one clause in `any` passes (when present). List views support selection/search predicates; **form pages** also resolve predicates against live **`values`** (same keys as form fields).
+
+**Built-in (non-field) predicates**
+
+| Predicate | Meaning |
+| --- | --- |
+| `form.dirty` | Matches current dirty state (`true` / `false`). |
+| `form.mode_in` | Current page mode is one of `create` or `edit`. |
+| `list.selection.min` | At least N rows selected (lists/bulk). |
+| `list.search_present` | Search box empty vs non-empty (lists). |
+| `list.filters_applied` | Filters applied vs none (lists). |
+
+**Field predicates** (form pages only; use top-level attribute names from `values`, not dotted paths)
+
+| Predicate | Meaning |
+| --- | --- |
+| `form.field_eq` | Field value **deep-equals** `value` (use `value: null` only when you need exactly JSON null). |
+| `form.field_in` | Scalar field: value is in `values`. Multi-value field (array): **any** item is in `values`. |
+| `form.field_truthy` | Field satisfies truthiness (see below). **Not** the same as “not null”. |
+| `form.field_present` | Value is neither `null` nor `undefined` (missing key counts as undefined). |
+| `form.field_null` | Value is `null`, `undefined`, or the key is absent—use this for optional clears instead of `form.field_eq` + `null` unless you must distinguish missing vs null. |
+
+**Truthy rule for `form.field_truthy`:** `null`, `undefined`, `false`, `''`, `[]`, and `0` are falsy; non-empty trimmed strings, non-zero numbers, `true`, non-empty arrays/objects are truthy.
+
+```yaml
+enabled_if:
+  all:
+    - form.field_eq:
+        field: status
+        value: draft
+    - form.field_present:
+        field: reviewer_id
+visible_if:
+  any:
+    - form.field_null:
+        field: archived_at
+```
+
 ## 1) `text`
 
 ```yaml

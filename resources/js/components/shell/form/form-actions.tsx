@@ -9,6 +9,7 @@ type FormActionsProps = {
     formIsDirty?: boolean;
     formMode: 'create' | 'edit';
     fieldsLength: number;
+    formValues?: Record<string, unknown>;
     /** Sets which YAML row / handler name is sent on the next {@code POST …/submit}. */
     onFormSubmitIntent: (action: FlatpackListSubmitAction) => void;
     /** Opens confirm dialog for toolbar rows with {@code confirm: true}. */
@@ -28,6 +29,7 @@ export function FormActions({
     formIsDirty = true,
     formMode,
     fieldsLength,
+    formValues,
     onFormSubmitIntent,
     onFormSubmitConfirmClick,
     onRunAction,
@@ -44,6 +46,7 @@ export function FormActions({
             formIsDirty={formIsDirty}
             formMode={formMode}
             fieldsLength={fieldsLength}
+            formValues={formValues}
             onFormSubmitIntent={onFormSubmitIntent}
             onFormSubmitConfirmClick={onFormSubmitConfirmClick}
             onRunAction={onRunAction}

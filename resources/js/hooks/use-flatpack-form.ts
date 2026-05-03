@@ -1,4 +1,4 @@
-import type { FormDataConvertible } from '@inertiajs/core';
+import type { FormDataConvertible, Page } from '@inertiajs/core';
 import { router, useForm } from '@inertiajs/react';
 import type { FormEvent } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -11,6 +11,7 @@ import { firstErrorMessage } from '@/lib/form-errors';
 import {
     buildInitialValues,
     type FlatpackFormTabPanelLayout,
+    type FormFieldEntry,
     fieldErrorMessages,
     normalizeFields,
 } from '@/lib/form-schema';
@@ -59,6 +60,54 @@ export type FlatpackFormPendingConfirm = {
     config: FlatpackListHeaderAction & { action: string };
 };
 
+/**
+ * After a successful Inertia visit, replace client form state with the server’s latest `values`.
+ * Call after **form submit** (save) or after **row actions** only when there are no unsaved edits
+ * ({@link runAction} skips this when {@code form.isDirty}).
+ */
+function hydrateUseFormValuesFromInertiaPage(
+    page: Page | undefined,
+    form: {
+        setDefaults: (data: {
+            values: Record<string, FormDataConvertible>;
+        }) => void;
+        setData: (data: {
+            values: Record<string, FormDataConvertible>;
+        }) => void;
+        reset: () => void;
+        clearErrors: () => void;
+    },
+    fields: FormFieldEntry[],
+    entity: string,
+): void {
+    if (page?.props == null || typeof page.props !== 'object') {
+        return;
+    }
+    const props = page.props as Record<string, unknown>;
+    if (props.entity !== entity) {
+        return;
+    }
+    const pageMode = props.mode;
+    if (pageMode !== 'create' && pageMode !== 'edit') {
+        return;
+    }
+    const raw = props.values;
+    const values: Record<string, unknown> =
+        typeof raw === 'object' && raw !== null && !Array.isArray(raw)
+            ? (raw as Record<string, unknown>)
+            : {};
+    const nextValues = buildInitialValues(fields, values);
+    const asFormValues = nextValues as Record<string, FormDataConvertible>;
+    form.setDefaults({
+        values: asFormValues,
+    });
+    form.setData({
+        values: { ...asFormValues },
+    });
+    form.reset();
+    form.clearErrors();
+}
+
 function isTabPanelLayout(value: unknown): value is FlatpackFormTabPanelLayout {
     if (typeof value !== 'object' || value === null || Array.isArray(value)) {
         return false;
@@ -91,6 +140,7 @@ export function useFlatpackForm(props: FlatpackFormPageProps) {
         sidebar_widgets: sidebarWidgets = {},
         sidebar_widgets_schema: sidebarWidgetsSchema = null,
     } = props;
+
     const fields = useMemo(
         () => normalizeFields(schema ?? undefined),
         [schema],
@@ -274,8 +324,8 @@ export function useFlatpackForm(props: FlatpackFormPageProps) {
         const options = {
             preserveScroll: true,
             preserveState: 'errors' as const,
-            onSuccess: () => {
-                form.clearErrors();
+            onSuccess: (page: Page) => {
+                hydrateUseFormValuesFromInertiaPage(page, form, fields, entity);
                 const submittedAction = formActions.find(
                     (a) => a.id === intent.id,
                 );
@@ -323,9 +373,17 @@ export function useFlatpackForm(props: FlatpackFormPageProps) {
                 }),
                 { action: config.action },
                 {
-                    preserveState: true,
+                    preserveState: false,
                     preserveScroll: true,
-                    onSuccess: () => {
+                    onSuccess: (page: Page) => {
+                        if (!form.isDirty) {
+                            hydrateUseFormValuesFromInertiaPage(
+                                page,
+                                form,
+                                fields,
+                                entity,
+                            );
+                        }
                         if (config.success_message) {
                             toast.success(config.success_message);
                         }
@@ -341,7 +399,7 @@ export function useFlatpackForm(props: FlatpackFormPageProps) {
                 },
             );
         },
-        [entity, mode, prepareFormSubmit, record, runSubmit],
+        [entity, fields, form, mode, prepareFormSubmit, record, runSubmit],
     );
 
     const handleSubmit = useCallback(
