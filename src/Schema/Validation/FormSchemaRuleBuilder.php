@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Flatpack\Schema\Validation;
 
-use Flatpack\Schema\CompositionTabsMerge;
+use Flatpack\Schema\Forms\FormCompositionMergeForPersistence;
 use Flatpack\Schema\Forms\FormFieldType;
 use Illuminate\Validation\Rules\In;
 
@@ -25,7 +25,7 @@ final class FormSchemaRuleBuilder
             return [];
         }
 
-        $schema = CompositionTabsMerge::form($schema) ?? $schema;
+        $schema = FormCompositionMergeForPersistence::merge($schema) ?? $schema;
 
         $fields = $schema['fields'] ?? null;
         if (! is_array($fields)) {
@@ -40,6 +40,10 @@ final class FormSchemaRuleBuilder
 
             $id = trim((string) ($fieldDefinition['id'] ?? $fieldId));
             if ($id === '') {
+                continue;
+            }
+
+            if (FormFieldType::isNonPersistedFormField($fieldDefinition)) {
                 continue;
             }
 

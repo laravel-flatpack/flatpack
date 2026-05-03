@@ -53,7 +53,10 @@ export function clientValidationErrors(
             continue;
         }
 
-        const label = field.label.trim() !== '' ? field.label : id;
+        const label =
+            typeof field.label === 'string' && field.label.trim() !== ''
+                ? field.label.trim()
+                : id;
         errors[id] = `${label} is required.`;
     }
 

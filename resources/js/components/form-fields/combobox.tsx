@@ -6,7 +6,9 @@ import {
     useRef,
     useState,
 } from 'react';
+import { resolveFormFieldLabelLayout } from '@/lib/form-field-label-layout';
 import { idsToRelationRows, relationRowsToIds } from '@/lib/relation-row-value';
+import type { FormFieldLabelShow } from '@/types/form-fields';
 import {
     Combobox,
     ComboboxChip,
@@ -196,8 +198,12 @@ export const ComboboxField = ({
     relationLabelKey,
     emitObject = false,
     portalContainer,
+    /** Align options panel to field start vs end (use {@code end} in narrow sidebars). */
+    comboboxDropdownAlign,
     onValueChange,
     invalid = false,
+    showLabel,
+    disabled = false,
 }: {
     id: string;
     label: string;
@@ -221,8 +227,11 @@ export const ComboboxField = ({
     relationLabelKey?: string;
     emitObject?: boolean;
     portalContainer?: HTMLElement | null;
+    comboboxDropdownAlign?: 'start' | 'end';
     onValueChange?: (value: unknown) => void;
     invalid?: boolean;
+    showLabel?: FormFieldLabelShow;
+    disabled?: boolean;
 }) => {
     const [multiValue, setMultiValue] = useState<string[]>([]);
     /** Stable value→label map; remote search replaces {@link normalizedItems} often, so chips cannot rely on it alone. */
@@ -240,6 +249,8 @@ export const ComboboxField = ({
     const remoteAbortControllerRef = useRef<AbortController | null>(null);
     const wasInvalidRef = useRef(false);
     const labelId = `${id}-label`;
+    const labelLayout = resolveFormFieldLabelLayout(showLabel, 'stacked');
+    const popupAlign = comboboxDropdownAlign ?? 'start';
     const normalizedItems = useMemo(
         () =>
             remote
@@ -486,8 +497,15 @@ export const ComboboxField = ({
 
     if (multiple) {
         return (
-            <Field>
-                {label ? <FieldTitle id={labelId}>{label}</FieldTitle> : null}
+            <Field orientation={labelLayout.orientation}>
+                {label ? (
+                    <FieldTitle
+                        id={labelId}
+                        className={labelLayout.labelClassName}
+                    >
+                        {label}
+                    </FieldTitle>
+                ) : null}
                 <FieldContent>
                     <Combobox
                         name={id}
@@ -539,12 +557,16 @@ export const ComboboxField = ({
                                 placeholder={multiPlaceholder}
                                 autoComplete="off"
                                 aria-labelledby={label ? labelId : undefined}
+                                disabled={disabled}
                                 onChange={(event) => {
                                     setQuery(event.currentTarget.value);
                                 }}
                             />
                         </ComboboxChips>
-                        <ComboboxContent portalContainer={portalContainer}>
+                        <ComboboxContent
+                            portalContainer={portalContainer}
+                            align={popupAlign}
+                        >
                             <ComboboxList
                                 onScroll={remote ? handleListScroll : undefined}
                             >
@@ -576,8 +598,12 @@ export const ComboboxField = ({
     }
 
     return (
-        <Field>
-            {label ? <FieldTitle id={labelId}>{label}</FieldTitle> : null}
+        <Field orientation={labelLayout.orientation}>
+            {label ? (
+                <FieldTitle id={labelId} className={labelLayout.labelClassName}>
+                    {label}
+                </FieldTitle>
+            ) : null}
             <FieldContent>
                 <Combobox
                     name={id}
@@ -603,12 +629,16 @@ export const ComboboxField = ({
                         className="w-full rounded-3xl"
                         invalid={invalid}
                         loading={remoteLoading}
+                        disabled={disabled}
                         aria-labelledby={label ? labelId : undefined}
                         onChange={(event) => {
                             setQuery(event.currentTarget.value);
                         }}
                     />
-                    <ComboboxContent portalContainer={portalContainer}>
+                    <ComboboxContent
+                        portalContainer={portalContainer}
+                        align={popupAlign}
+                    >
                         <ComboboxList
                             onScroll={remote ? handleListScroll : undefined}
                         >

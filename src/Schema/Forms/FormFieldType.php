@@ -61,6 +61,18 @@ final class FormFieldType
     }
 
     /**
+     * Fields that never contribute to {@code values.*} persistence (toolbar UI, embedded widgets).
+     *
+     * @param  array<string, mixed>  $fieldDefinition
+     */
+    public static function isNonPersistedFormField(array $fieldDefinition): bool
+    {
+        $type = self::normalizeYamlType(trim((string) ($fieldDefinition['type'] ?? '')));
+
+        return in_array($type, ['toolbar', 'widget'], true);
+    }
+
+    /**
      * Values for these fields are persisted via relation sync, not mass assignment on the parent.
      *
      * @param  array<string, mixed>  $fieldDefinition

@@ -31,6 +31,45 @@
                 "$ref": "#/$defs/formTabPanel"
             }
         },
+        "sidebar": {
+            "description": "Secondary column: extra fields and/or widgets. Inline map of field definitions, explicit `{ fields, widgets }`, or a relative YAML fragment path under the entity directory.",
+            "oneOf": [
+                {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Relative path to a YAML file (e.g. sidebar.yaml) beside form.yaml."
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "fields": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "$ref": "#/$defs/fieldDefinition"
+                            },
+                            "description": "Sidebar-only fields merged into the main values payload."
+                        },
+                        "widgets": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "$ref": "#/$defs/widgetDefinition"
+                            },
+                            "description": "Dashboard-style widgets rendered in the sidebar column."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "description": "Explicit fields and/or widgets blocks."
+                },
+                {
+                    "type": "object",
+                    "minProperties": 1,
+                    "additionalProperties": {
+                        "$ref": "#/$defs/fieldDefinition"
+                    },
+                    "description": "Shorthand: map of field id → field definition (fields only)."
+                }
+            ]
+        },
         "actions": {
             "$ref": "#/$defs/formActionsBlock",
             "description": "Top-level form actions map keyed by action id."
@@ -312,8 +351,21 @@
                 "file-upload",
                 "table",
                 "widget",
-                "repeater"
+                "repeater",
+                "toolbar"
             ]
+        },
+        "toolbarFieldAlign": {
+            "type": "string",
+            "enum": [
+                "left",
+                "right",
+                "center",
+                "start",
+                "end",
+                "spaced"
+            ],
+            "description": "Toolbar row alignment on the main axis. spaced uses equal space between items (flex justify-between)."
         },
         "repeaterDisplayMode": {
             "type": "string",
@@ -539,6 +591,64 @@
                 "1/4"
             ]
         },
+        "showLabelOption": {
+            "type": "string",
+            "enum": ["stacked", "inline", "none"],
+            "description": "Label placement relative to the control: stacked (default when omitted for most fields), inline (label beside control), or none (visually hidden; still exposed to assistive tech)."
+        },
+        "fieldsetLabelString": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Optional section title: adjacent fields with the same normalized label and variant are grouped together."
+        },
+        "fieldsetObject": {
+            "type": "object",
+            "required": [
+                "label"
+            ],
+            "properties": {
+                "label": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200,
+                    "description": "Section title for grouped fields."
+                },
+                "icon": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80,
+                    "description": "Lucide icon key (kebab-case or snake_case), resolved via the menu icon registry."
+                },
+                "variant": {
+                    "type": "string",
+                    "enum": [
+                        "card",
+                        "minimal",
+                        "plain",
+                        "none"
+                    ],
+                    "description": "Visual style for the section: card (default), minimal and plain are lighter chrome; none hides the title visually (screen-reader legend only)."
+                },
+                "collapsed": {
+                    "type": "boolean",
+                    "description": "When present, the section is collapsible: true starts collapsed, false starts expanded. Omit for a non-collapsible section. Cannot be combined with variant none (stripped server-side)."
+                }
+            },
+            "additionalProperties": false,
+            "description": "Section title, optional icon, optional layout variant, and optional collapsible behavior for grouped fields."
+        },
+        "fieldsetInput": {
+            "description": "Plain string label or explicit title, optional icon, and optional layout variant.",
+            "oneOf": [
+                {
+                    "$ref": "#/$defs/fieldsetLabelString"
+                },
+                {
+                    "$ref": "#/$defs/fieldsetObject"
+                }
+            ]
+        },
         "fieldDefinition": {
             "description": "Discriminated field union keyed by `type`.",
             "oneOf": [
@@ -586,6 +696,9 @@
                 },
                 {
                     "$ref": "#/$defs/fieldWidget"
+                },
+                {
+                    "$ref": "#/$defs/fieldToolbar"
                 },
                 {
                     "$ref": "#/$defs/fieldRepeater"
@@ -637,6 +750,12 @@
                 "span": {
                     "$ref": "#/$defs/spanValue"
                 },
+                "fieldset": {
+                    "$ref": "#/$defs/fieldsetInput"
+                },
+                "showLabel": {
+                    "$ref": "#/$defs/showLabelOption"
+                },
                 "trigger": {
                     "$ref": "#/$defs/fieldTrigger"
                 }
@@ -684,6 +803,12 @@
                 "span": {
                     "$ref": "#/$defs/spanValue"
                 },
+                "fieldset": {
+                    "$ref": "#/$defs/fieldsetInput"
+                },
+                "showLabel": {
+                    "$ref": "#/$defs/showLabelOption"
+                },
                 "trigger": {
                     "$ref": "#/$defs/fieldTrigger"
                 }
@@ -727,6 +852,12 @@
                 },
                 "span": {
                     "$ref": "#/$defs/spanValue"
+                },
+                "fieldset": {
+                    "$ref": "#/$defs/fieldsetInput"
+                },
+                "showLabel": {
+                    "$ref": "#/$defs/showLabelOption"
                 },
                 "trigger": {
                     "$ref": "#/$defs/fieldTrigger"
@@ -792,6 +923,12 @@
                 "span": {
                     "$ref": "#/$defs/spanValue"
                 },
+                "fieldset": {
+                    "$ref": "#/$defs/fieldsetInput"
+                },
+                "showLabel": {
+                    "$ref": "#/$defs/showLabelOption"
+                },
                 "trigger": {
                     "$ref": "#/$defs/fieldTrigger"
                 }
@@ -831,6 +968,12 @@
                 "value": {},
                 "span": {
                     "$ref": "#/$defs/spanValue"
+                },
+                "fieldset": {
+                    "$ref": "#/$defs/fieldsetInput"
+                },
+                "showLabel": {
+                    "$ref": "#/$defs/showLabelOption"
                 },
                 "trigger": {
                     "$ref": "#/$defs/fieldTrigger"
@@ -872,6 +1015,12 @@
                 "span": {
                     "$ref": "#/$defs/spanValue"
                 },
+                "fieldset": {
+                    "$ref": "#/$defs/fieldsetInput"
+                },
+                "showLabel": {
+                    "$ref": "#/$defs/showLabelOption"
+                },
                 "trigger": {
                     "$ref": "#/$defs/fieldTrigger"
                 }
@@ -911,6 +1060,12 @@
                 "value": {},
                 "span": {
                     "$ref": "#/$defs/spanValue"
+                },
+                "fieldset": {
+                    "$ref": "#/$defs/fieldsetInput"
+                },
+                "showLabel": {
+                    "$ref": "#/$defs/showLabelOption"
                 },
                 "trigger": {
                     "$ref": "#/$defs/fieldTrigger"
@@ -964,6 +1119,12 @@
                 "span": {
                     "$ref": "#/$defs/spanValue"
                 },
+                "fieldset": {
+                    "$ref": "#/$defs/fieldsetInput"
+                },
+                "showLabel": {
+                    "$ref": "#/$defs/showLabelOption"
+                },
                 "trigger": {
                     "$ref": "#/$defs/fieldTrigger"
                 }
@@ -1004,6 +1165,12 @@
                 "span": {
                     "$ref": "#/$defs/spanValue"
                 },
+                "fieldset": {
+                    "$ref": "#/$defs/fieldsetInput"
+                },
+                "showLabel": {
+                    "$ref": "#/$defs/showLabelOption"
+                },
                 "trigger": {
                     "$ref": "#/$defs/fieldTrigger"
                 }
@@ -1043,6 +1210,12 @@
                 },
                 "span": {
                     "$ref": "#/$defs/spanValue"
+                },
+                "fieldset": {
+                    "$ref": "#/$defs/fieldsetInput"
+                },
+                "showLabel": {
+                    "$ref": "#/$defs/showLabelOption"
                 },
                 "trigger": {
                     "$ref": "#/$defs/fieldTrigger"
@@ -1087,6 +1260,12 @@
                 "span": {
                     "$ref": "#/$defs/spanValue"
                 },
+                "fieldset": {
+                    "$ref": "#/$defs/fieldsetInput"
+                },
+                "showLabel": {
+                    "$ref": "#/$defs/showLabelOption"
+                },
                 "trigger": {
                     "$ref": "#/$defs/fieldTrigger"
                 }
@@ -1129,6 +1308,12 @@
                 },
                 "span": {
                     "$ref": "#/$defs/spanValue"
+                },
+                "fieldset": {
+                    "$ref": "#/$defs/fieldsetInput"
+                },
+                "showLabel": {
+                    "$ref": "#/$defs/showLabelOption"
                 },
                 "trigger": {
                     "$ref": "#/$defs/fieldTrigger"
@@ -1246,6 +1431,12 @@
                 "span": {
                     "$ref": "#/$defs/spanValue"
                 },
+                "fieldset": {
+                    "$ref": "#/$defs/fieldsetInput"
+                },
+                "showLabel": {
+                    "$ref": "#/$defs/showLabelOption"
+                },
                 "trigger": {
                     "$ref": "#/$defs/fieldTrigger"
                 }
@@ -1359,12 +1550,69 @@
                 "span": {
                     "$ref": "#/$defs/spanValue"
                 },
+                "fieldset": {
+                    "$ref": "#/$defs/fieldsetInput"
+                },
+                "showLabel": {
+                    "$ref": "#/$defs/showLabelOption"
+                },
                 "trigger": {
                     "$ref": "#/$defs/fieldTrigger"
                 }
             },
             "additionalProperties": false,
             "description": "Read-only widget field definition rendered inside forms."
+        },
+        "fieldToolbar": {
+            "type": "object",
+            "required": [
+                "type",
+                "actions"
+            ],
+            "properties": {
+                "type": {
+                    "const": "toolbar"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "helperText": {
+                    "type": "string"
+                },
+                "actions": {
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/formActionsBlock"
+                        },
+                        {
+                            "type": "object",
+                            "minProperties": 1
+                        }
+                    ],
+                    "description": "Same map shape as top-level form `actions` (action id → header action definition)."
+                },
+                "align": {
+                    "$ref": "#/$defs/toolbarFieldAlign"
+                },
+                "span": {
+                    "$ref": "#/$defs/spanValue"
+                },
+                "fieldset": {
+                    "$ref": "#/$defs/fieldsetInput"
+                },
+                "showLabel": {
+                    "$ref": "#/$defs/showLabelOption"
+                },
+                "trigger": {
+                    "$ref": "#/$defs/fieldTrigger"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Toolbar row of header-style actions (publish, links, etc.). Not persisted as form values."
         },
         "fieldRepeater": {
             "type": "object",
@@ -1451,6 +1699,12 @@
                 },
                 "span": {
                     "$ref": "#/$defs/spanValue"
+                },
+                "fieldset": {
+                    "$ref": "#/$defs/fieldsetInput"
+                },
+                "showLabel": {
+                    "$ref": "#/$defs/showLabelOption"
                 },
                 "trigger": {
                     "$ref": "#/$defs/fieldTrigger"
@@ -1665,6 +1919,12 @@
                 "span": {
                     "$ref": "#/$defs/spanValue"
                 },
+                "fieldset": {
+                    "$ref": "#/$defs/fieldsetInput"
+                },
+                "showLabel": {
+                    "$ref": "#/$defs/showLabelOption"
+                },
                 "trigger": {
                     "$ref": "#/$defs/fieldTrigger"
                 }
@@ -1734,6 +1994,12 @@
                 },
                 "span": {
                     "$ref": "#/$defs/spanValue"
+                },
+                "fieldset": {
+                    "$ref": "#/$defs/fieldsetInput"
+                },
+                "showLabel": {
+                    "$ref": "#/$defs/showLabelOption"
                 }
             },
             "additionalProperties": false,

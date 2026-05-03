@@ -146,63 +146,69 @@ export default function FlatpackListPage(props: FlatpackListPageProps) {
                     }
                 }}
             />
-            <div className="flex flex-col gap-2">
-                <PageHeader
-                    title={displayName}
-                    actions={
-                        <ListActions
-                            listActions={listActions}
-                            onRequestConfirm={setPendingListConfirm}
-                            runListAction={executeListAction}
-                            searchTerm={searchTerm}
-                            serverFilterState={serverFilterValues}
-                        />
-                    }
-                />
-                {hasListWidgets ? (
-                    <WidgetsRenderer
-                        widgets={widgets}
-                        tabPanels={widgetsSchema?.tab_panels}
-                        className="mb-4"
+            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 lg:px-6">
+                <div className="flex flex-col gap-2">
+                    <PageHeader
+                        title={displayName}
+                        actions={
+                            <ListActions
+                                listActions={listActions}
+                                onRequestConfirm={setPendingListConfirm}
+                                runListAction={executeListAction}
+                                searchTerm={searchTerm}
+                                serverFilterState={serverFilterValues}
+                            />
+                        }
                     />
-                ) : null}
-                <div className="flex flex-col gap-6">
-                    {allColumns.length > 0 ? (
-                        <DataTable
-                            id={`flatpack-list-${entity || 'entity'}`}
-                            dataRowKey={modelKey || 'id'}
-                            toolbarStart={listTabsToolbar}
-                            bulkActions={bulkActions}
-                            reorderable={reorderable}
-                            rowDetailDrawer={isRowClickEditDrawer}
-                            openDetailDrawerOnRowClick={isRowClickEditDrawer}
-                            onRowClick={
-                                isRowClickEditPage ? handleRowClick : undefined
-                            }
-                            columns={columns}
-                            data={records}
-                            serverPagination={pagination}
-                            pagination={paginationVisibility}
-                            showColumnsVisibility={showColumnsVisibility}
-                            serverSearch={searchTerm}
-                            serverFilters={filterDefinitions}
-                            serverFilterValues={serverFilterValues}
-                            serverSorting={serverSorting}
-                            onBulkAction={handleBulkAction}
-                            onRowAction={handleRowAction}
-                            onCellUpdate={handleCellUpdate}
-                            onRowUpdate={handleRowUpdate}
-                            reorderEndpoint={reorderEndpoint}
-                            reorderOnError={handleReorderError}
-                            onServerPaginationChange={
-                                pagination
-                                    ? handleServerPaginationChange
-                                    : undefined
-                            }
+                    {hasListWidgets ? (
+                        <WidgetsRenderer
+                            widgets={widgets}
+                            tabPanels={widgetsSchema?.tab_panels}
+                            className="mb-4"
                         />
-                    ) : (
-                        <NoColumnsMessage entity={entity} />
-                    )}
+                    ) : null}
+                    <div className="flex flex-col gap-6">
+                        {allColumns.length > 0 ? (
+                            <DataTable
+                                id={`flatpack-list-${entity || 'entity'}`}
+                                dataRowKey={modelKey || 'id'}
+                                toolbarStart={listTabsToolbar}
+                                bulkActions={bulkActions}
+                                reorderable={reorderable}
+                                rowDetailDrawer={isRowClickEditDrawer}
+                                openDetailDrawerOnRowClick={
+                                    isRowClickEditDrawer
+                                }
+                                onRowClick={
+                                    isRowClickEditPage
+                                        ? handleRowClick
+                                        : undefined
+                                }
+                                columns={columns}
+                                data={records}
+                                serverPagination={pagination}
+                                pagination={paginationVisibility}
+                                showColumnsVisibility={showColumnsVisibility}
+                                serverSearch={searchTerm}
+                                serverFilters={filterDefinitions}
+                                serverFilterValues={serverFilterValues}
+                                serverSorting={serverSorting}
+                                onBulkAction={handleBulkAction}
+                                onRowAction={handleRowAction}
+                                onCellUpdate={handleCellUpdate}
+                                onRowUpdate={handleRowUpdate}
+                                reorderEndpoint={reorderEndpoint}
+                                reorderOnError={handleReorderError}
+                                onServerPaginationChange={
+                                    pagination
+                                        ? handleServerPaginationChange
+                                        : undefined
+                                }
+                            />
+                        ) : (
+                            <NoColumnsMessage entity={entity} />
+                        )}
+                    </div>
                 </div>
             </div>
         </>

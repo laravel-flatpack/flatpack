@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { DataTable } from '@/components/table/data-table';
+import { resolveFormFieldLabelLayout } from '@/lib/form-field-label-layout';
 import type {
     DataTableRow,
     DataTableRowDrawerAttachBodyRenderContext,
@@ -11,6 +12,7 @@ import type {
     FlatpackFormTableToolbarAction,
     FlatpackTableRelationType,
 } from '@/types/data-table';
+import type { FormFieldLabelShow } from '@/types/form-fields';
 import { Field, FieldContent, FieldDescription, FieldTitle } from '../ui/field';
 
 export type TableFieldProps = {
@@ -48,6 +50,7 @@ export type TableFieldProps = {
     flatpackTableFieldId?: string;
     rowValidationMessagesById?: DataTableRowValidationMessagesById;
     rowValidationFieldErrorsById?: DataTableRowValidationFieldErrorsById;
+    showLabel?: FormFieldLabelShow;
 };
 
 export const TableField = ({
@@ -74,11 +77,17 @@ export const TableField = ({
     flatpackTableFieldId,
     rowValidationMessagesById,
     rowValidationFieldErrorsById,
+    showLabel,
 }: TableFieldProps) => {
     const labelId = `${id}-label`;
+    const labelLayout = resolveFormFieldLabelLayout(showLabel, 'stacked');
     return (
-        <Field>
-            {label ? <FieldTitle id={labelId}>{label}</FieldTitle> : null}
+        <Field orientation={labelLayout.orientation}>
+            {label ? (
+                <FieldTitle id={labelId} className={labelLayout.labelClassName}>
+                    {label}
+                </FieldTitle>
+            ) : null}
             <FieldContent>
                 <DataTable
                     id={id}

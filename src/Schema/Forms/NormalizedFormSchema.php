@@ -12,8 +12,22 @@ final readonly class NormalizedFormSchema implements ArrayAccess
 {
     /**
      * @param  array<string, mixed>  $schema
+     * @param  array<string, mixed>|null  $sidebarWidgetDefinitionsRaw  Staged sidebar widget YAML before runtime resolution (not part of {@see $schema}).
      */
-    public function __construct(private array $schema) {}
+    public function __construct(
+        private array $schema,
+        private ?array $sidebarWidgetDefinitionsRaw = null,
+    ) {}
+
+    /**
+     * Raw sidebar widget definitions from YAML (for {@see WidgetSchemaNormalizer} + runtime resolution).
+     *
+     * @return array<string, mixed>|null
+     */
+    public function sidebarWidgetDefinitionsRaw(): ?array
+    {
+        return $this->sidebarWidgetDefinitionsRaw;
+    }
 
     /**
      * @return array<string, mixed>

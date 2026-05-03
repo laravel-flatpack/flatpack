@@ -23,6 +23,8 @@ export type FlatpackListHeaderAction = {
     icon?: string;
     shortcut?: string;
     variant?: FlatpackActionVariant;
+    /** True when YAML references an {@code action} not registered in {@code flatpack.actions} (inline toolbar rows only). */
+    handler_missing?: boolean;
     /** When true, default intent for implicit form submit (Enter / primary CTA). */
     primary?: boolean;
     success_message?: string;
@@ -83,6 +85,8 @@ export type FlatpackFormPageProps = {
     form_actions?: FlatpackListHeaderAction[];
     widgets?: FlatpackWidgetsCompositionSchema['widgets'];
     widgets_schema?: FlatpackWidgetsCompositionSchema | null;
+    sidebar_widgets?: FlatpackWidgetsCompositionSchema['widgets'];
+    sidebar_widgets_schema?: FlatpackWidgetsCompositionSchema | null;
     /** Non-sensitive debug messages from composition normalization (APP_DEBUG). */
     composition_debug?: string[];
 };

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Flatpack\Services\SaveRecord;
 
-use Flatpack\Schema\CompositionTabsMerge;
+use Flatpack\Schema\Forms\FormCompositionMergeForPersistence;
 use Flatpack\Schema\Forms\FormFieldType;
 use Flatpack\Support\DatabaseConstraintParser;
 use Flatpack\Support\ValidationMessages;
@@ -27,7 +27,7 @@ final class RelationSyncErrorMapper
             return null;
         }
 
-        $schema = CompositionTabsMerge::form($schema) ?? $schema;
+        $schema = FormCompositionMergeForPersistence::merge($schema) ?? $schema;
 
         $fields = $schema['fields'] ?? null;
         if (! is_array($fields)) {

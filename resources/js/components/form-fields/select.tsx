@@ -2,7 +2,11 @@ import { ChevronDownIcon } from 'lucide-react';
 import { useLayoutEffect, useMemo, useState } from 'react';
 import { selectOptionLeadingIcon } from '@/components/ui/select-option-leading-icon';
 import { CLEAR_SELECT_ITEM_VALUE } from '@/lib/flatpack-select';
-import type { SelectFieldOption } from '@/types/form-fields';
+import { resolveFormFieldLabelLayout } from '@/lib/form-field-label-layout';
+import type {
+    FormFieldLabelShow,
+    SelectFieldOption,
+} from '@/types/form-fields';
 import { Badge } from '../ui/badge';
 import {
     DropdownMenu,
@@ -30,8 +34,10 @@ type SelectFieldBaseProps = {
     placeholder: string;
     options: SelectFieldOption[];
     helperText?: string;
+    showLabel?: FormFieldLabelShow;
     required?: boolean;
     invalid?: boolean;
+    disabled?: boolean;
 };
 
 type SelectFieldSingleProps = SelectFieldBaseProps & {
@@ -93,8 +99,10 @@ export const SelectField = ({
     multiple = false,
     value: valueProp,
     helperText,
+    showLabel,
     onValueChange,
     invalid = false,
+    disabled = false,
 }: SelectFieldProps) => {
     const [singleValue, setSingleValue] = useState<string>(() =>
         selectValueFromUnknown(valueProp, options),
@@ -112,6 +120,7 @@ export const SelectField = ({
     }, [multiple, valueProp, options]);
 
     const labelId = `${id}-label`;
+    const labelLayout = resolveFormFieldLabelLayout(showLabel, 'stacked');
     const selectedCount = multiValue.length;
     const selectedLabels = useMemo(
         () =>
@@ -143,8 +152,12 @@ export const SelectField = ({
     };
 
     return (
-        <Field>
-            {label ? <FieldTitle id={labelId}>{label}</FieldTitle> : null}
+        <Field orientation={labelLayout.orientation}>
+            {label ? (
+                <FieldTitle id={labelId} className={labelLayout.labelClassName}>
+                    {label}
+                </FieldTitle>
+            ) : null}
             <FieldContent>
                 {multiple ? (
                     <DropdownMenu>
@@ -152,7 +165,8 @@ export const SelectField = ({
                             <button
                                 id={id}
                                 type="button"
-                                className="flex h-9 w-full min-w-0 items-center justify-between rounded-3xl border border-transparent bg-input/50 px-3 py-2 text-left text-sm transition-[color,box-shadow,background-color] outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
+                                disabled={disabled}
+                                className="flex h-9 w-full min-w-0 items-center justify-between rounded-3xl border border-transparent bg-input/50 px-3 py-2 text-left text-sm transition-[color,box-shadow,background-color] outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
                                 aria-labelledby={label ? labelId : undefined}
                                 aria-invalid={invalid || undefined}
                             >
@@ -256,6 +270,7 @@ export const SelectField = ({
                             className="w-full"
                             aria-labelledby={label ? labelId : undefined}
                             aria-invalid={invalid || undefined}
+                            disabled={disabled}
                         >
                             <SelectValue placeholder={placeholder} />
                         </SelectTrigger>

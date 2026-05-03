@@ -6,6 +6,7 @@ import type {
     FlatpackTableRelationType,
 } from '@/types/data-table';
 import type { FlatpackListCompositionColumnsYaml } from '@/types/list-composition';
+import type { FlatpackListHeaderAction } from '@/types/pages/flatpack';
 
 export type SelectFieldOption = {
     value: string;
@@ -52,11 +53,38 @@ export type FieldSpanFraction = '1/2' | '2/3' | '1/3' | '1/4';
 
 export type FieldSpan = FieldSpanNamed | FieldSpanFraction;
 
+/** Layout for grouped fields (`fieldset` object form). Omitted in JSON when `card` (default). */
+export type FieldsetVariant = 'card' | 'minimal' | 'plain' | 'none';
+
+/** Label placement for a field (`form.yaml` `showLabel`). */
+export type FormFieldLabelShow = 'stacked' | 'inline' | 'none';
+
+/** Normalized server-side to `{ label, icon?, variant?, collapsed? }`; authors may use a string or object in YAML. */
+export type FieldsetDefinition = {
+    label: string;
+    icon?: string;
+    variant?: FieldsetVariant;
+    /**
+     * When set, section is collapsible (Radix Collapsible). True = initially collapsed; false = initially expanded.
+     * Omitted for non-collapsible. Stripped server-side when `variant` is `none`.
+     */
+    collapsed?: boolean;
+};
+
 type FormFieldBase = {
     label: string;
+    /** When true, control is non-interactive; combined with {@link FormFieldTrigger} in the form shell. */
+    disabled?: boolean;
+    /** Label vs control layout; omit for each field type’s historical default. */
+    showLabel?: FormFieldLabelShow;
     helperText?: string;
     /** Responsive grid span (YAML `span`); normalized server-side to {@link FieldSpanNamed}. */
     span?: FieldSpan;
+    /**
+     * Optional section group: adjacent fields with the same normalized label and variant share one wrapper
+     * (`fieldset` string or `{ label, icon?, variant? }`).
+     */
+    fieldset?: string | FieldsetDefinition;
     /**
      * When set, the field auto-fills from {@link FormFieldPreset.field} until the user edits this field
      * or the field was non-empty when the form loaded (e.g. existing record).
@@ -118,6 +146,10 @@ type BlockEditorFieldProps = FormFieldBase &
     WithPlaceholder & {
         toolbar?: boolean;
     };
+type WidgetFormFieldProps = FormFieldBase & {
+    /** Widget definitions keyed by id; runtime payloads merged from the form page `widgets` prop. */
+    widget: Record<string, Record<string, unknown>>;
+};
 export type FileUploadStoredFile = {
     disk?: string;
     path?: string;
@@ -183,6 +215,29 @@ type TableFieldProps = FormFieldBase & {
 
 export type RepeaterDisplayMode = 'accordion' | 'builder';
 
+/** Normalized form toolbar row (`type: toolbar`). */
+export type ToolbarFieldAlign =
+    | 'left'
+    | 'right'
+    | 'center'
+    | 'start'
+    | 'end'
+    | 'spaced';
+
+export type ToolbarFieldProps = {
+    /** Optional; omit for a chromeless button row. */
+    label?: string;
+    disabled?: boolean;
+    showLabel?: FormFieldLabelShow;
+    helperText?: string;
+    span?: FieldSpan;
+    fieldset?: string | FieldsetDefinition;
+    trigger?: FormFieldTrigger;
+    /** Normalized header-action rows from PHP ({@link HeaderActions}-compatible). */
+    actions: FlatpackListHeaderAction[];
+    align?: ToolbarFieldAlign;
+};
+
 export type RepeaterFieldProps = FormFieldBase & {
     /** Hydrated row list from the parent record; omitted in YAML, present at runtime. */
     value?: unknown;
@@ -215,6 +270,8 @@ export type FormFieldProps =
     | ({ type: 'switch' } & SwitchFieldProps)
     | ({ type: 'rich-text' } & RichTextFieldProps)
     | ({ type: 'block-editor' } & BlockEditorFieldProps)
+    | ({ type: 'widget' } & WidgetFormFieldProps)
+    | ({ type: 'toolbar' } & ToolbarFieldProps)
     | ({ type: 'file-upload' } & FileUploadFieldProps)
     | ({ type: 'table' } & TableFieldProps)
     | ({ type: 'repeater' } & RepeaterFieldProps);

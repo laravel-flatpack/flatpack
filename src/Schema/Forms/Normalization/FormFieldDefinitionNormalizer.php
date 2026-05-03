@@ -6,7 +6,9 @@ namespace Flatpack\Schema\Forms\Normalization;
 
 use Flatpack\Schema\Forms\FormFieldType;
 use Flatpack\Schema\Generated\CompositionSchemaKeys;
+use Flatpack\Schema\HeaderActions;
 use Flatpack\Support\CompositionDebugLog;
+use Flatpack\Support\FieldsetCanonicalizer;
 use Flatpack\Support\FieldSpanCanonicalizer;
 
 /**
@@ -26,7 +28,9 @@ final class FormFieldDefinitionNormalizer
         $rawType = $this->readTrimmedString($fieldDefinition, 'type');
         $canonicalType = FormFieldType::normalizeYamlType($rawType);
         if ($canonicalType === '') {
-            $canonicalType = CompositionSchemaKeys::FORM_DEFAULT_FIELD_TYPE;
+            $canonicalType = $this->inferToolbarFromActionsBlock($fieldDefinition)
+                ? 'toolbar'
+                : CompositionSchemaKeys::FORM_DEFAULT_FIELD_TYPE;
         }
         $fieldDefinition['type'] = $canonicalType;
 
@@ -43,6 +47,7 @@ final class FormFieldDefinitionNormalizer
             sprintf('Form field "%s"', $label),
             $log,
         );
+        FieldsetCanonicalizer::applyToDefinition($fieldDefinition, $log);
         $this->normalizeNestedSpansInFieldDefinition($fieldDefinition, $yamlKey, $log);
 
         if (! in_array($canonicalType, CompositionSchemaKeys::FORM_FIELD_TYPES_CANONICAL, true)) {
@@ -80,10 +85,71 @@ final class FormFieldDefinitionNormalizer
     ): ?array {
         return match ($fieldDefinition['type']) {
             'table' => $this->normalizeTableField($fieldDefinition, $yamlKey, $log),
+            'toolbar' => $this->normalizeToolbarField($fieldDefinition, $yamlKey, $log),
             'select', 'combobox' => $this->normalizeChoiceField($fieldDefinition),
             'file-upload' => $this->normalizeFileUploadField($fieldDefinition, $yamlKey, $log),
             default => $fieldDefinition,
         };
+    }
+
+    /**
+     * @param  array<string, mixed>  $fieldDefinition
+     */
+    private function inferToolbarFromActionsBlock(array $fieldDefinition): bool
+    {
+        $actions = $fieldDefinition['actions'] ?? null;
+        if (! is_array($actions) || $actions === []) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @param  array<string, mixed>  $fieldDefinition
+     * @return array<string, mixed>|null
+     */
+    private function normalizeToolbarField(
+        array $fieldDefinition,
+        string $yamlKey,
+        ?CompositionDebugLog $log,
+    ): ?array {
+        $rawActions = $fieldDefinition['actions'] ?? null;
+        if (! is_array($rawActions)) {
+            return $this->omitFieldWithLog(
+                $fieldDefinition,
+                $yamlKey,
+                $log,
+                'toolbar requires actions',
+            );
+        }
+
+        $debugPath = sprintf('fields.%s.actions', $yamlKey);
+        $normalized = HeaderActions::fromActionsBlock($rawActions, $log, $yamlKey, $debugPath, false);
+        if ($normalized === []) {
+            return $this->omitFieldWithLog(
+                $fieldDefinition,
+                $yamlKey,
+                $log,
+                'toolbar has no usable actions after normalization',
+            );
+        }
+
+        $fieldDefinition['actions'] = $normalized;
+        $fieldDefinition['align'] = $this->normalizeToolbarAlign($fieldDefinition['align'] ?? null);
+
+        return $fieldDefinition;
+    }
+
+    private function normalizeToolbarAlign(mixed $raw): string
+    {
+        $allowed = ['left', 'right', 'center', 'start', 'end', 'spaced'];
+        if (! is_string($raw)) {
+            return 'right';
+        }
+        $v = trim($raw);
+
+        return in_array($v, $allowed, true) ? $v : 'right';
     }
 
     /**
@@ -400,6 +466,7 @@ final class FormFieldDefinitionNormalizer
                         sprintf('Form repeater "%s" item field "%s"', $parentLabel, $nl),
                         $log,
                     );
+                    FieldsetCanonicalizer::applyToDefinition($nested, $log);
                     $this->normalizeNestedSpansInFieldDefinition($nested, $nestedYamlKey, $log);
                 }
                 unset($nested);
@@ -431,6 +498,7 @@ final class FormFieldDefinitionNormalizer
                             ),
                             $log,
                         );
+                        FieldsetCanonicalizer::applyToDefinition($nested, $log);
                         $this->normalizeNestedSpansInFieldDefinition($nested, $nestedYamlKey, $log);
                     }
                     unset($nested);
@@ -458,6 +526,7 @@ final class FormFieldDefinitionNormalizer
                         sprintf('Embedded table column "%s" edit field (%s)', $colId, $editKey),
                         $log,
                     );
+                    FieldsetCanonicalizer::applyToDefinition($column[$editKey], $log);
                 }
             }
             unset($column);

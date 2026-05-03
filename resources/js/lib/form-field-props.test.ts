@@ -26,6 +26,46 @@ vi.mock('@/lib/route', () => ({
 const context = { fieldId: 'field-1', onValueChange: vi.fn() };
 
 describe('mapFormFieldPropsToComponentProps', () => {
+    it('maps block-editor props like rich-text', () => {
+        const props: FormFieldProps = {
+            type: 'block-editor',
+            label: 'Blocks',
+            placeholder: 'Write…',
+        };
+        const out = mapFormFieldPropsToComponentProps(props, context);
+        expect(out).toMatchObject({
+            id: 'field-1',
+            label: 'Blocks',
+            placeholder: 'Write…',
+            onValueChange: context.onValueChange,
+        });
+    });
+
+    it('maps embedded widget field definitions', () => {
+        const props: FormFieldProps = {
+            type: 'widget',
+            label: 'Summary',
+            widget: {
+                my_metric: {
+                    type: 'metric',
+                    provider: 'sales',
+                    label: 'Sales',
+                    value_format: { kind: 'currency', currency: 'USD' },
+                    period: { kind: 'month', lookback: 1 },
+                },
+            },
+        };
+        const out = mapFormFieldPropsToComponentProps(props, context);
+        expect(out).toMatchObject({
+            id: 'field-1',
+            label: 'Summary',
+            widget: {
+                my_metric: expect.objectContaining({ type: 'metric' }),
+            },
+        });
+        expect(out.onValueChange).toBeUndefined();
+    });
+
     it('maps text field props', () => {
         const props: FormFieldProps = {
             type: 'text',

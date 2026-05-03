@@ -15,6 +15,13 @@ export type FormFieldsProps = {
     record: string | null;
     /** When set (from normalized `tab_panels`), fields render inside tab panels. */
     tabPanels?: FlatpackFormTabPanelLayout[];
+    /**
+     * When true with tab panels, fields not assigned to a tab render in place and the tab
+     * strip + panels are rendered into `tabsPortalContainer` (e.g. full width below a sidebar row).
+     */
+    tabsFullWidthBelow?: boolean;
+    /** Portal mount node for tab UI when `tabsFullWidthBelow` is true. */
+    tabsPortalContainer?: HTMLElement | null;
     fields: FormFieldEntry[];
     fieldComponents: Record<string, LazyFormField>;
     fieldErrors: Record<string, unknown>;
@@ -29,4 +36,6 @@ export type FormFieldsProps = {
         fieldId: string;
         actionId: string;
     }) => void;
+    /** Narrow layouts (e.g. sidebar): right-align combobox option panels to the field. */
+    comboboxDropdownAlign?: 'start' | 'end';
 };

@@ -23,6 +23,7 @@ final class CompositionSchemaKeys
         'icon',
         'model',
         'name',
+        'sidebar',
         'tabs',
     ];
 
@@ -106,6 +107,7 @@ final class CompositionSchemaKeys
         'text',
         'textarea',
         'time-picker',
+        'toolbar',
         'widget',
     ];
 

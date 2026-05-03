@@ -131,6 +131,8 @@ export function componentValueProps(
             return {
                 data: Array.isArray(value) ? value : (field.data ?? []),
             };
+        case 'toolbar':
+            return {};
         case 'repeater': {
             if (Array.isArray(value)) {
                 return { value };

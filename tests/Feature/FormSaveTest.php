@@ -588,6 +588,89 @@ YAML, function (): void {
     });
 });
 
+test('flatpack relation options resolves combobox field declared only under sidebar', function (): void {
+    withTempFormSchema(<<<'YAML'
+name: Post
+model: Flatpack\Tests\Models\Post
+fields:
+  title:
+    type: text
+    label: Title
+sidebar:
+  category_id:
+    id: category_id
+    type: combobox
+    label: Category
+    relation: category
+    relation_name: name
+    relation_value: id
+YAML, function (): void {
+        /** @var User $user */
+        $user = User::factory()->createOne();
+        $category = Category::factory()->createOne([
+            'name' => 'Sidebar category',
+        ]);
+
+        actingAs($user)
+            ->getJson(route('flatpack.entities.relation-options', [
+                'entity' => 'posts',
+                'field' => 'category_id',
+                'q' => '',
+                'selected' => (string) $category->getKey(),
+            ]))
+            ->assertOk()
+            ->assertJsonPath('data.0.value', (string) $category->getKey())
+            ->assertJsonPath('data.0.label', 'Sidebar category');
+    });
+});
+
+test('flatpack form save persists relation combobox declared only under sidebar', function (): void {
+    withTempFormSchema(<<<'YAML'
+name: Post
+model: Flatpack\Tests\Models\Post
+actions:
+  save:
+    label: Save
+    action: save
+fields:
+  title:
+    type: text
+    label: Title
+  slug:
+    type: text
+    label: Slug
+sidebar:
+  category_id:
+    id: category_id
+    type: combobox
+    label: Category
+    relation: category
+    relation_name: name
+    relation_value: id
+YAML, function (): void {
+        /** @var User $user */
+        $user = User::factory()->createOne();
+        $category = Category::factory()->createOne([
+            'name' => 'Persisted from sidebar',
+        ]);
+
+        actingAs($user)
+            ->post(route('flatpack.entities.form.submit', ['entity' => 'posts']), [
+                'action' => 'save',
+                'values' => [
+                    'title' => 'Sidebar category save',
+                    'slug' => 'sidebar-category-save',
+                    'category_id' => (string) $category->getKey(),
+                ],
+            ])
+            ->assertSessionDoesntHaveErrors();
+
+        $post = Post::query()->where('slug', 'sidebar-category-save')->first();
+        expect($post)->not->toBeNull()
+            ->and((string) $post->category_id)->toBe((string) $category->getKey());
+    });
+});
+
 test('flatpack relation options endpoint returns stable 404 envelope when field is unknown', function () {
     withTempFormSchema(<<<'YAML'
 name: Post

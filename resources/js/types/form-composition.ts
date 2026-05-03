@@ -13,6 +13,7 @@ import type {
     FormFieldInputFormat,
     FormFieldPreset,
     FormFieldTrigger,
+    ToolbarFieldAlign,
 } from '@/types/form-fields';
 import type {
     FlatpackListCompositionBulkActionYaml,
@@ -276,6 +277,20 @@ export type FlatpackFormCompositionFieldTableYaml = {
     trigger?: FormFieldTrigger;
 };
 
+/** Inline toolbar (`type: toolbar`): same {@code actions} map shape as top-level form {@link FlatpackFormCompositionActionsYaml}. */
+export type FlatpackFormCompositionFieldToolbarYaml = {
+    type: 'toolbar';
+    id?: string;
+    label?: string;
+    helperText?: string;
+    actions: FlatpackFormCompositionActionsYaml;
+    align?: ToolbarFieldAlign;
+    span?: string;
+    fieldset?: string | { label: string; icon?: string; variant?: string };
+    showLabel?: string;
+    trigger?: FormFieldTrigger;
+};
+
 export type FlatpackFormCompositionFieldYaml =
     | FlatpackFormCompositionFieldTextYaml
     | FlatpackFormCompositionFieldTextareaYaml
@@ -290,7 +305,8 @@ export type FlatpackFormCompositionFieldYaml =
     | FlatpackFormCompositionFieldRichTextYaml
     | FlatpackFormCompositionFieldBlockEditorYaml
     | FlatpackFormCompositionFieldFileUploadYaml
-    | FlatpackFormCompositionFieldTableYaml;
+    | FlatpackFormCompositionFieldTableYaml
+    | FlatpackFormCompositionFieldToolbarYaml;
 
 export type FlatpackFormCompositionFieldsYaml = Record<
     string,
@@ -304,4 +320,6 @@ export type FlatpackFormSchema = {
     fields?: FlatpackFormCompositionFieldsYaml;
     tab_panels?: FlatpackFormTabPanelLayout[];
     actions?: FlatpackFormCompositionActionsYaml;
+    /** Field ids merged from `sidebar` into `fields`; rendered in the secondary column when present. */
+    sidebar_field_ids?: string[];
 };

@@ -11,18 +11,48 @@ import { FORM_FIELD_TYPES_CANONICAL } from '@/lib/generated/composition-schema-k
 import type { SchemaFieldRenderEntry } from '@/types/schema-fields-renderer';
 
 describe('normalizeFields', () => {
-    it('normalizes every canonical generated form field type', () => {
+    it('normalizes every canonical form control type (excludes non-field kinds)', () => {
+        const typesForUi = [...FORM_FIELD_TYPES_CANONICAL];
         const fields = Object.fromEntries(
-            FORM_FIELD_TYPES_CANONICAL.map((type) => [
-                type,
-                { id: type, type, label: String(type) },
-            ]),
+            typesForUi.map((type) => {
+                if (type === 'widget') {
+                    return [
+                        type,
+                        {
+                            id: type,
+                            type,
+                            label: String(type),
+                            widget: {
+                                w: {
+                                    type: 'card',
+                                    provider: 'stub',
+                                    label: 'Stub',
+                                },
+                            },
+                        },
+                    ];
+                }
+                if (type === 'toolbar') {
+                    return [
+                        type,
+                        {
+                            id: type,
+                            type,
+                            label: String(type),
+                            actions: {
+                                a: { label: 'Save', action: 'save' },
+                            },
+                        },
+                    ];
+                }
+                return [type, { id: type, type, label: String(type) }];
+            }),
         );
         const entries = normalizeFields({ fields });
 
-        expect(entries).toHaveLength(FORM_FIELD_TYPES_CANONICAL.length);
+        expect(entries).toHaveLength(typesForUi.length);
         expect(entries.map((entry) => entry.field.type).sort()).toEqual(
-            [...FORM_FIELD_TYPES_CANONICAL].sort(),
+            [...typesForUi].sort(),
         );
     });
 
@@ -31,6 +61,23 @@ describe('normalizeFields', () => {
         expect(normalizeFields(undefined)).toEqual([]);
         expect(normalizeFields({})).toEqual([]);
         expect(normalizeFields({ fields: 'bad' })).toEqual([]);
+    });
+
+    it('infers toolbar when actions map is present without type', () => {
+        const entries = normalizeFields({
+            fields: {
+                tb: {
+                    actions: {
+                        go: {
+                            label: 'Go',
+                            href: '/posts',
+                        },
+                    },
+                },
+            },
+        });
+        expect(entries).toHaveLength(1);
+        expect(entries[0]?.field.type).toBe('toolbar');
     });
 
     it('maps date alias to date-picker and keeps combobox with relation', () => {

@@ -343,7 +343,7 @@ export function DataTableRowDrawerPanel({
                 <div className="flex flex-col gap-4 overflow-y-auto px-4 pb-2 text-sm">
                     <div
                         ref={firstFieldsRegionRef}
-                        className="grid grid-cols-1 gap-4"
+                        className="flex flex-col gap-4"
                     >
                         {showAttachSlot ? (
                             renderAttachBody(attachContext)

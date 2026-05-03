@@ -27,17 +27,33 @@ final class HeaderActions
             return [];
         }
 
-        $debug = CompositionDebugContext::resolveOptional($debug);
-
         $raw = $schema['actions'] ?? null;
-        if (! is_array($raw)) {
-            return [];
-        }
+
+        return self::fromActionsBlock(is_array($raw) ? $raw : [], $debug, null, 'actions');
+    }
+
+    /**
+     * Normalizes a {@code formActionsBlock} map (or YAML list of definitions) into header button rows.
+     *
+     * @param  array<int|string, mixed>  $actionsBlock
+     * @param  non-empty-string|null  $idNamespacePrefix  When set (e.g. field yaml key), each row {@code id} becomes {@code "{$prefix}:{$baseId}"}.
+     * @param  non-empty-string  $debugPathPrefix  Path segment for composition debug messages (e.g. {@code actions} or {@code fields.my_field.actions}).
+     * @param  bool  $omitUnconfiguredRecordActions  When true (header/list actions), rows whose {@code action} is missing from {@code config('flatpack.actions')} are skipped. When false (inline {@code type: toolbar}), those rows are kept with {@code handler_missing: true} so the UI can render disabled buttons.
+     * @return list<array{id: string, label: string, icon: string, variant: string, primary?: true, href?: string, action?: string, submit?: bool, handler_missing?: true, success_message?: string, confirm?: bool, success_redirect?: string, enabled_if?: array{all?: list<array<string, mixed>>, any?: list<array<string, mixed>>, message?: string}, visible_if?: array{all?: list<array<string, mixed>>, any?: list<array<string, mixed>>, message?: string}, shortcut?: string}>
+     */
+    public static function fromActionsBlock(
+        array $actionsBlock,
+        ?CompositionDebugLog $debug = null,
+        ?string $idNamespacePrefix = null,
+        string $debugPathPrefix = 'actions',
+        bool $omitUnconfiguredRecordActions = true,
+    ): array {
+        $debug = CompositionDebugContext::resolveOptional($debug);
 
         $allowExternalOrigins = (bool) config('flatpack.ui.allow_external_navigation_urls', false);
         $out = [];
 
-        foreach ($raw as $key => $definition) {
+        foreach ($actionsBlock as $key => $definition) {
             if (! is_array($definition)) {
                 continue;
             }
@@ -57,7 +73,10 @@ final class HeaderActions
                     continue;
                 }
             }
-            $id = is_string($key) && $key !== '' ? $key : (string) count($out);
+            $baseId = is_string($key) && $key !== '' ? $key : (string) count($out);
+            $id = $idNamespacePrefix !== null && $idNamespacePrefix !== ''
+                ? $idNamespacePrefix . ':' . $baseId
+                : $baseId;
             $variantRaw = $definition['variant'] ?? null;
             $isPrimaryVariant = is_string($variantRaw) && trim($variantRaw) === 'primary';
             $explicitPrimary = ($definition['primary'] ?? null) === true;
@@ -71,14 +90,19 @@ final class HeaderActions
                 $normalized['primary'] = true;
             }
             if ($action !== '') {
-                if (! self::isConfiguredRecordAction($action)) {
+                $configured = self::isConfiguredRecordAction($action);
+                if (! $configured) {
                     $debug?->add(sprintf(
-                        'Action "%s" in actions.%s.action is not configured in flatpack.actions (omitted from UI).',
+                        'Action "%s" in %s.%s.action is not configured in flatpack.actions%s.',
                         $action,
-                        $id,
+                        $debugPathPrefix,
+                        $baseId,
+                        $omitUnconfiguredRecordActions ? ' (omitted from UI)' : ' (kept for toolbar UI as disabled)',
                     ));
-
-                    continue;
+                    if ($omitUnconfiguredRecordActions) {
+                        continue;
+                    }
+                    $normalized['handler_missing'] = true;
                 }
                 $normalized['action'] = $action;
                 if (($definition['submit'] ?? null) === true) {

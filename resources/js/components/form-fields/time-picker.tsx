@@ -1,7 +1,9 @@
 import { format } from 'date-fns';
 import { CalendarIcon, ChevronDownIcon, ClockIcon } from 'lucide-react';
 import { useLayoutEffect, useState } from 'react';
+import { resolveFormFieldLabelLayout } from '@/lib/form-field-label-layout';
 import { cn } from '@/lib/utils';
+import type { FormFieldLabelShow } from '@/types/form-fields';
 import { Calendar } from '../ui/calendar';
 import { Field, FieldContent, FieldGroup, FieldTitle } from '../ui/field';
 import {
@@ -19,6 +21,8 @@ export const TimePickerField = ({
     timeDefaultValue,
     value,
     onValueChange,
+    showLabel,
+    disabled = false,
 }: {
     id: string;
     dateLabel: string;
@@ -27,6 +31,8 @@ export const TimePickerField = ({
     timeDefaultValue: string;
     value?: { date?: Date; time?: string };
     onValueChange?: (value: { date: Date | undefined; time: string }) => void;
+    showLabel?: FormFieldLabelShow;
+    disabled?: boolean;
 }) => {
     const dateId = `${id}-date`;
     const timeId = `${id}-time`;
@@ -35,6 +41,7 @@ export const TimePickerField = ({
     const [time, setTime] = useState(value?.time ?? timeDefaultValue);
     const dateLabelId = `${dateId}-label`;
     const timeLabelId = `${timeId}-label`;
+    const ll = resolveFormFieldLabelLayout(showLabel, 'stacked');
 
     useLayoutEffect(() => {
         setDate(value?.date);
@@ -43,21 +50,29 @@ export const TimePickerField = ({
 
     return (
         <FieldGroup className="w-full flex-row flex-wrap items-end gap-4">
-            <Field className="min-w-0 flex-1">
+            <Field orientation={ll.orientation} className="min-w-0 flex-1">
                 {dateLabel ? (
-                    <FieldTitle id={dateLabelId}>{dateLabel}</FieldTitle>
+                    <FieldTitle id={dateLabelId} className={ll.labelClassName}>
+                        {dateLabel}
+                    </FieldTitle>
                 ) : null}
                 <FieldContent>
-                    <Popover open={open} onOpenChange={setOpen}>
+                    <Popover
+                        open={disabled ? false : open}
+                        onOpenChange={disabled ? () => {} : setOpen}
+                    >
                         <PopoverTrigger asChild>
                             <button
                                 id={dateId}
                                 type="button"
+                                disabled={disabled}
                                 className={cn(
                                     'flex h-9 w-full min-w-[8.5rem] items-center justify-between gap-2 rounded-3xl border border-transparent bg-input/50 px-3 py-1 text-left text-base font-normal text-foreground transition-[color,box-shadow,background-color] outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 md:text-sm',
-                                    open && 'border-ring ring-3 ring-ring/30',
+                                    open &&
+                                        !disabled &&
+                                        'border-ring ring-3 ring-ring/30',
                                 )}
-                                aria-expanded={open}
+                                aria-expanded={disabled ? undefined : open}
                             >
                                 <span className="flex min-w-0 flex-1 items-center gap-2">
                                     <CalendarIcon className="size-4 shrink-0 text-muted-foreground" />
@@ -94,9 +109,14 @@ export const TimePickerField = ({
                     </Popover>
                 </FieldContent>
             </Field>
-            <Field className="w-full min-w-[10rem] sm:w-36">
+            <Field
+                orientation={ll.orientation}
+                className="w-full min-w-[10rem] sm:w-36"
+            >
                 {timeLabel ? (
-                    <FieldTitle id={timeLabelId}>{timeLabel}</FieldTitle>
+                    <FieldTitle id={timeLabelId} className={ll.labelClassName}>
+                        {timeLabel}
+                    </FieldTitle>
                 ) : null}
                 <FieldContent>
                     <InputGroup className="rounded-3xl">
@@ -110,6 +130,7 @@ export const TimePickerField = ({
                             autoComplete="off"
                             step={1}
                             value={time}
+                            disabled={disabled}
                             className="appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
                             aria-labelledby={
                                 timeLabel ? timeLabelId : undefined

@@ -19,6 +19,7 @@ Not every key is valid for every `type`. The table below lists keys that appear 
 | `trigger` | most | Conditional UI behavior tied to another field (`fieldTrigger`): show/hide, enable/disable, or clear—see [Triggers](#triggers). |
 | `preset` | text, textarea only | Auto-fill this field from another field using `preset` (exact copy or derived slug/url/camel/file)—see [Preset](#preset). |
 | `span` | all | Responsive grid width on the form page, in repeaters, and in metadata for embedded-table drawer fields (see [Layout grid](#layout-grid)). Named: `full`, `half`, `two_thirds`, `third`, `quarter`. Aliases: `1/2`, `2/3`, `1/3`, `1/4` (normalized server-side). |
+| `fieldset` | all | Optional visual grouping for consecutive fields that share the same section title and variant—see [Fieldset grouping](#fieldset-grouping). |
 
 **Checkbox and switch** do not declare `placeholder`. **File upload** does not declare `placeholder` in the schema.
 
@@ -34,6 +35,61 @@ See [Available Form Fields — Built-in Laravel validation](../form-fields.md#bu
 ### Layout grid (`span`)
 
 The form page lays fields out in a responsive CSS grid: **1 / 2 / 4 / 5** columns at default / `md` / `lg` / `2xl` breakpoints. When `span` is omitted, each field spans the full row (same as today’s stacked layout). Repeater item bodies use a narrower grid (**1 / 2 / 3** at default / `md` / `2xl`). Row-edit drawers use a single column; `span` is accepted on `edit_form_field` but always renders full width there.
+
+### Fieldset grouping
+
+Use **`fieldset`** to wrap consecutive fields that belong to one section. Fields are grouped when they share the same **normalized section title** (`label`), the same **`variant`**, and the same **collapsible identity**: either all omit **`collapsed`** (non-collapsible section) or all use the same boolean **`collapsed`**. The section title is independent of each field’s own **`label`** (the label beside the control).
+
+- **String shorthand** — `fieldset: Section title` — equivalent to `{ label: Section title }` with variant **`card`** (default); never collapsible.
+- **Object form** — `fieldset` as a map:
+  - **`label`** (required) — section heading text (normalization trims whitespace).
+  - **`icon`** (optional) — Lucide icon key (kebab-case or snake_case), resolved like menu icons. Ignored for variant **`none`**.
+  - **`variant`** (optional) — how the section chrome is drawn; default **`card`**.
+  - **`collapsed`** (optional boolean) — **presence** of this key makes the section **collapsible** (Radix Collapsible). **`true`** starts **collapsed**; **`false`** starts **expanded**. Omit for a section that is always open with no toggle. Cannot be combined with **`variant: none`** (the key is stripped server-side; there is no visible heading to act as a trigger).
+
+**Variants**
+
+| Value | Meaning |
+| --- | --- |
+| `card` | Default: bordered card with header title and optional icon. |
+| `minimal` | Light section row (compact muted heading and optional icon); no card. |
+| `plain` | Stronger heading with optional icon and a top border separating this section from the previous block (except when it is the first block). |
+| `none` | No visible section heading; fields render in a semantic `<fieldset>` with a screen-reader-only legend (`label`). |
+
+Normalized payloads omit **`variant`** when it is **`card`** so existing schemas stay compact.
+
+**Examples**
+
+```yaml
+# Card-style section (default)
+fieldset: Contact details
+
+# Minimal chrome
+fieldset:
+  label: Metadata
+  variant: minimal
+
+# Explicit card + icon
+fieldset:
+  label: Publishing
+  icon: clock
+  variant: card
+
+# Visually unlabeled group (legend for assistive tech only)
+fieldset:
+  label: Pricing overrides
+  variant: none
+
+# Collapsible: starts expanded (omit collapsed entirely for a non-collapsible section)
+fieldset:
+  label: Advanced
+  collapsed: false
+
+# Collapsible: starts collapsed
+fieldset:
+  label: SEO
+  collapsed: true
+```
 
 ### Triggers (`trigger` / `fieldTrigger`)
 

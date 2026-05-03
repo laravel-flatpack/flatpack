@@ -11,7 +11,11 @@ use Flatpack\Schema\Generated\CompositionSchemaKeys;
 final class StripUnknownFormRootKeysPipe
 {
     /** @var list<string> */
-    private const array INTERNAL_NORMALIZED_KEYS = ['tab_panels'];
+    private const array INTERNAL_NORMALIZED_KEYS = [
+        'tab_panels',
+        'sidebar_field_ids',
+        '_sidebar_widgets_pending',
+    ];
 
     public function handle(FormSchemaPipelineState $state, Closure $next): mixed
     {

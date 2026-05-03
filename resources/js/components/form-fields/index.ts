@@ -15,3 +15,5 @@ export { TableField } from './table';
 export { TextField } from './text';
 export { TextareaField } from './textarea';
 export { TimePickerField } from './time-picker';
+export { ToolbarField } from './toolbar';
+export { WidgetField } from './widget';

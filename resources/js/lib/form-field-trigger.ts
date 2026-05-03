@@ -1,5 +1,18 @@
 import type { FormFieldProps, FormFieldTrigger } from '@/types/form-fields';
 
+/** Static YAML option (`disabled` / alias `disable`), before trigger rules. */
+export function fieldDisabledFromDefinition(field: FormFieldProps): boolean {
+    const r = field as Record<string, unknown>;
+    if (r.disabled === true) {
+        return true;
+    }
+    if (r.disable === true) {
+        return true;
+    }
+
+    return false;
+}
+
 function parseValueCondition(condition: string): string | null {
     if (!condition.startsWith('value[') || !condition.endsWith(']')) {
         return null;
@@ -89,6 +102,8 @@ export function emptyValueForField(field: FormFieldProps): unknown {
             return [];
         case 'repeater':
             return [];
+        case 'toolbar':
+            return null;
         case 'select':
         case 'date-picker':
         case 'date-range-picker':

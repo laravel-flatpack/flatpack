@@ -88,6 +88,8 @@ export function useFlatpackForm(props: FlatpackFormPageProps) {
         schema,
         values = {},
         form_actions: formActions = [],
+        sidebar_widgets: sidebarWidgets = {},
+        sidebar_widgets_schema: sidebarWidgetsSchema = null,
     } = props;
     const fields = useMemo(
         () => normalizeFields(schema ?? undefined),
@@ -101,6 +103,42 @@ export function useFlatpackForm(props: FlatpackFormPageProps) {
         }
         return raw.filter(isTabPanelLayout);
     }, [schema]);
+
+    const sidebarFieldIdSet = useMemo(() => {
+        const raw = schema?.sidebar_field_ids;
+        if (!Array.isArray(raw)) {
+            return new Set<string>();
+        }
+        return new Set(
+            raw.filter(
+                (id): id is string => typeof id === 'string' && id !== '',
+            ),
+        );
+    }, [schema?.sidebar_field_ids]);
+
+    const mainFields = useMemo(
+        () => fields.filter((f) => !sidebarFieldIdSet.has(f.id)),
+        [fields, sidebarFieldIdSet],
+    );
+
+    const sidebarFieldsList = useMemo(
+        () => fields.filter((f) => sidebarFieldIdSet.has(f.id)),
+        [fields, sidebarFieldIdSet],
+    );
+
+    const mainTabPanels = useMemo((): FlatpackFormTabPanelLayout[] => {
+        if (tabPanels.length === 0) {
+            return [];
+        }
+        const mainIds = new Set(mainFields.map((f) => f.id));
+        return tabPanels
+            .map((p) => ({
+                ...p,
+                field_ids: p.field_ids.filter((id) => mainIds.has(id)),
+            }))
+            .filter((p) => p.field_ids.length > 0);
+    }, [tabPanels, mainFields]);
+
     const fieldComponents = useMemo(
         () =>
             Object.fromEntries(
@@ -261,6 +299,12 @@ export function useFlatpackForm(props: FlatpackFormPageProps) {
 
     const runAction = useCallback(
         (config: FlatpackListHeaderAction & { action: string }) => {
+            if (config.handler_missing === true) {
+                toast.error(
+                    'This action is not registered under flatpack.actions in config.',
+                );
+                return;
+            }
             if (config.submit === true) {
                 prepareFormSubmit(config);
                 runSubmit();
@@ -312,7 +356,9 @@ export function useFlatpackForm(props: FlatpackFormPageProps) {
         form,
         isDirty,
         fields,
-        tabPanels,
+        mainFields,
+        sidebarFields: sidebarFieldsList,
+        tabPanels: mainTabPanels,
         fieldComponents,
         fieldErrors,
         flatpackTopErrors,
@@ -325,5 +371,7 @@ export function useFlatpackForm(props: FlatpackFormPageProps) {
         runSubmit,
         runAction,
         formProcessing: form.processing || actionProcessing,
+        sidebarWidgets,
+        sidebarWidgetsSchema,
     };
 }

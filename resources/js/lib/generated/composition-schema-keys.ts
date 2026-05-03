@@ -16,6 +16,7 @@ export const FORM_ROOT_PROPERTY_KEYS = [
     'icon',
     'model',
     'name',
+    'sidebar',
     'tabs',
 ] as const;
 
@@ -91,6 +92,7 @@ export const FORM_FIELD_TYPES_CANONICAL = [
     'text',
     'textarea',
     'time-picker',
+    'toolbar',
     'widget',
 ] as const;
 

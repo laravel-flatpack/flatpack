@@ -8,7 +8,7 @@ export default function FlatpackDashboard(props: FlatpackDashboardPageProps) {
     const { widgets, tabPanels } = useFlatpackDashboard(props);
 
     return (
-        <div className="flex flex-col gap-4 md:gap-6">
+        <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 lg:px-6">
             <Head title="Dashboard" />
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
                 <div className="col-span-1 md:col-span-2 xl:col-span-4">

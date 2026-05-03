@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { SchemaFieldsRenderer } from '@/components/form-fields/schema-fields-renderer';
 import type { MenuIconName } from '@/components/icons/lucide-menu-icon-registry';
 import { menuIcons } from '@/components/icons/lucide-menu-icon-registry';
@@ -8,6 +9,7 @@ import { focusFirstControlForFieldId } from '@/lib/focus-field-control';
 import {
     emptyValueForField,
     evaluateFieldTrigger,
+    fieldDisabledFromDefinition,
     valuesEqual,
 } from '@/lib/form-field-trigger';
 import {
@@ -35,6 +37,9 @@ export function FormFields({
     formValues,
     setFieldValue,
     onEmbeddedTableToolbarAction: onEmbeddedTableToolbarActionProp,
+    tabsFullWidthBelow = false,
+    tabsPortalContainer = null,
+    comboboxDropdownAlign,
 }: FormFieldsProps) {
     const onEmbeddedTableToolbarActionFromContext =
         useEmbeddedTableToolbarAction();
@@ -67,9 +72,10 @@ export function FormFields({
                         field.trigger,
                         formValues,
                     );
+                    const schemaDisabled = fieldDisabledFromDefinition(field);
                     return {
                         hidden: !triggerState.visible,
-                        disabled: triggerState.disabled,
+                        disabled: schemaDisabled || triggerState.disabled,
                     };
                 })(),
                 ...(field.type === 'table'
@@ -102,7 +108,10 @@ export function FormFields({
                         field.trigger,
                         formValues,
                     );
-                    if (triggerState.disabled) {
+                    if (
+                        fieldDisabledFromDefinition(field) ||
+                        triggerState.disabled
+                    ) {
                         return;
                     }
                     setFieldValue(field, id, nextValue);
@@ -227,72 +236,80 @@ export function FormFields({
     }, [focusAfterTabChangeTick]);
 
     const renderFields = (subset: SchemaFieldRenderEntry[]) => (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-5 gap-6">
-            <SchemaFieldsRenderer
-                entries={subset}
-                spanContext="page"
-                entity={entity}
-                parentRecordKey={record}
-                modeKey={`${mode}:${record ?? 'new'}`}
-                onEmbeddedTableToolbarAction={onEmbeddedTableToolbarAction}
-                fieldComponents={fieldComponents}
-                showErrors
-            />
-        </div>
+        <SchemaFieldsRenderer
+            entries={subset}
+            spanContext="page"
+            comboboxDropdownAlign={comboboxDropdownAlign}
+            entity={entity}
+            parentRecordKey={record}
+            modeKey={`${mode}:${record ?? 'new'}`}
+            onEmbeddedTableToolbarAction={onEmbeddedTableToolbarAction}
+            fieldComponents={fieldComponents}
+            showErrors
+        />
     );
 
     if (tabPanels === undefined || tabPanels.length === 0) {
         return renderFields(entries);
     }
 
+    const tabsUi = (
+        <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full min-w-0"
+        >
+            <div className="w-full overflow-x-auto">
+                <TabsList
+                    variant="line"
+                    className="inline-flex w-max min-w-max flex-nowrap justify-start"
+                >
+                    {tabPanels.map((panel) => {
+                        const Icon =
+                            panel.icon != null && panel.icon in menuIcons
+                                ? menuIcons[panel.icon as MenuIconName]
+                                : null;
+                        return (
+                            <TabsTrigger
+                                key={panel.id}
+                                value={panel.id}
+                                className="flex-none"
+                            >
+                                {Icon != null ? (
+                                    <Icon
+                                        data-icon="inline-start"
+                                        className="size-4"
+                                    />
+                                ) : null}
+                                {panel.label}
+                            </TabsTrigger>
+                        );
+                    })}
+                </TabsList>
+            </div>
+            {tabBlocks.map((block) => (
+                <TabsContent
+                    key={block.panelId}
+                    value={block.panelId}
+                    className="flex flex-col gap-6 pt-4 px-2"
+                >
+                    {renderFields(block.entries)}
+                </TabsContent>
+            ))}
+        </Tabs>
+    );
+
+    const portalTabs =
+        tabsFullWidthBelow &&
+        tabsPortalContainer !== null &&
+        createPortal(tabsUi, tabsPortalContainer);
+
     return (
         <div className="flex flex-col gap-6">
             {unassignedEntries.length > 0
                 ? renderFields(unassignedEntries)
                 : null}
-            <Tabs
-                value={activeTab}
-                onValueChange={setActiveTab}
-                className="w-full"
-            >
-                <div className="w-full overflow-x-auto">
-                    <TabsList
-                        variant="line"
-                        className="inline-flex w-max min-w-max flex-nowrap justify-start"
-                    >
-                        {tabPanels.map((panel) => {
-                            const Icon =
-                                panel.icon != null && panel.icon in menuIcons
-                                    ? menuIcons[panel.icon as MenuIconName]
-                                    : null;
-                            return (
-                                <TabsTrigger
-                                    key={panel.id}
-                                    value={panel.id}
-                                    className="flex-none"
-                                >
-                                    {Icon != null ? (
-                                        <Icon
-                                            data-icon="inline-start"
-                                            className="size-4"
-                                        />
-                                    ) : null}
-                                    {panel.label}
-                                </TabsTrigger>
-                            );
-                        })}
-                    </TabsList>
-                </div>
-                {tabBlocks.map((block) => (
-                    <TabsContent
-                        key={block.panelId}
-                        value={block.panelId}
-                        className="flex flex-col gap-6 pt-4 px-2"
-                    >
-                        {renderFields(block.entries)}
-                    </TabsContent>
-                ))}
-            </Tabs>
+            {tabsFullWidthBelow ? portalTabs : tabsUi}
         </div>
     );
 }

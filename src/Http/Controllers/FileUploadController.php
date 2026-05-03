@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Flatpack\Http\Controllers;
 
 use Flatpack\Composition\EntityComposition;
-use Flatpack\Schema\CompositionTabsMerge;
+use Flatpack\Schema\Forms\FormCompositionMergeForPersistence;
 use Flatpack\Schema\Forms\FormSchemaFields;
 use Flatpack\Services\Uploads\FileUploadStorage;
 use Illuminate\Http\JsonResponse;
@@ -30,7 +30,7 @@ final readonly class FileUploadController
             'files.*' => ['required', 'file'],
         ]);
 
-        $schema = CompositionTabsMerge::form($this->entityComposition->formSchema($entity));
+        $schema = FormCompositionMergeForPersistence::merge($this->entityComposition->formSchema($entity));
         $fieldId = trim((string) ($validated['field'] ?? ''));
         $fieldDefinition = FormSchemaFields::fieldDefinitionById($schema, $fieldId);
         if ($fieldDefinition === null || trim((string) ($fieldDefinition['type'] ?? '')) !== 'file-upload') {

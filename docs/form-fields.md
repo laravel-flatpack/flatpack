@@ -61,6 +61,7 @@ These are widely shared across field types.
 | `value` | `unknown` | Initial/default value. |
 | `trigger` | `object` | Reactive behavior (`show`, `hide`, `enable`, `disable`, `empty`) for another field based on condition. |
 | `span` | `string` | Optional grid span: `full`, `half`, `two_thirds`, `third`, `quarter`, or aliases `1/2`, `2/3`, `1/3`, `1/4`. See [YAML reference — field types](./yaml-reference/form-field-types.md#layout-grid-span). |
+| `fieldset` | `string \| object` | Optional section grouping for consecutive fields (`label`, optional `icon`, optional `variant`, optional `collapsed`). See [YAML reference — Fieldset grouping](./yaml-reference/form-field-types.md#fieldset-grouping). |
 
 ### Built-in Laravel validation for submitted values
 
@@ -523,6 +524,33 @@ fields:
 ### Fixed single row (`minItems` and `maxItems` both `1`)
 
 When only one row is allowed, the UI omits **Add**, **reorder**, **duplicate**, and **delete** for that repeater. Set **`titleFrom: false`** if you also want to hide the accordion/builder row title strip (nested fields only).
+
+## Toolbar field (`type: toolbar`)
+
+Renders the same **header-style actions** as the top-level form `actions` block (save, record handlers, links). Use it in **main fields**, **tabs**, or **`sidebar.fields`** for inline toolbars. The nested YAML **`actions`** map matches **`form.yaml` root `actions`** (same map shape as top-level form actions): keyed by stable id, each value uses the same keys as a header row (`label`, `action` or `href`, `icon`, `submit`, `confirm`, `variant`, `enabled_if`, `visible_if`, `shortcut`, …).
+
+- **`type`** — Optional when an **`actions`** block is present; the normalizer infers `toolbar`.
+- **`align`** — `left`, `right`, `center`, `start`, `end`, or **`spaced`** (equal space between buttons, `justify-between`). Default **`right`**.
+- **Persistence** — Toolbar rows are **not** submitted as `values.{fieldId}`; they trigger the same submit / row-action flow as the page header.
+- **Handlers** — For **top-level** form actions, `action` names must exist under `config('flatpack.actions')`; unconfigured rows are omitted. For **`type: toolbar`** inline rows, unconfigured handlers are **still sent** to the UI with `handler_missing` so buttons render **disabled** (register the handler to enable them).
+
+Example:
+
+```yaml
+fields:
+  toolbar:
+    type: toolbar
+    align: spaced
+    actions:
+      publish:
+        label: Publish
+        action: publish
+        icon: play
+      unpublish:
+        label: Unpublish
+        action: unpublish
+        icon: play
+```
 
 ## Dashboard widgets (`type: widget`) and `widget_providers`
 

@@ -40,6 +40,7 @@ vi.mock('@inertiajs/react', () => ({
         props: {
             flatpack: {
                 showActionShortcutHints: false,
+                breadcrumbs: [],
             },
         },
     }),
@@ -232,19 +233,32 @@ vi.mock('@/lib/form', () => ({
     ),
 }));
 
+import { SidebarProvider } from '@/components/ui/sidebar';
 import { FlatpackShortcutsProvider } from '@/contexts/flatpack-shortcuts-registry';
 import FlatpackFormPage from '@/pages/form';
 
 function renderFlatpackFormPage(page: React.ReactElement) {
     return render(page, {
         wrapper: ({ children }) => (
-            <FlatpackShortcutsProvider>{children}</FlatpackShortcutsProvider>
+            <SidebarProvider>
+                <FlatpackShortcutsProvider>
+                    {children}
+                </FlatpackShortcutsProvider>
+            </SidebarProvider>
         ),
     });
 }
 
 describe('FlatpackFormPage', () => {
     beforeEach(() => {
+        globalThis.IntersectionObserver = class {
+            observe(): void {}
+            unobserve(): void {}
+            disconnect(): void {}
+            takeRecords(): IntersectionObserverEntry[] {
+                return [];
+            }
+        } as unknown as typeof IntersectionObserver;
         hoisted.post.mockReset();
         hoisted.patch.mockReset();
         hoisted.route.mockClear();

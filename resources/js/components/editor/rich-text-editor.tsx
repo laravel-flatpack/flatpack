@@ -10,6 +10,7 @@ import {
 import { RichTextEditorKit } from '@/components/editor/plugins/rich-text-editor-kit';
 import { RichTextToolbar } from '@/components/editor/rich-text-toolbar';
 import { Editor, EditorContainer } from '@/components/ui/editor';
+import { sanitizePlateValue } from '@/lib/plate-value-sanitize';
 import { cn } from '@/lib/utils';
 
 const emptyDoc: Value = [{ type: 'p', children: [{ text: '' }] }];
@@ -35,7 +36,9 @@ export function RichTextEditor({
 }: RichTextEditorProps) {
     const initialDocRef = React.useRef<Value | null>(null);
     if (initialDocRef.current === null) {
-        initialDocRef.current = normalizeStaticValue(initialValue ?? emptyDoc);
+        initialDocRef.current = normalizeStaticValue(
+            sanitizePlateValue(initialValue ?? emptyDoc),
+        );
     }
 
     const editor = usePlateEditor({

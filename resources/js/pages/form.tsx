@@ -1,29 +1,43 @@
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import type { ReactElement } from 'react';
+import { useState } from 'react';
 import { ConfirmDialog } from '@/components/actions/confirm-dialog';
 import { FormActions } from '@/components/shell/form/form-actions';
 import { FormFields } from '@/components/shell/form/form-fields';
 import { FormTopErrors } from '@/components/shell/form/form-top-errors';
 import { PageHeader } from '@/components/shell/page-header';
+import { TopToolbar } from '@/components/shell/top-toolbar';
+import { WidgetsRenderer } from '@/components/widgets/widgets-renderer';
+import { FlatpackFormInlineActionsProvider } from '@/contexts/flatpack-form-inline-actions';
 import { useFlatpackForm } from '@/hooks/use-flatpack-form';
 import { useInertiaLeaveGuard } from '@/hooks/use-inertia-leave-guard';
 import FlatpackLayout from '@/layouts/flatpack-layout';
+import type { FlatpackPageProps } from '@/types/flatpack';
 import type { FlatpackFormPageProps } from '@/types/pages/flatpack';
 
 const NoFieldsMessage = ({ entity }: { entity: string }) => (
     <p className="text-sm text-muted-foreground">
-        Define fields or tabs in{' '}
+        Define fields, tabs, or a{' '}
+        <code className="font-mono text-xs bg-muted px-1 py-0.5 rounded-md">
+            sidebar
+        </code>{' '}
+        in{' '}
         <code className="font-mono text-xs bg-muted px-1 py-0.5 rounded-md">{`/${entity}/form.yaml`}</code>{' '}
         to render this form.
     </p>
 );
 
 export default function FlatpackFormPage(props: FlatpackFormPageProps) {
+    const {
+        props: { flatpack },
+    } = usePage<FlatpackPageProps>();
     const { entity, name, record, mode } = props;
     const {
         form,
         isDirty,
         fields,
+        mainFields,
+        sidebarFields,
         tabPanels,
         fieldComponents,
         fieldErrors,
@@ -36,6 +50,8 @@ export default function FlatpackFormPage(props: FlatpackFormPageProps) {
         handleSubmit,
         runAction,
         formProcessing,
+        sidebarWidgets,
+        sidebarWidgetsSchema,
     } = useFlatpackForm(props);
 
     const { leaveGuardOpen, confirmLeave, cancelLeave } =
@@ -45,6 +61,15 @@ export default function FlatpackFormPage(props: FlatpackFormPageProps) {
     const pageTitle =
         mode === 'create' ? `Create ${displayName}` : `Edit ${displayName}`;
     const formId = `flatpack-form-${entity}-${record ?? 'new'}`;
+    const [tabsPortalContainer, setTabsPortalContainer] =
+        useState<HTMLDivElement | null>(null);
+
+    const hasSidebarWidgets =
+        sidebarWidgets != null &&
+        typeof sidebarWidgets === 'object' &&
+        Object.keys(sidebarWidgets).length > 0;
+    const hasSidebarColumn = sidebarFields.length > 0 || hasSidebarWidgets;
+    const hasMainColumn = mainFields.length > 0 || tabPanels.length > 0;
 
     return (
         <>
@@ -84,54 +109,134 @@ export default function FlatpackFormPage(props: FlatpackFormPageProps) {
                 continueVariant="default"
                 onContinue={confirmLeave}
             />
-            <div className="flex flex-col gap-2">
-                <PageHeader
-                    title={pageTitle}
-                    actions={
-                        <FormActions
-                            formActions={formActions}
-                            formId={formId}
-                            formProcessing={formProcessing}
-                            formIsDirty={isDirty}
-                            formMode={mode}
-                            fieldsLength={fields.length}
-                            onFormSubmitIntent={prepareFormSubmit}
-                            onFormSubmitConfirmClick={(action) =>
-                                setPendingConfirm({ config: action })
-                            }
-                            onRunAction={runAction}
-                        />
-                    }
-                />
+            <PageHeader
+                withPaddingShell
+                stickyTitle={<TopToolbar breadcrumbs={flatpack.breadcrumbs} />}
+                title={pageTitle}
+                actions={
+                    <FormActions
+                        formActions={formActions}
+                        formId={formId}
+                        formProcessing={formProcessing}
+                        formIsDirty={isDirty}
+                        formMode={mode}
+                        fieldsLength={fields.length}
+                        onFormSubmitIntent={prepareFormSubmit}
+                        onFormSubmitConfirmClick={(action) =>
+                            setPendingConfirm({ config: action })
+                        }
+                        onRunAction={runAction}
+                    />
+                }
+            />
+            <div className="flex flex-col gap-4 pb-4 md:gap-6 md:pb-6 px-4 lg:px-6">
+                <div className="flex flex-col gap-2">
+                    <form
+                        id={formId}
+                        className="flex flex-col gap-6"
+                        noValidate
+                        onSubmit={handleSubmit}
+                    >
+                        <FlatpackFormInlineActionsProvider
+                            value={{
+                                formId,
+                                prepareFormSubmit,
+                                setPendingConfirm,
+                                runAction,
+                                formProcessing,
+                                formIsDirty: isDirty,
+                                mode,
+                                fieldsLength: fields.length,
+                            }}
+                        >
+                            <FormTopErrors errors={flatpackTopErrors} />
 
-                <form
-                    id={formId}
-                    className="flex flex-col gap-6"
-                    noValidate
-                    onSubmit={handleSubmit}
-                >
-                    <FormTopErrors errors={flatpackTopErrors} />
-
-                    {fields.length > 0 ? (
-                        // Root-only fields (YAML `fields` not listed in any tab panel) render above tabs
-                        // when both `fields` and `tabs` exist; see FormFields unassignedEntries.
-                        <FormFields
-                            entity={entity}
-                            mode={mode}
-                            record={record}
-                            tabPanels={tabPanels}
-                            fields={fields}
-                            fieldComponents={fieldComponents}
-                            fieldErrors={fieldErrors}
-                            formValues={
-                                form.data.values as Record<string, unknown>
-                            }
-                            setFieldValue={setFieldValue}
-                        />
-                    ) : (
-                        <NoFieldsMessage entity={entity} />
-                    )}
-                </form>
+                            {hasMainColumn || hasSidebarColumn ? (
+                                <>
+                                    <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-8">
+                                        {hasMainColumn ? (
+                                            <div className="min-w-0 flex-1 space-y-6">
+                                                <FormFields
+                                                    entity={entity}
+                                                    mode={mode}
+                                                    record={record}
+                                                    tabPanels={tabPanels}
+                                                    tabsFullWidthBelow={
+                                                        tabPanels.length > 0
+                                                    }
+                                                    tabsPortalContainer={
+                                                        tabsPortalContainer
+                                                    }
+                                                    fields={mainFields}
+                                                    fieldComponents={
+                                                        fieldComponents
+                                                    }
+                                                    fieldErrors={fieldErrors}
+                                                    formValues={
+                                                        form.data
+                                                            .values as Record<
+                                                            string,
+                                                            unknown
+                                                        >
+                                                    }
+                                                    setFieldValue={
+                                                        setFieldValue
+                                                    }
+                                                />
+                                            </div>
+                                        ) : null}
+                                        {hasSidebarColumn ? (
+                                            <aside className="w-full shrink-0 space-y-4 border-border lg:w-72 lg:pl-6 xl:w-80">
+                                                {sidebarFields.length > 0 ? (
+                                                    <FormFields
+                                                        entity={entity}
+                                                        mode={mode}
+                                                        record={record}
+                                                        fields={sidebarFields}
+                                                        comboboxDropdownAlign="end"
+                                                        fieldComponents={
+                                                            fieldComponents
+                                                        }
+                                                        fieldErrors={
+                                                            fieldErrors
+                                                        }
+                                                        formValues={
+                                                            form.data
+                                                                .values as Record<
+                                                                string,
+                                                                unknown
+                                                            >
+                                                        }
+                                                        setFieldValue={
+                                                            setFieldValue
+                                                        }
+                                                    />
+                                                ) : null}
+                                                {hasSidebarWidgets ? (
+                                                    <WidgetsRenderer
+                                                        widgets={sidebarWidgets}
+                                                        tabPanels={
+                                                            sidebarWidgetsSchema?.tab_panels
+                                                        }
+                                                        className="md:grid-cols-1 xl:grid-cols-1"
+                                                    />
+                                                ) : null}
+                                            </aside>
+                                        ) : null}
+                                    </div>
+                                    {tabPanels.length > 0 ? (
+                                        <div
+                                            ref={setTabsPortalContainer}
+                                            className="w-full min-w-0"
+                                        />
+                                    ) : null}
+                                </>
+                            ) : (
+                                <NoFieldsMessage entity={entity} />
+                            )}
+                        </FlatpackFormInlineActionsProvider>
+                    </form>
+                </div>
             </div>
         </>
     );

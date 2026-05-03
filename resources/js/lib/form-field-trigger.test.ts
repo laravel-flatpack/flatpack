@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest';
 import {
     emptyValueForField,
     evaluateFieldTrigger,
+    fieldDisabledFromDefinition,
     triggerConditionMatches,
 } from '@/lib/form-field-trigger';
+import type { FormFieldProps } from '@/types/form-fields';
 
 describe('triggerConditionMatches', () => {
     it('matches checked and unchecked conditions', () => {
@@ -20,6 +22,32 @@ describe('triggerConditionMatches', () => {
         expect(triggerConditionMatches('published', 'value[draft]')).toBe(
             false,
         );
+    });
+});
+
+describe('fieldDisabledFromDefinition', () => {
+    it('is true when disabled or disable is set on the field object', () => {
+        expect(
+            fieldDisabledFromDefinition({
+                type: 'text',
+                label: 'x',
+                disabled: true,
+            }),
+        ).toBe(true);
+        expect(
+            fieldDisabledFromDefinition({
+                type: 'text',
+                label: 'x',
+                disabled: false,
+            }),
+        ).toBe(false);
+        expect(
+            fieldDisabledFromDefinition({
+                type: 'text',
+                label: 'x',
+                disable: true,
+            } as FormFieldProps),
+        ).toBe(true);
     });
 });
 

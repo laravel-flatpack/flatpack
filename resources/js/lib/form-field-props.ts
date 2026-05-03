@@ -121,12 +121,23 @@ function mapRichBlock(props: FormFieldProps, ctx: FormFieldRenderContext) {
     };
 }
 
+function mapWidget(props: FormFieldProps, ctx: FormFieldRenderContext) {
+    const p = props as Extract<FormFieldProps, { type: 'widget' }>;
+    const { type: _t, ...rest } = p;
+    return {
+        ...rest,
+        id: ctx.fieldId,
+        widget: p.widget ?? {},
+    };
+}
+
 function mapCombobox(props: FormFieldProps, ctx: FormFieldRenderContext) {
     const p = props as Extract<FormFieldProps, { type: 'combobox' }>;
     const options = normalizedOptions(p.options);
     return {
         id: ctx.fieldId,
         label: p.label,
+        showLabel: p.showLabel,
         multiple: p.multiple ?? false,
         items: options.map((o) => ({
             value: o.value,
@@ -150,6 +161,7 @@ function mapDatePicker(props: FormFieldProps, ctx: FormFieldRenderContext) {
         id: ctx.fieldId,
         label: p.label,
         emptyLabel: p.placeholder ?? 'Pick a date',
+        showLabel: p.showLabel,
         onValueChange: ctx.onValueChange,
     };
 }
@@ -163,6 +175,7 @@ function mapDateRangePicker(
         id: ctx.fieldId,
         label: p.label,
         emptyLabel: p.placeholder ?? 'Pick a range',
+        showLabel: p.showLabel,
         onValueChange: ctx.onValueChange,
     };
 }
@@ -175,6 +188,7 @@ function mapTimePicker(props: FormFieldProps, ctx: FormFieldRenderContext) {
         timeLabel: p.timeLabel ?? 'Time',
         dateEmptyLabel: p.datePlaceholder ?? p.placeholder ?? '',
         timeDefaultValue: p.timeDefaultValue ?? '09:00:00',
+        showLabel: p.showLabel,
         onValueChange: ctx.onValueChange,
     };
 }
@@ -185,6 +199,7 @@ function mapFileUpload(props: FormFieldProps, ctx: FormFieldRenderContext) {
     return {
         id: ctx.fieldId,
         label: p.label,
+        showLabel: p.showLabel,
         helperText: p.helperText,
         multiple: p.multiple ?? false,
         maxFiles: p.max_files,
@@ -373,6 +388,24 @@ function mapTable(props: FormFieldProps, ctx: FormFieldRenderContext) {
     };
 }
 
+function mapToolbar(props: FormFieldProps, ctx: FormFieldRenderContext) {
+    const {
+        type: _t,
+        actions,
+        align,
+        span,
+        ...rest
+    } = props as Extract<FormFieldProps, { type: 'toolbar' }>;
+
+    return {
+        ...rest,
+        id: ctx.fieldId,
+        actions,
+        align: align ?? 'right',
+        span: span ?? 'full',
+    };
+}
+
 function mapRepeater(props: FormFieldProps, ctx: FormFieldRenderContext) {
     const { type: _t, ...rest } = props as Extract<
         FormFieldProps,
@@ -408,6 +441,8 @@ const formFieldTypeToMapper: Record<FormFieldType, FormFieldPropsMapper> = {
     'file-upload': mapFileUpload,
     table: mapTable,
     repeater: mapRepeater,
+    toolbar: mapToolbar,
+    widget: mapWidget,
 };
 
 /**

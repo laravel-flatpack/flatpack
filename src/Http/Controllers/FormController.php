@@ -6,6 +6,7 @@ namespace Flatpack\Http\Controllers;
 
 use Flatpack\Actions\FlatpackActionContext;
 use Flatpack\Composition\FormComposition;
+use Flatpack\Composition\FormSidebarYamlExpander;
 use Flatpack\Http\Controllers\Concerns\AuthorizesModelAbility;
 use Flatpack\Http\Controllers\Concerns\BuildsFormPageProps;
 use Flatpack\Http\Controllers\Concerns\DispatchesActions;
@@ -14,6 +15,7 @@ use Flatpack\Http\Controllers\Concerns\NormalizesFormSchema;
 use Flatpack\Http\Controllers\Concerns\ResolvesWidgets;
 use Flatpack\Http\FlatpackResponse;
 use Flatpack\Http\Requests\FormSubmitRequest;
+use Flatpack\Schema\Forms\NormalizedFormSchema;
 use Flatpack\Schema\Widgets\WidgetSchemaNormalizer;
 use Flatpack\Services\Lists\ListRecordsLoader;
 use Flatpack\Services\Runtime\WidgetRuntime;
@@ -40,6 +42,7 @@ final readonly class FormController
         private WidgetSchemaNormalizer $widgetSchemaNormalizer,
         private WidgetRuntime $widgetRuntime,
         private ListRecordsLoader $listRecordsLoader,
+        private FormSidebarYamlExpander $formSidebarYamlExpander,
     ) {}
 
     /**
@@ -48,7 +51,7 @@ final readonly class FormController
     public function create(Request $request, string $entity): Response|JsonResponse
     {
         $form = $this->loadForm($entity);
-        $schema = $this->loadSchema($entity);
+        $schema = $this->expandedFormSchema($entity, $this->loadSchema($entity));
         $modelClass = $this->formModelClass($form);
         $this->ensureModelAbility($request, $modelClass, 'create');
 
@@ -57,12 +60,7 @@ final readonly class FormController
             schema: $schema,
             modelClass: $modelClass,
         );
-        $widgetsSchema = $this->normalizedWidgetsSchema($normalizedSchema?->toArray());
-        $resolvedWidgets = $this->resolveWidgetDataWhenPresent(
-            $request,
-            $entity,
-            $widgetsSchema['widgets'] ?? [],
-        );
+        $resolved = $this->resolveWidgetsForFormPage($request, $entity, $normalizedSchema);
 
         return FlatpackResponse::inertia(
             view: 'form',
@@ -73,8 +71,10 @@ final readonly class FormController
                 'create',
                 null,
                 [],
-                $resolvedWidgets,
-                $widgetsSchema,
+                $resolved['resolvedWidgets'],
+                $resolved['widgetsSchema'],
+                $resolved['resolvedSidebarWidgets'],
+                $resolved['sidebarWidgetsSchema'],
             ),
         );
     }
@@ -85,7 +85,7 @@ final readonly class FormController
     public function edit(Request $request, string $entity, string $record): Response|JsonResponse
     {
         $form = $this->loadForm($entity);
-        $schema = $this->loadSchema($entity);
+        $schema = $this->expandedFormSchema($entity, $this->loadSchema($entity));
         $modelClass = $this->formModelClass($form);
 
         if (! $this->hasRenderableFields($schema)) {
@@ -94,10 +94,22 @@ final readonly class FormController
                 schema: $schema,
                 modelClass: $modelClass,
             );
+            $resolved = $this->resolveWidgetsForFormPage($request, $entity, $normalizedSchema);
 
             return FlatpackResponse::inertia(
                 view: 'form',
-                data: $this->formPageProps($entity, $form, $normalizedSchema, 'edit', $record, []),
+                data: $this->formPageProps(
+                    $entity,
+                    $form,
+                    $normalizedSchema,
+                    'edit',
+                    $record,
+                    [],
+                    $resolved['resolvedWidgets'],
+                    $resolved['widgetsSchema'],
+                    $resolved['resolvedSidebarWidgets'],
+                    $resolved['sidebarWidgetsSchema'],
+                ),
             );
         }
         $model = $this->resolveOptionalRecordModel($modelClass, $record);
@@ -117,12 +129,7 @@ final readonly class FormController
             $model,
             $normalizedSchema,
         );
-        $widgetsSchema = $this->normalizedWidgetsSchema($normalizedSchema?->toArray());
-        $resolvedWidgets = $this->resolveWidgetDataWhenPresent(
-            $request,
-            $entity,
-            $widgetsSchema['widgets'] ?? [],
-        );
+        $resolved = $this->resolveWidgetsForFormPage($request, $entity, $normalizedSchema);
 
         return FlatpackResponse::inertia(
             view: 'form',
@@ -133,8 +140,10 @@ final readonly class FormController
                 'edit',
                 $record,
                 $values,
-                $resolvedWidgets,
-                $widgetsSchema,
+                $resolved['resolvedWidgets'],
+                $resolved['widgetsSchema'],
+                $resolved['resolvedSidebarWidgets'],
+                $resolved['sidebarWidgetsSchema'],
             ),
         );
     }
@@ -153,7 +162,7 @@ final readonly class FormController
     public function submit(FormSubmitRequest $request, string $entity): RedirectResponse
     {
         $form = $this->loadForm($entity);
-        $schema = $this->loadSchema($entity);
+        $schema = $this->expandedFormSchema($entity, $this->loadSchema($entity));
         $modelClass = $this->formModelClass($form);
         $record = self::recordKeyFromSubmitRequest($request);
         $actionName = trim((string) $request->validated('action'));
@@ -221,6 +230,59 @@ final readonly class FormController
             $record === null,
             $savedKey,
         );
+    }
+
+    /**
+     * @return array{
+     *     resolvedWidgets: array<string, array<string, mixed>>,
+     *     widgetsSchema: array<string, mixed>|null,
+     *     resolvedSidebarWidgets: array<string, array<string, mixed>>,
+     *     sidebarWidgetsSchema: array<string, mixed>|null,
+     * }
+     */
+    private function resolveWidgetsForFormPage(
+        Request $request,
+        string $entity,
+        ?NormalizedFormSchema $normalizedSchema,
+    ): array {
+        $widgetsSchema = $this->normalizedWidgetsSchema($normalizedSchema?->toArray());
+        $resolvedWidgets = $this->resolveWidgetDataWhenPresent(
+            $request,
+            $entity,
+            $widgetsSchema['widgets'] ?? [],
+        );
+
+        $sidebarRaw = $normalizedSchema?->sidebarWidgetDefinitionsRaw();
+        $sidebarWidgetsSchema = null;
+        $resolvedSidebarWidgets = [];
+        if (is_array($sidebarRaw) && $sidebarRaw !== []) {
+            $sidebarWidgetsSchema = $this->normalizedWidgetsSchema(['widgets' => $sidebarRaw]);
+            $resolvedSidebarWidgets = $this->resolveWidgetDataWhenPresent(
+                $request,
+                $entity,
+                $sidebarWidgetsSchema['widgets'] ?? [],
+            );
+        }
+
+        return [
+            'resolvedWidgets' => $resolvedWidgets,
+            'widgetsSchema' => $widgetsSchema,
+            'resolvedSidebarWidgets' => $resolvedSidebarWidgets,
+            'sidebarWidgetsSchema' => $sidebarWidgetsSchema,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $schema
+     * @return array<string, mixed>|null
+     */
+    private function expandedFormSchema(string $entity, ?array $schema): ?array
+    {
+        if ($schema === null) {
+            return null;
+        }
+
+        return $this->formSidebarYamlExpander->expand($entity, $schema);
     }
 
     private function recordNotFoundResponse(string $entity, FormComposition $form): Response|JsonResponse

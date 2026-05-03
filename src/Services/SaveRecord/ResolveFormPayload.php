@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Flatpack\Services\SaveRecord;
 
 use Flatpack\Schema\CompositionTabsMerge;
+use Flatpack\Schema\Forms\FormCompositionMergeForPersistence;
 use Flatpack\Schema\Forms\FormFieldType;
 use Illuminate\Database\Eloquent\MassAssignmentException;
 use Illuminate\Database\Eloquent\Model;
@@ -41,7 +42,7 @@ final class ResolveFormPayload
         ?array $schema,
         array $values,
     ): WritablePayloadResult {
-        $schema = $this->normalizedSchema($compositionType, $schema);
+        $schema = $this->normalizedSchema($compositionType, $schema, $model);
         $attributes = $this->writableAttributes($model, $compositionType, $schema, $values);
 
         return new WritablePayloadResult(
@@ -121,14 +122,17 @@ final class ResolveFormPayload
      * @param  array<string, mixed>|null  $schema
      * @return array<string, mixed>|null
      */
-    private function normalizedSchema(string $compositionType, ?array $schema): ?array
-    {
+    private function normalizedSchema(
+        string $compositionType,
+        ?array $schema,
+        ?Model $model = null,
+    ): ?array {
         if ($schema === null) {
             return null;
         }
 
         return match ($compositionType) {
-            'form' => CompositionTabsMerge::form($schema) ?? $schema,
+            'form' => FormCompositionMergeForPersistence::merge($schema, $model),
             'list' => CompositionTabsMerge::list($schema) ?? $schema,
             default => $schema,
         };
@@ -195,6 +199,10 @@ final class ResolveFormPayload
 
             $id = trim((string) ($fieldDefinition['id'] ?? $fieldId));
             if ($id === '') {
+                continue;
+            }
+
+            if (FormFieldType::isNonPersistedFormField($fieldDefinition)) {
                 continue;
             }
 

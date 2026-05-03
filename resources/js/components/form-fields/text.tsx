@@ -1,9 +1,13 @@
+import { resolveFormFieldLabelLayout } from '@/lib/form-field-label-layout';
 import {
     formatInputValue,
     formatInputValueOnBlur,
 } from '@/lib/form-field-preset';
 import { cn } from '@/lib/utils';
-import type { FormFieldInputFormat } from '@/types/form-fields';
+import type {
+    FormFieldInputFormat,
+    FormFieldLabelShow,
+} from '@/types/form-fields';
 import { Field, FieldContent, FieldDescription, FieldTitle } from '../ui/field';
 import { Input } from '../ui/input';
 
@@ -19,9 +23,11 @@ export const TextField = ({
     onKeyDown,
     format,
     inline = false,
+    showLabel,
     inputClassName,
     required = false,
     invalid = false,
+    disabled = false,
 }: {
     id: string;
     label: string;
@@ -34,12 +40,15 @@ export const TextField = ({
     onKeyDown?: React.KeyboardEventHandler<HTMLInputElement>;
     format?: FormFieldInputFormat;
     inline?: boolean;
+    showLabel?: FormFieldLabelShow;
     inputClassName?: string;
     required?: boolean;
     invalid?: boolean;
+    disabled?: boolean;
 }) => {
     const labelId = `${id}-label`;
     const labelledBy = !inline && label ? labelId : undefined;
+    const labelLayout = resolveFormFieldLabelLayout(showLabel, 'stacked');
 
     const input = (
         <Input
@@ -52,6 +61,7 @@ export const TextField = ({
             aria-labelledby={labelledBy}
             aria-invalid={invalid || undefined}
             required={required}
+            disabled={disabled}
             className={cn(inputClassName)}
             onChange={(e) =>
                 onValueChange?.(
@@ -81,8 +91,12 @@ export const TextField = ({
     }
 
     return (
-        <Field>
-            {label ? <FieldTitle id={labelId}>{label}</FieldTitle> : null}
+        <Field orientation={labelLayout.orientation}>
+            {label ? (
+                <FieldTitle id={labelId} className={labelLayout.labelClassName}>
+                    {label}
+                </FieldTitle>
+            ) : null}
             <FieldContent>
                 {input}
                 {helperText ? (

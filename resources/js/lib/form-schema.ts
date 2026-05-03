@@ -29,10 +29,38 @@ export function normalizeYamlFieldType(
     if (value === 'date') {
         return 'date-picker';
     }
+    /** Not a form control; appears in generated canonical types for list/embed contexts only. */
+    if (value === 'actions') {
+        return undefined;
+    }
     return typeof value === 'string' &&
         SUPPORTED_FORM_FIELD_TYPES.includes(value as FormFieldType)
         ? (value as FormFieldType)
         : undefined;
+}
+
+function toolbarActionsShapePresent(
+    fieldDefinition: Record<string, unknown>,
+): boolean {
+    const raw = fieldDefinition.actions;
+    if (Array.isArray(raw)) {
+        return raw.length > 0;
+    }
+    if (typeof raw === 'object' && raw !== null && !Array.isArray(raw)) {
+        return Object.keys(raw).length > 0;
+    }
+
+    return false;
+}
+
+function inferFieldTypeFromShape(
+    fieldDefinition: Record<string, unknown>,
+): FormFieldType | undefined {
+    if (toolbarActionsShapePresent(fieldDefinition)) {
+        return 'toolbar';
+    }
+
+    return undefined;
 }
 
 function defaultValueForField(field: FormFieldProps): unknown {
@@ -113,7 +141,9 @@ export function normalizeFields(
         if (!isRecord(fieldDefinition)) {
             return [];
         }
-        const type = normalizeYamlFieldType(fieldDefinition.type);
+        const type =
+            normalizeYamlFieldType(fieldDefinition.type) ??
+            inferFieldTypeFromShape(fieldDefinition);
         if (type === undefined) {
             return [];
         }

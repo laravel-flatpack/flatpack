@@ -68,4 +68,55 @@ describe('FormFieldDefinitionNormalizer span', function () {
         $cols = $out['columns'];
         expect($cols['sku']['edit_form_field']['span'])->toBe('two_thirds');
     });
+
+    it('trims fieldset on fields', function () {
+        $n = new FormFieldDefinitionNormalizer;
+        $out = $n->normalize(
+            [
+                'type' => 'text',
+                'label' => 'Title',
+                'fieldset' => '  Meta  ',
+            ],
+            'title',
+            null,
+        );
+        expect($out)->not->toBeNull();
+        expect($out['fieldset'])->toBe(['label' => 'Meta']);
+    });
+
+    it('removes invalid fieldset values', function () {
+        $n = new FormFieldDefinitionNormalizer;
+        $out = $n->normalize(
+            [
+                'type' => 'text',
+                'label' => 'Title',
+                'fieldset' => 123,
+            ],
+            'title',
+            null,
+        );
+        expect($out)->not->toBeNull();
+        expect($out)->not->toHaveKey('fieldset');
+    });
+
+    it('canonicalizes object fieldset with icon', function () {
+        $n = new FormFieldDefinitionNormalizer;
+        $out = $n->normalize(
+            [
+                'type' => 'text',
+                'label' => 'Title',
+                'fieldset' => [
+                    'label' => 'Publishing',
+                    'icon' => 'clock',
+                ],
+            ],
+            'title',
+            null,
+        );
+        expect($out)->not->toBeNull();
+        expect($out['fieldset'])->toBe([
+            'label' => 'Publishing',
+            'icon' => 'clock',
+        ]);
+    });
 });

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Flatpack\Schema\Forms;
 
 use Flatpack\Schema\Forms\Normalization\FormSchemaPipelineState;
+use Flatpack\Schema\Forms\Normalization\Pipes\MergeFormSidebarFieldsPipe;
 use Flatpack\Schema\Forms\Normalization\Pipes\MergeFormTabsIntoFieldsPipe;
 use Flatpack\Schema\Forms\Normalization\Pipes\NormalizeFormFieldDefinitionsPipe;
 use Flatpack\Schema\Forms\Normalization\Pipes\StripInvalidFormPresetsPipe;
@@ -54,6 +55,7 @@ final readonly class FormSchemaNormalizer
             ->send($state)
             ->through([
                 MergeFormTabsIntoFieldsPipe::class,
+                MergeFormSidebarFieldsPipe::class,
                 StripUnknownFormRootKeysPipe::class,
                 WarnUnknownFormActionsNestedKeysPipe::class,
                 NormalizeFormFieldDefinitionsPipe::class,
@@ -74,7 +76,13 @@ final readonly class FormSchemaNormalizer
             }
         }
 
-        return new NormalizedFormSchema($out->schema);
+        $sidebarWidgetsRaw = $out->schema['_sidebar_widgets_pending'] ?? null;
+        unset($out->schema['_sidebar_widgets_pending']);
+
+        return new NormalizedFormSchema(
+            $out->schema,
+            is_array($sidebarWidgetsRaw) && $sidebarWidgetsRaw !== [] ? $sidebarWidgetsRaw : null,
+        );
     }
 
     /**

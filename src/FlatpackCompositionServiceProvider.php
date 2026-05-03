@@ -8,6 +8,7 @@ use Flatpack\Actions\ActionModelClassResolver;
 use Flatpack\Composition\CompositionValues;
 use Flatpack\Composition\DefaultCompositionQuery;
 use Flatpack\Composition\EntityComposition;
+use Flatpack\Composition\FormSidebarYamlExpander;
 use Flatpack\Composition\ModelClassEntitySlugResolver;
 use Flatpack\Composition\YamlCompositionLoader;
 use Flatpack\Contracts\Composition\CompositionLoader;
@@ -48,6 +49,11 @@ final class FlatpackCompositionServiceProvider extends ServiceProvider
         $this->app->singleton(EntityComposition::class, fn ($app): EntityComposition => new EntityComposition(
             $app->make(CompositionQuery::class),
             $app->make(CompositionValues::class),
+        ));
+
+        $this->app->singleton(FormSidebarYamlExpander::class, fn ($app): FormSidebarYamlExpander => new FormSidebarYamlExpander(
+            $app->make('files'),
+            $app['config'],
         ));
     }
 

@@ -23,6 +23,10 @@ trait NormalizesFormSchema
             return false;
         }
 
+        if ($this->sidebarSpecifiesRenderableContent($schema)) {
+            return true;
+        }
+
         $fields = $schema['fields'] ?? null;
         if (is_array($fields) && $fields !== []) {
             return true;
@@ -45,6 +49,36 @@ trait NormalizesFormSchema
         }
 
         return false;
+    }
+
+    /**
+     * Pre-expansion check: external sidebar paths count as content; inline sidebar may list fields or widgets.
+     *
+     * @param  array<string, mixed>  $schema
+     */
+    private function sidebarSpecifiesRenderableContent(array $schema): bool
+    {
+        $sidebar = $schema['sidebar'] ?? null;
+        if (is_string($sidebar)) {
+            return trim($sidebar) !== '';
+        }
+
+        if (! is_array($sidebar) || $sidebar === []) {
+            return false;
+        }
+
+        $explicit =
+            array_key_exists('fields', $sidebar) || array_key_exists('widgets', $sidebar);
+
+        if ($explicit) {
+            $sidebarFields = $sidebar['fields'] ?? null;
+            $sidebarWidgets = $sidebar['widgets'] ?? null;
+
+            return (is_array($sidebarFields) && $sidebarFields !== [])
+                || (is_array($sidebarWidgets) && $sidebarWidgets !== []);
+        }
+
+        return true;
     }
 
     /**

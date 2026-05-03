@@ -8,7 +8,11 @@ import {
     FieldTitle,
 } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import type { FileUploadStoredFile } from '@/types/form-fields';
+import { resolveFormFieldLabelLayout } from '@/lib/form-field-label-layout';
+import type {
+    FileUploadStoredFile,
+    FormFieldLabelShow,
+} from '@/types/form-fields';
 
 function csrfToken(): string {
     return (
@@ -43,6 +47,7 @@ export const FileUploadField = ({
     fieldId,
     value,
     onValueChange,
+    showLabel,
 }: {
     id: string;
     label: string;
@@ -54,15 +59,20 @@ export const FileUploadField = ({
     fieldId: string;
     value?: unknown;
     onValueChange?: (value: unknown) => void;
+    showLabel?: FormFieldLabelShow;
 }) => {
     const [isUploading, setIsUploading] = useState(false);
     const [uploadError, setUploadError] = useState<string | null>(null);
     const files = useMemo(() => normalizeFiles(value), [value]);
     const accepted = Array.isArray(accept) ? accept.join(',') : (accept ?? '');
+    const labelId = `${id}-label`;
+    const labelLayout = resolveFormFieldLabelLayout(showLabel, 'stacked');
 
     return (
-        <Field>
-            <FieldTitle>{label}</FieldTitle>
+        <Field orientation={labelLayout.orientation}>
+            <FieldTitle id={labelId} className={labelLayout.labelClassName}>
+                {label}
+            </FieldTitle>
             <FieldContent>
                 <div className="space-y-3">
                     <div className="flex items-center gap-2">

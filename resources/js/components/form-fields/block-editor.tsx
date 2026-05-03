@@ -1,5 +1,7 @@
 import type { Value } from 'platejs';
 import { lazy, Suspense } from 'react';
+import { resolveFormFieldLabelLayout } from '@/lib/form-field-label-layout';
+import type { FormFieldLabelShow } from '@/types/form-fields';
 import { Field, FieldContent, FieldDescription, FieldTitle } from '../ui/field';
 import { PlateEditorFallback } from './plate-editor-fallback';
 
@@ -17,6 +19,7 @@ export const BlockEditorField = ({
     toolbar,
     initialValue,
     onValueChange,
+    showLabel,
 }: {
     id: string;
     label: string;
@@ -26,11 +29,15 @@ export const BlockEditorField = ({
     toolbar?: boolean;
     initialValue?: Value;
     onValueChange?: (value: Value) => void;
+    showLabel?: FormFieldLabelShow;
 }) => {
     const labelId = `${id}-label`;
+    const labelLayout = resolveFormFieldLabelLayout(showLabel, 'stacked');
     return (
-        <Field>
-            <FieldTitle id={labelId}>{label}</FieldTitle>
+        <Field orientation={labelLayout.orientation}>
+            <FieldTitle id={labelId} className={labelLayout.labelClassName}>
+                {label}
+            </FieldTitle>
             <FieldContent>
                 <Suspense
                     fallback={

@@ -42,6 +42,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { selectOptionLeadingIcon } from '@/components/ui/select-option-leading-icon';
+import { resolveFormFieldLabelLayout } from '@/lib/form-field-label-layout';
 import { serializeFieldValue } from '@/lib/form-page-field-values';
 import { normalizeYamlFieldType } from '@/lib/form-schema';
 import {
@@ -50,7 +51,7 @@ import {
     parseRepeaterGroups,
 } from '@/lib/repeater-groups';
 import { cn } from '@/lib/utils';
-import type { FormFieldProps } from '@/types/form-fields';
+import type { FormFieldLabelShow, FormFieldProps } from '@/types/form-fields';
 import type { SchemaFieldRenderEntry } from '@/types/schema-fields-renderer';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -114,7 +115,7 @@ function RepeaterGroupTypePicker({
     const controlId = `${repeaterId}-row-${rowIndex}-group-type`;
 
     return (
-        <div className="col-span-full mb-1 space-y-2">
+        <div className="w-full space-y-2">
             <Label
                 htmlFor={controlId}
                 className="text-muted-foreground text-xs"
@@ -221,6 +222,7 @@ export const RepeaterField = ({
     required = false,
     invalid = false,
     groupKeyFrom,
+    showLabel,
 }: {
     id: string;
     label: string;
@@ -243,8 +245,10 @@ export const RepeaterField = ({
     parentRecordKey?: string | null;
     required?: boolean;
     invalid?: boolean;
+    showLabel?: FormFieldLabelShow;
 }) => {
     const labelId = `${id}-label`;
+    const labelLayout = resolveFormFieldLabelLayout(showLabel, 'stacked');
 
     const groupKeyAttr =
         typeof groupKeyFrom === 'string' && groupKeyFrom.trim() !== ''
@@ -467,8 +471,13 @@ export const RepeaterField = ({
 
     if (groups != null && resolvedGroups.status === 'yaml-path') {
         return (
-            <Field data-invalid={invalid || undefined}>
-                <FieldTitle id={labelId}>{label}</FieldTitle>
+            <Field
+                orientation={labelLayout.orientation}
+                data-invalid={invalid || undefined}
+            >
+                <FieldTitle id={labelId} className={labelLayout.labelClassName}>
+                    {label}
+                </FieldTitle>
                 {helperText != null && helperText !== '' ? (
                     <FieldDescription>{helperText}</FieldDescription>
                 ) : null}
@@ -496,8 +505,13 @@ export const RepeaterField = ({
         resolvedGroups.status !== 'yaml-path'
     ) {
         return (
-            <Field data-invalid={invalid || undefined}>
-                <FieldTitle id={labelId}>{label}</FieldTitle>
+            <Field
+                orientation={labelLayout.orientation}
+                data-invalid={invalid || undefined}
+            >
+                <FieldTitle id={labelId} className={labelLayout.labelClassName}>
+                    {label}
+                </FieldTitle>
                 {helperText != null && helperText !== '' ? (
                     <FieldDescription>{helperText}</FieldDescription>
                 ) : null}
@@ -524,8 +538,13 @@ export const RepeaterField = ({
 
     if (!isGroupMode && typeof form === 'string') {
         return (
-            <Field data-invalid={invalid || undefined}>
-                <FieldTitle id={labelId}>{label}</FieldTitle>
+            <Field
+                orientation={labelLayout.orientation}
+                data-invalid={invalid || undefined}
+            >
+                <FieldTitle id={labelId} className={labelLayout.labelClassName}>
+                    {label}
+                </FieldTitle>
                 {helperText != null && helperText !== '' ? (
                     <FieldDescription>{helperText}</FieldDescription>
                 ) : null}
@@ -545,8 +564,13 @@ export const RepeaterField = ({
         (formFields == null || Object.keys(formFields).length === 0)
     ) {
         return (
-            <Field data-invalid={invalid || undefined}>
-                <FieldTitle id={labelId}>{label}</FieldTitle>
+            <Field
+                orientation={labelLayout.orientation}
+                data-invalid={invalid || undefined}
+            >
+                <FieldTitle id={labelId} className={labelLayout.labelClassName}>
+                    {label}
+                </FieldTitle>
                 {helperText != null && helperText !== '' ? (
                     <FieldDescription>{helperText}</FieldDescription>
                 ) : null}
@@ -566,7 +590,7 @@ export const RepeaterField = ({
             : [];
 
     const bodyForRow = (rowIndex: number, row: Record<string, unknown>) => (
-        <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4">
+        <div className="flex w-full flex-col gap-4">
             {isGroupMode && inlineGroupList.length > 0 ? (
                 <RepeaterGroupTypePicker
                     rowIndex={rowIndex}
@@ -734,10 +758,11 @@ export const RepeaterField = ({
 
     return (
         <Field
+            orientation={labelLayout.orientation}
             className="pointer-events-auto"
             data-invalid={invalid || undefined}
         >
-            <FieldTitle id={labelId}>
+            <FieldTitle id={labelId} className={labelLayout.labelClassName}>
                 {label}
                 {required ? (
                     <span className="text-destructive" aria-hidden="true">
