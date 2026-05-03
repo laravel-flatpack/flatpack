@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 use Inertia\Response;
 
 /**
- * Inertia docs/catalog page for Flatpack UI primitives.
+ * Inertia demo/catalog page for Flatpack UI primitives.
  *
  * Field entries for {@code catalog=fields} (including repeater, table, …) are defined in
  * {@see DemoCatalogFactory::fieldsCatalog()}.
@@ -26,7 +26,7 @@ final readonly class DemoController
     {
         $catalogId = $this->demoCatalog->normalizeCatalogId($request->query('catalog'));
 
-        return FlatpackResponse::inertia('docs/catalog', [
+        return FlatpackResponse::inertia('demo/catalog', [
             'catalogId' => $catalogId,
             'query' => $request->query(),
             'document' => $this->demoCatalog->buildDocument($catalogId),
