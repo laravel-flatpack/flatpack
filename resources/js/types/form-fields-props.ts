@@ -36,6 +36,4 @@ export type FormFieldsProps = {
         fieldId: string;
         actionId: string;
     }) => void;
-    /** Narrow layouts (e.g. sidebar): right-align combobox option panels to the field. */
-    comboboxDropdownAlign?: 'start' | 'end';
 };

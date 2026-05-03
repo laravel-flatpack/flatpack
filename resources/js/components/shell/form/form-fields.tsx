@@ -39,7 +39,6 @@ export function FormFields({
     onEmbeddedTableToolbarAction: onEmbeddedTableToolbarActionProp,
     tabsFullWidthBelow = false,
     tabsPortalContainer = null,
-    comboboxDropdownAlign,
 }: FormFieldsProps) {
     const onEmbeddedTableToolbarActionFromContext =
         useEmbeddedTableToolbarAction();
@@ -239,7 +238,6 @@ export function FormFields({
         <SchemaFieldsRenderer
             entries={subset}
             spanContext="page"
-            comboboxDropdownAlign={comboboxDropdownAlign}
             entity={entity}
             parentRecordKey={record}
             modeKey={`${mode}:${record ?? 'new'}`}

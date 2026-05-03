@@ -248,7 +248,6 @@ export default function FlatpackFormPage(props: FlatpackFormPageProps) {
                                                         mode={mode}
                                                         record={record}
                                                         fields={sidebarFields}
-                                                        comboboxDropdownAlign="end"
                                                         fieldComponents={
                                                             fieldComponents
                                                         }

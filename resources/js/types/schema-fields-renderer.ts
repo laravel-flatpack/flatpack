@@ -34,11 +34,6 @@ export type SchemaFieldsRendererProps = {
     entries: SchemaFieldRenderEntry[];
     /** Grid layout context for {@link FormFieldProps.span} (default `page`). */
     spanContext?: FieldSpanContext;
-    /**
-     * Passed to {@code combobox} fields: Floating UI alignment for the options panel.
-     * Use {@code end} in narrow columns (e.g. form sidebar) so the panel stays full min-width and aligns to the field’s trailing edge.
-     */
-    comboboxDropdownAlign?: 'start' | 'end';
     entity?: string;
     parentRecordKey?: string | null;
     modeKey?: string;

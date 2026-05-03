@@ -125,7 +125,6 @@ function buildFieldComponentProps(
     args: {
         entity?: string;
         parentRecordKey?: string | null;
-        comboboxDropdownAlign?: 'start' | 'end';
         onEmbeddedTableToolbarAction?: (ctx: {
             fieldId: string;
             actionId: string;
@@ -155,17 +154,12 @@ function buildFieldComponentProps(
         ...(entry.required === true ? { required: true } : {}),
         ...(entry.invalid === true ? { invalid: true } : {}),
         ...(entry.disabled === true ? { disabled: true } : {}),
-        ...(field.type === 'combobox' &&
-        args.comboboxDropdownAlign !== undefined
-            ? { comboboxDropdownAlign: args.comboboxDropdownAlign }
-            : {}),
     };
 }
 
 export function SchemaFieldsRenderer({
     entries,
     spanContext = 'page',
-    comboboxDropdownAlign,
     entity,
     parentRecordKey,
     modeKey,
@@ -189,7 +183,6 @@ export function SchemaFieldsRenderer({
         const componentProps = buildFieldComponentProps(entry, {
             entity,
             parentRecordKey,
-            comboboxDropdownAlign,
             onEmbeddedTableToolbarAction,
         });
         const spanClass = spanClassFor(
