@@ -202,6 +202,18 @@ Relation columns require:
 
 Supported widget `type` values include `metric`, `card`, `status`, `chart`, and `table` (see package docs). Optional **`span`** uses the same values as form fields for dashboard grid layout.
 
+## AI-assisted YAML authoring
+
+Copy the Agent Skill (YAML compositions helper) into your app's `.ai/skills/`:
+
+```bash
+php artisan vendor:publish --tag=flatpack-ai
+```
+
+[Laravel Boost](https://github.com/laravel/boost): install Boost as a dev dependency and run `php artisan boost:install` so IDE agents can load skills shipped under `resources/boost/skills/` inside this package. Activate **`flatpack-yaml-authoring`** when editing `flatpack/**` YAML.
+
+Package development (clone of this repo) uses contributor rules under **`.agents/`** — these are not published into Composer installs by default.
+
 ## Requirements
 
 - PHP 8.x

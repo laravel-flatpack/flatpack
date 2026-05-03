@@ -135,10 +135,18 @@ final class FlatpackServiceProvider extends ServiceProvider
 
     protected function publishAssets(): void
     {
+        $basePath = dirname(__DIR__, 2);
         $this->publishes([
-            dirname(__DIR__, 2) . '/public' => public_path('vendor/flatpack'),
-            dirname(__DIR__, 2) . '/config/flatpack.php' => config_path('flatpack.php'),
+            $basePath . '/public' => public_path('vendor/flatpack'),
+            $basePath . '/config/flatpack.php' => config_path('flatpack.php'),
         ], 'flatpack');
+
+        $hostYamlSkill = $basePath . '/resources/boost/skills/flatpack-yaml-authoring';
+        if (is_dir($hostYamlSkill)) {
+            $this->publishes([
+                $hostYamlSkill => base_path('.ai/skills/flatpack-host-yaml-authoring'),
+            ], 'flatpack-ai');
+        }
     }
 
     protected function registerCommands(): void

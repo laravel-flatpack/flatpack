@@ -6,6 +6,12 @@
 .php_cs.cache
 .phpunit.result.cache
 .DS_Store
+.vite
+*.log
+*.tsbuildinfo
+npm-debug.log*
+pnpm-debug.log*
+yarn-error.log*
 build
 composer.lock
 coverage
@@ -16,6 +22,5 @@ vendor
 node_modules
 flatpack-bundle-stats.html
 .php-cs-fixer.cache
-.phpunit.result.cache
-/public/*
-/docs/review/*
+/public/build/*
+/.docs/review/*
