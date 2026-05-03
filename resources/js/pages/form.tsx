@@ -17,8 +17,6 @@ import type {
     FlatpackFormPageProps,
     FlatpackListHeaderAction,
 } from '@/types/pages/flatpack';
-import { TextField } from '@/components/form-fields';
-import { TitleField } from '@/components/form-fields/title';
 
 const NoFieldsMessage = ({ entity }: { entity: string }) => (
     <p className="text-sm text-muted-foreground">
