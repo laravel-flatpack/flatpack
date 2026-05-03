@@ -1,10 +1,12 @@
 'use client';
 
-import { Link, router } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import type { Row } from '@tanstack/react-table';
 import { type MouseEvent, useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/actions/confirm-dialog';
+import { RowActionButton } from '@/components/actions/row-action-button';
+import { ColumnCellDispatcher } from '@/components/list-columns/column-cell-dispatcher';
 import {
     DATA_TABLE_EMPTY_RESULTS_LABEL,
     DATA_TABLE_LABEL,
@@ -14,8 +16,6 @@ import {
 import { DataTableFooter } from '@/components/table/data-table-footer';
 import { DataTableRowDrawerPanel } from '@/components/table/data-table-row-drawer';
 import { DataTableToolbar } from '@/components/table/data-table-toolbar';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import {
     Card,
     CardContent,
@@ -36,7 +36,11 @@ import {
     isEmbeddedTableBelongsToManyAttachToolbarAction,
     isEmbeddedTableCreateDraftToolbarAction,
 } from '@/lib/data-table-action-semantics';
-import { interpolateRowPlaceholders } from '@/lib/data-table-utils';
+import { stableRowActionButtonKey } from '@/lib/data-table-row-action';
+import {
+    formatCellValue,
+    formatRelationCellDisplay,
+} from '@/lib/data-table-utils';
 import { normalizeFormTableToolbarActionsInput } from '@/lib/form-table-toolbar-actions';
 import { inertiaPostMutation } from '@/lib/inertia-mutation';
 import { listYamlColumnsToDataTableColumns } from '@/lib/list-schema';
@@ -158,61 +162,75 @@ function rowValue(row: Record<string, unknown>, columnId: string): unknown {
     return row[columnId];
 }
 
-function renderableValue(value: unknown): string {
-    if (value == null) {
+/** Plain label for row-selection `aria-label` (relation-aware). */
+function gridCardLabelPlainText(
+    row: Record<string, unknown>,
+    column: FlatpackDataTableColumn | null,
+): string {
+    if (column == null) {
         return '';
     }
-    if (typeof value === 'string' || typeof value === 'number') {
-        return String(value);
+    if (column.type === 'relation' && column.relation && column.relationName) {
+        const fromRel = formatRelationCellDisplay(row, column).trim();
+        if (fromRel !== '') {
+            return fromRel;
+        }
     }
-    if (typeof value === 'boolean') {
-        return value ? 'Yes' : 'No';
-    }
-    return '';
+    return formatCellValue(row[column.id]).trim();
 }
 
-function findOption(
-    column: FlatpackDataTableColumn,
-    value: unknown,
-): { label: string; status?: string } | null {
-    if (!Array.isArray(column.options)) {
+/**
+ * When the image slot column holds a URL-like string (non-relation), render the hero image;
+ * otherwise the slot uses the same cell stack as the table.
+ */
+function imageColumnUrlForCard(
+    column: FlatpackDataTableColumn | null,
+    raw: unknown,
+): string | null {
+    if (column == null || column.type === 'relation') {
         return null;
     }
-    const lookup = String(value);
-    const match = column.options.find((option) => option.value === lookup);
-    return match
-        ? {
-              label: match.label,
-              ...(match.status ? { status: match.status } : {}),
-          }
-        : null;
-}
-
-function badgeVariantForStatus(
-    status: string | undefined,
-): 'default' | 'secondary' | 'destructive' | 'outline' {
-    switch (status) {
-        case 'success':
-            return 'default';
-        case 'error':
-            return 'destructive';
-        case 'pending':
-        case 'warning':
-        case 'info':
-            return 'secondary';
-        default:
-            return 'outline';
+    if (typeof raw !== 'string') {
+        return null;
     }
+    const trimmed = raw.trim();
+    if (trimmed === '') {
+        return null;
+    }
+    if (
+        /^https?:\/\//i.test(trimmed) ||
+        trimmed.startsWith('/') ||
+        trimmed.startsWith('data:')
+    ) {
+        return trimmed;
+    }
+    return null;
 }
 
-function stableFooterActionKey(cfg: FlatpackDataTableActionButton): string {
-    return [
-        cfg.action ?? '',
-        cfg.label,
-        cfg.href ?? '',
-        cfg.variant ?? '',
-        cfg.icon ?? '',
-    ].join('|');
+function GridColumnCellReadOnly({
+    column,
+    row,
+    rowId,
+    schemaColumns,
+}: {
+    column: FlatpackDataTableColumn;
+    row: Record<string, unknown>;
+    rowId: string;
+    schemaColumns: FlatpackDataTableColumn[];
+}) {
+    if (column.type === 'actions') {
+        return <span className="text-muted-foreground">—</span>;
+    }
+    return (
+        <ColumnCellDispatcher
+            column={column}
+            row={row}
+            rowId={rowId}
+            schemaColumns={schemaColumns}
+            value={row[column.id]}
+            inlineCellEdit={false}
+        />
+    );
 }
 
 export function GridWidget({ widgetId, widget }: GridWidgetProps) {
@@ -541,6 +559,7 @@ export function GridWidget({ widgetId, widget }: GridWidgetProps) {
                         key={tableRow.id}
                         tableRow={tableRow}
                         slots={cardSlots}
+                        schemaColumns={columns}
                         modelBacked={modelBacked}
                         providerBacked={providerBacked}
                         rowDetailDrawer={c.rowDetailDrawer}
@@ -710,6 +729,7 @@ export function GridWidget({ widgetId, widget }: GridWidgetProps) {
 type GridWidgetCardProps = {
     tableRow: Row<Record<string, unknown>>;
     slots: ResolvedCardSlots;
+    schemaColumns: FlatpackDataTableColumn[];
     modelBacked: boolean;
     providerBacked: boolean;
     rowDetailDrawer: boolean;
@@ -722,6 +742,7 @@ type GridWidgetCardProps = {
 function GridWidgetCard({
     tableRow,
     slots,
+    schemaColumns,
     modelBacked,
     providerBacked,
     rowDetailDrawer,
@@ -733,20 +754,13 @@ function GridWidgetCard({
     const row = tableRow.original;
     const rowId = tableRow.id;
 
-    const titleText =
-        slots.title != null
-            ? renderableValue(rowValue(row, slots.title.id))
-            : '';
-    const subtitleText =
-        slots.subtitle != null
-            ? renderableValue(rowValue(row, slots.subtitle.id))
-            : '';
+    const titlePlain = gridCardLabelPlainText(row, slots.title);
     const imageRaw =
         slots.image != null ? rowValue(row, slots.image.id) : undefined;
     const imageUrl =
-        typeof imageRaw === 'string' && imageRaw.trim() !== ''
-            ? imageRaw
-            : undefined;
+        slots.image != null
+            ? imageColumnUrlForCard(slots.image, imageRaw)
+            : null;
 
     const footerButtons = useMemo(() => {
         if (slots.footerActions == null) {
@@ -786,44 +800,61 @@ function GridWidgetCard({
             className={cn(cardShellClickable && 'cursor-pointer')}
             onClick={handleCardClick}
         >
-            {imageUrl != null && (
+            {slots.image != null && imageUrl != null ? (
                 <img
                     src={imageUrl}
                     alt=""
                     className="aspect-video w-full object-cover"
                 />
-            )}
+            ) : slots.image != null ? (
+                <div className="border-b px-6 pt-2 pb-4 text-sm">
+                    <GridColumnCellReadOnly
+                        column={slots.image}
+                        row={row}
+                        rowId={rowId}
+                        schemaColumns={schemaColumns}
+                    />
+                </div>
+            ) : null}
             <CardHeader className="flex flex-row items-start justify-between gap-2">
                 <div className="flex min-w-0 flex-col gap-1">
-                    {titleText !== '' && (
-                        <CardTitle className="truncate">{titleText}</CardTitle>
-                    )}
-                    {subtitleText !== '' && (
-                        <span className="truncate text-sm text-muted-foreground">
-                            {subtitleText}
-                        </span>
-                    )}
+                    {slots.title != null ? (
+                        <CardTitle className="min-w-0">
+                            <div className="truncate">
+                                <GridColumnCellReadOnly
+                                    column={slots.title}
+                                    row={row}
+                                    rowId={rowId}
+                                    schemaColumns={schemaColumns}
+                                />
+                            </div>
+                        </CardTitle>
+                    ) : null}
+                    {slots.subtitle != null ? (
+                        <div className="min-w-0 truncate text-sm text-muted-foreground">
+                            <GridColumnCellReadOnly
+                                column={slots.subtitle}
+                                row={row}
+                                rowId={rowId}
+                                schemaColumns={schemaColumns}
+                            />
+                        </div>
+                    ) : null}
                     {slots.badges.length > 0 && (
                         <div className="mt-1 flex flex-wrap gap-1">
-                            {slots.badges.map((column) => {
-                                const value = rowValue(row, column.id);
-                                const option = findOption(column, value);
-                                const label =
-                                    option?.label ?? renderableValue(value);
-                                if (label === '') {
-                                    return null;
-                                }
-                                return (
-                                    <Badge
-                                        key={column.id}
-                                        variant={badgeVariantForStatus(
-                                            option?.status,
-                                        )}
-                                    >
-                                        {label}
-                                    </Badge>
-                                );
-                            })}
+                            {slots.badges.map((column) => (
+                                <div
+                                    key={column.id}
+                                    className="max-w-full min-w-0 shrink-0"
+                                >
+                                    <GridColumnCellReadOnly
+                                        column={column}
+                                        row={row}
+                                        rowId={rowId}
+                                        schemaColumns={schemaColumns}
+                                    />
+                                </div>
+                            ))}
                         </div>
                     )}
                 </div>
@@ -835,97 +866,46 @@ function GridWidgetCard({
                         onCheckedChange={(value) => {
                             tableRow.toggleSelected(!!value);
                         }}
-                        aria-label={`Select ${titleText || rowId}`}
+                        aria-label={`Select ${titlePlain || rowId}`}
                     />
                 )}
             </CardHeader>
             {slots.body.length > 0 && (
                 <CardContent>
                     <dl className="grid grid-cols-[max-content_1fr] gap-x-3 gap-y-1 text-sm">
-                        {slots.body.map((column) => {
-                            const raw = rowValue(row, column.id);
-                            const option = findOption(column, raw);
-                            const text = option?.label ?? renderableValue(raw);
-                            return (
-                                <div
-                                    key={column.id}
-                                    className="contents"
-                                    data-grid-card-field={column.id}
-                                >
-                                    <dt className="text-muted-foreground">
-                                        {column.label}
-                                    </dt>
-                                    <dd className="truncate">{text || '—'}</dd>
-                                </div>
-                            );
-                        })}
+                        {slots.body.map((column) => (
+                            <div
+                                key={column.id}
+                                className="contents"
+                                data-grid-card-field={column.id}
+                            >
+                                <dt className="text-muted-foreground">
+                                    {column.label}
+                                </dt>
+                                <dd className="min-w-0">
+                                    <GridColumnCellReadOnly
+                                        column={column}
+                                        row={row}
+                                        rowId={rowId}
+                                        schemaColumns={schemaColumns}
+                                    />
+                                </dd>
+                            </div>
+                        ))}
                     </dl>
                 </CardContent>
             )}
             {footerButtons.length > 0 && (
                 <CardFooter className="flex flex-wrap gap-2" data-no-row-click>
-                    {footerButtons.map((button) => {
-                        const template = button.href ?? '';
-                        const resolvedHref = template
-                            ? interpolateRowPlaceholders(template, row)
-                            : '';
-                        const slug = button.action ?? button.label ?? '';
-                        const actionPayload: DataTableRowActionPayload = {
-                            action:
-                                typeof button.action === 'string'
-                                    ? button.action
-                                    : String(slug),
-                            row,
-                            button,
-                        };
-
-                        if (resolvedHref) {
-                            const external = /^https?:\/\//i.test(resolvedHref);
-                            const label = button.label;
-                            if (external) {
-                                return (
-                                    <Button
-                                        key={stableFooterActionKey(button)}
-                                        variant={button.variant ?? 'outline'}
-                                        size="sm"
-                                        asChild
-                                    >
-                                        <a
-                                            href={resolvedHref}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                        >
-                                            {label}
-                                        </a>
-                                    </Button>
-                                );
-                            }
-                            return (
-                                <Button
-                                    key={stableFooterActionKey(button)}
-                                    variant={button.variant ?? 'outline'}
-                                    size="sm"
-                                    asChild
-                                >
-                                    <Link href={resolvedHref}>{label}</Link>
-                                </Button>
-                            );
-                        }
-
-                        return (
-                            <Button
-                                key={stableFooterActionKey(button)}
-                                type="button"
-                                variant={button.variant ?? 'outline'}
-                                size="sm"
-                                onClick={() => {
-                                    onRowAction(actionPayload);
-                                }}
-                            >
-                                {button.label}
-                            </Button>
-                        );
-                    })}
+                    {footerButtons.map((button) => (
+                        <RowActionButton
+                            key={stableRowActionButtonKey(button)}
+                            button={button}
+                            row={row}
+                            size="sm"
+                            onAction={onRowAction}
+                        />
+                    ))}
                 </CardFooter>
             )}
         </Card>

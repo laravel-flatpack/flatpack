@@ -17,7 +17,11 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { isDestructiveActionButton } from '@/lib/data-table-action-semantics';
-import { interpolateRowPlaceholders } from '@/lib/data-table-utils';
+import {
+    isExternalRowActionHref,
+    resolveRowActionInterpolatedHref,
+    stableRowActionButtonKey,
+} from '@/lib/data-table-row-action';
 import { cn } from '@/lib/utils';
 import type {
     DataTableRowActionPayload,
@@ -39,16 +43,6 @@ function iconForAction(iconOrKey?: string): LucideIcon | null {
         return Trash2Icon;
     }
     return null;
-}
-
-function stableRowActionKey(cfg: FlatpackDataTableActionButton): string {
-    return [
-        cfg.action ?? '',
-        cfg.label,
-        cfg.href ?? '',
-        cfg.variant ?? '',
-        cfg.icon ?? '',
-    ].join('|');
 }
 
 function partitionRowActions(actions: FlatpackDataTableActionButton[]): {
@@ -108,10 +102,7 @@ function RowActionMenuItem({
     onAction?: (payload: DataTableRowActionPayload) => void | Promise<void>;
 }) {
     const slug = cfg.action ?? cfg.label;
-    const template = cfg.href ?? '';
-    const resolvedHref = template
-        ? interpolateRowPlaceholders(template, row)
-        : '';
+    const resolvedHref = resolveRowActionInterpolatedHref(cfg, row);
     const variantProps = destructive ? { variant: 'destructive' as const } : {};
     const dataAttrs = cfg.action
         ? ({ 'data-flatpack-action': cfg.action } as const)
@@ -119,8 +110,8 @@ function RowActionMenuItem({
 
     const label = <ActionRowLabel cfg={cfg} actionSlug={slug} />;
 
-    if (resolvedHref) {
-        const external = /^https?:\/\//i.test(resolvedHref);
+    if (resolvedHref !== '') {
+        const external = isExternalRowActionHref(resolvedHref);
         return (
             <DropdownMenuItem asChild {...variantProps} {...dataAttrs}>
                 {external ? (
@@ -196,7 +187,7 @@ export function ActionsCell({
                 >
                     {primary.map((cfg) => (
                         <RowActionMenuItem
-                            key={`p-${stableRowActionKey(cfg)}`}
+                            key={`p-${stableRowActionButtonKey(cfg)}`}
                             cfg={cfg}
                             row={row}
                             destructive={false}
@@ -208,7 +199,7 @@ export function ActionsCell({
                     ) : null}
                     {destructive.map((cfg) => (
                         <RowActionMenuItem
-                            key={`d-${stableRowActionKey(cfg)}`}
+                            key={`d-${stableRowActionButtonKey(cfg)}`}
                             cfg={cfg}
                             row={row}
                             destructive

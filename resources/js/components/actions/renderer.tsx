@@ -1,15 +1,10 @@
-import { Link, usePage } from '@inertiajs/react';
+import { usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
-import {
-    ActionButtonContent,
-    actionIconButtonClass,
-    actionVariant,
-} from '@/components/actions/action-button-content';
+import { ActionButton } from '@/components/actions/action-button';
 import {
     actionEnabledState,
     actionVisibilityState,
 } from '@/components/actions/action-dirty-guard';
-import { Button } from '@/components/ui/button';
 import { useFlatpackActionShortcuts } from '@/hooks/use-flatpack-action-shortcuts';
 import { useFlatpackRegisterActionShortcuts } from '@/hooks/use-flatpack-register-action-shortcuts';
 import type { ParsedFlatpackShortcut } from '@/lib/flatpack-action-shortcuts';
@@ -176,10 +171,7 @@ function FormActionsRendererRow({
     activeSubmittingActionId,
     setActiveSubmittingActionId,
 }: FormActionsRendererRowProps) {
-    const variant = actionVariant(action);
-    const iconClass = actionIconButtonClass(action);
-    const actionClassName = cn(iconClass, 'h-8 px-3 text-sm sm:h-10 sm:px-4');
-    const bodyProps = { action, isMacPlatform, shortcut, variant };
+    const actionClassName = 'h-8 px-3 text-sm sm:h-10 sm:px-4';
     const visibilityState = actionVisibilityState(action, {
         formIsDirty,
         formMode,
@@ -197,35 +189,19 @@ function FormActionsRendererRow({
         });
         const disabled = formProcessing || inactiveState.inactive;
 
-        return disabled ? (
-            <Button
-                type="button"
+        return (
+            <ActionButton
+                action={action}
+                isMacPlatform={isMacPlatform}
+                shortcut={shortcut}
                 size="lg"
-                variant={variant}
-                disabled
                 className={actionClassName}
+                disabled={disabled}
+                href={action.href}
+                showSpinner={false}
+                hideLabelOnMobileWhenIcon
                 data-flatpack-action-id={action.id}
-            >
-                <ActionButtonContent
-                    {...bodyProps}
-                    showSpinner={false}
-                    hideLabelOnMobileWhenIcon
-                />
-            </Button>
-        ) : (
-            <Button asChild size="lg" variant={variant}>
-                <Link
-                    href={action.href}
-                    className={actionClassName}
-                    data-flatpack-action-id={action.id}
-                >
-                    <ActionButtonContent
-                        {...bodyProps}
-                        showSpinner={false}
-                        hideLabelOnMobileWhenIcon
-                    />
-                </Link>
-            </Button>
+            />
         );
     }
 
@@ -251,14 +227,15 @@ function FormActionsRendererRow({
     const submitFormId = action.confirm || !isSubmitAction ? undefined : formId;
 
     return (
-        <Button
-            type={submitType}
-            form={submitFormId}
+        <ActionButton
+            action={action}
+            isMacPlatform={isMacPlatform}
+            shortcut={shortcut}
             size="lg"
-            variant={variant}
-            disabled={disabled}
             className={actionClassName}
-            data-flatpack-action-id={action.id}
+            nativeType={submitType}
+            form={submitFormId}
+            disabled={disabled}
             onClick={
                 handlerMissing
                     ? undefined
@@ -279,14 +256,11 @@ function FormActionsRendererRow({
                             onRunAction(actionRow);
                         }
             }
-        >
-            <ActionButtonContent
-                {...bodyProps}
-                showSpinner={
-                    formProcessing && activeSubmittingActionId === action.id
-                }
-                hideLabelOnMobileWhenIcon
-            />
-        </Button>
+            showSpinner={
+                formProcessing && activeSubmittingActionId === action.id
+            }
+            hideLabelOnMobileWhenIcon
+            data-flatpack-action-id={action.id}
+        />
     );
 }

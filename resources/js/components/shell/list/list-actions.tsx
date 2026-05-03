@@ -1,19 +1,13 @@
-import { Link, usePage } from '@inertiajs/react';
-import {
-    ActionButtonContent,
-    actionIconButtonClass,
-    actionVariant,
-} from '@/components/actions/action-button-content';
+import { usePage } from '@inertiajs/react';
+import { ActionButton } from '@/components/actions/action-button';
 import {
     ActionInactiveTooltip,
     actionEnabledState,
     actionVisibilityState,
 } from '@/components/actions/action-dirty-guard';
-import { Button } from '@/components/ui/button';
 import { useFlatpackActionShortcuts } from '@/hooks/use-flatpack-action-shortcuts';
 import { useFlatpackRegisterActionShortcuts } from '@/hooks/use-flatpack-register-action-shortcuts';
 import type { ParsedFlatpackShortcut } from '@/lib/flatpack-action-shortcuts';
-import { cn } from '@/lib/utils';
 import type { FlatpackPageProps } from '@/types/flatpack';
 import type { FlatpackListSubmitAction } from '@/types/flatpack-actions';
 import type { FlatpackListHeaderAction } from '@/types/pages/flatpack';
@@ -95,10 +89,6 @@ function ListAction({
     searchTerm,
     serverFilterState,
 }: ListActionProps) {
-    const variant = actionVariant(action);
-    const iconClass = actionIconButtonClass(action);
-    const actionClassName = cn(iconClass);
-    const bodyProps = { action, isMacPlatform, shortcut, variant };
     const visibilityState = actionVisibilityState(action, {
         listSearchTerm: searchTerm,
         listFilterState: serverFilterState,
@@ -117,29 +107,17 @@ function ListAction({
                 show={inactiveState.inactive}
                 message={inactiveState.message}
             >
-                {inactiveState.inactive ? (
-                    <Button type="button" size="lg" variant={variant} disabled>
-                        <ActionButtonContent
-                            {...bodyProps}
-                            showSpinner={false}
-                            hideLabelOnMobileWhenIcon
-                        />
-                    </Button>
-                ) : (
-                    <Button asChild size="lg" variant={variant}>
-                        <Link
-                            href={action.href}
-                            className={actionClassName}
-                            data-flatpack-action-id={action.id}
-                        >
-                            <ActionButtonContent
-                                {...bodyProps}
-                                showSpinner={false}
-                                hideLabelOnMobileWhenIcon
-                            />
-                        </Link>
-                    </Button>
-                )}
+                <ActionButton
+                    action={action}
+                    isMacPlatform={isMacPlatform}
+                    shortcut={shortcut}
+                    size="lg"
+                    disabled={inactiveState.inactive}
+                    href={action.href}
+                    showSpinner={false}
+                    hideLabelOnMobileWhenIcon
+                    data-flatpack-action-id={action.id}
+                />
             </ActionInactiveTooltip>
         );
     }
@@ -149,13 +127,15 @@ function ListAction({
             show={inactiveState.inactive}
             message={inactiveState.message}
         >
-            <Button
-                type="button"
+            <ActionButton
+                action={action}
+                isMacPlatform={isMacPlatform}
+                shortcut={shortcut}
                 size="lg"
-                variant={variant}
-                className={actionClassName}
-                data-flatpack-action-id={action.id}
                 disabled={inactiveState.inactive}
+                showSpinner={false}
+                hideLabelOnMobileWhenIcon
+                data-flatpack-action-id={action.id}
                 onClick={() => {
                     if (inactiveState.inactive) {
                         return;
@@ -167,13 +147,7 @@ function ListAction({
 
                     void runListAction(action);
                 }}
-            >
-                <ActionButtonContent
-                    {...bodyProps}
-                    showSpinner={false}
-                    hideLabelOnMobileWhenIcon
-                />
-            </Button>
+            />
         </ActionInactiveTooltip>
     );
 }

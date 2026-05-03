@@ -78,7 +78,7 @@ export function PageHeader({
             />
             <div
                 className={cn(
-                    'sticky top-0 z-90 transition-[box-shadow,backdrop-filter,background-color] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none',
+                    'sticky top-0 z-40 transition-[box-shadow,backdrop-filter,background-color] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none',
                     isStuck
                         ? 'bg-background/75 shadow-sm backdrop-blur-md backdrop-saturate-150 supports-[backdrop-filter]:bg-background/65 dark:bg-background/55 dark:supports-[backdrop-filter]:bg-background/45 motion-reduce:bg-background motion-reduce:backdrop-blur-none'
                         : 'bg-background',

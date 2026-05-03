@@ -1,4 +1,4 @@
-import { FormActionsRenderer } from '@/components/actions/form-actions-renderer';
+import { FormActionsRenderer } from '@/components/actions/renderer';
 import type { FlatpackListSubmitAction } from '@/types/flatpack-actions';
 import type { FlatpackListHeaderAction } from '@/types/pages/flatpack';
 
