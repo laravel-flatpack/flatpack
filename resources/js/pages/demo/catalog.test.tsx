@@ -59,7 +59,7 @@ vi.mock('@/lib/form', () => ({
     ),
 }));
 
-import DemoPage from '@/pages/docs/catalog';
+import DemoPage from '@/pages/demo/catalog';
 
 function textEntry(
     overrides: Partial<DemoComponentCatalogEntry> = {},

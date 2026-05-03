@@ -22,7 +22,7 @@ vi.mock('@inertiajs/react', () => ({
     ),
 }));
 
-import SchemaPage from '@/pages/docs/schema';
+import SchemaPage from '@/pages/demo/schema';
 
 function buildDocument(
     overrides: Partial<SchemaDocument> = {},
