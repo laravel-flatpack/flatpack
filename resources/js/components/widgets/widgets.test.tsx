@@ -1,22 +1,34 @@
 import { cleanup, render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CardWidget } from '@/components/widgets/card';
 import { ChartWidget } from '@/components/widgets/chart';
+import {
+    GridWidget,
+    resolveGridWidgetCardSlots,
+} from '@/components/widgets/grid-widget';
 import { MetricWidget } from '@/components/widgets/metric';
 import { StatusWidget } from '@/components/widgets/status';
 import { TableWidget } from '@/components/widgets/table-widget';
 import type {
     FlatpackCardWidget,
     FlatpackChartWidget,
+    FlatpackGridWidget,
     FlatpackMetricWidget,
     FlatpackStatusWidget,
     FlatpackTableWidget,
 } from '@/types/widgets-composition';
 
 type DataTableProps = Record<string, unknown>;
-const { visitMock, runDashboardWidgetModelRowActionMock } = vi.hoisted(() => ({
+const {
+    visitMock,
+    runDashboardWidgetModelRowActionMock,
+    bulkDashboardWidgetModelRowsMock,
+} = vi.hoisted(() => ({
     visitMock: vi.fn(),
     runDashboardWidgetModelRowActionMock: vi.fn(),
+    bulkDashboardWidgetModelRowsMock: vi.fn(),
 }));
 
 let lastDataTableProps: DataTableProps | null = null;
@@ -33,6 +45,7 @@ afterEach(() => {
     cleanup();
     visitMock.mockReset();
     runDashboardWidgetModelRowActionMock.mockReset();
+    bulkDashboardWidgetModelRowsMock.mockReset();
 });
 
 vi.mock('@/hooks/use-mobile', () => ({
@@ -43,6 +56,9 @@ vi.mock('@inertiajs/react', () => ({
     router: {
         visit: visitMock,
     },
+    Link: ({ children, href }: { children?: ReactNode; href?: string }) => (
+        <a href={href}>{children}</a>
+    ),
 }));
 
 vi.mock('@/components/table/data-table', () => ({
@@ -71,7 +87,7 @@ vi.mock('@/components/table/data-table', () => ({
 
 vi.mock('@/lib/model-table-row-update', () => ({
     updateDashboardWidgetModelRow: vi.fn(),
-    bulkDashboardWidgetModelRows: vi.fn(),
+    bulkDashboardWidgetModelRows: bulkDashboardWidgetModelRowsMock,
     runDashboardWidgetModelRowAction: runDashboardWidgetModelRowActionMock,
 }));
 
@@ -504,5 +520,152 @@ describe('widgets basic rendering', () => {
         });
 
         expect(runDashboardWidgetModelRowActionMock).not.toHaveBeenCalled();
+    });
+});
+
+function makeGridWidget(
+    overrides: Partial<FlatpackGridWidget> = {},
+): FlatpackGridWidget {
+    return {
+        type: 'grid',
+        label: 'Recent Posts',
+        model: 'App\\Models\\Post',
+        columns: {
+            title: { id: 'title', label: 'Title', type: 'text' },
+            status: {
+                id: 'status',
+                label: 'Status',
+                type: 'badge',
+                options: [
+                    { value: 'draft', label: 'Draft', status: 'pending' },
+                    {
+                        value: 'published',
+                        label: 'Published',
+                        status: 'success',
+                    },
+                ],
+            },
+        },
+        data: {
+            rows: [
+                { id: 1, title: 'Hello', status: 'draft' },
+                { id: 2, title: 'World', status: 'published' },
+            ],
+        },
+        ...overrides,
+    };
+}
+
+describe('GridWidget', () => {
+    it('auto-derives card slots from columns when no card map is given', () => {
+        const widget = makeGridWidget();
+        const slots = resolveGridWidgetCardSlots(
+            [
+                { id: 'title', label: 'Title', type: 'text' },
+                { id: 'status', label: 'Status', type: 'badge' },
+                {
+                    id: 'actions',
+                    label: '',
+                    type: 'actions',
+                    actions: [
+                        { label: 'Edit', action: 'edit', variant: 'outline' },
+                    ],
+                },
+            ],
+            undefined,
+        );
+        expect(slots.title?.id).toBe('title');
+        expect(slots.badges.map((c) => c.id)).toEqual(['status']);
+        expect(slots.footerActions?.id).toBe('actions');
+        expect(widget.type).toBe('grid');
+    });
+
+    it('honors an explicit card slot map and ignores unknown column ids', () => {
+        const slots = resolveGridWidgetCardSlots(
+            [
+                { id: 'name', label: 'Name', type: 'text' },
+                { id: 'plan', label: 'Plan', type: 'badge' },
+                { id: 'updated_at', label: 'Updated', type: 'date' },
+            ],
+            {
+                title: 'name',
+                subtitle: 'updated_at',
+                badges: ['plan', 'unknown'],
+            },
+        );
+        expect(slots.title?.id).toBe('name');
+        expect(slots.subtitle?.id).toBe('updated_at');
+        expect(slots.badges.map((c) => c.id)).toEqual(['plan']);
+    });
+
+    it('renders one Card per row with title and badge content', () => {
+        render(
+            <GridWidget
+                widgetId="recent_posts_grid"
+                widget={makeGridWidget()}
+            />,
+        );
+
+        const cards = screen.getAllByTestId('widget-grid-card');
+        expect(cards).toHaveLength(2);
+        expect(screen.getByText('Hello')).toBeInTheDocument();
+        expect(screen.getByText('Draft')).toBeInTheDocument();
+        expect(screen.getByText('Published')).toBeInTheDocument();
+    });
+
+    it('renders prev/next pagination when server pagination has more than one page', () => {
+        render(
+            <GridWidget
+                widgetId="g1"
+                widget={makeGridWidget({
+                    data: {
+                        rows: [{ id: 1, title: 'A', status: 'draft' }],
+                        pagination: {
+                            current_page: 2,
+                            last_page: 3,
+                            per_page: 1,
+                            total: 3,
+                            from: 2,
+                            to: 2,
+                        },
+                    },
+                })}
+            />,
+        );
+
+        expect(screen.getByRole('button', { name: /Previous/ })).toBeEnabled();
+        expect(screen.getByRole('button', { name: /Next/ })).toBeEnabled();
+        expect(screen.getByText(/Page 2 of 3/)).toBeInTheDocument();
+    });
+
+    it('runs a bulk action through the model-table-row-update helper', async () => {
+        const user = userEvent.setup();
+        render(
+            <GridWidget
+                widgetId="g_bulk"
+                widget={makeGridWidget({
+                    bulk_actions: [
+                        {
+                            id: 'delete',
+                            label: 'Delete',
+                            action: 'delete',
+                            variant: 'destructive',
+                        },
+                    ],
+                })}
+            />,
+        );
+
+        await user.click(screen.getByTestId('grid-row-select-1'));
+        await user.click(screen.getByRole('button', { name: 'Bulk Actions' }));
+        await user.click(screen.getByRole('menuitem', { name: 'Delete' }));
+
+        expect(bulkDashboardWidgetModelRowsMock).toHaveBeenCalledWith(
+            expect.objectContaining({
+                widgetId: 'g_bulk',
+                action: 'delete',
+                selection: ['1'],
+            }),
+        );
     });
 });

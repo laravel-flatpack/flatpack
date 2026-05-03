@@ -263,14 +263,14 @@ function FormActionsRendererRow({
                 handlerMissing
                     ? undefined
                     : action.confirm
-                    ? () => {
+                      ? () => {
                             setActiveSubmittingActionId(action.id);
                             if (isSubmitAction) {
                                 onFormSubmitIntent(actionRow);
                             }
                             onFormSubmitConfirmClick(actionRow);
                         }
-                    : () => {
+                      : () => {
                             setActiveSubmittingActionId(action.id);
                             if (isSubmitAction) {
                                 onFormSubmitIntent(actionRow);

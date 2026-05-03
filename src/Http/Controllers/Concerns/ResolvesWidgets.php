@@ -17,7 +17,9 @@ use Illuminate\Http\Request;
 
 trait ResolvesWidgets
 {
-    private const MODEL_BACKED_WIDGET_DEFAULT_PER_PAGE = 5;
+    private const MODEL_BACKED_TABLE_WIDGET_DEFAULT_PER_PAGE = 5;
+
+    private const MODEL_BACKED_GRID_WIDGET_DEFAULT_PER_PAGE = 6;
 
     abstract private function widgetSchemaNormalizer(): WidgetSchemaNormalizer;
 
@@ -74,8 +76,9 @@ trait ResolvesWidgets
             $providerKey = trim((string) ($definition['provider'] ?? ''));
             $type = trim((string) ($definition['type'] ?? ''));
             $modelClass = trim((string) ($definition['model'] ?? ''));
+            $isTableLike = $this->isTableLikeWidgetType($type);
 
-            if ($providerKey === '' && ! ($type === 'table' && $modelClass !== '')) {
+            if ($providerKey === '' && ! ($isTableLike && $modelClass !== '')) {
                 $compositionDebug->add(sprintf('widgets.%s ignored: missing provider.', $widgetId));
 
                 continue;
@@ -105,7 +108,7 @@ trait ResolvesWidgets
             }
 
             $entry = [...$definition];
-            if ($type === 'table' && $providerKey !== '' && array_key_exists('columns', $data)) {
+            if ($isTableLike && $providerKey !== '' && array_key_exists('columns', $data)) {
                 $columnPayload = $data['columns'];
                 unset($data['columns']);
                 if (isset($entry['columns']) && is_array($entry['columns']) && $entry['columns'] !== []) {
@@ -117,7 +120,7 @@ trait ResolvesWidgets
                     $entry['columns'] = $this->widgetSchemaNormalizer()->normalizeProviderResolvedTableColumns($columnPayload);
                 }
             }
-            if ($type === 'table' && $providerKey !== '' && ! isset($entry['columns'])) {
+            if ($isTableLike && $providerKey !== '' && ! isset($entry['columns'])) {
                 $entry['columns'] = [];
             }
 
@@ -140,12 +143,12 @@ trait ResolvesWidgets
         if ($type === 'chart') {
             return $this->normalizeChartWidgetResolvedData($data);
         }
-        if ($type === 'table') {
+        if ($this->isTableLikeWidgetType($type)) {
             $hasProvider = trim((string) ($definition['provider'] ?? '')) !== '';
 
             return $hasProvider
                 ? $this->normalizeProviderTableWidgetResolvedData($data)
-                : $this->normalizeModelTableWidgetResolvedData($data);
+                : $this->normalizeModelTableWidgetResolvedData($data, $definition);
         }
 
         if ($type !== 'status') {
@@ -156,6 +159,15 @@ trait ResolvesWidgets
         $data['status'] = $status ?? 'default';
 
         return $data;
+    }
+
+    /**
+     * Table and grid widgets share runtime: the same provider/model resolution paths and
+     * the same row/sorting/pagination payload shape. Only the React renderer differs.
+     */
+    private function isTableLikeWidgetType(string $type): bool
+    {
+        return $type === 'table' || $type === 'grid';
     }
 
     /**
@@ -201,12 +213,16 @@ trait ResolvesWidgets
     {
         $modelClass = trim((string) ($definition['model'] ?? ''));
         if ($modelClass === '') {
-            return $this->emptyModelBackedTableWidgetPayload();
+            return $this->emptyModelBackedTableWidgetPayload(
+                $this->modelBackedWidgetDefaultPerPage($definition),
+            );
         }
 
         $columns = $definition['columns'] ?? null;
         if (! is_array($columns) || $columns === []) {
-            return $this->emptyModelBackedTableWidgetPayload();
+            return $this->emptyModelBackedTableWidgetPayload(
+                $this->modelBackedWidgetSchemaPerPage($definition),
+            );
         }
 
         $schema = [
@@ -220,10 +236,7 @@ trait ResolvesWidgets
             $schema['default_sort'] = $definition['default_sort'];
         }
 
-        $paginationYaml = is_array($definition['pagination'] ?? null) ? $definition['pagination'] : [];
-        $schemaPerPage = isset($paginationYaml['per_page']) && is_numeric($paginationYaml['per_page'])
-            ? max(1, (int) $paginationYaml['per_page'])
-            : self::MODEL_BACKED_WIDGET_DEFAULT_PER_PAGE;
+        $schemaPerPage = $this->modelBackedWidgetSchemaPerPage($definition);
 
         $perPage = $this->widgetTablePerPageFromRequest($request, $widgetId, $schemaPerPage);
         $page = $this->widgetTablePageFromRequest($request, $widgetId);
@@ -261,21 +274,37 @@ trait ResolvesWidgets
     }
 
     /**
-     * @return array{
-     *     rows: list<array<string, mixed>>,
-     *     sorting: array{sort_by: string|null, sort_direction: 'asc'|'desc'|null},
-     *     pagination: array{
-     *         current_page: int,
-     *         last_page: int,
-     *         per_page: int,
-     *         total: int,
-     *         from: int|null,
-     *         to: int|null,
-     *     },
-     *     search: string,
-     * }
+     * Default server page size when YAML omits `pagination.per_page` and `paginate` (grid: 6, table: 5).
+     *
+     * @param  array<string, mixed>  $definition
      */
-    private function emptyModelBackedTableWidgetPayload(int $perPage = self::MODEL_BACKED_WIDGET_DEFAULT_PER_PAGE): array
+    private function modelBackedWidgetDefaultPerPage(array $definition): int
+    {
+        return trim((string) ($definition['type'] ?? '')) === 'grid'
+            ? self::MODEL_BACKED_GRID_WIDGET_DEFAULT_PER_PAGE
+            : self::MODEL_BACKED_TABLE_WIDGET_DEFAULT_PER_PAGE;
+    }
+
+    /**
+     * Page size from YAML for model-backed table/grid widgets: `pagination.per_page` when the
+     * pagination value is an object with `per_page`, else top-level `paginate`, else the type default.
+     *
+     * @param  array<string, mixed>  $definition
+     */
+    private function modelBackedWidgetSchemaPerPage(array $definition): int
+    {
+        $paginationYaml = is_array($definition['pagination'] ?? null) ? $definition['pagination'] : [];
+        if (isset($paginationYaml['per_page']) && is_numeric($paginationYaml['per_page'])) {
+            return max(1, (int) $paginationYaml['per_page']);
+        }
+        if (isset($definition['paginate']) && is_numeric($definition['paginate'])) {
+            return max(1, (int) $definition['paginate']);
+        }
+
+        return $this->modelBackedWidgetDefaultPerPage($definition);
+    }
+
+    private function emptyModelBackedTableWidgetPayload(int $perPage): array
     {
         $perPage = max(1, $perPage);
 
@@ -351,6 +380,7 @@ trait ResolvesWidgets
 
     /**
      * @param  array<string, mixed>  $data
+     * @param  array<string, mixed>  $definition
      * @return array{
      *     rows: list<array<string, mixed>>,
      *     sorting: array{sort_by: string|null, sort_direction: 'asc'|'desc'|null},
@@ -364,8 +394,9 @@ trait ResolvesWidgets
      *     },
      * }
      */
-    private function normalizeModelTableWidgetResolvedData(array $data): array
+    private function normalizeModelTableWidgetResolvedData(array $data, array $definition): array
     {
+        $defaultPerPage = $this->modelBackedWidgetDefaultPerPage($definition);
         $rowsRaw = $data['rows'] ?? null;
         if (! is_array($rowsRaw)) {
             $rowsRaw = array_is_list($data) ? $data : [];
@@ -395,7 +426,7 @@ trait ResolvesWidgets
         $pagination = [
             'current_page' => 1,
             'last_page' => 1,
-            'per_page' => self::MODEL_BACKED_WIDGET_DEFAULT_PER_PAGE,
+            'per_page' => $defaultPerPage,
             'total' => 0,
             'from' => null,
             'to' => null,
@@ -403,7 +434,7 @@ trait ResolvesWidgets
         if (is_array($rawPagination)) {
             $pagination['current_page'] = max(1, (int) ($rawPagination['current_page'] ?? 1));
             $pagination['last_page'] = max(1, (int) ($rawPagination['last_page'] ?? 1));
-            $pagination['per_page'] = max(1, (int) ($rawPagination['per_page'] ?? self::MODEL_BACKED_WIDGET_DEFAULT_PER_PAGE));
+            $pagination['per_page'] = max(1, (int) ($rawPagination['per_page'] ?? $defaultPerPage));
             $pagination['total'] = max(0, (int) ($rawPagination['total'] ?? 0));
             $from = $rawPagination['from'] ?? null;
             $to = $rawPagination['to'] ?? null;

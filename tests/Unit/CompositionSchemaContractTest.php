@@ -1235,6 +1235,102 @@ describe('widget schema contracts', function () {
 
         expect($errors)->toBeEmpty();
     });
+
+    it('accepts grid widget with provider xor model and an optional card slot map', function () {
+        $providerErrors = CompositionSchemaAsserter::validateList([
+            'columns' => [
+                ['id' => 'title', 'type' => 'text', 'label' => 'Title'],
+            ],
+            'widgets' => [
+                'posts_grid' => [
+                    'type' => 'grid',
+                    'provider' => 'posts_grid_provider',
+                    'label' => 'Posts',
+                ],
+            ],
+        ]);
+        $modelErrors = CompositionSchemaAsserter::validateList([
+            'columns' => [
+                ['id' => 'title', 'type' => 'text', 'label' => 'Title'],
+            ],
+            'widgets' => [
+                'posts_grid' => [
+                    'type' => 'grid',
+                    'model' => 'Flatpack\\Tests\\Models\\Post',
+                    'label' => 'Posts',
+                    'columns' => [
+                        'title' => [
+                            'label' => 'Title',
+                            'searchable' => true,
+                            'sortable' => true,
+                        ],
+                        'status' => [
+                            'type' => 'badge',
+                            'label' => 'Status',
+                        ],
+                    ],
+                    'card' => [
+                        'title' => 'title',
+                        'badges' => ['status'],
+                    ],
+                    'paginate' => 9,
+                ],
+            ],
+        ]);
+
+        expect($providerErrors)->toBeEmpty()
+            ->and($modelErrors)->toBeEmpty();
+    });
+
+    it('rejects grid widget when neither or both provider and model are set', function () {
+        $neitherErrors = CompositionSchemaAsserter::validateList([
+            'columns' => [
+                ['id' => 'title', 'type' => 'text', 'label' => 'Title'],
+            ],
+            'widgets' => [
+                'posts_grid' => [
+                    'type' => 'grid',
+                    'columns' => [
+                        'title' => ['label' => 'Title'],
+                    ],
+                ],
+            ],
+        ]);
+        $bothErrors = CompositionSchemaAsserter::validateList([
+            'columns' => [
+                ['id' => 'title', 'type' => 'text', 'label' => 'Title'],
+            ],
+            'widgets' => [
+                'posts_grid' => [
+                    'type' => 'grid',
+                    'provider' => 'posts',
+                    'model' => 'Flatpack\\Tests\\Models\\Post',
+                    'columns' => [
+                        'title' => ['label' => 'Title'],
+                    ],
+                ],
+            ],
+        ]);
+
+        expect($neitherErrors)->not->toBeEmpty()
+            ->and($bothErrors)->not->toBeEmpty();
+    });
+
+    it('rejects grid widget model when columns is missing', function () {
+        $errors = CompositionSchemaAsserter::validateList([
+            'columns' => [
+                ['id' => 'title', 'type' => 'text', 'label' => 'Title'],
+            ],
+            'widgets' => [
+                'posts_grid' => [
+                    'type' => 'grid',
+                    'model' => 'Flatpack\\Tests\\Models\\Post',
+                ],
+            ],
+        ]);
+
+        expect($errors)->not->toBeEmpty();
+    });
 });
 
 describe('generated CompositionSchemaKeys parity', function () {

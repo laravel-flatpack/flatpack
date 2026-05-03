@@ -67,6 +67,27 @@ test('resolveData throws when payload type does not match widget type', function
     ))->toThrow(WidgetRuntimeException::class, 'ChartWidgetData');
 });
 
+test('resolveData rejects mismatched payload for grid widget with provider', function () {
+    config()->set('flatpack.widget_providers', [
+        'bad_grid' => BadChartWidgetProvider::class,
+    ]);
+
+    $provider = app(WidgetRuntime::class)->resolveProvider('bad_grid');
+    $request = Request::create('/flatpack');
+    $user = User::factory()->createOne();
+    $request->setUserResolver(static fn () => $user);
+
+    expect(fn () => app(WidgetRuntime::class)->resolveData(
+        $provider,
+        new WidgetContext(
+            request: $request,
+            entity: 'dashboard',
+            widgetId: 'recent_posts',
+            definition: ['type' => 'grid', 'provider' => 'bad_grid'],
+        ),
+    ))->toThrow(WidgetRuntimeException::class, 'TableWidgetData');
+});
+
 test('resolveData returns provider payload', function () {
     config()->set('flatpack.widget_providers', [
         'total_revenue' => TestWidgetProvider::class,

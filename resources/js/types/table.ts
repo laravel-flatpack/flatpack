@@ -1,6 +1,7 @@
 export type DataTableFooterProps = {
     id: string;
     rowCountLabel: string;
+    pageSizeOptions: readonly number[];
     pageSize: number;
     pageIndex: number;
     pageCount: number;

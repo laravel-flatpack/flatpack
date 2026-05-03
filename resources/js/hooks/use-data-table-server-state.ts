@@ -101,6 +101,11 @@ function serverSortingFromState(
     };
 }
 
+/** Aligns with list/widget query builders that trim before sending to the server. */
+function canonicalServerSearch(value: string | undefined | null): string {
+    return (value ?? '').trim();
+}
+
 function sortingStatesEqual(a: SortingState, b: SortingState): boolean {
     if (a.length !== b.length) {
         return false;
@@ -159,6 +164,12 @@ export function useDataTableServerState({
             hasMountedRef.current = false;
         };
     }, []);
+    /**
+     * After we trigger a visit with a given canonical search, ignore `serverSearch` updates that
+     * do not settle that request (stale / out-of-order responses) so the controlled search input
+     * is not reset or thrashed while typing.
+     */
+    const awaitingServerSearchEchoRef = React.useRef<string | null>(null);
     const [globalFilter, setGlobalFilter] = React.useState(serverSearch ?? '');
     const [serverFilterState, setServerFilterState] =
         React.useState<FlatpackDataTableServerFiltersState>(() =>
@@ -193,11 +204,37 @@ export function useDataTableServerState({
 
     const paginationState = serverPaginationState ?? pagination;
 
+    const globalFilterRef = React.useRef(globalFilter);
+    globalFilterRef.current = globalFilter;
+
     React.useEffect(() => {
         if (serverPagination == null) {
             return;
         }
-        setGlobalFilter(serverSearch ?? '');
+        const normalized = canonicalServerSearch(serverSearch);
+        const pending = awaitingServerSearchEchoRef.current;
+        if (pending !== null) {
+            const localCanonical = canonicalServerSearch(
+                globalFilterRef.current,
+            );
+            if (normalized === pending || normalized === localCanonical) {
+                awaitingServerSearchEchoRef.current = null;
+                return;
+            }
+            const likelyStaleShorterResponse =
+                localCanonical.length > normalized.length &&
+                localCanonical.startsWith(normalized);
+            const likelyStaleLongerResponse =
+                normalized.length > localCanonical.length &&
+                normalized.startsWith(localCanonical);
+            if (likelyStaleShorterResponse || likelyStaleLongerResponse) {
+                return;
+            }
+            awaitingServerSearchEchoRef.current = null;
+            setGlobalFilter(normalized);
+            return;
+        }
+        setGlobalFilter(normalized);
     }, [serverPagination, serverSearch]);
 
     React.useEffect(() => {
@@ -247,6 +284,8 @@ export function useDataTableServerState({
                     typeof updater === 'function'
                         ? updater(paginationState)
                         : updater;
+                awaitingServerSearchEchoRef.current =
+                    canonicalServerSearch(globalFilter);
                 onServerPaginationChange(
                     next.pageIndex + 1,
                     next.pageSize,
@@ -280,6 +319,8 @@ export function useDataTableServerState({
                     return;
                 }
                 setSorting(nextSorting);
+                awaitingServerSearchEchoRef.current =
+                    canonicalServerSearch(globalFilter);
                 onServerPaginationChange(
                     1,
                     paginationState.pageSize,
@@ -318,6 +359,8 @@ export function useDataTableServerState({
             return;
         }
         const debounce = window.setTimeout(() => {
+            awaitingServerSearchEchoRef.current =
+                canonicalServerSearch(globalFilter);
             onServerPaginationChange(
                 1,
                 paginationState.pageSize,

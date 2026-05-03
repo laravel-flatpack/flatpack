@@ -242,6 +242,66 @@ YAML);
     }
 });
 
+test('flatpack dashboard model-backed grid widget paginates and echoes search like table', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-json-dashboard-grid-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/dashboard');
+        File::put($tempPath . '/dashboard/list.yaml', <<<'YAML'
+name: Overview
+widgets:
+  recent_posts_grid:
+    type: grid
+    model: Flatpack\Tests\Models\Post
+    label: Recent Posts (grid)
+    columns:
+      title:
+        label: Title
+        type: text
+        sortable: true
+        searchable: true
+      status:
+        label: Status
+        type: badge
+    pagination:
+      per_page: 2
+    card:
+      title: title
+      badges:
+        - status
+YAML);
+        config()->set('flatpack.composition.path', $tempPath);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+        Post::factory()->create(['title' => 'Alpha']);
+        Post::factory()->create(['title' => 'Beta']);
+        Post::factory()->create(['title' => 'Gamma']);
+
+        $payload = actingAs($user)
+            ->getJson(route('flatpack.dashboard', [
+                'json' => true,
+                'recent_posts_grid_page' => 2,
+                'recent_posts_grid_q' => 'Gamma',
+            ]))
+            ->assertOk()
+            ->json();
+
+        expect($payload['widgets']['recent_posts_grid']['type'] ?? null)->toBe('grid')
+            ->and($payload['widgets']['recent_posts_grid']['card'] ?? null)->toMatchArray([
+                'title' => 'title',
+                'badges' => ['status'],
+            ])
+            ->and($payload['widgets']['recent_posts_grid']['data']['pagination'] ?? null)->toMatchArray([
+                'current_page' => 2,
+                'per_page' => 2,
+            ])
+            ->and($payload['widgets']['recent_posts_grid']['data']['search'] ?? null)->toBe('Gamma');
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
 test('flatpack dashboard model-backed table widget defaults per_page to 5 when pagination is omitted', function () {
     $tempPath = sys_get_temp_dir() . '/flatpack-json-dashboard-table-default-per-page-' . uniqid('', true);
 
@@ -278,6 +338,92 @@ YAML);
                 'total' => 6,
                 'from' => 1,
                 'to' => 5,
+            ]);
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
+test('flatpack dashboard model-backed grid widget defaults per_page to 6 when pagination is omitted', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-json-dashboard-grid-default-per-page-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/dashboard');
+        File::put($tempPath . '/dashboard/list.yaml', <<<'YAML'
+name: Overview
+widgets:
+  posts_grid:
+    type: grid
+    model: Flatpack\Tests\Models\Post
+    label: Posts
+    columns:
+      title:
+        label: Title
+        type: text
+        sortable: true
+YAML);
+        config()->set('flatpack.composition.path', $tempPath);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+        Post::factory()->count(7)->create();
+
+        $payload = actingAs($user)
+            ->getJson(route('flatpack.dashboard', ['json' => true]))
+            ->assertOk()
+            ->json();
+
+        expect($payload['widgets']['posts_grid']['data']['rows'] ?? [])->toHaveCount(6)
+            ->and($payload['widgets']['posts_grid']['data']['pagination'] ?? null)->toMatchArray([
+                'current_page' => 1,
+                'last_page' => 2,
+                'per_page' => 6,
+                'total' => 7,
+                'from' => 1,
+                'to' => 6,
+            ]);
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
+test('flatpack dashboard model-backed table widget respects top-level paginate when per_page omitted', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-json-dashboard-table-paginate-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/dashboard');
+        File::put($tempPath . '/dashboard/list.yaml', <<<'YAML'
+name: Overview
+widgets:
+  recent_posts:
+    type: table
+    model: Flatpack\Tests\Models\Post
+    paginate: 9
+    columns:
+      title:
+        label: Title
+        type: text
+        sortable: true
+YAML);
+        config()->set('flatpack.composition.path', $tempPath);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+        Post::factory()->count(10)->create();
+
+        $payload = actingAs($user)
+            ->getJson(route('flatpack.dashboard', ['json' => true]))
+            ->assertOk()
+            ->json();
+
+        expect($payload['widgets']['recent_posts']['data']['rows'] ?? [])->toHaveCount(9)
+            ->and($payload['widgets']['recent_posts']['data']['pagination'] ?? null)->toMatchArray([
+                'current_page' => 1,
+                'last_page' => 2,
+                'per_page' => 9,
+                'total' => 10,
+                'from' => 1,
+                'to' => 9,
             ]);
     } finally {
         File::deleteDirectory($tempPath);

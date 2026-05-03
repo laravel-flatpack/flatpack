@@ -1,6 +1,7 @@
 import { createElement } from 'react';
 import { CardWidget } from '@/components/widgets/card';
 import { ChartWidget } from '@/components/widgets/chart';
+import { GridWidget } from '@/components/widgets/grid-widget';
 import { MetricWidget } from '@/components/widgets/metric';
 import { StatusWidget } from '@/components/widgets/status';
 import { TableWidget } from '@/components/widgets/table-widget';
@@ -16,6 +17,7 @@ export function widgetGridSpanClass(widget: FlatpackWidget): string {
     switch (widget.type) {
         case 'chart':
         case 'table':
+        case 'grid':
             return 'col-span-1 md:col-span-2 xl:col-span-4';
         default:
             return 'col-span-1';
@@ -37,6 +39,8 @@ export function renderWidgetByType(
             return createElement(ChartWidget, { widget });
         case 'table':
             return createElement(TableWidget, { widgetId, widget });
+        case 'grid':
+            return createElement(GridWidget, { widgetId, widget });
         default:
             return null;
     }

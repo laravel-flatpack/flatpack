@@ -19,7 +19,9 @@ vi.mock('@/lib/widget-trigger', () => ({
         widget: { type: string },
     ): React.ReactNode => renderWidgetByTypeMock(id, widget),
     widgetGridSpanClass: (widget: { type: string }): string =>
-        widget.type === 'chart' || widget.type === 'table'
+        widget.type === 'chart' ||
+        widget.type === 'table' ||
+        widget.type === 'grid'
             ? 'col-span-1 md:col-span-2 xl:col-span-4'
             : 'col-span-1',
 }));

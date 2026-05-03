@@ -154,8 +154,59 @@ export type FlatpackTableWidget = {
     showColumnsVisibility?: boolean;
     bulk_actions?: FlatpackDataTableBulkAction[];
     pagination?: boolean | { per_page?: number; page_sizes?: number[] };
+    /**
+     * Model-backed: server page size when `pagination.per_page` is not set (default 5 rows).
+     * Omitted in provider-backed widgets.
+     */
+    paginate?: number;
     default_sort?: FlatpackDataTableDefaultSort;
     data?: FlatpackTableWidgetResolvedData;
+    span?: FieldSpanNamed;
+};
+
+/**
+ * Optional card slot map for `type: grid` widgets. Each value is a column id on the same widget
+ * (referencing entries in {@link FlatpackGridWidget.columns}). When omitted, slots auto-derive
+ * from columns: first text-like column becomes the title, badge/status columns become badges,
+ * other non-action columns stack as label/value pairs in the card body, and an `actions` column
+ * (if any) renders as the card footer.
+ */
+export type FlatpackGridCardSlotMap = {
+    title?: string;
+    subtitle?: string;
+    image?: string;
+    badges?: string[];
+    body?: string[];
+    footer_actions?: string;
+};
+
+/**
+ * Grid widget: same option surface as {@link FlatpackTableWidget} (model XOR provider, columns,
+ * actions, bulk actions, filters, pagination, default sort) but rendered as a responsive card
+ * grid instead of a table body. The optional `card` slot map lets authors map columns to card
+ * regions; otherwise slots auto-derive from `columns`.
+ */
+export type FlatpackGridWidget = {
+    type: 'grid';
+    label?: string | null;
+    description?: string | null;
+    icon?: string | null;
+    provider?: string;
+    model?: string;
+    list_entity?: string | null;
+    actions?: unknown;
+    columns?: Record<string, FlatpackDataTableColumn>;
+    showColumnsVisibility?: boolean;
+    bulk_actions?: FlatpackDataTableBulkAction[];
+    pagination?: boolean | { per_page?: number; page_sizes?: number[] };
+    /**
+     * Model-backed: server page size when `pagination.per_page` is not set (default 6 cards).
+     * Omitted in provider-backed widgets.
+     */
+    paginate?: number;
+    default_sort?: FlatpackDataTableDefaultSort;
+    data?: FlatpackTableWidgetResolvedData;
+    card?: FlatpackGridCardSlotMap;
     span?: FieldSpanNamed;
 };
 
@@ -164,7 +215,8 @@ export type FlatpackWidget =
     | FlatpackCardWidget
     | FlatpackStatusWidget
     | FlatpackChartWidget
-    | FlatpackTableWidget;
+    | FlatpackTableWidget
+    | FlatpackGridWidget;
 
 export type FlatpackWidgetTabPanelLayout = {
     id: string;

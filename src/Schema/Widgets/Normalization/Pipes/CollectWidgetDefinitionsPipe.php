@@ -78,14 +78,14 @@ final class CollectWidgetDefinitionsPipe
                 }
 
                 $type = trim((string) ($definition['type'] ?? ''));
-                if (! in_array($type, ['metric', 'card', 'status', 'chart', 'table'], true)) {
+                if (! in_array($type, ['metric', 'card', 'status', 'chart', 'table', 'grid'], true)) {
                     $debug?->add(sprintf('widgets.%s ignored: unsupported type "%s".', $widgetId, $type));
 
                     continue;
                 }
 
                 $label = trim((string) ($definition['label'] ?? ''));
-                if ($type !== 'table' && $label === '') {
+                if (! in_array($type, ['table', 'grid'], true) && $label === '') {
                     $debug?->add(sprintf('widgets.%s ignored: requires non-empty label.', $widgetId));
 
                     continue;

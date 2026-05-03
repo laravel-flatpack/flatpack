@@ -67,7 +67,7 @@ final readonly class WidgetRuntime
             'card' => CardWidgetData::class,
             'status' => StatusWidgetData::class,
             'chart' => ChartWidgetData::class,
-            'table' => $hasProvider ? TableWidgetData::class : null,
+            'table', 'grid' => $hasProvider ? TableWidgetData::class : null,
             default => null,
         };
 

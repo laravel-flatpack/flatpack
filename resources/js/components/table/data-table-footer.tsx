@@ -4,7 +4,6 @@ import {
     ChevronsLeftIcon,
     ChevronsRightIcon,
 } from 'lucide-react';
-import { DATA_TABLE_PAGE_SIZE_OPTIONS } from '@/components/table/data-table-constants';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import {
@@ -20,6 +19,7 @@ import type { DataTableFooterProps } from '@/types/table';
 export function DataTableFooter({
     id,
     rowCountLabel,
+    pageSizeOptions,
     pageSize,
     pageIndex,
     pageCount,
@@ -56,7 +56,7 @@ export function DataTableFooter({
                         </SelectTrigger>
                         <SelectContent side="top">
                             <SelectGroup>
-                                {DATA_TABLE_PAGE_SIZE_OPTIONS.map((option) => (
+                                {pageSizeOptions.map((option) => (
                                     <SelectItem
                                         key={option}
                                         value={`${option}`}

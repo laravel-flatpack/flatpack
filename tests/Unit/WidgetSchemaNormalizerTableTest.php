@@ -77,6 +77,26 @@ test('table widget keeps pagination per_page config', function () {
     ]);
 });
 
+test('table widget keeps model-backed paginate integer', function () {
+    $normalizer = new WidgetSchemaNormalizer(new WidgetSchemaNormalizationSupport());
+    $out = $normalizer->normalize([
+        'widgets' => [
+            'posts_table' => [
+                'type' => 'table',
+                'model' => 'Flatpack\\Tests\\Models\\Post',
+                'columns' => [
+                    'title' => [
+                        'label' => 'Title',
+                    ],
+                ],
+                'paginate' => 9,
+            ],
+        ],
+    ]);
+
+    expect($out['widgets']['posts_table']['paginate'])->toBe(9);
+});
+
 test('table widget copies list_entity and actions for model-backed widgets', function () {
     $normalizer = new WidgetSchemaNormalizer(new WidgetSchemaNormalizationSupport());
     $out = $normalizer->normalize([

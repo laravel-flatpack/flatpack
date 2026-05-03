@@ -83,6 +83,48 @@ test('empty fallback columns are emitted when neither yaml nor provider supply c
     expect($resolved['recent_posts']['columns'])->toBe([]);
 });
 
+test('grid widget reuses table provider resolution for column merge and row payload', function () {
+    $harness = makeResolvesWidgetsHarness();
+
+    $resolved = $harness->run(
+        widgetId: 'recent_posts_grid',
+        definition: [
+            'type' => 'grid',
+            'provider' => 'columns_provider',
+        ],
+    );
+
+    expect($resolved['recent_posts_grid']['columns'])->toHaveKey('title')
+        ->and($resolved['recent_posts_grid']['columns']['title']['editable'])->toBeFalse()
+        ->and($resolved['recent_posts_grid']['data']['rows'])->toBeArray();
+});
+
+test('grid widget yaml columns take precedence over provider-returned columns', function () {
+    config()->set('app.debug', true);
+    $compositionDebug = app(CompositionDebugContext::class);
+    $compositionDebug->activate('test');
+
+    $harness = makeResolvesWidgetsHarness();
+
+    $resolved = $harness->run(
+        widgetId: 'recent_posts_grid',
+        definition: [
+            'type' => 'grid',
+            'provider' => 'columns_provider',
+            'columns' => [
+                'title' => ['label' => 'Title (YAML)', 'editable' => false],
+            ],
+        ],
+    );
+
+    expect($resolved['recent_posts_grid']['columns'])->toBe([
+        'title' => ['label' => 'Title (YAML)', 'editable' => false],
+    ])
+        ->and(implode("\n", $compositionDebug->lines()))->toContain(
+            'widgets.recent_posts_grid: ignoring provider-returned columns',
+        );
+});
+
 function makeResolvesWidgetsHarness(): ResolvesWidgetsTestHarness
 {
     $request = Request::create('/flatpack');

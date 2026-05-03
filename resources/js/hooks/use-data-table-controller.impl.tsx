@@ -133,6 +133,17 @@ export type DataTableController = {
     renderRowDrawerAttachBody: DataTableProps['renderRowDrawerAttachBody'];
     rowValidationMessagesById: DataTableRowValidationMessagesById;
     rowValidationFieldErrorsById: DataTableRowValidationFieldErrorsById;
+    /** Open the row detail drawer for an existing row id (model-backed tables / grid cards). */
+    openDetailDrawerForRow: (rowId: string) => void;
+    /**
+     * Row action dispatcher: `edit` / `open` open the drawer; other actions delegate to
+     * {@link DataTableProps.onRowAction} or embedded destructive flows.
+     */
+    handleRowAction: (payload: DataTableRowActionPayload) => void;
+    /** Footer row count label (e.g. “1–6 of 42 row(s).”). */
+    rowCountLabel: string;
+    /** Same semantics as {@link DataTableProps.pagination} for {@link DataTableFooter}. */
+    pagination: boolean | undefined;
 };
 
 export function useDataTableController(
@@ -722,5 +733,9 @@ export function useDataTableController(
         renderRowDrawerAttachBody,
         rowValidationMessagesById,
         rowValidationFieldErrorsById,
+        openDetailDrawerForRow,
+        handleRowAction,
+        rowCountLabel,
+        pagination: paginationVisibility,
     };
 }

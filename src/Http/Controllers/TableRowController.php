@@ -40,7 +40,7 @@ final readonly class TableRowController
         $schema = $this->compositions->optional(Flatpack::dashboardEntity(), 'list');
         $normalized = $this->widgetSchemaNormalizer->normalize($schema);
         $definition = $normalized['widgets'][$widget] ?? null;
-        if (! is_array($definition) || (($definition['type'] ?? null) !== 'table')) {
+        if (! is_array($definition) || ! self::isTableLikeWidgetType($definition['type'] ?? null)) {
             abort(404);
         }
 
@@ -87,7 +87,7 @@ final readonly class TableRowController
         $schema = $this->compositions->optional(Flatpack::dashboardEntity(), 'list');
         $normalized = $this->widgetSchemaNormalizer->normalize($schema);
         $definition = $normalized['widgets'][$widget] ?? null;
-        if (! is_array($definition) || (($definition['type'] ?? null) !== 'table')) {
+        if (! is_array($definition) || ! self::isTableLikeWidgetType($definition['type'] ?? null)) {
             abort(404);
         }
 
@@ -109,7 +109,7 @@ final readonly class TableRowController
         $schema = $this->compositions->optional(Flatpack::dashboardEntity(), 'list');
         $normalized = $this->widgetSchemaNormalizer->normalize($schema);
         $definition = $normalized['widgets'][$widget] ?? null;
-        if (! is_array($definition) || (($definition['type'] ?? null) !== 'table')) {
+        if (! is_array($definition) || ! self::isTableLikeWidgetType($definition['type'] ?? null)) {
             abort(404);
         }
 
@@ -175,7 +175,7 @@ final readonly class TableRowController
         $schema = $this->compositions->optional(Flatpack::dashboardEntity(), 'list');
         $normalized = $this->widgetSchemaNormalizer->normalize($schema);
         $definition = $normalized['widgets'][$widget] ?? null;
-        if (! is_array($definition) || (($definition['type'] ?? null) !== 'table')) {
+        if (! is_array($definition) || ! self::isTableLikeWidgetType($definition['type'] ?? null)) {
             return FlatpackErrorPayload::notFound('Flatpack dashboard widget is not configured.');
         }
 
@@ -240,6 +240,8 @@ final readonly class TableRowController
         if (! is_array($definition) || (($definition['type'] ?? null) !== 'table')) {
             abort(404);
         }
+        // Note: form-table updates remain `table`-only — embedded form table fields use `type: table` and
+        // there is no embedded grid form field. Grid is a dashboard widget renderer only.
         if (isset($definition['relation']) && trim((string) $definition['relation']) !== '') {
             throw ValidationException::withMessages([
                 'flatpack' => 'Immediate row updates are not supported for relation-backed tables.',
@@ -261,6 +263,15 @@ final readonly class TableRowController
     private static function isEmbeddedTableDraftRecordId(string $record): bool
     {
         return str_starts_with(trim($record), '__new__:');
+    }
+
+    /**
+     * Dashboard widgets that share the table row endpoints (table and grid). Grid is a renderer
+     * variant and uses the same model-backed pipeline, including row updates and bulk actions.
+     */
+    private static function isTableLikeWidgetType(mixed $type): bool
+    {
+        return $type === 'table' || $type === 'grid';
     }
 
     private function updateModelRow(

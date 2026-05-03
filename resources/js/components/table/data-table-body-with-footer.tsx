@@ -4,6 +4,7 @@ import * as React from 'react';
 import { DataTableBody } from '@/components/table/data-table-body';
 import { DataTableFooter } from '@/components/table/data-table-footer';
 import type { DataTableRowValidationMessagesById } from '@/types/data-table';
+import { DATA_TABLE_PAGE_SIZE_OPTIONS } from './data-table-constants';
 
 const LazyDataTableDndWrapper = React.lazy(() =>
     import('@/components/table/data-table-dnd-wrapper').then((module) => ({
@@ -83,6 +84,7 @@ export function DataTableBodyWithFooter({
                 <DataTableFooter
                     id={id}
                     rowCountLabel={rowCountLabel}
+                    pageSizeOptions={DATA_TABLE_PAGE_SIZE_OPTIONS}
                     pageSize={paginationStateCurrent.pageSize}
                     pageIndex={paginationStateCurrent.pageIndex}
                     pageCount={pageCount}

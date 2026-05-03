@@ -33,6 +33,8 @@ export const DATA_TABLE_EMPTY_RESULTS_LABEL = 'No results.';
 export const DATA_TABLE_LABEL = 'Data table';
 export const DATA_TABLE_SEARCH_PLACEHOLDER = 'Search…';
 
+export const GRID_WIDGET_PAGE_SIZE_OPTIONS = [6, 9, 24] as const;
+
 /** Clicks on these targets do not trigger “row → open record” navigation. */
 export const DATA_TABLE_ROW_CLICK_IGNORE_SELECTOR =
     'a,button,input,select,textarea,[role="button"],[role="checkbox"],[role="menuitem"],[data-no-row-click]';

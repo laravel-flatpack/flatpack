@@ -215,102 +215,88 @@ final readonly class WidgetSchemaNormalizationSupport
      */
     public function normalizeTableWidgetConfig(array $definition, ?CompositionDebugLog $debug, string $widgetId): ?array
     {
-        $provider = trim((string) ($definition['provider'] ?? ''));
-        $model = trim((string) ($definition['model'] ?? ''));
-        if (($provider === '' && $model === '') || ($provider !== '' && $model !== '')) {
-            $debug?->add(sprintf('widgets.%s ignored: table widget requires exactly one of provider or model.', $widgetId));
+        return $this->normalizeTableLikeWidgetConfig('table', $definition, $debug, $widgetId);
+    }
 
+    /**
+     * @param  array<string, mixed>  $definition
+     * @return array<string, mixed>|null
+     */
+    public function normalizeGridWidgetConfig(array $definition, ?CompositionDebugLog $debug, string $widgetId): ?array
+    {
+        $normalized = $this->normalizeTableLikeWidgetConfig('grid', $definition, $debug, $widgetId);
+        if ($normalized === null) {
             return null;
         }
-        if ($model !== '' && (! class_exists($model) || ! is_subclass_of($model, Model::class))) {
-            $debug?->add(sprintf('widgets.%s ignored: model "%s" is not a valid Eloquent model.', $widgetId, $model));
 
-            return null;
+        $columnIds = isset($normalized['columns']) && is_array($normalized['columns'])
+            ? array_map(static fn (mixed $key): string => (string) $key, array_keys($normalized['columns']))
+            : [];
+        $cardSlotMap = $this->normalizeGridCardSlotMap($definition['card'] ?? null, $columnIds, $debug, $widgetId);
+        if ($cardSlotMap !== null) {
+            $normalized['card'] = $cardSlotMap;
         }
-
-        $columns = $definition['columns'] ?? null;
-        if ($provider !== '') {
-            $normalizedColumns = is_array($columns) && $columns !== []
-                ? $this->normalizeProviderBackedTableWidgetColumns($columns)
-                : null;
-        } else {
-            if (! is_array($columns) || $columns === []) {
-                $debug?->add(sprintf('widgets.%s ignored: model-backed table widget requires a non-empty columns map.', $widgetId));
-
-                return null;
-            }
-            $normalizedColumns = $this->normalizeModelBackedTableWidgetColumns($columns);
-        }
-
-        $normalized = [
-            'type' => 'table',
-            'label' => $this->normalizeOptionalWidgetLabel($definition['label'] ?? null),
-            'description' => isset($definition['description']) ? (string) $definition['description'] : null,
-            'icon' => isset($definition['icon']) ? (string) $definition['icon'] : null,
-            'showColumnsVisibility' => is_bool($definition['showColumnsVisibility'] ?? null)
-                ? $definition['showColumnsVisibility']
-                : false,
-        ];
-        if ($normalizedColumns !== null) {
-            $normalized['columns'] = $normalizedColumns;
-        }
-        if ($provider !== '') {
-            $normalized['provider'] = $provider;
-        }
-        if ($model !== '') {
-            $normalized['model'] = $model;
-        }
-        if (isset($definition['filters']) && is_array($definition['filters'])) {
-            $normalized['filters'] = $definition['filters'];
-        }
-        if (isset($definition['actions']) && is_array($definition['actions'])) {
-            $normalized['actions'] = $definition['actions'];
-        }
-        $rawBulkActions = $definition['bulk_actions'] ?? $definition['bulkActions'] ?? null;
-        if (is_array($rawBulkActions)) {
-            $bulkActions = $this->normalizeTableWidgetBulkActions($rawBulkActions);
-            if ($bulkActions !== []) {
-                $normalized['bulk_actions'] = $bulkActions;
-            }
-        }
-        if (isset($definition['empty_state']) && is_array($definition['empty_state'])) {
-            $normalized['empty_state'] = $definition['empty_state'];
-        }
-        if (isset($definition['pagination']) && (is_array($definition['pagination']) || is_bool($definition['pagination']))) {
-            $normalized['pagination'] = $definition['pagination'];
-        }
-        $defaultSort = $definition['default_sort'] ?? null;
-        if (is_array($defaultSort)) {
-            $key = trim((string) ($defaultSort['key'] ?? ''));
-            $direction = trim((string) ($defaultSort['direction'] ?? ''));
-            if ($key !== '' && in_array($direction, ['asc', 'desc'], true)) {
-                $normalized['default_sort'] = [
-                    'key' => $key,
-                    'direction' => $direction,
-                ];
-            }
-        }
-
-        if ($model !== '') {
-            $explicitEntity = trim((string) ($definition['entity'] ?? $definition['list_entity'] ?? ''));
-            if ($explicitEntity !== '') {
-                $normalized['list_entity'] = $explicitEntity;
-            } elseif ($this->modelEntitySlugResolver !== null) {
-                $resolved = $this->modelEntitySlugResolver->firstEntitySlugForModel($model);
-                if ($resolved !== null) {
-                    $normalized['list_entity'] = $resolved;
-                }
-            }
-        }
-
-        FieldSpanCanonicalizer::mergeIntoIfPresent(
-            $definition,
-            $normalized,
-            sprintf('widgets.%s', $widgetId),
-            $debug,
-        );
 
         return $normalized;
+    }
+
+    /**
+     * Normalize the optional `card:` slot map on a grid widget. Drops unknown column references with a debug entry.
+     *
+     * @param  list<string>  $columnIds
+     * @return array<string, mixed>|null
+     */
+    public function normalizeGridCardSlotMap(mixed $raw, array $columnIds, ?CompositionDebugLog $debug, string $widgetId): ?array
+    {
+        if (! is_array($raw) || $raw === []) {
+            return null;
+        }
+
+        $known = array_flip($columnIds);
+        $normalized = [];
+
+        foreach (['title', 'subtitle', 'image', 'footer_actions'] as $slot) {
+            if (! isset($raw[$slot]) || ! is_string($raw[$slot])) {
+                continue;
+            }
+            $columnId = trim($raw[$slot]);
+            if ($columnId === '') {
+                continue;
+            }
+            if ($columnIds !== [] && ! isset($known[$columnId])) {
+                $debug?->add(sprintf('widgets.%s card.%s ignored: column "%s" is not defined.', $widgetId, $slot, $columnId));
+
+                continue;
+            }
+            $normalized[$slot] = $columnId;
+        }
+
+        foreach (['badges', 'body'] as $slot) {
+            if (! isset($raw[$slot]) || ! is_array($raw[$slot])) {
+                continue;
+            }
+            $values = [];
+            foreach ($raw[$slot] as $value) {
+                if (! is_string($value)) {
+                    continue;
+                }
+                $columnId = trim($value);
+                if ($columnId === '') {
+                    continue;
+                }
+                if ($columnIds !== [] && ! isset($known[$columnId])) {
+                    $debug?->add(sprintf('widgets.%s card.%s entry ignored: column "%s" is not defined.', $widgetId, $slot, $columnId));
+
+                    continue;
+                }
+                $values[] = $columnId;
+            }
+            if ($values !== []) {
+                $normalized[$slot] = $values;
+            }
+        }
+
+        return $normalized === [] ? null : $normalized;
     }
 
     /**
@@ -588,5 +574,115 @@ final readonly class WidgetSchemaNormalizationSupport
         }
 
         return $normalized === [] ? null : $normalized;
+    }
+
+    /**
+     * Shared normalization for table- and grid-style widgets, which differ only in renderer.
+     *
+     * @param  'table'|'grid'  $outType
+     * @param  array<string, mixed>  $definition
+     * @return array<string, mixed>|null
+     */
+    private function normalizeTableLikeWidgetConfig(string $outType, array $definition, ?CompositionDebugLog $debug, string $widgetId): ?array
+    {
+        $provider = trim((string) ($definition['provider'] ?? ''));
+        $model = trim((string) ($definition['model'] ?? ''));
+        if (($provider === '' && $model === '') || ($provider !== '' && $model !== '')) {
+            $debug?->add(sprintf('widgets.%s ignored: %s widget requires exactly one of provider or model.', $widgetId, $outType));
+
+            return null;
+        }
+        if ($model !== '' && (! class_exists($model) || ! is_subclass_of($model, Model::class))) {
+            $debug?->add(sprintf('widgets.%s ignored: model "%s" is not a valid Eloquent model.', $widgetId, $model));
+
+            return null;
+        }
+
+        $columns = $definition['columns'] ?? null;
+        if ($provider !== '') {
+            $normalizedColumns = is_array($columns) && $columns !== []
+                ? $this->normalizeProviderBackedTableWidgetColumns($columns)
+                : null;
+        } else {
+            if (! is_array($columns) || $columns === []) {
+                $debug?->add(sprintf('widgets.%s ignored: model-backed %s widget requires a non-empty columns map.', $widgetId, $outType));
+
+                return null;
+            }
+            $normalizedColumns = $this->normalizeModelBackedTableWidgetColumns($columns);
+        }
+
+        $normalized = [
+            'type' => $outType,
+            'label' => $this->normalizeOptionalWidgetLabel($definition['label'] ?? null),
+            'description' => isset($definition['description']) ? (string) $definition['description'] : null,
+            'icon' => isset($definition['icon']) ? (string) $definition['icon'] : null,
+            'showColumnsVisibility' => is_bool($definition['showColumnsVisibility'] ?? null)
+                ? $definition['showColumnsVisibility']
+                : false,
+        ];
+        if ($normalizedColumns !== null) {
+            $normalized['columns'] = $normalizedColumns;
+        }
+        if ($provider !== '') {
+            $normalized['provider'] = $provider;
+        }
+        if ($model !== '') {
+            $normalized['model'] = $model;
+        }
+        if (isset($definition['filters']) && is_array($definition['filters'])) {
+            $normalized['filters'] = $definition['filters'];
+        }
+        if (isset($definition['actions']) && is_array($definition['actions'])) {
+            $normalized['actions'] = $definition['actions'];
+        }
+        $rawBulkActions = $definition['bulk_actions'] ?? $definition['bulkActions'] ?? null;
+        if (is_array($rawBulkActions)) {
+            $bulkActions = $this->normalizeTableWidgetBulkActions($rawBulkActions);
+            if ($bulkActions !== []) {
+                $normalized['bulk_actions'] = $bulkActions;
+            }
+        }
+        if (isset($definition['empty_state']) && is_array($definition['empty_state'])) {
+            $normalized['empty_state'] = $definition['empty_state'];
+        }
+        if (isset($definition['pagination']) && (is_array($definition['pagination']) || is_bool($definition['pagination']))) {
+            $normalized['pagination'] = $definition['pagination'];
+        }
+        if ($model !== '' && isset($definition['paginate']) && is_numeric($definition['paginate'])) {
+            $normalized['paginate'] = max(1, (int) $definition['paginate']);
+        }
+        $defaultSort = $definition['default_sort'] ?? null;
+        if (is_array($defaultSort)) {
+            $key = trim((string) ($defaultSort['key'] ?? ''));
+            $direction = trim((string) ($defaultSort['direction'] ?? ''));
+            if ($key !== '' && in_array($direction, ['asc', 'desc'], true)) {
+                $normalized['default_sort'] = [
+                    'key' => $key,
+                    'direction' => $direction,
+                ];
+            }
+        }
+
+        if ($model !== '') {
+            $explicitEntity = trim((string) ($definition['entity'] ?? $definition['list_entity'] ?? ''));
+            if ($explicitEntity !== '') {
+                $normalized['list_entity'] = $explicitEntity;
+            } elseif ($this->modelEntitySlugResolver !== null) {
+                $resolved = $this->modelEntitySlugResolver->firstEntitySlugForModel($model);
+                if ($resolved !== null) {
+                    $normalized['list_entity'] = $resolved;
+                }
+            }
+        }
+
+        FieldSpanCanonicalizer::mergeIntoIfPresent(
+            $definition,
+            $normalized,
+            sprintf('widgets.%s', $widgetId),
+            $debug,
+        );
+
+        return $normalized;
     }
 }

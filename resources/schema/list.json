@@ -1369,6 +1369,12 @@
                 },
                 {
                     "$ref": "#/$defs/tableWidgetModelBacked"
+                },
+                {
+                    "$ref": "#/$defs/gridWidgetProviderBacked"
+                },
+                {
+                    "$ref": "#/$defs/gridWidgetModelBacked"
                 }
             ]
         },
@@ -1532,6 +1538,11 @@
                 "pagination": {
                     "$ref": "#/$defs/tableWidgetPagination"
                 },
+                "paginate": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Model-backed only: rows per server page. Defaults to 5 when omitted. If `pagination` is an object with `per_page`, that value takes precedence."
+                },
                 "showColumnsVisibility": {
                     "type": "boolean",
                     "description": "Show or hide the column visibility dropdown in the widget table toolbar."
@@ -1563,6 +1574,254 @@
                 },
                 "sorting": {
                     "$ref": "#/$defs/defaultSort"
+                }
+            },
+            "additionalProperties": false
+        },
+        "gridCardSlotMap": {
+            "type": "object",
+            "description": "Optional card slot map for `type: grid` widgets. Keys reference column ids on the widget. When omitted, slots auto-derive from columns.",
+            "properties": {
+                "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Column id used as the card title."
+                },
+                "subtitle": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Column id used as the card subtitle."
+                },
+                "image": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Column id whose value is rendered as the card media (URL or path)."
+                },
+                "badges": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "description": "Column ids rendered as badge chips on the card."
+                },
+                "body": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "description": "Column ids rendered as label/value pairs in the card body."
+                },
+                "footer_actions": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Column id of an `actions` column rendered in the card footer."
+                }
+            },
+            "additionalProperties": false
+        },
+        "gridMediaCardSlotMap": {
+            "type": "object",
+            "description": "Card slot map for grid widgets that emphasize image/media columns. Currently matches `gridCardSlotMap`; may gain media-specific keys later.",
+            "properties": {
+                "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Column id used as the card title."
+                },
+                "subtitle": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Column id used as the card subtitle."
+                },
+                "image": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Column id whose value is rendered as the card media (URL or path)."
+                },
+                "badges": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "description": "Column ids rendered as badge chips on the card."
+                },
+                "body": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "description": "Column ids rendered as label/value pairs in the card body."
+                },
+                "footer_actions": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Column id of an `actions` column rendered in the card footer."
+                }
+            },
+            "additionalProperties": false
+        },
+        "gridWidgetProviderBacked": {
+            "type": "object",
+            "required": [
+                "type",
+                "provider"
+            ],
+            "description": "Provider-backed grid widget: same options as `tableWidgetProviderBacked` but rendered as a responsive card grid.",
+            "properties": {
+                "type": {
+                    "const": "grid"
+                },
+                "provider": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "description": {
+                    "type": "string"
+                },
+                "icon": {
+                    "type": "string"
+                },
+                "columns": {
+                    "$ref": "#/$defs/tableWidgetColumns",
+                    "description": "Optional YAML column definitions. When present, take precedence over any columns returned by the widget provider at runtime."
+                },
+                "actions": {
+                    "$ref": "#/$defs/tableWidgetToolbarActionsYaml"
+                },
+                "filters": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/$defs/filterDefinition"
+                    }
+                },
+                "pagination": {
+                    "$ref": "#/$defs/tableWidgetPagination"
+                },
+                "showColumnsVisibility": {
+                    "type": "boolean",
+                    "description": "Show or hide the column visibility dropdown in the widget grid toolbar."
+                },
+                "empty_state": {
+                    "$ref": "#/$defs/tableWidgetEmptyState"
+                },
+                "default_sort": {
+                    "$ref": "#/$defs/defaultSort"
+                },
+                "data": {
+                    "$ref": "#/$defs/tableWidgetResolvedData"
+                },
+                "card": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/gridCardSlotMap"
+                        },
+                        {
+                            "$ref": "#/$defs/gridMediaCardSlotMap"
+                        }
+                    ]
+                },
+                "span": {
+                    "$ref": "#/$defs/spanValue"
+                }
+            },
+            "additionalProperties": false
+        },
+        "gridWidgetModelBacked": {
+            "type": "object",
+            "required": [
+                "type",
+                "model",
+                "columns"
+            ],
+            "description": "Model-backed grid widget: same options as `tableWidgetModelBacked` but rendered as a responsive card grid.",
+            "properties": {
+                "type": {
+                    "const": "grid"
+                },
+                "model": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "entity": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Flatpack entity slug for toolbar list actions; alias of list_entity."
+                },
+                "list_entity": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Flatpack entity slug for toolbar list actions (create, …). May be inferred when omitted."
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "description": {
+                    "type": "string"
+                },
+                "icon": {
+                    "type": "string"
+                },
+                "columns": {
+                    "$ref": "#/$defs/tableWidgetColumns"
+                },
+                "actions": {
+                    "$ref": "#/$defs/tableWidgetToolbarActionsYaml"
+                },
+                "bulk_actions": {
+                    "$ref": "#/$defs/tableWidgetBulkActionsYaml"
+                },
+                "filters": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/$defs/filterDefinition"
+                    }
+                },
+                "pagination": {
+                    "$ref": "#/$defs/tableWidgetPagination"
+                },
+                "paginate": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Model-backed only: cards per server page. Defaults to 6 when omitted. If `pagination` is an object with `per_page`, that value takes precedence."
+                },
+                "showColumnsVisibility": {
+                    "type": "boolean",
+                    "description": "Show or hide the column visibility dropdown in the widget grid toolbar."
+                },
+                "empty_state": {
+                    "$ref": "#/$defs/tableWidgetEmptyState"
+                },
+                "default_sort": {
+                    "$ref": "#/$defs/defaultSort"
+                },
+                "data": {
+                    "$ref": "#/$defs/tableWidgetResolvedData"
+                },
+                "card": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/gridCardSlotMap"
+                        },
+                        {
+                            "$ref": "#/$defs/gridMediaCardSlotMap"
+                        }
+                    ]
+                },
+                "span": {
+                    "$ref": "#/$defs/spanValue"
                 }
             },
             "additionalProperties": false

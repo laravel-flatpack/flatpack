@@ -54,6 +54,11 @@ final readonly class NormalizeWidgetDefinitionsPipe
                     $state->log,
                     $entry['widgetId'],
                 ),
+                'grid' => $this->support->normalizeGridWidgetConfig(
+                    $entry['definition'],
+                    $state->log,
+                    $entry['widgetId'],
+                ),
                 default => null,
             };
 
