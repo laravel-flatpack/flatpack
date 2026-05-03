@@ -1,0 +1,8 @@
+# Example Testbench config (copy to `testbench.yaml` if you override locally).
+providers:
+    - Flatpack\Providers\FlatpackServiceProvider
+
+workbench:
+    discovers:
+        web: false
+        api: false

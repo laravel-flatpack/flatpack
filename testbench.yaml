@@ -1,0 +1,10 @@
+# Orchestra Testbench CLI (`composer run schema:keys`, etc.).
+# Required: register Flatpack so Artisan exposes `flatpack:*` commands (YAML replaces defaults entirely).
+providers:
+    - Flatpack\Providers\FlatpackServiceProvider
+
+# Disable Workbench default routes so tooling only sees Flatpack routes where relevant.
+workbench:
+    discovers:
+        web: false
+        api: false

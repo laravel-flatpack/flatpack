@@ -10,6 +10,8 @@ Forms and lists normalization read **allowlists** derived from `resources/schema
 
 From the package root (with dev dependencies installed, so `vendor/bin/testbench` exists):
 
+The repo ships **`testbench.yaml`** registering `Flatpack\Providers\FlatpackServiceProvider`. If you maintain a **custom** `testbench.yaml`, merge in that `providers` entry—otherwise Orchestra Testbench loads your file **instead of** defaults and Artisan will have no `flatpack:*` commands.
+
 ```bash
 composer run schema:keys:generate
 ```

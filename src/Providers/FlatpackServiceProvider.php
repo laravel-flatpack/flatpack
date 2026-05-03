@@ -2,12 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Flatpack;
+namespace Flatpack\Providers;
 
 use Closure;
 use Flatpack\Console\Commands\GenerateCompositionSchemaKeysCommand;
 use Flatpack\Console\Commands\MakeCompositionCommand;
 use Flatpack\Contracts\Authorization\FlatpackAuthorizer;
+use Flatpack\Flatpack;
 use Flatpack\Http\FlatpackRequest;
 use Flatpack\Http\Middleware\ConfigureFlatpackViteAssets;
 use Flatpack\Http\Middleware\SetFlatpackInertiaRootView;
@@ -37,7 +38,7 @@ final class FlatpackServiceProvider extends ServiceProvider
     #[Override]
     public function register(): void
     {
-        $this->mergeConfigFrom(dirname(__DIR__) . '/config/flatpack.php', 'flatpack');
+        $this->mergeConfigFrom(dirname(__DIR__, 2) . '/config/flatpack.php', 'flatpack');
         $this->registerContainerBindings();
     }
 
@@ -54,8 +55,8 @@ final class FlatpackServiceProvider extends ServiceProvider
 
     protected function registerContainerBindings(): void
     {
-        $this->app->register(FlatpackCompositionServiceProvider::class);
-        $this->app->register(FlatpackNavigationServiceProvider::class);
+        $this->app->register(CompositionServiceProvider::class);
+        $this->app->register(NavigationServiceProvider::class);
         $this->app->singleton(DemoCatalogFactory::class);
         $this->app->singleton(TableWidgetDataResolver::class);
         $this->app->scoped(CompositionDebugContext::class);
@@ -129,14 +130,14 @@ final class FlatpackServiceProvider extends ServiceProvider
 
     protected function packageBuildPath(): string
     {
-        return dirname(__DIR__) . '/public/build';
+        return dirname(__DIR__, 2) . '/public/build';
     }
 
     protected function publishAssets(): void
     {
         $this->publishes([
-            dirname(__DIR__) . '/public' => public_path('vendor/flatpack'),
-            dirname(__DIR__) . '/config/flatpack.php' => config_path('flatpack.php'),
+            dirname(__DIR__, 2) . '/public' => public_path('vendor/flatpack'),
+            dirname(__DIR__, 2) . '/config/flatpack.php' => config_path('flatpack.php'),
         ], 'flatpack');
     }
 
@@ -153,12 +154,12 @@ final class FlatpackServiceProvider extends ServiceProvider
         Route::middleware((array) config('flatpack.http.middleware', ['web']))
             ->prefix((string) config('flatpack.http.prefix', 'flatpack'))
             ->name('flatpack.')
-            ->group(dirname(__DIR__) . '/routes/web.php');
+            ->group(dirname(__DIR__, 2) . '/routes/web.php');
     }
 
     protected function registerViews(): void
     {
-        $this->loadViewsFrom(dirname(__DIR__) . '/resources/views', 'flatpack');
+        $this->loadViewsFrom(dirname(__DIR__, 2) . '/resources/views', 'flatpack');
     }
 
     /**

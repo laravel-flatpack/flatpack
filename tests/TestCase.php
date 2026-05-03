@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Flatpack\Tests;
 
-use Flatpack\FlatpackServiceProvider;
+use Flatpack\Providers\FlatpackServiceProvider;
 use Flatpack\Tests\Models\Post;
 use Flatpack\Tests\Models\User;
 use Flatpack\Tests\Policies\PostPolicy;

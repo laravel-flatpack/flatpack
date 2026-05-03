@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Flatpack;
+namespace Flatpack\Providers;
 
 use Flatpack\Composition\EntityComposition;
 use Flatpack\Services\Navigation\BreadcrumbsBuilder;
@@ -15,7 +15,7 @@ use Override;
 /**
  * Menu and breadcrumb graph bindings (depends on {@see EntityComposition}).
  */
-final class FlatpackNavigationServiceProvider extends ServiceProvider
+final class NavigationServiceProvider extends ServiceProvider
 {
     #[Override]
     public function register(): void

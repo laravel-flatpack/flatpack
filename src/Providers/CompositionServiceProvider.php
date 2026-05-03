@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Flatpack;
+namespace Flatpack\Providers;
 
 use Flatpack\Actions\ActionModelClassResolver;
 use Flatpack\Composition\CompositionValues;
@@ -24,7 +24,7 @@ use Override;
 /**
  * Composition graph, YAML loading, and schema-adjacent runtime singletons.
  */
-final class FlatpackCompositionServiceProvider extends ServiceProvider
+final class CompositionServiceProvider extends ServiceProvider
 {
     #[Override]
     public function register(): void
