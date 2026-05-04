@@ -321,7 +321,7 @@ export function SchemaFieldsRenderer({
                             >
                                 <section
                                     aria-labelledby={headingId}
-                                    className="flex w-full flex-col gap-2"
+                                    className="flex w-full flex-col gap-2 -mt-1"
                                 >
                                     <CollapsibleTrigger asChild>
                                         <button
@@ -356,7 +356,7 @@ export function SchemaFieldsRenderer({
                         <section
                             key={stableFieldsetBlockKey(block)}
                             aria-labelledby={headingId}
-                            className="flex w-full flex-col gap-2"
+                            className="flex w-full flex-col gap-2 -mt-1"
                         >
                             <div
                                 id={headingId}

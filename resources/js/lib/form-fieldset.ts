@@ -23,7 +23,7 @@ export type FieldsetBlock =
           entries: SchemaFieldRenderEntry[];
       };
 
-/** Matches PHP {@see FieldsetCanonicalizer} icon normalization for registry lookup. */
+/** Matches PHP {@see \Flatpack\Schema\Forms\Normalization\FieldsetCanonicalizer} icon normalization for registry lookup. */
 export function normalizeFieldsetIconKey(raw: string): string {
     return raw.trim().toLowerCase().replace(/_/g, '-');
 }

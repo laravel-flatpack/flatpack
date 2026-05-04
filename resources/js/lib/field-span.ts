@@ -12,7 +12,7 @@ const NAMED: readonly FieldSpanNamed[] = [
 
 const NAMED_SET = new Set<string>(NAMED);
 
-/** Fraction aliases in YAML → canonical named span (matches PHP {@see FieldSpanCanonicalizer}). */
+/** Fraction aliases in YAML → canonical named span (matches PHP {@see \Flatpack\Schema\Forms\Normalization\FieldSpanCanonicalizer}). */
 const FRACTION_TO_NAMED: Record<string, FieldSpanNamed> = {
     '1/2': 'half',
     '2/3': 'two_thirds',
