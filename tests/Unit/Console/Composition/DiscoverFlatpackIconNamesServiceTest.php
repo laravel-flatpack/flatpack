@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Flatpack\Console\Composition\DiscoverFlatpackIconNamesService;
+use Flatpack\Console\Support\DiscoverFlatpackIconNamesService;
 use Flatpack\Tests\TestCase;
 use Illuminate\Filesystem\Filesystem;
 

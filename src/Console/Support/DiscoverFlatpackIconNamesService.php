@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Flatpack\Console\Composition;
+namespace Flatpack\Console\Support;
 
 use Illuminate\Filesystem\Filesystem;
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Flatpack\Console\Composition\ResolveNextNavOrderService;
+use Flatpack\Console\Support\ResolveNextNavOrderService;
 use Flatpack\Tests\TestCase;
 use Illuminate\Support\Facades\File;
 
