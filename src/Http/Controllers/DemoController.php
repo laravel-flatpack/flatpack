@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Flatpack\Http\Controllers;
 
-use Flatpack\Demo\DemoCatalogFactory;
 use Flatpack\Http\FlatpackResponse;
+use Flatpack\Support\Demo\CatalogFactory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Response;
@@ -19,17 +19,18 @@ use Inertia\Response;
 final readonly class DemoController
 {
     public function __construct(
-        private DemoCatalogFactory $demoCatalog,
+        private CatalogFactory $catalogFactory,
+
     ) {}
 
     public function index(Request $request): Response|JsonResponse
     {
-        $catalogId = $this->demoCatalog->normalizeCatalogId($request->query('catalog'));
+        $catalogId = $this->catalogFactory->normalizeCatalogId($request->query('catalog'));
 
         return FlatpackResponse::inertia('demo/catalog', [
             'catalogId' => $catalogId,
             'query' => $request->query(),
-            'document' => $this->demoCatalog->buildDocument($catalogId),
+            'document' => $this->catalogFactory->buildDocument($catalogId),
         ]);
     }
 }

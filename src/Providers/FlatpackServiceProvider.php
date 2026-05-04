@@ -8,7 +8,6 @@ use Closure;
 use Flatpack\Console\Commands\GenerateCompositionSchemaKeysCommand;
 use Flatpack\Console\Commands\MakeCompositionCommand;
 use Flatpack\Contracts\Authorization\FlatpackAuthorizer;
-use Flatpack\Demo\DemoCatalogFactory;
 use Flatpack\Flatpack;
 use Flatpack\Http\FlatpackRequest;
 use Flatpack\Http\Middleware\ConfigureFlatpackViteAssets;
@@ -19,6 +18,7 @@ use Flatpack\Navigation\MenuBuilder;
 use Flatpack\Services\Widgets\TableWidgetDataResolver;
 use Flatpack\Support\AuthenticationRedirectCallbacks;
 use Flatpack\Support\CompositionDebugContext;
+use Flatpack\Support\Demo\CatalogFactory;
 use Flatpack\Support\PolicyAwareAuthorizer;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Config\Repository;
@@ -57,7 +57,7 @@ final class FlatpackServiceProvider extends ServiceProvider
     {
         $this->app->register(CompositionServiceProvider::class);
         $this->app->register(NavigationServiceProvider::class);
-        $this->app->singleton(DemoCatalogFactory::class);
+        $this->app->singleton(CatalogFactory::class);
         $this->app->singleton(TableWidgetDataResolver::class);
         $this->app->scoped(CompositionDebugContext::class);
         $this->registerContractBindings();
