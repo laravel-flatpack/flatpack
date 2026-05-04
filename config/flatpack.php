@@ -170,33 +170,35 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Uploads (file-upload field)
+    | File Uploads
     |--------------------------------------------------------------------------
     |
-    | Defaults for `type: file-upload` fields in YAML compositions.
     |
-    | Disks: when a field omits `disk`, url-mode uploads use `file_disk` and
-    | relation-mode uploads use `media_disk`. Each resolves like a typical Laravel
-    | host: optional `FLATPACK_UPLOADS_*_DISK`, then `FILESYSTEM_DISK`, then `local`.
-    | Point these at any disk defined in the host app's `config/filesystems.php`.
-    | Per-field YAML `disk` still wins when set.
-    |
-    | Limits: `max_size_kb` and `max_files` are global ceilings for the AJAX upload
-    | endpoint. Effective limits are min(YAML field value, these config values); if
-    | the field omits a limit, the config value is used. The React field uses YAML
-    | hints for client-side checks; the server always applies these caps.
-    |
-    | `media_model` is optional and can point to a host app polymorphic attachment
-    | model (for example, a MediaLibrary `Media` model or a custom equivalent).
+    | Disks: omitted YAML `disk` uses `file_disk` for every mode (url / image / file / relation).
+    | Use YAML `disk: media` to store on `media_disk` (not a Laravel disk named `media`).
+    | Env: `FLATPACK_UPLOADS_*_DISK`, then `FILESYSTEM_DISK`, then `local`; disks live in `config/filesystems.php`.
     |
     */
     'uploads' => [
-        'media_model' => env('FLATPACK_UPLOADS_MEDIA_MODEL'),
-        'media_disk' => env('FLATPACK_UPLOADS_MEDIA_DISK', env('FILESYSTEM_DISK', 'local')),
         'file_disk' => env('FLATPACK_UPLOADS_FILE_DISK', env('FILESYSTEM_DISK', 'local')),
-        'visibility' => env('FLATPACK_UPLOADS_VISIBILITY', 'public'),
+        'media_disk' => env('FLATPACK_UPLOADS_MEDIA_DISK', env('FILESYSTEM_DISK', 'local')),
+
+        'media_model' => env('FLATPACK_UPLOADS_MEDIA_MODEL'),
+
+        /*
+         | Limits: `max_size_kb` and `max_files` cap AJAX uploads (effective = min(YAML, config);
+         | YAML omitted uses config alone). The React field uses YAML for client hints; the server
+         | always enforces these caps.
+         */
         'max_size_kb' => (int) env('FLATPACK_UPLOADS_MAX_SIZE_KB', 10240),
         'max_files' => (int) env('FLATPACK_UPLOADS_MAX_FILES', 10),
+
+        /*
+        | TTL for signed URLs used when files are not web-addressable (private disk / visibility).
+        | Each form load regenerates hydration URLs; increase if embeds must stay valid longer.
+        */
+        'signed_url_ttl_minutes' => (int) env('FLATPACK_UPLOADS_SIGNED_URL_TTL_MINUTES', 10_080),
+
     ],
 
     /*

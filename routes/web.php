@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Flatpack\Http\Controllers\DashboardController;
 use Flatpack\Http\Controllers\EntityActionController;
 use Flatpack\Http\Controllers\FileUploadController;
+use Flatpack\Http\Controllers\FileUploadServeController;
 use Flatpack\Http\Controllers\FormController;
 use Flatpack\Http\Controllers\ListController;
 use Flatpack\Http\Controllers\RelationOptionsController;
@@ -25,6 +26,9 @@ require __DIR__ . '/guest.php';
 |
 */
 Route::middleware(['auth:' . config('flatpack.security.guard', 'web'), EnsureFlatpackAccess::class])->group(function () {
+    /** Signed URL stream for private-disk uploads (used by {@code FileUploadBrowserUrl}). */
+    Route::get('files/serve', FileUploadServeController::class)->name('uploads.serve');
+
     /** Ends the current authenticated Flatpack session. */
     Route::post('logout', [SessionController::class, 'destroy'])->name('logout');
 

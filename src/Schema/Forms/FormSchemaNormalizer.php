@@ -15,6 +15,7 @@ use Flatpack\Schema\Forms\Normalization\Pipes\WarnUnknownFormActionsNestedKeysPi
 use Flatpack\Schema\RelationFieldQuery;
 use Flatpack\Schema\ResolvesLaravelPipeline;
 use Flatpack\Services\Forms\FormRelationValuesHydrator;
+use Flatpack\Services\Uploads\FileUploadBrowserUrl;
 use Flatpack\Support\CompositionDebugContext;
 use Flatpack\Support\CompositionDebugLog;
 use Illuminate\Database\Eloquent\Model;
@@ -34,6 +35,7 @@ final readonly class FormSchemaNormalizer
         private ?FormRelationValuesHydrator $relationValuesHydrator = null,
         private ?FormEmbeddedTableRelationTypeResolver $tableRelationTypeResolver = null,
         private ?CompositionDebugContext $compositionDebugContext = null,
+        private ?FileUploadBrowserUrl $fileUploadBrowserUrl = null,
     ) {}
 
     /**
@@ -137,6 +139,8 @@ final readonly class FormSchemaNormalizer
 
             if (FormFieldType::isRelationBackedFileUpload($fieldDefinition)) {
                 $values[$id] = $this->relationFileUploadValue($model, $fieldDefinition);
+            } elseif (FormFieldType::isUrlOrImageModeFileUpload($fieldDefinition)) {
+                $values[$id] = $this->urlFileUploadValue($model, $id, $fieldDefinition);
             } elseif (FormFieldType::shouldDeferToRelationSync($fieldDefinition)) {
                 $values[$id] = $this->relationHydrator()->hydrate($model, $id, $fieldDefinition, $debug);
             } elseif (FormFieldType::isSingleRelationCombobox($fieldDefinition)) {
@@ -252,6 +256,11 @@ final readonly class FormSchemaNormalizer
         return $this->relationValuesHydrator ?? app(FormRelationValuesHydrator::class);
     }
 
+    private function fileUploadBrowserUrl(): FileUploadBrowserUrl
+    {
+        return $this->fileUploadBrowserUrl ?? app(FileUploadBrowserUrl::class);
+    }
+
     /**
      * @param  array<string, mixed>  $fieldDefinition
      * @return list<array<string, mixed>>
@@ -266,17 +275,103 @@ final readonly class FormSchemaNormalizer
         $related = $model->getRelation($relation);
         if ($related instanceof \Illuminate\Database\Eloquent\Collection) {
             return $related
-                ->map(static fn (Model $item): array => FileUploadRelationHydrator::fragmentFromRelatedModel($item))
+                ->map(fn (Model $item): array => $this->fileUploadBrowserUrl()->ensureFragmentBrowseUrl(
+                    FileUploadRelationHydrator::fragmentFromRelatedModel($item),
+                    $fieldDefinition,
+                ))
                 ->values()
                 ->all();
         }
 
         if ($related instanceof Model) {
             return [
-                FileUploadRelationHydrator::fragmentFromRelatedModel($related),
+                $this->fileUploadBrowserUrl()->ensureFragmentBrowseUrl(
+                    FileUploadRelationHydrator::fragmentFromRelatedModel($related),
+                    $fieldDefinition,
+                ),
             ];
         }
 
         return [];
+    }
+
+    /**
+     * @param  array<string, mixed>  $fieldDefinition
+     * @return array<string, mixed>|list<array<string, mixed>>|null
+     */
+    private function urlFileUploadValue(Model $model, string $fieldId, array $fieldDefinition): ?array
+    {
+        $targetColumn = trim((string) ($fieldDefinition['target_column'] ?? ''));
+        $sourceColumn = $targetColumn !== '' ? $targetColumn : $fieldId;
+        $stored = $model->getAttribute($sourceColumn);
+
+        $multiple = ($fieldDefinition['multiple'] ?? false) === true;
+        $persistAs = trim((string) ($fieldDefinition['persist_as'] ?? 'string'));
+        $urls = $this->storedUrlFileUploadUrls($stored, $multiple, $persistAs);
+        $browser = $this->fileUploadBrowserUrl();
+        $fragments = array_map(
+            fn (string $segment): array => [
+                'url' => $browser->resolveBrowseUrlForField($fieldDefinition, $segment),
+            ],
+            $urls,
+        );
+
+        if ($multiple) {
+            return $fragments;
+        }
+
+        return $fragments[0] ?? null;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function storedUrlFileUploadUrls(mixed $stored, bool $multiple, string $persistAs): array
+    {
+        if (is_string($stored)) {
+            if (! $multiple) {
+                $single = trim($stored);
+
+                return $single === '' ? [] : [$single];
+            }
+
+            if ($persistAs !== 'string') {
+                $single = trim($stored);
+
+                return $single === '' ? [] : [$single];
+            }
+
+            return array_values(array_filter(array_map(
+                trim(...),
+                explode(',', $stored),
+            ), static fn (string $item): bool => $item !== ''));
+        }
+
+        if (! is_array($stored)) {
+            return [];
+        }
+
+        $urls = [];
+        foreach ($stored as $item) {
+            if (is_string($item)) {
+                $value = trim($item);
+                if ($value !== '') {
+                    $urls[] = $value;
+                }
+
+                continue;
+            }
+
+            if (! is_array($item)) {
+                continue;
+            }
+
+            $value = trim((string) ($item['url'] ?? $item['path'] ?? ''));
+            if ($value !== '') {
+                $urls[] = $value;
+            }
+        }
+
+        return $urls;
     }
 }

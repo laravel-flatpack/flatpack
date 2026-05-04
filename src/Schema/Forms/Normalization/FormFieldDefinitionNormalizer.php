@@ -232,7 +232,7 @@ final class FormFieldDefinitionNormalizer
         ?CompositionDebugLog $log,
     ): ?array {
         $mode = $this->readTrimmedString($fieldDefinition, 'mode', 'url');
-        if (! in_array($mode, ['relation', 'url'], true)) {
+        if (! in_array($mode, ['relation', 'url', 'image', 'file'], true)) {
             $mode = 'url';
         }
         $fieldDefinition['mode'] = $mode;

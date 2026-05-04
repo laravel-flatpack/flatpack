@@ -220,7 +220,7 @@ export type FlatpackFormCompositionFieldFileUploadYaml = {
     required?: boolean;
     rules?: FlatpackFormCompositionValidationRulesYaml;
     value?: unknown;
-    mode: 'relation' | 'url';
+    mode: 'relation' | 'url' | 'image' | 'file';
     multiple?: boolean;
     max_files?: number;
     max_size_kb?: number;

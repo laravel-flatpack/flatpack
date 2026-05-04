@@ -161,7 +161,7 @@ export type FileUploadStoredFile = {
     collection?: string;
 };
 type FileUploadFieldProps = FormFieldBase & {
-    mode: 'relation' | 'url';
+    mode: 'relation' | 'url' | 'image' | 'file';
     multiple?: boolean;
     max_files?: number;
     max_size_kb?: number;

@@ -308,8 +308,7 @@ final class ResolveFormPayload
      */
     private function isFileUploadField(array $fieldDefinition): bool
     {
-        return FormFieldType::normalizeYamlType(trim((string) ($fieldDefinition['type'] ?? ''))) === 'file-upload'
-            && trim((string) ($fieldDefinition['mode'] ?? 'url')) === 'url';
+        return FormFieldType::isUrlOrImageModeFileUpload($fieldDefinition);
     }
 
     /**
@@ -340,9 +339,11 @@ final class ResolveFormPayload
                 continue;
             }
 
-            $url = trim((string) ($item['url'] ?? $item['path'] ?? ''));
-            if ($url !== '') {
-                $urls[] = $url;
+            $path = trim((string) ($item['path'] ?? ''));
+            $url = trim((string) ($item['url'] ?? ''));
+            $persisted = $path !== '' ? $path : $url;
+            if ($persisted !== '') {
+                $urls[] = $persisted;
             }
         }
 

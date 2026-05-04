@@ -5,34 +5,30 @@ declare(strict_types=1);
 namespace Flatpack\Services\Uploads;
 
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 
 final readonly class FileUploadStorage
 {
+    public function __construct(
+        private FileUploadBrowserUrl $fileUploadBrowserUrl,
+    ) {}
+
     /**
      * @param  array<string, mixed>  $fieldDefinition
      * @return array<string, mixed>
      */
     public function storeFile(array $fieldDefinition, UploadedFile $file): array
     {
-        $mode = trim((string) ($fieldDefinition['mode'] ?? 'url'));
-        $defaultDisk = $mode === 'relation'
-            ? (string) config('flatpack.uploads.media_disk', 'public')
-            : (string) config('flatpack.uploads.file_disk', 'public');
-        $disk = trim((string) ($fieldDefinition['disk'] ?? $defaultDisk));
-        if ($disk === '') {
-            $disk = $defaultDisk;
-        }
+        $disk = FileUploadFieldDisk::resolve(
+            isset($fieldDefinition['disk']) ? (string) $fieldDefinition['disk'] : null,
+        );
 
         $directory = trim((string) ($fieldDefinition['directory'] ?? ''));
-        $visibility = trim((string) ($fieldDefinition['visibility'] ?? (string) config('flatpack.uploads.visibility', 'public')));
+        $visibility = FileUploadDiskVisibility::resolve($disk, $fieldDefinition);
 
         $path = $directory !== ''
             ? $file->store($directory, ['disk' => $disk, 'visibility' => $visibility])
             : $file->store('', ['disk' => $disk, 'visibility' => $visibility]);
-        /** @var \Illuminate\Filesystem\FilesystemAdapter $storage */
-        $storage = Storage::disk($disk);
-        $url = trim((string) $storage->url($path));
+        $url = $this->fileUploadBrowserUrl->urlForStoredUploadMetadata($fieldDefinition, $disk, $path);
 
         return [
             'disk' => $disk,

@@ -1481,9 +1481,11 @@
             "type": "string",
             "enum": [
                 "relation",
-                "url"
+                "url",
+                "image",
+                "file"
             ],
-            "description": "Persistence strategy for uploaded files: related records or URL(s) in model attributes."
+            "description": "Persistence strategy for uploaded files: related records or URL(s) in model attributes. `image` matches URL persistence but shows image previews in the form UI. `file` matches URL persistence but shows a file-card preview (icon, name, size) instead of a bare filename row."
         },
         "fileUploadPersistAs": {
             "type": "string",
@@ -1556,7 +1558,8 @@
                 },
                 "disk": {
                     "type": "string",
-                    "minLength": 1
+                    "minLength": 1,
+                    "description": "Laravel filesystem disk name, or the reserved token `media` (maps to config `flatpack.uploads.media_disk`). When omitted, uploads use `flatpack.uploads.file_disk`."
                 },
                 "visibility": {
                     "type": "string",
@@ -1625,6 +1628,23 @@
                         "properties": {
                             "mode": {
                                 "const": "url"
+                            }
+                        },
+                        "required": [
+                            "mode"
+                        ]
+                    },
+                    "then": {
+                        "required": [
+                            "target_column"
+                        ]
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "mode": {
+                                "const": "file"
                             }
                         },
                         "required": [

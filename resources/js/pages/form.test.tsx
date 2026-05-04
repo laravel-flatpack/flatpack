@@ -124,7 +124,7 @@ vi.mock('@inertiajs/react', () => ({
                 (
                     url: string,
                     options?: {
-                        onSuccess?: () => void;
+                        onSuccess?: (page?: unknown) => void;
                         onError?: (errors: Record<string, unknown>) => void;
                     },
                 ) => {
@@ -133,9 +133,9 @@ vi.mock('@inertiajs/react', () => ({
                         : data;
                     const callbackOptions = {
                         ...options,
-                        onSuccess: () => {
+                        onSuccess: (page?: unknown) => {
                             clearErrors();
-                            options?.onSuccess?.();
+                            options?.onSuccess?.(page);
                         },
                         onError: (nextErrors: Record<string, unknown>) => {
                             setErrors(nextErrors as Record<string, string>);
@@ -375,6 +375,64 @@ describe('FlatpackFormPage', () => {
                 onSuccess: expect.any(Function),
                 onError: expect.any(Function),
             }),
+        );
+    });
+
+    it('rehydrates file-upload value after successful submit', async () => {
+        const user = userEvent.setup();
+
+        renderFlatpackFormPage(
+            <FlatpackFormPage
+                entity="posts"
+                name="Posts"
+                record="42"
+                mode="edit"
+                schema={{
+                    fields: {
+                        avatar: {
+                            type: 'file-upload',
+                            mode: 'url',
+                            label: 'Avatar',
+                        },
+                    },
+                }}
+                values={{}}
+                form_actions={[
+                    {
+                        id: 'save',
+                        label: 'Save',
+                        action: 'save',
+                        submit: true,
+                        variant: 'default',
+                    },
+                ]}
+            />,
+        );
+
+        expect(await screen.findByTestId('field-avatar')).toHaveTextContent(
+            'Avatar:',
+        );
+
+        await user.click(screen.getByRole('button', { name: 'Save' }));
+        await waitFor(() => {
+            expect(hoisted.post).toHaveBeenCalledTimes(1);
+        });
+
+        const options = hoisted.post.mock.calls[0]?.[2] as
+            | { onSuccess?: (page?: unknown) => void }
+            | undefined;
+        options?.onSuccess?.({
+            props: {
+                entity: 'posts',
+                mode: 'edit',
+                values: {
+                    avatar: [{ url: '/storage/users/new-avatar.png' }],
+                },
+            },
+        });
+
+        expect(await screen.findByTestId('field-avatar')).toHaveTextContent(
+            '/storage/users/new-avatar.png',
         );
     });
 

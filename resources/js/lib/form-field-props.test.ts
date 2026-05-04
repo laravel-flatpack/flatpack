@@ -198,10 +198,67 @@ describe('mapFormFieldPropsToComponentProps', () => {
         expect(out).toMatchObject({
             id: 'field-1',
             fieldId: 'field-1',
+            mode: 'url',
             maxFiles: 3,
             maxSizeKb: 2048,
             accept: ['image/png'],
             uploadEndpoint: '/flatpack/users/upload',
+        });
+    });
+
+    it('maps file-upload image mode to component props', () => {
+        const props: FormFieldProps = {
+            type: 'file-upload',
+            label: 'Cover',
+            mode: 'image',
+            multiple: false,
+            target_column: 'cover_url',
+        };
+        const out = mapFormFieldPropsToComponentProps(props, {
+            ...context,
+            entity: 'pages',
+        });
+        expect(out).toMatchObject({
+            mode: 'image',
+            uploadEndpoint: '/flatpack/pages/upload',
+        });
+    });
+
+    it('maps file-upload file mode to component props', () => {
+        const props: FormFieldProps = {
+            type: 'file-upload',
+            label: 'Attachment',
+            mode: 'file',
+            multiple: false,
+            target_column: 'attachment_path',
+        };
+        const out = mapFormFieldPropsToComponentProps(props, {
+            ...context,
+            entity: 'posts',
+        });
+        expect(out).toMatchObject({
+            mode: 'file',
+            uploadEndpoint: '/flatpack/posts/upload',
+        });
+    });
+
+    it('maps file-upload max file and size limits from camelCase keys', () => {
+        const props = {
+            type: 'file-upload',
+            label: 'Docs',
+            mode: 'url' as const,
+            multiple: true,
+            maxFiles: 6,
+            maxSizeKb: 5120,
+        } as FormFieldProps;
+        const out = mapFormFieldPropsToComponentProps(props, {
+            ...context,
+            entity: 'posts',
+        });
+        expect(out).toMatchObject({
+            maxFiles: 6,
+            maxSizeKb: 5120,
+            uploadEndpoint: '/flatpack/posts/upload',
         });
     });
 

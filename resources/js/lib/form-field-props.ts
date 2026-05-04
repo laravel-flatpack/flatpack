@@ -195,15 +195,17 @@ function mapTimePicker(props: FormFieldProps, ctx: FormFieldRenderContext) {
 
 function mapFileUpload(props: FormFieldProps, ctx: FormFieldRenderContext) {
     const p = props as Extract<FormFieldProps, { type: 'file-upload' }>;
+    const raw = p as Record<string, unknown>;
     const entity = typeof ctx.entity === 'string' ? ctx.entity.trim() : '';
     return {
         id: ctx.fieldId,
         label: p.label,
         showLabel: p.showLabel,
         helperText: p.helperText,
+        mode: p.mode,
         multiple: p.multiple ?? false,
-        maxFiles: p.max_files,
-        maxSizeKb: p.max_size_kb,
+        maxFiles: raw.max_files ?? raw.maxFiles,
+        maxSizeKb: raw.max_size_kb ?? raw.maxSizeKb,
         accept: p.accept,
         uploadEndpoint:
             entity !== '' ? route('flatpack.entities.upload', { entity }) : '',

@@ -127,6 +127,22 @@ final class FormFieldType
     }
 
     /**
+     * URL-column persistence for file-upload (`mode: url`, `image`, or `file`).
+     *
+     * @param  array<string, mixed>  $fieldDefinition
+     */
+    public static function isUrlOrImageModeFileUpload(array $fieldDefinition): bool
+    {
+        if (self::normalizeYamlType(trim((string) ($fieldDefinition['type'] ?? ''))) !== 'file-upload') {
+            return false;
+        }
+
+        $mode = trim((string) ($fieldDefinition['mode'] ?? 'url'));
+
+        return in_array($mode, ['url', 'image', 'file'], true);
+    }
+
+    /**
      * @param  array<string, mixed>  $fieldDefinition
      */
     private static function relationName(array $fieldDefinition): string

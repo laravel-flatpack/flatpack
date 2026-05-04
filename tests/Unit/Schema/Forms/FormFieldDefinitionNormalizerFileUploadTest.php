@@ -39,6 +39,40 @@ describe('FormFieldDefinitionNormalizer file-upload relation callback', function
             ->and($out['callback'])->toBe('processGalleryFiles');
     });
 
+    it('preserves image mode and sets target_column when omitted', function () {
+        $n = new FormFieldDefinitionNormalizer;
+        $out = $n->normalize(
+            [
+                'type' => 'file-upload',
+                'label' => 'Photo',
+                'mode' => 'image',
+            ],
+            'photo',
+            null,
+        );
+
+        expect($out)->not->toBeNull()
+            ->and($out['mode'])->toBe('image')
+            ->and($out['target_column'])->toBe('photo');
+    });
+
+    it('preserves file mode and sets target_column when omitted', function () {
+        $n = new FormFieldDefinitionNormalizer;
+        $out = $n->normalize(
+            [
+                'type' => 'file-upload',
+                'label' => 'Document',
+                'mode' => 'file',
+            ],
+            'document',
+            null,
+        );
+
+        expect($out)->not->toBeNull()
+            ->and($out['mode'])->toBe('file')
+            ->and($out['target_column'])->toBe('document');
+    });
+
     it('defaults target_column from field label in url mode when omitted', function () {
         $n = new FormFieldDefinitionNormalizer;
         $out = $n->normalize(

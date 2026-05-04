@@ -8,6 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 
 use function Pest\Laravel\actingAs;
 
@@ -164,4 +165,25 @@ YAML);
     } finally {
         File::deleteDirectory($tempPath);
     }
+});
+
+test('flatpack signed files serve streams existing disk path', function () {
+    $disk = 'local';
+    Storage::fake($disk);
+    $path = 'private/demo.bin';
+    Storage::disk($disk)->put($path, 'demo-bytes');
+
+    /** @var User $user */
+    $user = User::factory()->createOne();
+
+    $url = URL::temporarySignedRoute(
+        'flatpack.uploads.serve',
+        now()->addMinutes(10),
+        ['disk' => $disk, 'path' => $path],
+    );
+
+    $response = actingAs($user)->get($url);
+
+    $response->assertOk();
+    expect($response->streamedContent())->toBe('demo-bytes');
 });
