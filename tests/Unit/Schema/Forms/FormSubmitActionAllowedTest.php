@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Flatpack\Schema\Forms\FormCompositionMergeForPersistence;
 use Flatpack\Schema\Forms\FormSubmitActionAllowed;
 use Flatpack\Tests\TestCase;
 
@@ -52,4 +53,56 @@ test('includes toolbar field actions for submit validation', function () {
     expect(FormSubmitActionAllowed::allowedActionStrings($schema))->toContain(
         'publish_post',
     );
+});
+
+test('toolbar inside tab panel fields is allowlisted after form schema merge', function () {
+    $raw = [
+        'tabs' => [
+            'main' => [
+                'label' => 'Main',
+                'fields' => [
+                    'tab_toolbar' => [
+                        'id' => 'tab_toolbar',
+                        'type' => 'toolbar',
+                        'actions' => [
+                            [
+                                'id' => 'from_tab',
+                                'label' => 'Save from tab',
+                                'action' => 'save_from_tab',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    expect(FormSubmitActionAllowed::allowedActionStrings($raw))->not->toContain('save_from_tab');
+
+    $merged = FormCompositionMergeForPersistence::merge($raw);
+    expect($merged)->not->toBeNull();
+    expect(FormSubmitActionAllowed::allowedActionStrings($merged))->toContain('save_from_tab');
+});
+
+test('toolbar nested under sidebar is allowlisted only after form schema merge', function () {
+    $raw = [
+        'sidebar' => [
+            'toolbar' => [
+                'type' => 'toolbar',
+                'actions' => [
+                    [
+                        'id' => 'publish',
+                        'label' => 'Publish',
+                        'action' => 'publish_post',
+                    ],
+                ],
+            ],
+        ],
+    ];
+
+    expect(FormSubmitActionAllowed::allowedActionStrings($raw))->not->toContain('publish_post');
+
+    $merged = FormCompositionMergeForPersistence::merge($raw);
+    expect($merged)->not->toBeNull();
+    expect(FormSubmitActionAllowed::allowedActionStrings($merged))->toContain('publish_post');
 });

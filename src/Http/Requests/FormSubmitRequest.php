@@ -6,8 +6,10 @@ namespace Flatpack\Http\Requests;
 
 use Closure;
 use Flatpack\Composition\EntityComposition;
+use Flatpack\Composition\FormSidebarYamlExpander;
 use Flatpack\Contracts\Authorization\FlatpackAuthorizer;
 use Flatpack\Http\Requests\Concerns\InteractsWithFlatpackAuthorization;
+use Flatpack\Schema\Forms\FormCompositionMergeForPersistence;
 use Flatpack\Schema\Forms\FormSubmitActionAllowed;
 use Flatpack\Schema\Validation\FormSchemaRuleBuilder;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -72,12 +74,22 @@ final class FormSubmitRequest extends FormRequest
         $entityComposition = $this->container->make(EntityComposition::class);
         $form = $entityComposition->formFor($entity);
         $modelClass = trim((string) ($form->model ?? ''));
-        $schema = $entityComposition->formSchema($entity);
+        $rawSchema = $entityComposition->formSchema($entity);
+        // Match FormController: inline `sidebar: fragment.yaml` before normalization so merge sees
+        // the same structure as the form page (toolbars in external fragments count).
+        $expandedSchema = $this->container->make(FormSidebarYamlExpander::class)->expand(
+            $entity,
+            is_array($rawSchema) ? $rawSchema : [],
+        );
+        // MergeFormTabsIntoFieldsPipe then MergeFormSidebarFieldsPipe flatten `tabs.*.fields` and
+        // `sidebar` into top-level `fields`, so every `type: toolbar` (tabs, sidebar, root fields)
+        // is visible to submit action allowlisting.
+        $mergedSchema = FormCompositionMergeForPersistence::merge($expandedSchema) ?? $expandedSchema;
 
         $builder = $this->container->make(FormSchemaRuleBuilder::class);
-        $valueRules = $builder->rulesForValues($schema, $modelClass);
+        $valueRules = $builder->rulesForValues($expandedSchema, $modelClass);
 
-        $allowed = FormSubmitActionAllowed::allowedActionStrings($schema);
+        $allowed = FormSubmitActionAllowed::allowedActionStrings($mergedSchema);
 
         return array_merge(
             [

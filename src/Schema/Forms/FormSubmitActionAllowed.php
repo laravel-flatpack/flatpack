@@ -13,9 +13,11 @@ final class FormSubmitActionAllowed
 {
     /**
      * Distinct handler names declared on non-{@code href} form actions: top-level {@code actions}
-     * plus every {@code type: toolbar} field’s {@code actions} map (after normalization, toolbar
-     * rows live under {@code fields.*.actions}). When the form defines no such actions, only
-     * {@code save} is allowed (implicit default toolbar).
+     * plus every {@code type: toolbar} field’s {@code actions} map after the same merge as the
+     * form page ({@see FormCompositionMergeForPersistence}): tabs and sidebar are flattened into
+     * {@code fields.*}, so toolbar rows live under {@code fields.*.actions} whether declared at the
+     * root, under {@code tabs.*.fields}, or under {@code sidebar}. When the form defines no such
+     * actions, only {@code save} is allowed (implicit default toolbar).
      *
      * @return list<string>
      */
