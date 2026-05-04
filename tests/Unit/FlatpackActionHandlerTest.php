@@ -7,6 +7,7 @@ use Flatpack\Actions\FlatpackActionContext;
 use Flatpack\Actions\Handlers\FlatpackActionHandler;
 use Flatpack\Contracts\Authorization\FlatpackAuthorizer;
 use Flatpack\Services\Runtime\ActionRuntime;
+use Flatpack\Services\SaveRecord\SaveRecordService;
 use Flatpack\Tests\Models\Post;
 use Flatpack\Tests\TestCase;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -22,6 +23,7 @@ test('FlatpackActionHandler resolveModel returns context model when present', fu
         app(FlatpackAuthorizer::class),
         app(ActionRuntime::class),
         app(EntityActionExecutor::class),
+        app(SaveRecordService::class),
     ) extends FlatpackActionHandler
     {
         public function authorize(Authenticatable $user, string $modelClass, ?Model $model): bool
@@ -57,6 +59,7 @@ test('FlatpackActionHandler resolveModel instantiates model class when context m
         app(FlatpackAuthorizer::class),
         app(ActionRuntime::class),
         app(EntityActionExecutor::class),
+        app(SaveRecordService::class),
     ) extends FlatpackActionHandler
     {
         public function authorize(Authenticatable $user, string $modelClass, ?Model $model): bool
@@ -92,6 +95,7 @@ test('FlatpackActionHandler modelExists reflects persisted rows', function () {
         app(FlatpackAuthorizer::class),
         app(ActionRuntime::class),
         app(EntityActionExecutor::class),
+        app(SaveRecordService::class),
     ) extends FlatpackActionHandler
     {
         public function authorize(Authenticatable $user, string $modelClass, ?Model $model): bool
