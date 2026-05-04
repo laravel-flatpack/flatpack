@@ -18,7 +18,6 @@
         </include>
         <exclude>
             <directory>src/Console</directory>
-            <file>src/Http/Controllers/TableRowController.php</file>
         </exclude>
     </source>
     <php>

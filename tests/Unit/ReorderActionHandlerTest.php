@@ -101,13 +101,70 @@ test('reorder action throws on unknown sort column', function () {
     )))->toThrow(InvalidArgumentException::class);
 });
 
+test('reorder action throws when model class is invalid', function () {
+    expect(fn () => app(ReorderActionHandler::class)->handle(reorderContext(
+        record: '1',
+        position: 1,
+        modelClass: '',
+    )))->toThrow(InvalidArgumentException::class, 'Cannot reorder records: model class is invalid.');
+});
+
+test('reorder action throws when record id is missing', function () {
+    expect(fn () => app(ReorderActionHandler::class)->handle(reorderContext(
+        record: '',
+        position: 1,
+    )))->toThrow(Illuminate\Database\Eloquent\ModelNotFoundException::class);
+});
+
+test('reorder action throws when reorder column is not configured', function () {
+    expect(fn () => app(ReorderActionHandler::class)->handle(reorderContext(
+        record: '1',
+        position: 1,
+        schema: [
+            'model' => Post::class,
+            'reorderable' => false,
+        ],
+    )))->toThrow(InvalidArgumentException::class, 'Cannot reorder records: reorderable column is not configured.');
+});
+
+test('reorder action ignores unknown list scope method', function () {
+    $first = Post::factory()->create(['title' => 'First', 'sort_order' => 1, 'status' => 'draft']);
+    $second = Post::factory()->create(['title' => 'Second', 'sort_order' => 2, 'status' => 'draft']);
+
+    $record = app(ReorderActionHandler::class)->handle(reorderContext(
+        record: (string) $second->getKey(),
+        position: 1,
+        scope: 'totallyMissingScope',
+    ));
+
+    expect((int) $record->sort_order)->toBe(1);
+});
+
+test('reorder action applies configured eloquent scope', function () {
+    $draftA = Post::factory()->create(['title' => 'D1', 'sort_order' => 1, 'status' => 'draft']);
+    $draftB = Post::factory()->create(['title' => 'D2', 'sort_order' => 2, 'status' => 'draft']);
+    Post::factory()->create(['title' => 'Published', 'sort_order' => 3, 'status' => 'active']);
+
+    $record = app(ReorderActionHandler::class)->handle(reorderContext(
+        record: (string) $draftB->getKey(),
+        position: 1,
+        scope: 'draftOnly',
+    ));
+
+    expect((int) $record->sort_order)->toBe(1);
+    expect((int) (Post::query()->find($draftA->getKey())?->sort_order ?? 0))->toBe(2);
+});
+
 function reorderContext(
     string $record,
     int $position,
     string $reorderableColumn = 'sort_order',
+    string $modelClass = Post::class,
+    ?string $scope = null,
+    ?array $schema = null,
 ): FlatpackActionContext {
     $request = Request::create(
-        uri: '/flatpack/posts/' . $record . '/reorder',
+        uri: '/flatpack/posts/' . ($record !== '' ? $record : '0') . '/reorder',
         method: 'PATCH',
         parameters: ['position' => $position],
     );
@@ -116,10 +173,11 @@ function reorderContext(
         request: $request,
         entity: 'posts',
         actionName: 'reorder',
-        modelClass: Post::class,
+        modelClass: $modelClass,
         record: $record,
         compositionType: 'list',
-        schema: [
+        scope: $scope,
+        schema: $schema ?? [
             'model' => Post::class,
             'reorderable' => true,
             'reorderableColumn' => $reorderableColumn,

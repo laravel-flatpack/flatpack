@@ -703,3 +703,44 @@ YAML);
         File::deleteDirectory($tempPath);
     }
 });
+
+test('flatpack dashboard runs widget debug logging when flatpack_widget_debug is enabled', function () {
+    $tempPath = sys_get_temp_dir() . '/flatpack-dashboard-widget-debug-flag-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/dashboard');
+        File::put($tempPath . '/dashboard/list.yaml', <<<'YAML'
+name: Overview
+widgets:
+  recent_posts:
+    type: table
+    model: Flatpack\Tests\Models\Post
+    label: Recent Posts
+    columns:
+      title:
+        label: Title
+        type: text
+        sortable: true
+        searchable: true
+    pagination:
+      per_page: 5
+YAML);
+        config()->set('flatpack.composition.path', $tempPath);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+        Post::factory()->create(['title' => 'Debug Row']);
+
+        actingAs($user)
+            ->getJson(route('flatpack.dashboard', [
+                'json' => true,
+                'flatpack_widget_debug' => true,
+                'recent_posts_q' => 'Debug',
+            ]))
+            ->assertOk()
+            ->assertJsonPath('widgets.recent_posts.type', 'table')
+            ->assertJsonPath('schema.widgets.recent_posts.type', 'table');
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});

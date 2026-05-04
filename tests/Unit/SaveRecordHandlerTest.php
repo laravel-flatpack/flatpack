@@ -88,3 +88,61 @@ test('save record handler creates a new model from form schema', function () {
     expect(Post::query()->where('title', 'Created from form schema')->exists())
         ->toBeTrue();
 });
+
+test('save record handler returns null when model cannot be resolved', function () {
+    $request = Request::create('/flatpack/posts', 'POST', [
+        'values' => [
+            'title' => 'Ignored',
+        ],
+    ]);
+
+    $result = app(SaveRecordHandler::class)->handle(new FlatpackActionContext(
+        request: $request,
+        entity: 'posts',
+        actionName: 'save',
+        modelClass: '',
+        record: null,
+        compositionType: 'form',
+        schema: [
+            'fields' => [
+                'title' => [
+                    'type' => 'text',
+                    'label' => 'Title',
+                ],
+            ],
+        ],
+        model: null,
+    ));
+
+    expect($result)->toBeNull();
+});
+
+test('save record handler returns model unchanged when request has no form payload', function () {
+    /** @var Post $post */
+    $post = Post::factory()->create([
+        'title' => 'Existing title',
+    ]);
+
+    $request = Request::create('/flatpack/posts/' . $post->getKey(), 'PATCH', []);
+
+    $result = app(SaveRecordHandler::class)->handle(new FlatpackActionContext(
+        request: $request,
+        entity: 'posts',
+        actionName: 'save',
+        modelClass: Post::class,
+        record: (string) $post->getKey(),
+        compositionType: 'form',
+        schema: [
+            'fields' => [
+                'title' => [
+                    'type' => 'text',
+                    'label' => 'Title',
+                ],
+            ],
+        ],
+        model: $post,
+    ));
+
+    expect($result)->toBe($post);
+    expect($post->fresh()?->title)->toBe('Existing title');
+});

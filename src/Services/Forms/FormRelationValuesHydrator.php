@@ -191,7 +191,9 @@ final class FormRelationValuesHydrator
         }
 
         $limit = $this->effectiveLimit($fieldDefinition);
-        $collection = $model->getRelation($relationName);
+        $collection = $model->relationLoaded($relationName)
+            ? $model->getRelation($relationName)
+            : null;
         if ($collection === null) {
             $log?->add(sprintf(
                 'Form field "%s": relation [%s] was not eager-loaded; loading now (avoid N+1 by declaring this relation in schema).',
@@ -248,7 +250,9 @@ final class FormRelationValuesHydrator
             $valueKey = 'id';
         }
 
-        $related = $model->getRelation($relationName);
+        $related = $model->relationLoaded($relationName)
+            ? $model->getRelation($relationName)
+            : null;
         if ($related === null) {
             $log?->add(sprintf(
                 'Form field "%s": relation [%s] was not eager-loaded; loading now (avoid N+1 by declaring this relation in schema).',
