@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Facades\DB;
+use ReflectionMethod;
 
 /**
  * Applies {@code RelationRow[]} payloads from form {@code values} to Eloquent relations after the parent model is saved.
@@ -59,13 +61,13 @@ final class RelationFormSynchronizer
                 continue;
             }
 
-            $relation = $model->{$relationName}();
             if ($this->isFileUploadRelationField($fieldDefinition)) {
-                $this->syncFileUploadRelation($relation, $payload, $fieldDefinition);
+                $this->syncFileUploadRelation($model, $payload, $fieldDefinition);
 
                 continue;
             }
 
+            $relation = $model->{$relationName}();
             if ($relation instanceof BelongsToMany) {
                 $this->syncBelongsToMany($relation, $payload, $fieldDefinition);
 
@@ -272,82 +274,52 @@ final class RelationFormSynchronizer
     }
 
     /**
+     * Invokes the schema {@code callback} on the parent model with normalized upload metadata rows
+     * (each row is an {@code object} — associative arrays from the request are cast with {@code (object)}).
+     *
      * @param  array<string, mixed>  $fieldDefinition
      */
     private function syncFileUploadRelation(
-        mixed $relation,
+        Model $model,
         mixed $payload,
         array $fieldDefinition,
     ): void {
-        $rows = $this->uploadedFileRows($payload, $fieldDefinition);
-        if ($relation instanceof HasMany || $relation instanceof MorphMany) {
-            $relation->get()->each->delete();
-            foreach ($rows as $row) {
-                $relation->create($row);
-            }
-
+        $callback = trim((string) ($fieldDefinition['callback'] ?? ''));
+        if ($callback === '' || ! method_exists($model, $callback)) {
             return;
         }
 
-        if ($relation instanceof HasOne) {
-            $existing = $relation->first();
-            if ($rows === []) {
-                $existing?->delete();
-
-                return;
-            }
-
-            $first = $rows[0];
-            if ($existing !== null) {
-                $existing->fill($first);
-                $existing->save();
-
-                return;
-            }
-
-            $relation->create($first);
+        $method = new ReflectionMethod($model, $callback);
+        if (! $method->isPublic()) {
+            return;
         }
+
+        $items = $this->normalizeFileUploadRelationPayload($payload);
+
+        DB::transaction(static function () use ($model, $callback, $items): void {
+            $model->{$callback}($items);
+        });
     }
 
     /**
-     * @param  array<string, mixed>  $fieldDefinition
-     * @return list<array<string, mixed>>
+     * @return list<object>
      */
-    private function uploadedFileRows(mixed $payload, array $fieldDefinition): array
+    private function normalizeFileUploadRelationPayload(mixed $payload): array
     {
         if (! is_array($payload)) {
             return [];
         }
 
         $items = array_is_list($payload) ? $payload : [$payload];
-        $collection = trim((string) ($fieldDefinition['collection'] ?? ''));
-        $rows = [];
+        $out = [];
         foreach ($items as $item) {
-            if (! is_array($item)) {
-                continue;
+            if (is_array($item)) {
+                $out[] = (object) $item;
+            } elseif (is_object($item)) {
+                $out[] = $item;
             }
-
-            $path = trim((string) ($item['path'] ?? ''));
-            if ($path === '') {
-                continue;
-            }
-
-            $row = [
-                'disk' => trim((string) ($item['disk'] ?? '')),
-                'path' => $path,
-                'url' => trim((string) ($item['url'] ?? $path)),
-                'name' => trim((string) ($item['name'] ?? '')),
-                'mime_type' => trim((string) ($item['mime_type'] ?? '')),
-                'size' => (int) ($item['size'] ?? 0),
-                'collection' => trim((string) ($item['collection'] ?? $collection)),
-            ];
-
-            $rows[] = array_filter(
-                $row,
-                static fn (mixed $value): bool => $value !== '',
-            );
         }
 
-        return $rows;
+        return $out;
     }
 }

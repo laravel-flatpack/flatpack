@@ -16,6 +16,7 @@ use Flatpack\Schema\ResolvesLaravelPipeline;
 use Flatpack\Services\Forms\FormRelationValuesHydrator;
 use Flatpack\Support\CompositionDebugContext;
 use Flatpack\Support\CompositionDebugLog;
+use Flatpack\Support\FileUploadRelationHydrator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pipeline\Pipeline;
 use Throwable;
@@ -265,29 +266,15 @@ final readonly class FormSchemaNormalizer
         $related = $model->getRelation($relation);
         if ($related instanceof \Illuminate\Database\Eloquent\Collection) {
             return $related
-                ->map(static fn (Model $item): array => [
-                    'disk' => $item->getAttribute('disk'),
-                    'path' => $item->getAttribute('path'),
-                    'url' => $item->getAttribute('url'),
-                    'name' => $item->getAttribute('name'),
-                    'mime_type' => $item->getAttribute('mime_type'),
-                    'size' => $item->getAttribute('size'),
-                    'collection' => $item->getAttribute('collection'),
-                ])
+                ->map(static fn (Model $item): array => FileUploadRelationHydrator::fragmentFromRelatedModel($item))
                 ->values()
                 ->all();
         }
 
         if ($related instanceof Model) {
-            return [[
-                'disk' => $related->getAttribute('disk'),
-                'path' => $related->getAttribute('path'),
-                'url' => $related->getAttribute('url'),
-                'name' => $related->getAttribute('name'),
-                'mime_type' => $related->getAttribute('mime_type'),
-                'size' => $related->getAttribute('size'),
-                'collection' => $related->getAttribute('collection'),
-            ]];
+            return [
+                FileUploadRelationHydrator::fragmentFromRelatedModel($related),
+            ];
         }
 
         return [];

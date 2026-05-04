@@ -170,6 +170,8 @@ type FileUploadFieldProps = FormFieldBase & {
     disk?: string;
     visibility?: 'public' | 'private';
     relation?: string;
+    /** Relation mode: public method name on the entity model (receives upload metadata rows). */
+    callback?: string;
     collection?: string;
     target_column?: string;
     persist_as?: 'string' | 'json';

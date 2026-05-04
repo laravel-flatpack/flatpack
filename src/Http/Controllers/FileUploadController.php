@@ -8,6 +8,7 @@ use Flatpack\Composition\EntityComposition;
 use Flatpack\Schema\Forms\FormCompositionMergeForPersistence;
 use Flatpack\Schema\Forms\FormSchemaFields;
 use Flatpack\Services\Uploads\FileUploadStorage;
+use Flatpack\Services\Uploads\FileUploadUploadValidator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -17,6 +18,7 @@ final readonly class FileUploadController
     public function __construct(
         private EntityComposition $entityComposition,
         private FileUploadStorage $fileUploadStorage,
+        private FileUploadUploadValidator $fileUploadUploadValidator,
     ) {}
 
     /**
@@ -45,6 +47,8 @@ final readonly class FileUploadController
                 'files' => 'At least one file is required.',
             ]);
         }
+
+        $this->fileUploadUploadValidator->validate($fieldDefinition, $files);
 
         $uploaded = [];
         foreach ($files as $file) {

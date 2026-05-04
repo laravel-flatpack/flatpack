@@ -1575,6 +1575,11 @@
                     "minLength": 1,
                     "description": "Optional collection/group identifier for relation-backed media records."
                 },
+                "callback": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "When `mode: relation`, name of a public method on the entity model invoked with the list of upload metadata arrays (persist related records in application code)."
+                },
                 "target_column": {
                     "type": "string",
                     "minLength": 1,
@@ -1610,7 +1615,8 @@
                     },
                     "then": {
                         "required": [
-                            "relation"
+                            "relation",
+                            "callback"
                         ]
                     }
                 },

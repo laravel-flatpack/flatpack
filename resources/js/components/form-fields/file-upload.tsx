@@ -23,6 +23,35 @@ function csrfToken(): string {
     );
 }
 
+function messageFrom422Body(body: unknown): string | null {
+    if (typeof body !== 'object' || body === null) {
+        return null;
+    }
+    const record = body as Record<string, unknown>;
+    const errors = record.errors;
+    if (
+        typeof errors === 'object' &&
+        errors !== null &&
+        !Array.isArray(errors)
+    ) {
+        const files = (errors as Record<string, unknown>).files;
+        if (Array.isArray(files) && files.length > 0) {
+            const lines = files.filter(
+                (s): s is string => typeof s === 'string',
+            );
+            if (lines.length > 0) {
+                return lines.join(' ');
+            }
+        }
+    }
+    const msg = record.message;
+    if (typeof msg === 'string' && msg.trim() !== '') {
+        return msg;
+    }
+
+    return null;
+}
+
 function normalizeFiles(value: unknown): FileUploadStoredFile[] {
     if (Array.isArray(value)) {
         return value.filter(
@@ -43,6 +72,7 @@ export const FileUploadField = ({
     multiple = false,
     accept,
     maxFiles,
+    maxSizeKb,
     uploadEndpoint,
     fieldId,
     value,
@@ -55,6 +85,8 @@ export const FileUploadField = ({
     multiple?: boolean;
     accept?: string | string[];
     maxFiles?: number;
+    /** Per-field YAML limit; server may still apply a lower global cap from `config/flatpack.php`. */
+    maxSizeKb?: number;
     uploadEndpoint: string;
     fieldId: string;
     value?: unknown;
@@ -105,6 +137,26 @@ export const FileUploadField = ({
                                     return;
                                 }
 
+                                const maxKb =
+                                    typeof maxSizeKb === 'number' &&
+                                    maxSizeKb > 0
+                                        ? maxSizeKb
+                                        : null;
+                                if (maxKb !== null) {
+                                    const maxBytes = maxKb * 1024;
+                                    const oversized = toUpload.find(
+                                        (f) => f.size > maxBytes,
+                                    );
+                                    if (oversized !== undefined) {
+                                        setUploadError(
+                                            `Each file must be at most ${maxKb} KB.`,
+                                        );
+                                        event.currentTarget.value = '';
+
+                                        return;
+                                    }
+                                }
+
                                 const formData = new FormData();
                                 formData.append('field', fieldId);
                                 for (const file of toUpload) {
@@ -134,7 +186,23 @@ export const FileUploadField = ({
                                             },
                                         );
                                         if (!response.ok) {
-                                            throw new Error('Upload failed');
+                                            let errMsg =
+                                                'Upload failed. Please try again.';
+                                            if (response.status === 422) {
+                                                try {
+                                                    const errBody =
+                                                        (await response.json()) as unknown;
+                                                    errMsg =
+                                                        messageFrom422Body(
+                                                            errBody,
+                                                        ) ?? errMsg;
+                                                } catch {
+                                                    /* keep errMsg */
+                                                }
+                                            }
+                                            setUploadError(errMsg);
+
+                                            return;
                                         }
 
                                         const payload =

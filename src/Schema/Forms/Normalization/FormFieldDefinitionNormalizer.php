@@ -258,6 +258,18 @@ final class FormFieldDefinitionNormalizer
                 );
             }
 
+            $callback = $this->readTrimmedString($fieldDefinition, 'callback');
+            if ($callback === '') {
+                return $this->omitFieldWithLog(
+                    $fieldDefinition,
+                    $yamlKey,
+                    $log,
+                    'file-upload relation mode requires callback (public method name on the model)',
+                );
+            }
+
+            $fieldDefinition['callback'] = $callback;
+
             return $fieldDefinition;
         }
 

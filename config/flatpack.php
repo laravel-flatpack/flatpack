@@ -173,15 +173,27 @@ return [
     | Uploads (file-upload field)
     |--------------------------------------------------------------------------
     |
-    | Default storage targets and limits for `type: file-upload` fields.
+    | Defaults for `type: file-upload` fields in YAML compositions.
+    |
+    | Disks: when a field omits `disk`, url-mode uploads use `file_disk` and
+    | relation-mode uploads use `media_disk`. Each resolves like a typical Laravel
+    | host: optional `FLATPACK_UPLOADS_*_DISK`, then `FILESYSTEM_DISK`, then `local`.
+    | Point these at any disk defined in the host app's `config/filesystems.php`.
+    | Per-field YAML `disk` still wins when set.
+    |
+    | Limits: `max_size_kb` and `max_files` are global ceilings for the AJAX upload
+    | endpoint. Effective limits are min(YAML field value, these config values); if
+    | the field omits a limit, the config value is used. The React field uses YAML
+    | hints for client-side checks; the server always applies these caps.
+    |
     | `media_model` is optional and can point to a host app polymorphic attachment
-    | model (for example, Spatie Media model or a custom equivalent).
+    | model (for example, a MediaLibrary `Media` model or a custom equivalent).
     |
     */
     'uploads' => [
-        'media_disk' => env('FLATPACK_UPLOADS_MEDIA_DISK', env('FILESYSTEM_DISK', 'public')),
-        'file_disk' => env('FLATPACK_UPLOADS_FILE_DISK', env('FILESYSTEM_DISK', 'public')),
         'media_model' => env('FLATPACK_UPLOADS_MEDIA_MODEL'),
+        'media_disk' => env('FLATPACK_UPLOADS_MEDIA_DISK', env('FILESYSTEM_DISK', 'local')),
+        'file_disk' => env('FLATPACK_UPLOADS_FILE_DISK', env('FILESYSTEM_DISK', 'local')),
         'visibility' => env('FLATPACK_UPLOADS_VISIBILITY', 'public'),
         'max_size_kb' => (int) env('FLATPACK_UPLOADS_MAX_SIZE_KB', 10240),
         'max_files' => (int) env('FLATPACK_UPLOADS_MAX_FILES', 10),

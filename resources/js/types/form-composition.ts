@@ -229,6 +229,7 @@ export type FlatpackFormCompositionFieldFileUploadYaml = {
     disk?: string;
     visibility?: 'public' | 'private';
     relation?: string;
+    callback?: string;
     collection?: string;
     target_column?: string;
     persist_as?: 'string' | 'json';

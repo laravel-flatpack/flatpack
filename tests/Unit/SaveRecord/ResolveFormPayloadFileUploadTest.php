@@ -49,6 +49,7 @@ it('marks relation-mode file-upload as deferred relation payload', function (): 
                     'type' => 'file-upload',
                     'mode' => 'relation',
                     'relation' => 'comments',
+                    'callback' => 'processGalleryFiles',
                     'label' => 'Gallery',
                     'multiple' => true,
                 ],
