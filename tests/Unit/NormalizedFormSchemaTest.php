@@ -25,10 +25,10 @@ it('ArrayAccess offsetGet returns null for unknown or non-string keys', function
 it('ArrayAccess mutations throw LogicException', function (): void {
     $n = new NormalizedFormSchema([]);
 
-    expect(fn () => $n['k'] = 'v')->toThrow(\LogicException::class);
+    expect(fn () => $n['k'] = 'v')->toThrow(LogicException::class);
     expect(function () use ($n): void {
         unset($n['k']);
-    })->toThrow(\LogicException::class);
+    })->toThrow(LogicException::class);
 });
 
 it('sidebarWidgetDefinitionsRaw returns staged definitions when provided', function (): void {

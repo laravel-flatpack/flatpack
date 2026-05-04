@@ -22,7 +22,7 @@ it('apply adds LIKE condition for a column search definition', function (): void
     $query = Post::query();
     SearchApplier::apply($query, [SearchDefinition::forColumn('title')], 'hello%_!');
 
-    $sql = strtolower($query->toSql());
+    $sql = mb_strtolower($query->toSql());
     expect($sql)->toContain('like');
     expect($query->getBindings())->not->toBeEmpty();
 });
@@ -34,7 +34,7 @@ it('apply ORs multiple column conditions', function (): void {
         SearchDefinition::forColumn('body'),
     ], 'x');
 
-    expect(strtolower($query->toSql()))->toContain(' or ');
+    expect(mb_strtolower($query->toSql()))->toContain(' or ');
 });
 
 it('apply skips empty column ids', function (): void {
@@ -43,7 +43,7 @@ it('apply skips empty column ids', function (): void {
         SearchDefinition::forColumn(''),
     ], 'x');
 
-    expect(strtolower($query->toSql()))->not->toContain('like');
+    expect(mb_strtolower($query->toSql()))->not->toContain('like');
 });
 
 it('apply adds whereHas for relation search definitions', function (): void {
@@ -52,7 +52,7 @@ it('apply adds whereHas for relation search definitions', function (): void {
         SearchDefinition::forRelation('category', 'name'),
     ], 'news');
 
-    expect(strtolower($query->toSql()))->toContain('exists');
+    expect(mb_strtolower($query->toSql()))->toContain('exists');
 });
 
 it('apply ORs relation and column conditions', function (): void {
@@ -62,7 +62,7 @@ it('apply ORs relation and column conditions', function (): void {
         SearchDefinition::forRelation('category', 'name'),
     ], 'mix');
 
-    expect(strtolower($query->toSql()))->toContain(' or ');
+    expect(mb_strtolower($query->toSql()))->toContain(' or ');
 });
 
 it('apply skips relation defs with empty names', function (): void {
@@ -72,5 +72,5 @@ it('apply skips relation defs with empty names', function (): void {
         SearchDefinition::forRelation('category', ''),
     ], 'x');
 
-    expect(strtolower($query->toSql()))->not->toContain('exists');
+    expect(mb_strtolower($query->toSql()))->not->toContain('exists');
 });

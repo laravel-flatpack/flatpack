@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Flatpack\Actions\Handlers;
 
-use Flatpack\Actions\FlatpackActionContext;
+use Flatpack\Actions\ActionContext;
+use Flatpack\Actions\ActionHandler;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 
-final class SaveRecordHandler extends FlatpackActionHandler
+final class SaveRecordHandler extends ActionHandler
 {
     public function authorize(Authenticatable $user, string $modelClass, ?Model $model): bool
     {
@@ -36,7 +37,7 @@ final class SaveRecordHandler extends FlatpackActionHandler
      * Validate and persist relations.
      * Return the saved model.
      */
-    public function handle(FlatpackActionContext $context): mixed
+    public function handle(ActionContext $context): mixed
     {
         $model = $this->saveRecordService->resolveModel($context);
         if (! $model instanceof Model) {

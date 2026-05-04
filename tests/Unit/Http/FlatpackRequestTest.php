@@ -32,7 +32,7 @@ it('does not match unrelated paths', function (): void {
 it('detects flatpack login route', function (): void {
     $r = Request::create('/flatpack/login', 'GET');
     $r->setRouteResolver(function () {
-        $route = new \Illuminate\Routing\Route('GET', 'flatpack/login', []);
+        $route = new Illuminate\Routing\Route('GET', 'flatpack/login', []);
         $route->name('flatpack.login');
 
         return $route;

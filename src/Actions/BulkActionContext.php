@@ -7,7 +7,7 @@ namespace Flatpack\Actions;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
 
-final readonly class FlatpackBulkActionContext
+final readonly class BulkActionContext
 {
     /**
      * @param  'all'|list<string|int>  $records

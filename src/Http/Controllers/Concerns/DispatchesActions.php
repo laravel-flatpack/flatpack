@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Flatpack\Http\Controllers\Concerns;
 
+use Flatpack\Actions\ActionContext;
 use Flatpack\Actions\EntityActionExecutor;
-use Flatpack\Actions\FlatpackActionContext;
 use Flatpack\Contracts\Actions\FlatpackAction;
 use Flatpack\Contracts\Actions\FlatpackBulkAction;
 use Flatpack\Http\Requests\FormSubmitRequest;
@@ -126,7 +126,7 @@ trait DispatchesActions
         ?Model $model,
     ): mixed {
         return $this->actionExecutor()->execute(fn () => $handler->handle(
-            new FlatpackActionContext(
+            new ActionContext(
                 request: $request,
                 entity: $entity,
                 actionName: $actionName,

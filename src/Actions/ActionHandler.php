@@ -2,10 +2,8 @@
 
 declare(strict_types=1);
 
-namespace Flatpack\Actions\Handlers;
+namespace Flatpack\Actions;
 
-use Flatpack\Actions\EntityActionExecutor;
-use Flatpack\Actions\FlatpackActionContext;
 use Flatpack\Contracts\Actions\FlatpackAction;
 use Flatpack\Contracts\Authorization\FlatpackAuthorizer;
 use Flatpack\Services\Runtime\ActionRuntime;
@@ -13,18 +11,19 @@ use Flatpack\Services\SaveRecord\SaveRecordService;
 use Flatpack\Support\EloquentModelResolver;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use InvalidArgumentException;
 
 /**
  * Base for record-level actions: authorization helpers, nested action dispatch, {@see resolveModel()},
- * and {@see SaveRecordService} for custom handlers that need the same save pipeline as the built-in
- * `save` action.
+ * {@see modelExists()}, and {@see SaveRecordService} for custom handlers
+ * that need the same save pipeline as the built-in `save` action.
  * Concrete handlers implement authorize() and handle().
  *
  * Host applications may extend this class for custom entity actions and use {@see callAction()} to
  * delegate to built-in actions (for example the `save` action) without duplicating their logic.
  */
-abstract class FlatpackActionHandler implements FlatpackAction
+abstract class ActionHandler implements FlatpackAction
 {
     public function __construct(
         protected readonly FlatpackAuthorizer $authorizer,
@@ -47,7 +46,10 @@ abstract class FlatpackActionHandler implements FlatpackAction
         );
     }
 
-    protected function resolveModel(FlatpackActionContext $context): ?Model
+    /**
+     * Resolves the model from the context.
+     */
+    protected function resolveModel(ActionContext $context): ?Model
     {
         return EloquentModelResolver::fromContext($context);
     }
@@ -61,11 +63,21 @@ abstract class FlatpackActionHandler implements FlatpackAction
     }
 
     /**
+     * Throws a ModelNotFoundException if the model does not exist.
+     */
+    protected function modelExistsOrFail(?Model $model): void
+    {
+        if (! $this->modelExists($model)) {
+            throw new ModelNotFoundException('Record not found.');
+        }
+    }
+
+    /**
      * Runs another configured record action with the same request, entity, schema, and model instance.
      * Resolves the handler from config, enforces its {@see FlatpackAction::authorize()} checks, and wraps
      * execution with {@see EntityActionExecutor} (authorization passthrough, DB errors as validation).
      */
-    protected function callAction(string $actionName, FlatpackActionContext $context): mixed
+    protected function callAction(string $actionName, ActionContext $context): mixed
     {
         $actionName = trim($actionName);
         if ($actionName === '') {
@@ -87,7 +99,7 @@ abstract class FlatpackActionHandler implements FlatpackAction
             $model,
         );
 
-        $nestedContext = new FlatpackActionContext(
+        $nestedContext = new ActionContext(
             request: $context->request,
             entity: $context->entity,
             actionName: $actionName,

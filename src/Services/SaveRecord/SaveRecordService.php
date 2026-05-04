@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Flatpack\Services\SaveRecord;
 
-use Flatpack\Actions\FlatpackActionContext;
+use Flatpack\Actions\ActionContext;
 use Flatpack\Actions\RelationFormSynchronizer;
 use Flatpack\Support\EloquentModelResolver;
 use Illuminate\Database\Eloquent\Model;
@@ -20,7 +20,7 @@ final readonly class SaveRecordService
         private RelationFormSynchronizer $relationFormSynchronizer,
     ) {}
 
-    public function resolveModel(FlatpackActionContext $context): ?Model
+    public function resolveModel(ActionContext $context): ?Model
     {
         return EloquentModelResolver::fromContext($context);
     }
@@ -28,7 +28,7 @@ final readonly class SaveRecordService
     /**
      * @return array<string, mixed>|null
      */
-    public function resolvePayload(FlatpackActionContext $context): ?array
+    public function resolvePayload(ActionContext $context): ?array
     {
         return $this->resolveFormPayload->resolve($context->request);
     }
@@ -39,7 +39,7 @@ final readonly class SaveRecordService
     public function validate(
         Model $model,
         array $values,
-        FlatpackActionContext $context,
+        ActionContext $context,
     ): WritablePayloadResult {
         return $this->resolveFormPayload->validate(
             model: $model,
@@ -77,7 +77,7 @@ final readonly class SaveRecordService
     public function validateRelations(
         Model $model,
         array $values,
-        FlatpackActionContext $context,
+        ActionContext $context,
     ): ValidatedRelationsPayload {
         if (! $this->shouldProcessRelations($model, $context)) {
             return new ValidatedRelationsPayload(
@@ -134,7 +134,7 @@ final readonly class SaveRecordService
         return $model->fresh() ?? $model;
     }
 
-    private function shouldProcessRelations(Model $model, FlatpackActionContext $context): bool
+    private function shouldProcessRelations(Model $model, ActionContext $context): bool
     {
         return $context->compositionType === 'form'
             && $model->getKey() !== null;

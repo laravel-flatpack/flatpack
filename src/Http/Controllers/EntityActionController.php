@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Flatpack\Http\Controllers;
 
-use Flatpack\Actions\FlatpackBulkActionContext;
+use Flatpack\Actions\BulkActionContext;
 use Flatpack\Http\Controllers\Concerns\DispatchesActions;
 use Flatpack\Http\Controllers\Concerns\HandlesReorderRecord;
 use Flatpack\Http\Controllers\Concerns\LoadsListComposition;
@@ -45,7 +45,7 @@ final readonly class EntityActionController
         $tab = trim((string) $request->input('tab', ''));
         $resolvedTab = $this->activeTabResolver->resolveWithSchema($schema, $tab);
 
-        $result = $handler->handle(FlatpackBulkActionContext::fromRequest(
+        $result = $handler->handle(BulkActionContext::fromRequest(
             request: $request,
             user: $user,
             entity: $entity,

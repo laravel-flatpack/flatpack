@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Flatpack\Actions\Handlers;
 
-use Flatpack\Actions\FlatpackActionContext;
+use Flatpack\Actions\ActionContext;
+use Flatpack\Actions\ActionHandler;
 use Flatpack\Support\ReorderColumnResolver;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Builder;
@@ -15,7 +16,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use InvalidArgumentException;
 
-final class ReorderActionHandler extends FlatpackActionHandler
+final class ReorderActionHandler extends ActionHandler
 {
     public function authorize(Authenticatable $user, string $modelClass, ?Model $model): bool
     {
@@ -27,7 +28,7 @@ final class ReorderActionHandler extends FlatpackActionHandler
         );
     }
 
-    public function handle(FlatpackActionContext $context): mixed
+    public function handle(ActionContext $context): mixed
     {
         $modelClass = trim($context->modelClass);
         if (
@@ -72,8 +73,8 @@ final class ReorderActionHandler extends FlatpackActionHandler
                 ->lockForUpdate()
                 ->orderByRaw(
                     '(CASE WHEN '
-                    . DB::connection()->getQueryGrammar()->wrap($column)
-                    . ' IS NULL THEN 1 ELSE 0 END) ASC'
+                        . DB::connection()->getQueryGrammar()->wrap($column)
+                        . ' IS NULL THEN 1 ELSE 0 END) ASC'
                 )
                 ->orderBy($column, 'asc')
                 ->orderBy($record->getKeyName(), 'asc')
@@ -166,7 +167,7 @@ final class ReorderActionHandler extends FlatpackActionHandler
         return $query;
     }
 
-    private function resolveReorderColumn(FlatpackActionContext $context): string
+    private function resolveReorderColumn(ActionContext $context): string
     {
         $column = ReorderColumnResolver::reorderColumnFromSchema($context->schema ?? []);
         if ($column === null || trim($column) === '') {

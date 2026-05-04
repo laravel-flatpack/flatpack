@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Flatpack\Actions\FlatpackActionContext;
+use Flatpack\Actions\ActionContext;
 use Flatpack\Actions\Handlers\SaveRecordHandler;
 use Flatpack\Tests\Models\Post;
 use Flatpack\Tests\TestCase;
@@ -23,7 +23,7 @@ test('save record handler supports writable fields from form schema', function (
         ],
     ]);
 
-    $result = app(SaveRecordHandler::class)->handle(new FlatpackActionContext(
+    $result = app(SaveRecordHandler::class)->handle(new ActionContext(
         request: $request,
         entity: 'posts',
         actionName: 'save',
@@ -54,7 +54,7 @@ test('save record handler creates a new model from form schema', function () {
         ],
     ]);
 
-    $result = app(SaveRecordHandler::class)->handle(new FlatpackActionContext(
+    $result = app(SaveRecordHandler::class)->handle(new ActionContext(
         request: $request,
         entity: 'posts',
         actionName: 'save',
@@ -96,7 +96,7 @@ test('save record handler returns null when model cannot be resolved', function 
         ],
     ]);
 
-    $result = app(SaveRecordHandler::class)->handle(new FlatpackActionContext(
+    $result = app(SaveRecordHandler::class)->handle(new ActionContext(
         request: $request,
         entity: 'posts',
         actionName: 'save',
@@ -125,7 +125,7 @@ test('save record handler returns model unchanged when request has no form paylo
 
     $request = Request::create('/flatpack/posts/' . $post->getKey(), 'PATCH', []);
 
-    $result = app(SaveRecordHandler::class)->handle(new FlatpackActionContext(
+    $result = app(SaveRecordHandler::class)->handle(new ActionContext(
         request: $request,
         entity: 'posts',
         actionName: 'save',

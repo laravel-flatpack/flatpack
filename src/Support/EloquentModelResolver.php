@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Flatpack\Support;
 
-use Flatpack\Actions\FlatpackActionContext;
+use Flatpack\Actions\ActionContext;
 use Illuminate\Database\Eloquent\Model;
 
 final class EloquentModelResolver
 {
-    public static function fromContext(FlatpackActionContext $context): ?Model
+    public static function fromContext(ActionContext $context): ?Model
     {
         if ($context->model instanceof Model) {
             return $context->model;

@@ -4,20 +4,12 @@ declare(strict_types=1);
 
 namespace Flatpack\Actions\Handlers;
 
-use Flatpack\Actions\FlatpackBulkActionContext;
-use Flatpack\Contracts\Authorization\FlatpackAuthorizer;
-use Flatpack\Services\Lists\BulkDeleteService;
+use Flatpack\Actions\BulkActionContext;
+use Flatpack\Actions\BulkActionHandler;
 use Illuminate\Contracts\Auth\Authenticatable;
 
-final class BulkDeleteHandler extends FlatpackBulkActionHandler
+final class BulkDeleteHandler extends BulkActionHandler
 {
-    public function __construct(
-        FlatpackAuthorizer $authorizer,
-        private readonly BulkDeleteService $bulkDeleteService,
-    ) {
-        parent::__construct($authorizer);
-    }
-
     public function authorize(Authenticatable $user, string $modelClass): bool
     {
         return $this->canPerformAction(
@@ -27,16 +19,8 @@ final class BulkDeleteHandler extends FlatpackBulkActionHandler
         );
     }
 
-    public function handle(FlatpackBulkActionContext $context): int
+    public function handle(BulkActionContext $context): int
     {
-        return $this->bulkDeleteService->delete(
-            modelClass: $context->modelClass,
-            records: $context->records,
-            schema: $context->schema,
-            user: $context->user,
-            search: $context->search,
-            filters: $context->filters,
-            scope: $context->scope,
-        );
+        return $this->runBulkDelete($context);
     }
 }

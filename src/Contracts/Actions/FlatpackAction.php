@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Flatpack\Contracts\Actions;
 
-use Flatpack\Actions\FlatpackActionContext;
+use Flatpack\Actions\ActionContext;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 
@@ -17,5 +17,5 @@ interface FlatpackAction
      */
     public function authorize(Authenticatable $user, string $modelClass, ?Model $model): bool;
 
-    public function handle(FlatpackActionContext $context): mixed;
+    public function handle(ActionContext $context): mixed;
 }

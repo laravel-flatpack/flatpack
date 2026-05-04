@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Flatpack\Http\Controllers;
 
-use Flatpack\Actions\FlatpackActionContext;
-use Flatpack\Actions\FlatpackBulkActionContext;
+use Flatpack\Actions\ActionContext;
+use Flatpack\Actions\BulkActionContext;
 use Flatpack\Contracts\Composition\CompositionQuery;
 use Flatpack\Facades\Flatpack;
 use Flatpack\Http\Requests\BulkActionRequest;
@@ -64,7 +64,7 @@ final readonly class TableRowController
 
         $handler = $this->actionRuntime->resolveBulkActionHandler($action);
         $this->actionRuntime->ensureBulkActionAuthorized($handler, $user, $modelClass);
-        $result = $handler->handle(FlatpackBulkActionContext::fromRequest(
+        $result = $handler->handle(BulkActionContext::fromRequest(
             request: $request,
             user: $user,
             entity: Flatpack::dashboardEntity(),
@@ -146,7 +146,7 @@ final readonly class TableRowController
         );
 
         try {
-            $handler->handle(new FlatpackActionContext(
+            $handler->handle(new ActionContext(
                 request: $request,
                 entity: Flatpack::dashboardEntity(),
                 actionName: $action,
@@ -322,7 +322,7 @@ final readonly class TableRowController
             'columns' => $columnsValue,
         ];
         try {
-            $handler->handle(new FlatpackActionContext(
+            $handler->handle(new ActionContext(
                 request: $request,
                 entity: $entity,
                 actionName: 'save',

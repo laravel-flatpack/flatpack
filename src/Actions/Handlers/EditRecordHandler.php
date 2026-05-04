@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Flatpack\Actions\Handlers;
 
-use Flatpack\Actions\FlatpackActionContext;
+use Flatpack\Actions\ActionContext;
+use Flatpack\Actions\ActionHandler;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
-final class EditRecordHandler extends FlatpackActionHandler
+final class EditRecordHandler extends ActionHandler
 {
     public function authorize(Authenticatable $user, string $modelClass, ?Model $model): bool
     {
@@ -21,15 +22,16 @@ final class EditRecordHandler extends FlatpackActionHandler
         );
     }
 
-    public function handle(FlatpackActionContext $context): mixed
+    public function handle(ActionContext $context): mixed
     {
-        if ($context->model === null) {
+        $model = $this->resolveModel($context);
+        if (! $this->modelExists($model)) {
             throw new ModelNotFoundException();
         }
 
         return redirect()->route('flatpack.entities.edit', [
             'entity' => $context->entity,
-            'record' => $context->model->getKey(),
+            'record' => $model->getKey(),
         ]);
     }
 }

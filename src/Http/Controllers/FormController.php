@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Flatpack\Http\Controllers;
 
-use Flatpack\Actions\FlatpackActionContext;
+use Flatpack\Actions\ActionContext;
 use Flatpack\Composition\FormComposition;
 use Flatpack\Composition\FormSidebarYamlExpander;
 use Flatpack\Http\Controllers\Concerns\AuthorizesModelAbility;
@@ -177,7 +177,7 @@ final readonly class FormController
         $this->actionRuntime()->ensureRecordActionAuthorized($handler, $user, $modelClass, $model);
 
         try {
-            $result = $handler->handle(new FlatpackActionContext(
+            $result = $handler->handle(new ActionContext(
                 request: $request,
                 entity: $entity,
                 actionName: $actionName,

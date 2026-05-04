@@ -50,7 +50,7 @@ test('maps generic exceptions using debug metadata when app.debug is true', func
     config(['app.debug' => true]);
 
     $translator = new DatabaseExceptionTranslator;
-    $e = $translator->toUserFacingValidationException(new \RuntimeException('boom'));
+    $e = $translator->toUserFacingValidationException(new RuntimeException('boom'));
 
     expect($e->errors())->toHaveKeys(['flatpack', 'flatpack_exception', 'flatpack_exception_message'])
         ->and($e->errors()['flatpack'][0])->toBe('boom');
@@ -60,7 +60,7 @@ test('uses generic message when app.debug is false for unknown exceptions', func
     config(['app.debug' => false]);
 
     $translator = new DatabaseExceptionTranslator;
-    $e = $translator->toUserFacingValidationException(new \RuntimeException('hidden'));
+    $e = $translator->toUserFacingValidationException(new RuntimeException('hidden'));
 
     expect($e->errors()['flatpack'][0])->toBe('This change could not be completed.')
         ->and($e->errors())->not->toHaveKey('flatpack_exception');

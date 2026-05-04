@@ -8,8 +8,8 @@ use Flatpack\Http\Requests\Concerns\InteractsWithFlatpackAuthorization;
 use Flatpack\Tests\Models\Post;
 use Flatpack\Tests\Models\User;
 use Flatpack\Tests\TestCase;
-use Illuminate\Auth\Access\Response;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Auth\Access\Response;
 use Illuminate\Support\Facades\Gate;
 
 uses(TestCase::class);

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Flatpack\Actions\FlatpackActionContext;
+use Flatpack\Actions\ActionContext;
 use Flatpack\Actions\Handlers\ReorderActionHandler;
 use Flatpack\Tests\Models\Post;
 use Flatpack\Tests\TestCase;
@@ -162,14 +162,14 @@ function reorderContext(
     string $modelClass = Post::class,
     ?string $scope = null,
     ?array $schema = null,
-): FlatpackActionContext {
+): ActionContext {
     $request = Request::create(
         uri: '/flatpack/posts/' . ($record !== '' ? $record : '0') . '/reorder',
         method: 'PATCH',
         parameters: ['position' => $position],
     );
 
-    return new FlatpackActionContext(
+    return new ActionContext(
         request: $request,
         entity: 'posts',
         actionName: 'reorder',

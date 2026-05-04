@@ -24,8 +24,8 @@ it('ArrayAccess offsetGet returns null for unknown or non-string keys', function
 it('ArrayAccess mutations throw LogicException', function (): void {
     $n = new NormalizedListSchema([]);
 
-    expect(fn () => $n[] = 'x')->toThrow(\LogicException::class);
+    expect(fn () => $n[] = 'x')->toThrow(LogicException::class);
     expect(function () use ($n): void {
         unset($n['a']);
-    })->toThrow(\LogicException::class);
+    })->toThrow(LogicException::class);
 });

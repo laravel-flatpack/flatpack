@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Flatpack\Contracts\Actions;
 
-use Flatpack\Actions\FlatpackBulkActionContext;
+use Flatpack\Actions\BulkActionContext;
 use Illuminate\Contracts\Auth\Authenticatable;
 
 /**
@@ -21,5 +21,5 @@ interface FlatpackBulkAction
      */
     public function authorize(Authenticatable $user, string $modelClass): bool;
 
-    public function handle(FlatpackBulkActionContext $context): int;
+    public function handle(BulkActionContext $context): int;
 }

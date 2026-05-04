@@ -6,7 +6,7 @@ namespace Flatpack\Actions;
 
 use Illuminate\Http\Request;
 
-final readonly class FlatpackActionContext
+final readonly class ActionContext
 {
     /**
      * @param  array<string, mixed>|null  $schema

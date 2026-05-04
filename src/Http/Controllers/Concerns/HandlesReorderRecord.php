@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Flatpack\Http\Controllers\Concerns;
 
-use Flatpack\Actions\FlatpackActionContext;
+use Flatpack\Actions\ActionContext;
 use Flatpack\Contracts\Actions\FlatpackAction;
 use Flatpack\Support\Exceptions\ActionRuntimeException;
 use Flatpack\Support\ReorderColumnResolver;
@@ -82,7 +82,7 @@ trait HandlesReorderRecord
         ?string $scope = null,
     ): Model|JsonResponse {
         try {
-            $reordered = $handler->handle(new FlatpackActionContext(
+            $reordered = $handler->handle(new ActionContext(
                 request: $request,
                 entity: $entity,
                 actionName: 'reorder',

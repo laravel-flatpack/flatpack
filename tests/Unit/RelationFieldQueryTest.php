@@ -10,7 +10,7 @@ uses(TestCase::class);
 
 it('components returns null when model class is empty or not a Model subclass', function (): void {
     expect(RelationFieldQuery::components('', ['relation' => 'category']))->toBeNull()
-        ->and(RelationFieldQuery::components(\stdClass::class, [
+        ->and(RelationFieldQuery::components(stdClass::class, [
             'relation' => 'category',
             'relation_name' => 'name',
             'relation_value' => 'id',

@@ -14,7 +14,7 @@ test('mapRequiredConstraint maps NOT NULL failures to nested table row fields', 
         'sqlite',
         'insert into …',
         [],
-        new \PDOException('NOT NULL constraint failed: line_items.sku'),
+        new PDOException('NOT NULL constraint failed: line_items.sku'),
     );
 
     $mapped = $mapper->mapRequiredConstraint(
@@ -46,7 +46,7 @@ test('mapRequiredConstraint returns null when schema or column cannot be matched
     $mapper = new RelationSyncErrorMapper;
 
     expect($mapper->mapRequiredConstraint(
-        new QueryException('sqlite', 'x', [], new \PDOException('other')),
+        new QueryException('sqlite', 'x', [], new PDOException('other')),
         ['fields' => []],
         [],
     ))->toBeNull();

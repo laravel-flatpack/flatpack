@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use Flatpack\Services\Commands\DiscoverFlatpackIconNamesService;
-use Illuminate\Filesystem\Filesystem;
 use Flatpack\Tests\TestCase;
+use Illuminate\Filesystem\Filesystem;
 
 uses(TestCase::class);
 

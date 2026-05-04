@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Flatpack\Actions\FlatpackActionContext;
+use Flatpack\Actions\ActionContext;
 use Flatpack\Actions\Handlers\DeleteRecordHandler;
 use Flatpack\Actions\Handlers\EditRecordHandler;
 use Flatpack\Actions\Handlers\ForceDeleteRecordHandler;
@@ -18,7 +18,7 @@ use Illuminate\Http\Request;
 uses(TestCase::class, RefreshDatabase::class);
 
 test('DeleteRecordHandler returns null when model is not an Eloquent model', function () {
-    $context = new FlatpackActionContext(
+    $context = new ActionContext(
         request: Request::create('/flatpack/posts/1', 'DELETE'),
         entity: 'posts',
         actionName: 'delete',
@@ -37,7 +37,7 @@ test('DeleteRecordHandler returns null when model is not an Eloquent model', fun
 test('DeleteRecordHandler deletes model and returns redirect', function () {
     $post = Post::factory()->create();
 
-    $context = new FlatpackActionContext(
+    $context = new ActionContext(
         request: Request::create('/flatpack/posts/' . $post->getKey(), 'DELETE'),
         entity: 'posts',
         actionName: 'delete',
@@ -58,7 +58,7 @@ test('DeleteRecordHandler deletes model and returns redirect', function () {
 test('EditRecordHandler redirects to edit route when model exists', function () {
     $post = Post::factory()->create();
 
-    $context = new FlatpackActionContext(
+    $context = new ActionContext(
         request: Request::create('/flatpack/posts/' . $post->getKey() . '/edit', 'GET'),
         entity: 'posts',
         actionName: 'edit',
@@ -75,7 +75,7 @@ test('EditRecordHandler redirects to edit route when model exists', function () 
 });
 
 test('EditRecordHandler throws when model is missing', function () {
-    $context = new FlatpackActionContext(
+    $context = new ActionContext(
         request: Request::create('/flatpack/posts/1/edit', 'GET'),
         entity: 'posts',
         actionName: 'edit',
@@ -93,7 +93,7 @@ test('EditRecordHandler throws when model is missing', function () {
 test('ForceDeleteRecordHandler force deletes model and returns redirect', function () {
     $post = Post::factory()->create();
 
-    $context = new FlatpackActionContext(
+    $context = new ActionContext(
         request: Request::create('/flatpack/posts/' . $post->getKey() . '/force', 'DELETE'),
         entity: 'posts',
         actionName: 'forceDelete',
@@ -111,7 +111,7 @@ test('ForceDeleteRecordHandler force deletes model and returns redirect', functi
 });
 
 test('ForceDeleteRecordHandler returns null when model is not an Eloquent model', function () {
-    $context = new FlatpackActionContext(
+    $context = new ActionContext(
         request: Request::create('/flatpack/posts/1/force', 'DELETE'),
         entity: 'posts',
         actionName: 'forceDelete',
@@ -130,7 +130,7 @@ test('ForceDeleteRecordHandler returns null when model is not an Eloquent model'
 test('RestoreRecordHandler returns null when model cannot be restored', function () {
     $category = Category::factory()->create();
 
-    $context = new FlatpackActionContext(
+    $context = new ActionContext(
         request: Request::create('/flatpack/categories/' . $category->getKey() . '/restore', 'POST'),
         entity: 'categories',
         actionName: 'restore',
@@ -148,7 +148,7 @@ test('RestoreRecordHandler restores soft-deleted model and returns redirect', fu
     $post = Post::factory()->create();
     $post->delete();
 
-    $context = new FlatpackActionContext(
+    $context = new ActionContext(
         request: Request::create('/flatpack/posts/' . $post->getKey() . '/restore', 'POST'),
         entity: 'posts',
         actionName: 'restore',
