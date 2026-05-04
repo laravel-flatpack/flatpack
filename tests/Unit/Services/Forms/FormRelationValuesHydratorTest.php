@@ -10,6 +10,38 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(TestCase::class, RefreshDatabase::class);
 
+test('columnIdsFromDefinition supports list and map column shapes', function (): void {
+    expect(FormRelationValuesHydrator::columnIdsFromDefinition([
+        'columns' => [
+            ['id' => 'a', 'label' => 'A'],
+            ['id' => 'b'],
+        ],
+    ]))->toBe(['a', 'b'])
+        ->and(FormRelationValuesHydrator::columnIdsFromDefinition([
+            'columns' => [
+                'sku' => ['label' => 'SKU'],
+                'qty' => ['label' => 'Qty'],
+            ],
+        ]))->toBe(['sku', 'qty'])
+        ->and(FormRelationValuesHydrator::columnIdsFromDefinition([]))->toBe([]);
+});
+
+test('nestedRelationNamesForEagerLoad collects nested relation columns', function (): void {
+    expect(FormRelationValuesHydrator::nestedRelationNamesForEagerLoad([
+        'columns' => [
+            [
+                'id' => 'user',
+                'type' => 'relation',
+                'relation' => 'author',
+            ],
+            [
+                'id' => 'title',
+                'type' => 'text',
+            ],
+        ],
+    ]))->toBe(['author']);
+});
+
 test('hydrate respects yaml limit and never returns more rows than the hard max', function (): void {
     $post = Post::factory()->create(['title' => 'Test', 'slug' => 'test']);
 

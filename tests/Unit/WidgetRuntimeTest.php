@@ -16,6 +16,35 @@ use Illuminate\Http\Request;
 
 uses(TestCase::class);
 
+test('resolveProvider throws when configured class does not implement WidgetDataProvider', function () {
+    config()->set('flatpack.widget_providers', [
+        'invalid' => stdClass::class,
+    ]);
+
+    expect(fn () => app(WidgetRuntime::class)->resolveProvider('invalid'))
+        ->toThrow(WidgetRuntimeException::class, 'must implement WidgetDataProvider');
+});
+
+test('resolveData throws when request has no authenticated user', function () {
+    config()->set('flatpack.widget_providers', [
+        'total_revenue' => TestWidgetProvider::class,
+    ]);
+
+    $provider = app(WidgetRuntime::class)->resolveProvider('total_revenue');
+    $request = Request::create('/flatpack');
+    $request->setUserResolver(static fn () => null);
+
+    expect(fn () => app(WidgetRuntime::class)->resolveData(
+        $provider,
+        new WidgetContext(
+            request: $request,
+            entity: 'dashboard',
+            widgetId: 'revenue',
+            definition: ['type' => 'metric', 'provider' => 'total_revenue'],
+        ),
+    ))->toThrow(AuthorizationException::class);
+});
+
 test('resolveProvider throws runtime exception when provider is missing', function () {
     config()->set('flatpack.widget_providers', [
         'total_revenue' => TestWidgetProvider::class,

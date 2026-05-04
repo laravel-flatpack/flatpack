@@ -92,6 +92,88 @@ test('required column uses required validation', function () {
         ->and($rules['values.title'])->toContain('string');
 });
 
+test('returns empty rules when schema is null or columns are unusable', function () {
+    $builder = new ListSchemaRuleBuilder;
+
+    expect($builder->rulesForValues(null, Post::class))->toBe([])
+        ->and($builder->rulesForValues([], Post::class))->toBe([])
+        ->and($builder->rulesForValues(['columns' => 'nope'], Post::class))->toBe([]);
+});
+
+test('skips non-array column definitions and blank ids', function () {
+    $builder = new ListSchemaRuleBuilder;
+    $rules = $builder->rulesForValues([
+        'columns' => [
+            'bad' => 'x',
+            '' => [
+                'id' => '',
+                'type' => 'text',
+                'editable' => true,
+            ],
+            [
+                'id' => 'title',
+                'type' => 'text',
+                'editable' => true,
+            ],
+        ],
+    ], Post::class);
+
+    expect($rules)->toHaveKey('values.title')->not->toHaveKey('values.');
+});
+
+test('merges list tabs before reading columns', function () {
+    $builder = new ListSchemaRuleBuilder;
+    $rules = $builder->rulesForValues([
+        'tabs' => [
+            'main' => [
+                'label' => 'Main',
+                'columns' => [
+                    [
+                        'id' => 'note',
+                        'type' => 'text',
+                        'editable' => true,
+                        'label' => 'Note',
+                    ],
+                ],
+            ],
+        ],
+    ], Post::class);
+
+    expect($rules)->toHaveKey('values.note');
+});
+
+test('uses date validation for datetime column type', function () {
+    $builder = new ListSchemaRuleBuilder;
+    $rules = $builder->rulesForValues([
+        'columns' => [
+            [
+                'id' => 'starts_at',
+                'type' => 'datetime',
+                'label' => 'Starts',
+                'editable' => true,
+            ],
+        ],
+    ], Post::class);
+
+    expect($rules['values.starts_at'])->toContain('date');
+});
+
+test('uses array validation for actions column type', function () {
+    $builder = new ListSchemaRuleBuilder;
+    $rules = $builder->rulesForValues([
+        'columns' => [
+            [
+                'id' => 'meta',
+                'type' => 'actions',
+                'label' => 'Meta',
+                'editable' => true,
+            ],
+        ],
+    ], Post::class);
+
+    expect($rules['values.meta'])->toContain('array');
+});
+
 test('editable relation column adds exists rule when configured', function () {
     $builder = new ListSchemaRuleBuilder;
     $rules = $builder->rulesForValues([

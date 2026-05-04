@@ -69,3 +69,84 @@ it('allows file matching accept', function (): void {
 
     expect(true)->toBeTrue();
 });
+
+it('allows jpeg under image/* wildcard accept', function (): void {
+    $v = new FileUploadUploadValidator;
+    $img = UploadedFile::fake()->image('photo.jpg');
+
+    $v->validate(['accept' => ['image/*']], [$img]);
+
+    expect(true)->toBeTrue();
+});
+
+it('allows audio under audio/* wildcard accept', function (): void {
+    $v = new FileUploadUploadValidator;
+    $audio = UploadedFile::fake()->create('clip.mp3', 1, 'audio/mpeg');
+
+    $v->validate(['accept' => ['audio/*']], [$audio]);
+
+    expect(true)->toBeTrue();
+});
+
+it('allows video under video/* wildcard accept', function (): void {
+    $v = new FileUploadUploadValidator;
+    $video = UploadedFile::fake()->create('clip.mp4', 100, 'video/mp4');
+
+    $v->validate(['accept' => ['video/*']], [$video]);
+
+    expect(true)->toBeTrue();
+});
+
+it('allows file matching accept by extension token', function (): void {
+    $v = new FileUploadUploadValidator;
+    $pdf = UploadedFile::fake()->create('document.pdf', 1, 'application/pdf');
+
+    $v->validate(['accept' => ['pdf']], [$pdf]);
+
+    expect(true)->toBeTrue();
+});
+
+it('allows file matching accept string shorthand', function (): void {
+    $v = new FileUploadUploadValidator;
+    $pdf = UploadedFile::fake()->create('document.pdf', 1, 'application/pdf');
+
+    $v->validate(['accept' => 'application/pdf'], [$pdf]);
+
+    expect(true)->toBeTrue();
+});
+
+it('treats unknown mime subtype as a literal mime token', function (): void {
+    $v = new FileUploadUploadValidator;
+    $raw = UploadedFile::fake()->create('blob.bin', 1, 'application/octet-stream');
+
+    $v->validate(['accept' => ['application/octet-stream']], [$raw]);
+
+    expect(true)->toBeTrue();
+});
+
+it('ignores non-UploadedFile entries when validating', function (): void {
+    $v = new FileUploadUploadValidator;
+    $pdf = UploadedFile::fake()->create('x.pdf', 1, 'application/pdf');
+
+    $v->validate([], ['x', $pdf, null]);
+
+    expect(true)->toBeTrue();
+});
+
+it('ignores unusable accept values and validates without mime narrowing', function (): void {
+    $v = new FileUploadUploadValidator;
+    $pdf = UploadedFile::fake()->create('x.pdf', 1, 'application/pdf');
+
+    $v->validate(['accept' => 12345], [$pdf]);
+
+    expect(true)->toBeTrue();
+});
+
+it('skips empty accept tokens', function (): void {
+    $v = new FileUploadUploadValidator;
+    $pdf = UploadedFile::fake()->create('x.pdf', 1, 'application/pdf');
+
+    $v->validate(['accept' => ['', '  ', 'application/pdf']], [$pdf]);
+
+    expect(true)->toBeTrue();
+});

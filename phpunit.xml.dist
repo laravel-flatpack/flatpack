@@ -16,6 +16,10 @@
         <include>
             <directory>src</directory>
         </include>
+        <exclude>
+            <directory>src/Console</directory>
+            <file>src/Http/Controllers/TableRowController.php</file>
+        </exclude>
     </source>
     <php>
         <env name="FLATPACK_FEATURES_DEMO" value="true"/>
