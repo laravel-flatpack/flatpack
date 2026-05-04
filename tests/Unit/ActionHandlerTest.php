@@ -104,3 +104,51 @@ test('ActionHandler modelExists reflects persisted rows', function () {
     $persisted = Post::factory()->create();
     expect($exists->invoke($handler, $persisted))->toBeTrue();
 });
+
+test('ActionHandler overrideValues merges form values and lets overrides win', function () {
+    $handler = new class(app(FlatpackAuthorizer::class), app(ActionRuntime::class), app(ActionExecutor::class), app(SaveRecordService::class)) extends ActionHandler
+    {
+        public function authorize(Authenticatable $user, string $modelClass, ?Model $model): bool
+        {
+            return true;
+        }
+
+        public function handle(ActionContext $context): mixed
+        {
+            return null;
+        }
+    };
+
+    $request = Request::create('/x', 'POST', [
+        'values' => [
+            'title' => 'A',
+            'status' => 'draft',
+        ],
+    ]);
+
+    $context = new ActionContext(
+        request: $request,
+        entity: 'posts',
+        actionName: 'x',
+        modelClass: Post::class,
+        record: '1',
+        compositionType: 'form',
+        schema: null,
+        model: null,
+    );
+
+    $override = new ReflectionMethod(ActionHandler::class, 'overrideValues');
+    $override->setAccessible(true);
+
+    /** @var ActionContext $out */
+    $out = $override->invoke($handler, $context, [
+        'status' => 'published',
+        'slug' => 'a',
+    ]);
+
+    expect($out->request->input('values'))->toBe([
+        'title' => 'A',
+        'status' => 'published',
+        'slug' => 'a',
+    ]);
+});

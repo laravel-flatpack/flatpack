@@ -101,7 +101,22 @@ abstract class ActionHandler implements FlatpackAction
     }
 
     /**
-     * Runs another configured record action with the same request, entity, schema, and model instance.
+     * Returns a context whose request includes merged form {@code values}: {@code $overrides}
+     * wins over duplicate keys from the current {@code values} input (same rule as {@see array_merge()}).
+     */
+    protected function overrideValues(ActionContext $context, array $overrides): ActionContext
+    {
+        $request = $context->request;
+        $currentValues = is_array($request->input('values')) ? $request->input('values') : [];
+        $merged = array_merge($currentValues, $overrides);
+        $next = $request->duplicate();
+        $next->merge(['values' => $merged]);
+
+        return $context->withRequest($next);
+    }
+
+    /**
+     * Runs another configured record action with the given context.
      * Resolves the handler from config, enforces its {@see FlatpackAction::authorize()} checks, and wraps
      * execution with {@see ActionExecutor} (authorization passthrough, DB errors as validation).
      */
@@ -127,17 +142,7 @@ abstract class ActionHandler implements FlatpackAction
             $model,
         );
 
-        $nestedContext = new ActionContext(
-            request: $context->request,
-            entity: $context->entity,
-            actionName: $actionName,
-            modelClass: $context->modelClass,
-            record: $context->record,
-            compositionType: $context->compositionType,
-            scope: $context->scope,
-            schema: $context->schema,
-            model: $context->model,
-        );
+        $nestedContext = $context->withActionName($actionName);
 
         return $this->actionExecutor->execute(
             static fn (): mixed => $handler->handle($nestedContext),
