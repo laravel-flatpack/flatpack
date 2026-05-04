@@ -15,6 +15,7 @@ use Flatpack\Contracts\Composition\CompositionLoader;
 use Flatpack\Contracts\Composition\CompositionQuery;
 use Flatpack\Schema\Forms\FormSchemaNormalizer;
 use Flatpack\Schema\Widgets\Normalization\WidgetSchemaNormalizationSupport;
+use Flatpack\Schema\Widgets\Normalization\WidgetTypes\TableLikeWidgetNormalizer;
 use Flatpack\Schema\Widgets\WidgetSchemaNormalizer;
 use Flatpack\Services\Lists\ListRecordsLoader;
 use Flatpack\Services\Runtime\WidgetRuntime;
@@ -63,8 +64,11 @@ final class CompositionServiceProvider extends ServiceProvider
 
         $this->app->singleton(FormSchemaNormalizer::class);
         $this->app->singleton(ModelClassEntitySlugResolver::class);
-        $this->app->singleton(WidgetSchemaNormalizationSupport::class, fn ($app): WidgetSchemaNormalizationSupport => new WidgetSchemaNormalizationSupport(
+        $this->app->singleton(TableLikeWidgetNormalizer::class, fn ($app): TableLikeWidgetNormalizer => new TableLikeWidgetNormalizer(
             $app->make(ModelClassEntitySlugResolver::class),
+        ));
+        $this->app->singleton(WidgetSchemaNormalizationSupport::class, fn ($app): WidgetSchemaNormalizationSupport => new WidgetSchemaNormalizationSupport(
+            $app->make(TableLikeWidgetNormalizer::class),
         ));
         $this->app->singleton(WidgetSchemaNormalizer::class);
 

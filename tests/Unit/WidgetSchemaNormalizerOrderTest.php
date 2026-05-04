@@ -3,10 +3,11 @@
 declare(strict_types=1);
 
 use Flatpack\Schema\Widgets\Normalization\WidgetSchemaNormalizationSupport;
+use Flatpack\Schema\Widgets\Normalization\WidgetTypes\TableLikeWidgetNormalizer;
 use Flatpack\Schema\Widgets\WidgetSchemaNormalizer;
 
 test('normalized widgets map preserves YAML declaration order across mixed types', function () {
-    $normalizer = new WidgetSchemaNormalizer(new WidgetSchemaNormalizationSupport());
+    $normalizer = new WidgetSchemaNormalizer(new WidgetSchemaNormalizationSupport(new TableLikeWidgetNormalizer()));
     $out = $normalizer->normalize([
         'widgets' => [
             'first_metric' => [

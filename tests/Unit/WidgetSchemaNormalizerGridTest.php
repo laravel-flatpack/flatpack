@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Flatpack\Schema\Widgets\Normalization\WidgetSchemaNormalizationSupport;
+use Flatpack\Schema\Widgets\Normalization\WidgetTypes\TableLikeWidgetNormalizer;
 use Flatpack\Schema\Widgets\WidgetSchemaNormalizer;
 use Flatpack\Support\CompositionDebugContext;
 use Flatpack\Tests\TestCase;
@@ -10,7 +11,7 @@ use Flatpack\Tests\TestCase;
 uses(TestCase::class);
 
 test('grid widget normalizes model-backed definition', function () {
-    $normalizer = new WidgetSchemaNormalizer(new WidgetSchemaNormalizationSupport());
+    $normalizer = new WidgetSchemaNormalizer(new WidgetSchemaNormalizationSupport(new TableLikeWidgetNormalizer()));
     $out = $normalizer->normalize([
         'widgets' => [
             'posts_grid' => [
@@ -41,7 +42,7 @@ test('grid widget normalizes model-backed definition', function () {
 });
 
 test('grid widget normalizes provider-backed definition without yaml columns', function () {
-    $normalizer = new WidgetSchemaNormalizer(new WidgetSchemaNormalizationSupport());
+    $normalizer = new WidgetSchemaNormalizer(new WidgetSchemaNormalizationSupport(new TableLikeWidgetNormalizer()));
     $out = $normalizer->normalize([
         'widgets' => [
             'recent_posts' => [
@@ -57,7 +58,7 @@ test('grid widget normalizes provider-backed definition without yaml columns', f
 });
 
 test('grid widget rejects definitions with neither or both provider and model', function () {
-    $normalizer = new WidgetSchemaNormalizer(new WidgetSchemaNormalizationSupport());
+    $normalizer = new WidgetSchemaNormalizer(new WidgetSchemaNormalizationSupport(new TableLikeWidgetNormalizer()));
 
     $neither = $normalizer->normalize([
         'widgets' => [
@@ -83,7 +84,7 @@ test('grid widget rejects definitions with neither or both provider and model', 
 });
 
 test('grid widget keeps bulk_actions, pagination, and list_entity for model-backed widgets', function () {
-    $normalizer = new WidgetSchemaNormalizer(new WidgetSchemaNormalizationSupport());
+    $normalizer = new WidgetSchemaNormalizer(new WidgetSchemaNormalizationSupport(new TableLikeWidgetNormalizer()));
     $out = $normalizer->normalize([
         'widgets' => [
             'recent' => [
@@ -118,7 +119,7 @@ test('grid widget normalizes optional card slot map and drops unknown column ref
     $debug = app(CompositionDebugContext::class);
     $debug->activate('test');
 
-    $normalizer = new WidgetSchemaNormalizer(new WidgetSchemaNormalizationSupport());
+    $normalizer = new WidgetSchemaNormalizer(new WidgetSchemaNormalizationSupport(new TableLikeWidgetNormalizer()));
     $out = $normalizer->normalize([
         'widgets' => [
             'posts_grid' => [
@@ -148,7 +149,7 @@ test('grid widget normalizes optional card slot map and drops unknown column ref
 });
 
 test('grid widget omits card key when slot map is empty or absent', function () {
-    $normalizer = new WidgetSchemaNormalizer(new WidgetSchemaNormalizationSupport());
+    $normalizer = new WidgetSchemaNormalizer(new WidgetSchemaNormalizationSupport(new TableLikeWidgetNormalizer()));
     $out = $normalizer->normalize([
         'widgets' => [
             'posts_grid' => [
@@ -170,7 +171,7 @@ test('grid widget omits card key when slot map is empty or absent', function () 
 });
 
 test('grid widget rejects an invalid model class', function () {
-    $normalizer = new WidgetSchemaNormalizer(new WidgetSchemaNormalizationSupport());
+    $normalizer = new WidgetSchemaNormalizer(new WidgetSchemaNormalizationSupport(new TableLikeWidgetNormalizer()));
     $out = $normalizer->normalize([
         'widgets' => [
             'broken' => [
