@@ -6,7 +6,7 @@ namespace Flatpack\Actions\Handlers;
 
 use Flatpack\Actions\ActionContext;
 use Flatpack\Actions\ActionHandler;
-use Flatpack\Support\ReorderColumnResolver;
+use Flatpack\Schema\Lists\Normalization\ReorderColumnResolver;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
@@ -30,16 +30,12 @@ final class ReorderActionHandler extends ActionHandler
 
     public function handle(ActionContext $context): mixed
     {
-        $modelClass = trim($context->modelClass);
-        if (
-            $modelClass === ''
-            || ! class_exists($modelClass)
-            || ! is_subclass_of($modelClass, Model::class)
-        ) {
-            throw new InvalidArgumentException('Cannot reorder records: model class is invalid.');
-        }
-        $id = $context->record ?? (is_object($context->model) ? (string) ($context->model->getKey() ?? '') : '');
-        if ($id === '') {
+        $modelClass = $this->assertEloquentModelClass(
+            $context->modelClass,
+            'Cannot reorder records: model class is invalid.',
+        );
+        $id = $this->recordKeyFromContext($context);
+        if ($id === null) {
             throw new ModelNotFoundException('Cannot reorder records: record id is missing.');
         }
         $newPosition = max(1, (int) $context->request->integer('position', 1));

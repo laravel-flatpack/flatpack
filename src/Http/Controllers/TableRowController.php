@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Flatpack\Http\Controllers;
 
 use Flatpack\Actions\ActionContext;
+use Flatpack\Actions\ActionExecutor;
 use Flatpack\Actions\BulkActionContext;
 use Flatpack\Contracts\Composition\CompositionQuery;
 use Flatpack\Facades\Flatpack;
@@ -32,6 +33,7 @@ final readonly class TableRowController
         private WidgetSchemaNormalizer $widgetSchemaNormalizer,
         private FormSchemaNormalizer $formSchemaNormalizer,
         private ActionRuntime $actionRuntime,
+        private ActionExecutor $actionExecutor,
     ) {}
 
     public function bulkDashboardWidgetRows(BulkActionRequest $request, string $widget): RedirectResponse
@@ -64,7 +66,7 @@ final readonly class TableRowController
 
         $handler = $this->actionRuntime->resolveBulkActionHandler($action);
         $this->actionRuntime->ensureBulkActionAuthorized($handler, $user, $modelClass);
-        $result = $handler->handle(BulkActionContext::fromRequest(
+        $result = $this->actionExecutor->execute(fn (): int => $handler->handle(BulkActionContext::fromRequest(
             request: $request,
             user: $user,
             entity: Flatpack::dashboardEntity(),
@@ -74,7 +76,7 @@ final readonly class TableRowController
                 'columns' => $definition['columns'] ?? [],
                 'bulk_actions' => $definition['bulk_actions'] ?? [],
             ],
-        ));
+        )));
 
         return back(303)->with('flatpack', [
             $action => (int) $result,

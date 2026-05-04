@@ -45,14 +45,17 @@ final readonly class EntityActionController
         $tab = trim((string) $request->input('tab', ''));
         $resolvedTab = $this->activeTabResolver->resolveWithSchema($schema, $tab);
 
-        $result = $handler->handle(BulkActionContext::fromRequest(
-            request: $request,
-            user: $user,
-            entity: $entity,
-            modelClass: $listModelClass,
-            schema: $schema,
-            scope: $resolvedTab->scope ?? '',
-        ));
+        $result = $this->executeBulkAction(
+            $handler,
+            BulkActionContext::fromRequest(
+                request: $request,
+                user: $user,
+                entity: $entity,
+                modelClass: $listModelClass,
+                schema: $schema,
+                scope: $resolvedTab->scope ?? '',
+            ),
+        );
 
         $target = SuccessRedirectSchema::findForBulkAction($schema, $action);
         if ($target !== null) {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Flatpack\Support\FileUploadRelationHydrator;
+use Flatpack\Schema\Forms\Normalization\FileUploadRelationHydrator;
 use Flatpack\Tests\Models\Post;
 
 it('builds upload fragment from related model attributes matching metadata keys', function (): void {

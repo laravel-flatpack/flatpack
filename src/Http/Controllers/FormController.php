@@ -27,7 +27,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Inertia\Response;
-use Throwable;
 
 final readonly class FormController
 {
@@ -157,7 +156,6 @@ final readonly class FormController
      *
      * @throws AuthorizationException When the action handler denies access.
      * @throws ValidationException When the submit fails in a user-recoverable way.
-     * @throws Throwable
      */
     public function submit(FormSubmitRequest $request, string $entity): RedirectResponse
     {
@@ -176,28 +174,16 @@ final readonly class FormController
 
         $this->actionRuntime()->ensureRecordActionAuthorized($handler, $user, $modelClass, $model);
 
-        try {
-            $result = $handler->handle(new ActionContext(
-                request: $request,
-                entity: $entity,
-                actionName: $actionName,
-                modelClass: $modelClass,
-                record: $record,
-                compositionType: 'form',
-                schema: $schema,
-                model: $model,
-            ));
-        } catch (Throwable $exception) {
-            if ($exception instanceof AuthorizationException) {
-                throw $exception;
-            }
-            if ($exception instanceof ValidationException) {
-                throw $exception;
-            }
-            report($exception);
-
-            throw $this->actionRuntime()->toUserFacingValidationException($exception);
-        }
+        $result = $this->actionExecutor()->execute(fn () => $handler->handle(new ActionContext(
+            request: $request,
+            entity: $entity,
+            actionName: $actionName,
+            modelClass: $modelClass,
+            record: $record,
+            compositionType: 'form',
+            schema: $schema,
+            model: $model,
+        )));
 
         if ($result instanceof RedirectResponse) {
             return $result->setStatusCode(303);

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Flatpack\Providers;
 
 use Flatpack\Composition\EntityComposition;
-use Flatpack\Services\Navigation\BreadcrumbsBuilder;
-use Flatpack\Services\Navigation\FlatpackMenuBuilder;
-use Flatpack\Services\Navigation\MenuBuilder;
+use Flatpack\Navigation\BreadcrumbsBuilder;
+use Flatpack\Navigation\FlatpackMenuBuilder;
+use Flatpack\Navigation\MenuBuilder;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Support\ServiceProvider;
 use Override;

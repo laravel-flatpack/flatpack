@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Flatpack\Services\Lists\ListQueryParams;
+use Flatpack\Services\Lists\Dto\ListQueryParams;
 use Flatpack\Services\Lists\ListRecordsLoader;
 use Flatpack\Tests\Models\Category;
 use Flatpack\Tests\Models\Post;

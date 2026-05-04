@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Flatpack\Schema\Widgets\Normalization;
 
 use Flatpack\Composition\ModelClassEntitySlugResolver;
+use Flatpack\Schema\Forms\Normalization\FieldSpanCanonicalizer;
 use Flatpack\Schema\Generated\CompositionSchemaKeys;
 use Flatpack\Support\CompositionDebugLog;
-use Flatpack\Support\FieldSpanCanonicalizer;
 use Illuminate\Database\Eloquent\Model;
 
 /**

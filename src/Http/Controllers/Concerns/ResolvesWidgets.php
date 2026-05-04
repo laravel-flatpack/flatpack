@@ -6,7 +6,7 @@ namespace Flatpack\Http\Controllers\Concerns;
 
 use Flatpack\Facades\Flatpack;
 use Flatpack\Schema\Widgets\WidgetSchemaNormalizer;
-use Flatpack\Services\Lists\ListQueryParams;
+use Flatpack\Services\Lists\Dto\ListQueryParams;
 use Flatpack\Services\Lists\ListRecordsLoader;
 use Flatpack\Services\Runtime\WidgetRuntime;
 use Flatpack\Support\CompositionDebugContext;

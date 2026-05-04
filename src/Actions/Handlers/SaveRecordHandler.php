@@ -39,10 +39,7 @@ final class SaveRecordHandler extends ActionHandler
      */
     public function handle(ActionContext $context): mixed
     {
-        $model = $this->saveRecordService->resolveModel($context);
-        if (! $model instanceof Model) {
-            return null;
-        }
+        $model = $this->resolveModel($context, mustExist: false);
 
         $resolved = $this->saveRecordService->resolvePayload($context);
         if ($resolved === null) {

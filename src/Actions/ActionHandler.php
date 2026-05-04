@@ -16,7 +16,7 @@ use InvalidArgumentException;
 
 /**
  * Base for record-level actions: authorization helpers, nested action dispatch, {@see resolveModel()},
- * {@see modelExists()}, and {@see SaveRecordService} for custom handlers
+ * {@see modelExists()}, {@see resolveModelOrFail()}, and {@see SaveRecordService} for custom handlers
  * that need the same save pipeline as the built-in `save` action.
  * Concrete handlers implement authorize() and handle().
  *
@@ -28,7 +28,7 @@ abstract class ActionHandler implements FlatpackAction
     public function __construct(
         protected readonly FlatpackAuthorizer $authorizer,
         protected readonly ActionRuntime $actionRuntime,
-        protected readonly EntityActionExecutor $actionExecutor,
+        protected readonly ActionExecutor $actionExecutor,
         protected readonly SaveRecordService $saveRecordService,
     ) {}
 
@@ -48,10 +48,48 @@ abstract class ActionHandler implements FlatpackAction
 
     /**
      * Resolves the model from the context.
+     *
+     * @param  bool  $mustExist  When true, require a persisted Eloquent row or throw {@see ModelNotFoundException}.
+     * @return ($mustExist is true ? Model : ?Model)
      */
-    protected function resolveModel(ActionContext $context): ?Model
+    protected function resolveModel(ActionContext $context, bool $mustExist = false): ?Model
     {
-        return EloquentModelResolver::fromContext($context);
+        $model = EloquentModelResolver::fromContext($context);
+
+        if (! $model instanceof Model) {
+            throw new InvalidArgumentException('Record model could not be resolved.');
+        }
+
+        if ($mustExist && ! $this->modelExists($model)) {
+            throw new ModelNotFoundException('Record not found.');
+        }
+
+        return $model;
+    }
+
+    /**
+     * @return class-string<Model>
+     */
+    protected function assertEloquentModelClass(string $modelClass, string $message): string
+    {
+        $class = EloquentModelResolver::validEloquentClassOrNull($modelClass);
+        if ($class === null) {
+            throw new InvalidArgumentException($message);
+        }
+
+        return $class;
+    }
+
+    protected function recordKeyFromContext(ActionContext $context): ?string
+    {
+        $record = $context->record;
+        if (! is_string($record)) {
+            return null;
+        }
+
+        $trimmed = trim($record);
+
+        return $trimmed === '' ? null : $trimmed;
     }
 
     /**
@@ -63,19 +101,9 @@ abstract class ActionHandler implements FlatpackAction
     }
 
     /**
-     * Throws a ModelNotFoundException if the model does not exist.
-     */
-    protected function modelExistsOrFail(?Model $model): void
-    {
-        if (! $this->modelExists($model)) {
-            throw new ModelNotFoundException('Record not found.');
-        }
-    }
-
-    /**
      * Runs another configured record action with the same request, entity, schema, and model instance.
      * Resolves the handler from config, enforces its {@see FlatpackAction::authorize()} checks, and wraps
-     * execution with {@see EntityActionExecutor} (authorization passthrough, DB errors as validation).
+     * execution with {@see ActionExecutor} (authorization passthrough, DB errors as validation).
      */
     protected function callAction(string $actionName, ActionContext $context): mixed
     {

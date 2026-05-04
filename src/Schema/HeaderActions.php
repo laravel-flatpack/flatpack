@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Flatpack\Schema;
 
+use Flatpack\Navigation\NavigationUrl;
 use Flatpack\Schema\Generated\CompositionSchemaKeys;
-use Flatpack\Services\Navigation\NavigationUrl;
 use Flatpack\Support\CompositionDebugContext;
 use Flatpack\Support\CompositionDebugLog;
 use Flatpack\Support\SuccessRedirect;

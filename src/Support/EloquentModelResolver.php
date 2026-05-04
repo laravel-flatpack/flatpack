@@ -18,7 +18,10 @@ final class EloquentModelResolver
         return self::fromClass($context->modelClass);
     }
 
-    public static function fromClass(string $modelClass): ?Model
+    /**
+     * @return class-string<Model>|null
+     */
+    public static function validEloquentClassOrNull(string $modelClass): ?string
     {
         $trimmed = trim($modelClass);
         if ($trimmed === '' || ! class_exists($trimmed)) {
@@ -29,6 +32,16 @@ final class EloquentModelResolver
         }
 
         /** @var class-string<Model> $trimmed */
-        return new $trimmed();
+        return $trimmed;
+    }
+
+    public static function fromClass(string $modelClass): ?Model
+    {
+        $class = self::validEloquentClassOrNull($modelClass);
+        if ($class === null) {
+            return null;
+        }
+
+        return new $class();
     }
 }

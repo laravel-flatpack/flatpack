@@ -70,31 +70,31 @@ abstract class BulkActionHandler implements FlatpackBulkAction
 
     protected function runBulkDelete(BulkActionContext $context): int
     {
-        $p = $this->bulkListSelectionPayload($context);
+        $payload = $this->bulkListSelectionPayload($context);
 
         return $this->bulkDeleteService->delete(
-            modelClass: $p['modelClass'],
-            records: $p['records'],
-            schema: $p['schema'],
-            user: $p['user'],
-            search: $p['search'],
-            filters: $p['filters'],
-            scope: $p['scope'],
+            modelClass: $payload['modelClass'],
+            records: $payload['records'],
+            schema: $payload['schema'],
+            user: $payload['user'],
+            search: $payload['search'],
+            filters: $payload['filters'],
+            scope: $payload['scope'],
         );
     }
 
     protected function runBulkRestore(BulkActionContext $context): int
     {
-        $p = $this->bulkListSelectionPayload($context);
+        $payload = $this->bulkListSelectionPayload($context);
 
         return $this->bulkRestoreService->restore(
-            modelClass: $p['modelClass'],
-            records: $p['records'],
-            schema: $p['schema'],
-            user: $p['user'],
-            search: $p['search'],
-            filters: $p['filters'],
-            scope: $p['scope'],
+            modelClass: $payload['modelClass'],
+            records: $payload['records'],
+            schema: $payload['schema'],
+            user: $payload['user'],
+            search: $payload['search'],
+            filters: $payload['filters'],
+            scope: $payload['scope'],
         );
     }
 

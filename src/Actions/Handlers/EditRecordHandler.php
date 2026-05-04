@@ -8,7 +8,6 @@ use Flatpack\Actions\ActionContext;
 use Flatpack\Actions\ActionHandler;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 final class EditRecordHandler extends ActionHandler
 {
@@ -24,10 +23,7 @@ final class EditRecordHandler extends ActionHandler
 
     public function handle(ActionContext $context): mixed
     {
-        $model = $this->resolveModel($context);
-        if (! $this->modelExists($model)) {
-            throw new ModelNotFoundException();
-        }
+        $model = $this->resolveModel($context, mustExist: true);
 
         return redirect()->route('flatpack.entities.edit', [
             'entity' => $context->entity,

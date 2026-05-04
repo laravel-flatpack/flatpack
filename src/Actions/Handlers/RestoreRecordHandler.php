@@ -8,6 +8,7 @@ use Flatpack\Actions\ActionContext;
 use Flatpack\Actions\ActionHandler;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
+use InvalidArgumentException;
 
 final class RestoreRecordHandler extends ActionHandler
 {
@@ -23,9 +24,13 @@ final class RestoreRecordHandler extends ActionHandler
 
     public function handle(ActionContext $context): mixed
     {
-        $model = $this->resolveModel($context);
-        if (! $this->modelExists($model) || ! method_exists($model, 'restore')) {
-            return null;
+        $model = $this->resolveModel($context, mustExist: true);
+
+        if (! method_exists($model, 'trashed') || ! method_exists($model, 'restore')) {
+            throw new InvalidArgumentException('Model does not use soft deletes.');
+        }
+        if ($model->trashed() !== true) {
+            throw new InvalidArgumentException('Record is not soft deleted.');
         }
 
         $model->restore();

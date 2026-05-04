@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Flatpack\Schema\Forms;
 
+use Flatpack\Schema\Forms\Normalization\FileUploadRelationHydrator;
 use Flatpack\Schema\Forms\Normalization\FormSchemaPipelineState;
 use Flatpack\Schema\Forms\Normalization\Pipes\MergeFormSidebarFieldsPipe;
 use Flatpack\Schema\Forms\Normalization\Pipes\MergeFormTabsIntoFieldsPipe;
@@ -16,7 +17,6 @@ use Flatpack\Schema\ResolvesLaravelPipeline;
 use Flatpack\Services\Forms\FormRelationValuesHydrator;
 use Flatpack\Support\CompositionDebugContext;
 use Flatpack\Support\CompositionDebugLog;
-use Flatpack\Support\FileUploadRelationHydrator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pipeline\Pipeline;
 use Throwable;

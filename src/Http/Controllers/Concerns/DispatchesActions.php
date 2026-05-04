@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Flatpack\Http\Controllers\Concerns;
 
 use Flatpack\Actions\ActionContext;
-use Flatpack\Actions\EntityActionExecutor;
+use Flatpack\Actions\ActionExecutor;
+use Flatpack\Actions\BulkActionContext;
 use Flatpack\Contracts\Actions\FlatpackAction;
 use Flatpack\Contracts\Actions\FlatpackBulkAction;
 use Flatpack\Http\Requests\FormSubmitRequest;
@@ -139,13 +140,18 @@ trait DispatchesActions
         ));
     }
 
+    private function executeBulkAction(FlatpackBulkAction $handler, BulkActionContext $context): int
+    {
+        return $this->actionExecutor()->execute(fn (): int => $handler->handle($context));
+    }
+
     private function actionRuntime(): ActionRuntime
     {
         return app(ActionRuntime::class);
     }
 
-    private function actionExecutor(): EntityActionExecutor
+    private function actionExecutor(): ActionExecutor
     {
-        return app(EntityActionExecutor::class);
+        return app(ActionExecutor::class);
     }
 }

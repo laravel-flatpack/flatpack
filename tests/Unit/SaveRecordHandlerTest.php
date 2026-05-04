@@ -89,14 +89,14 @@ test('save record handler creates a new model from form schema', function () {
         ->toBeTrue();
 });
 
-test('save record handler returns null when model cannot be resolved', function () {
+test('save record handler throws when model cannot be resolved', function () {
     $request = Request::create('/flatpack/posts', 'POST', [
         'values' => [
             'title' => 'Ignored',
         ],
     ]);
 
-    $result = app(SaveRecordHandler::class)->handle(new ActionContext(
+    expect(fn () => app(SaveRecordHandler::class)->handle(new ActionContext(
         request: $request,
         entity: 'posts',
         actionName: 'save',
@@ -112,9 +112,7 @@ test('save record handler returns null when model cannot be resolved', function 
             ],
         ],
         model: null,
-    ));
-
-    expect($result)->toBeNull();
+    )))->toThrow(InvalidArgumentException::class, 'Record model could not be resolved.');
 });
 
 test('save record handler returns model unchanged when request has no form payload', function () {

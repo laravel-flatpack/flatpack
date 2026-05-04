@@ -6,6 +6,7 @@ namespace Flatpack\Services\Lists;
 
 use Flatpack\Schema\Lists\ListSchemaNormalizer;
 use Flatpack\Schema\Lists\NormalizedListSchema;
+use Flatpack\Services\Lists\Dto\TabResolutionResult;
 
 /**
  * Runs every list composition through {@see ListSchemaNormalizer} before tab resolution.

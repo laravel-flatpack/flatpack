@@ -8,8 +8,6 @@ use Flatpack\Schema\Forms\FormFieldType;
 use Flatpack\Schema\Generated\CompositionSchemaKeys;
 use Flatpack\Schema\HeaderActions;
 use Flatpack\Support\CompositionDebugLog;
-use Flatpack\Support\FieldsetCanonicalizer;
-use Flatpack\Support\FieldSpanCanonicalizer;
 
 /**
  * Normalizes a single form field definition and drops fields with unsupported types.

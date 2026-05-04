@@ -6,8 +6,8 @@ namespace Flatpack\Http\Controllers\Concerns;
 
 use Flatpack\Actions\ActionContext;
 use Flatpack\Contracts\Actions\FlatpackAction;
+use Flatpack\Schema\Lists\Normalization\ReorderColumnResolver;
 use Flatpack\Support\Exceptions\ActionRuntimeException;
-use Flatpack\Support\ReorderColumnResolver;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;

@@ -6,7 +6,7 @@ namespace Flatpack\Schema\Lists\Normalization\Pipes;
 
 use Closure;
 use Flatpack\Schema\Lists\Normalization\ListSchemaPipelineState;
-use Flatpack\Support\ReorderColumnResolver;
+use Flatpack\Schema\Lists\Normalization\ReorderColumnResolver;
 
 /**
  * Flattens {@code tabs.*.columns} into the top-level {@code columns} list (single column set for the table)

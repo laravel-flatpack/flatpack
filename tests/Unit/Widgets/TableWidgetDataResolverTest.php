@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
+use Flatpack\Services\Widgets\TableWidgetDataResolver;
 use Flatpack\Tests\Models\User;
 use Flatpack\Tests\TestCase;
-use Flatpack\Widgets\Data\Table\TableWidgetDataResolver;
 use Flatpack\Widgets\Data\TableWidgetData;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;

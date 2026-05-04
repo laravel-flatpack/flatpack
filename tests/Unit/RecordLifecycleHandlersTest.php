@@ -17,7 +17,7 @@ use Illuminate\Http\Request;
 
 uses(TestCase::class, RefreshDatabase::class);
 
-test('DeleteRecordHandler returns null when model is not an Eloquent model', function () {
+test('DeleteRecordHandler throws when model is not a persisted Eloquent row', function () {
     $context = new ActionContext(
         request: Request::create('/flatpack/posts/1', 'DELETE'),
         entity: 'posts',
@@ -29,9 +29,8 @@ test('DeleteRecordHandler returns null when model is not an Eloquent model', fun
         model: new stdClass,
     );
 
-    $result = app(DeleteRecordHandler::class)->handle($context);
-
-    expect($result)->toBeNull();
+    expect(fn () => app(DeleteRecordHandler::class)->handle($context))
+        ->toThrow(ModelNotFoundException::class);
 });
 
 test('DeleteRecordHandler deletes model and returns redirect', function () {
@@ -110,7 +109,7 @@ test('ForceDeleteRecordHandler force deletes model and returns redirect', functi
         ->and(Post::query()->find($post->getKey()))->toBeNull();
 });
 
-test('ForceDeleteRecordHandler returns null when model is not an Eloquent model', function () {
+test('ForceDeleteRecordHandler throws when model is not a persisted Eloquent row', function () {
     $context = new ActionContext(
         request: Request::create('/flatpack/posts/1/force', 'DELETE'),
         entity: 'posts',
@@ -122,12 +121,11 @@ test('ForceDeleteRecordHandler returns null when model is not an Eloquent model'
         model: new stdClass,
     );
 
-    $result = app(ForceDeleteRecordHandler::class)->handle($context);
-
-    expect($result)->toBeNull();
+    expect(fn () => app(ForceDeleteRecordHandler::class)->handle($context))
+        ->toThrow(ModelNotFoundException::class);
 });
 
-test('RestoreRecordHandler returns null when model cannot be restored', function () {
+test('RestoreRecordHandler throws when model does not support restore', function () {
     $category = Category::factory()->create();
 
     $context = new ActionContext(
@@ -141,7 +139,8 @@ test('RestoreRecordHandler returns null when model cannot be restored', function
         model: $category,
     );
 
-    expect(app(RestoreRecordHandler::class)->handle($context))->toBeNull();
+    expect(fn () => app(RestoreRecordHandler::class)->handle($context))
+        ->toThrow(InvalidArgumentException::class);
 });
 
 test('RestoreRecordHandler restores soft-deleted model and returns redirect', function () {

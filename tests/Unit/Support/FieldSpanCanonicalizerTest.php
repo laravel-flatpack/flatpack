@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
+use Flatpack\Schema\Forms\Normalization\FieldSpanCanonicalizer;
 use Flatpack\Support\CompositionDebugLog;
-use Flatpack\Support\FieldSpanCanonicalizer;
 
 describe('FieldSpanCanonicalizer', function () {
     it('canonicalizes fraction aliases', function () {

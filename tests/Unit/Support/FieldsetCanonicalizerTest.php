@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Flatpack\Support\FieldsetCanonicalizer;
+use Flatpack\Schema\Forms\Normalization\FieldsetCanonicalizer;
 
 describe('FieldsetCanonicalizer', function () {
     it('normalizes string fieldset to label array', function () {

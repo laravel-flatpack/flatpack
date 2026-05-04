@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Flatpack\Http\Controllers\Concerns;
 
-use Flatpack\Services\Lists\ListQueryParams;
+use Flatpack\Services\Lists\Dto\ListQueryParams;
 use Flatpack\Services\Lists\ListRecordsLoader;
 
 /**

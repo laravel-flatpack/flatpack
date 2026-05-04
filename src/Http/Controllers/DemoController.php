@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Flatpack\Http\Controllers;
 
+use Flatpack\Demo\DemoCatalogFactory;
 use Flatpack\Http\FlatpackResponse;
-use Flatpack\Services\Demo\DemoCatalogFactory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Response;

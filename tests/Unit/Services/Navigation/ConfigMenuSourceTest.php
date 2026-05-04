@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Flatpack\Services\Navigation\ConfigMenuSource;
+use Flatpack\Navigation\ConfigMenuSource;
 use Illuminate\Config\Repository;
 
 test('fromConfigItems defaults navOrder to 99 when nav_order is omitted', function () {

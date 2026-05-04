@@ -23,10 +23,7 @@ final class ForceDeleteRecordHandler extends ActionHandler
 
     public function handle(ActionContext $context): mixed
     {
-        $model = $this->resolveModel($context);
-        if (! $this->modelExists($model)) {
-            return null;
-        }
+        $model = $this->resolveModel($context, mustExist: true);
 
         $model->forceDelete();
 
