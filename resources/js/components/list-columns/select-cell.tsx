@@ -10,7 +10,10 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { selectOptionLeadingIcon } from '@/components/ui/select-option-leading-icon';
-import { readOnlyTruncatedDisplay } from '@/lib/data-table-utils';
+import {
+    readOnlyTruncatedDisplay,
+    selectColumnOptions,
+} from '@/lib/data-table-utils';
 import { CLEAR_SELECT_ITEM_VALUE } from '@/lib/flatpack-select';
 import type { FlatpackDataTableColumn } from '@/types/data-table';
 
@@ -27,7 +30,7 @@ export function SelectCell({
     controlId: string;
     commit: (next: unknown) => void;
 }) {
-    const options = col.options ?? [];
+    const options = selectColumnOptions(col);
     if (!options.length) {
         return <span className="text-muted-foreground">—</span>;
     }

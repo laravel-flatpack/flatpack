@@ -726,8 +726,39 @@
                 "actions",
                 "badge",
                 "status",
-                "relation"
+                "relation",
+                "image"
             ]
+        },
+        "columnImageOptions": {
+            "type": "object",
+            "description": "Display options for `type: image` list columns (thumbnail sizing and aspect ratio).",
+            "properties": {
+                "width": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Rendered width in pixels (or unitless size hint; UI interprets)."
+                },
+                "height": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Rendered height in pixels (or unitless size hint; UI interprets)."
+                },
+                "aspect_ratio": {
+                    "description": "CSS-style aspect ratio: positive number (e.g. 1.77) or string token (e.g. `16/9`).",
+                    "oneOf": [
+                        {
+                            "type": "number",
+                            "exclusiveMinimum": 0
+                        },
+                        {
+                            "type": "string",
+                            "minLength": 1
+                        }
+                    ]
+                }
+            },
+            "additionalProperties": false
         },
         "columnOption": {
             "type": "object",
@@ -888,6 +919,9 @@
                 },
                 {
                     "$ref": "#/$defs/columnDate"
+                },
+                {
+                    "$ref": "#/$defs/columnImage"
                 },
                 {
                     "$ref": "#/$defs/columnGeneric"
@@ -1165,6 +1199,61 @@
             },
             "additionalProperties": false,
             "description": "Date or datetime column definition with format and range filtering options."
+        },
+        "columnImage": {
+            "type": "object",
+            "required": [
+                "type",
+                "label"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "type": {
+                    "const": "image"
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "options": {
+                    "$ref": "#/$defs/columnImageOptions"
+                },
+                "sortable": {
+                    "type": "boolean"
+                },
+                "searchable": {
+                    "type": "boolean"
+                },
+                "editable": {
+                    "type": "boolean"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "rules": {
+                    "$ref": "#/$defs/validationRules"
+                },
+                "detailDrawer": {
+                    "type": "boolean"
+                },
+                "invisible": {
+                    "type": "boolean"
+                },
+                "truncate": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "edit_form_field": {
+                    "$ref": "#/$defs/editFormFieldDefinition"
+                },
+                "editFormField": {
+                    "$ref": "#/$defs/editFormFieldDefinition"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Image column for URL or storage path values; optional `options` control display size and aspect ratio."
         },
         "columnGeneric": {
             "type": "object",

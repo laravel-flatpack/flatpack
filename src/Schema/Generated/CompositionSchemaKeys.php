@@ -234,6 +234,7 @@ final class CompositionSchemaKeys
         'badge',
         'date',
         'datetime',
+        'image',
         'relation',
         'select',
         'status',

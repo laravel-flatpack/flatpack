@@ -1,4 +1,7 @@
-import { columnEditableInDrawer } from '@/lib/data-table-utils';
+import {
+    columnEditableInDrawer,
+    selectColumnOptions,
+} from '@/lib/data-table-utils';
 import type { FlatpackDataTableColumn } from '@/types/data-table';
 import type { DrawerMappedField } from '@/types/data-table-row-drawer-field-mapper';
 import type { FormFieldProps } from '@/types/form-fields';
@@ -39,7 +42,7 @@ function mappedTypeFromColumn(
     }
     if (
         col.type === 'select' ||
-        (col.type === 'badge' && col.options?.length)
+        (col.type === 'badge' && selectColumnOptions(col).length > 0)
     ) {
         return 'select';
     }
@@ -75,7 +78,7 @@ export function mapDataTableColumnToDrawerField(
                 type: 'combobox',
                 label: col.label,
                 placeholder: 'Choose...',
-                options: col.options ?? [],
+                options: selectColumnOptions(col),
                 multiple: false,
                 relation:
                     col.type === 'relation' ? (col.relation ?? '') : undefined,
@@ -100,7 +103,7 @@ export function mapDataTableColumnToDrawerField(
                 type: 'select',
                 label: col.label,
                 placeholder: 'Choose...',
-                options: col.options ?? [],
+                options: selectColumnOptions(col),
             },
         };
     }

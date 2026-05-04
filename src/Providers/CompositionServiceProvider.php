@@ -19,6 +19,7 @@ use Flatpack\Schema\Widgets\Normalization\WidgetTypes\TableLikeWidgetNormalizer;
 use Flatpack\Schema\Widgets\WidgetSchemaNormalizer;
 use Flatpack\Services\Lists\ListRecordsLoader;
 use Flatpack\Services\Runtime\WidgetRuntime;
+use Flatpack\Services\Uploads\FileUploadBrowserUrl;
 use Illuminate\Support\ServiceProvider;
 use Override;
 
@@ -60,7 +61,9 @@ final class CompositionServiceProvider extends ServiceProvider
 
     protected function registerConcreteServiceSingletons(): void
     {
-        $this->app->singleton(ListRecordsLoader::class, fn (): ListRecordsLoader => new ListRecordsLoader);
+        $this->app->singleton(ListRecordsLoader::class, fn ($app): ListRecordsLoader => new ListRecordsLoader(
+            $app->make(FileUploadBrowserUrl::class),
+        ));
 
         $this->app->singleton(FormSchemaNormalizer::class);
         $this->app->singleton(ModelClassEntitySlugResolver::class);

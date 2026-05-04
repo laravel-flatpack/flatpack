@@ -30,6 +30,7 @@ trait LoadsListRecords
         ?array $schema,
         array $query,
         ?string $scope = null,
+        ?array $formSchema = null,
     ): array {
         return $this->listRecordsLoader()->load(
             $modelClass,
@@ -43,6 +44,7 @@ trait LoadsListRecords
                 sortDirection: $query['sortDirection'],
                 scope: $scope,
             ),
+            $formSchema,
         );
     }
 

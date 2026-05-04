@@ -5,3 +5,4 @@ export { DateCell } from '@/components/list-columns/date-cell';
 export { RelationCell } from '@/components/list-columns/relation-cell';
 export { SelectCell } from '@/components/list-columns/select-cell';
 export { EditableTextCell } from '@/components/list-columns/text-cell';
+export { ImageCell } from '@/components/list-columns/image-cell';

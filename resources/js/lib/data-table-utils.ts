@@ -1,6 +1,46 @@
-import type { FlatpackDataTableColumn } from '@/types/data-table';
+import type {
+    FlatpackDataTableColumn,
+    FlatpackDataTableColumnImageOptions,
+    FlatpackDataTableColumnOption,
+} from '@/types/data-table';
 
 const COLUMN_TRUNCATE_MAX = 1_000_000;
+
+/**
+ * Parses list schema `columnImageOptions` from a column's `options` field (`type: image` only).
+ */
+export function parseImageColumnOptions(
+    raw: unknown,
+): FlatpackDataTableColumnImageOptions {
+    if (raw == null || typeof raw !== 'object' || Array.isArray(raw)) {
+        return {};
+    }
+    const rec = raw as Record<string, unknown>;
+    const out: FlatpackDataTableColumnImageOptions = {};
+    const w = rec.width;
+    if (typeof w === 'number' && Number.isFinite(w) && w >= 1) {
+        out.width = Math.floor(w);
+    }
+    const h = rec.height;
+    if (typeof h === 'number' && Number.isFinite(h) && h >= 1) {
+        out.height = Math.floor(h);
+    }
+    const ar = rec.aspect_ratio;
+    if (typeof ar === 'number' && Number.isFinite(ar) && ar > 0) {
+        out.aspect_ratio = ar;
+    } else if (typeof ar === 'string' && ar.trim() !== '') {
+        out.aspect_ratio = ar.trim();
+    }
+    return out;
+}
+
+/** Select/badge option list; `type: image` columns use a different `options` shape. */
+export function selectColumnOptions(
+    col: FlatpackDataTableColumn,
+): FlatpackDataTableColumnOption[] {
+    const o = col.options;
+    return Array.isArray(o) ? o : [];
+}
 
 export function normalizeColumnTruncate(raw: unknown): number | undefined {
     if (raw == null) {
@@ -154,10 +194,10 @@ export function columnEditableInDrawer(col: FlatpackDataTableColumn): boolean {
     if (col.editable === true) {
         return true;
     }
-    if (col.type === 'select' && col.options?.length) {
+    if (col.type === 'select' && selectColumnOptions(col).length > 0) {
         return true;
     }
-    if (col.type === 'badge' && col.options?.length) {
+    if (col.type === 'badge' && selectColumnOptions(col).length > 0) {
         return true;
     }
     if (col.type === 'date') {

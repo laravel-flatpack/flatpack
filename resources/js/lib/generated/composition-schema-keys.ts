@@ -205,6 +205,7 @@ export const LIST_COLUMN_YAML_TYPES = [
     'badge',
     'date',
     'datetime',
+    'image',
     'relation',
     'select',
     'status',

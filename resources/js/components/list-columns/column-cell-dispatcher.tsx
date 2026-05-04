@@ -6,7 +6,9 @@ import { DateCell } from '@/components/list-columns/date-cell';
 import { RelationCell } from '@/components/list-columns/relation-cell';
 import { SelectCell } from '@/components/list-columns/select-cell';
 import { EditableTextCell } from '@/components/list-columns/text-cell';
+import { selectColumnOptions } from '@/lib/data-table-utils';
 import type { ListColumnRenderProps } from '@/types/list-columns';
+import { ImageCell } from './image-cell';
 
 export function ColumnCellDispatcher(props: ListColumnRenderProps) {
     const { column, row, value } = props;
@@ -37,7 +39,7 @@ export function ColumnCellDispatcher(props: ListColumnRenderProps) {
         );
     }
 
-    if (column.type === 'select' && column.options?.length) {
+    if (column.type === 'select' && selectColumnOptions(column).length > 0) {
         return (
             <SelectCell
                 column={column}
@@ -59,6 +61,9 @@ export function ColumnCellDispatcher(props: ListColumnRenderProps) {
                 commit={commit}
             />
         );
+    }
+    if (column.type === 'image') {
+        return <ImageCell column={column} value={value} />;
     }
 
     if (editable) {

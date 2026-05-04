@@ -29,6 +29,7 @@ final class CompositionSchemaKeysGenerator
         'columnRelation',
         'columnActions',
         'columnDate',
+        'columnImage',
         'columnGeneric',
     ];
 

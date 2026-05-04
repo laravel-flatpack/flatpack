@@ -25,6 +25,14 @@ trait LoadsListComposition
         return $this->entityComposition()->listSchema($entity);
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function loadFormSchema(string $entity): ?array
+    {
+        return $this->entityComposition()->formSchema($entity);
+    }
+
     private function listModelClass(ListComposition $list): string
     {
         return (string) ($list->model ?? '');

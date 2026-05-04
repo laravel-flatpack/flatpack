@@ -60,6 +60,7 @@ final readonly class ListController
             $effectiveSchemaArray,
             $query,
             $resolvedTab->scope,
+            $this->loadFormSchema($entity),
         );
         $widgetsSchema = $this->normalizedWidgetsSchema($effectiveSchemaArray);
         $resolvedWidgets = $this->resolveWidgetDataWhenPresent(

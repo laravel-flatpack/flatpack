@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Flatpack\Services\Lists;
 
 use Flatpack\Facades\Flatpack;
+use Flatpack\Schema\Forms\FormCompositionMergeForPersistence;
 use Flatpack\Schema\Lists\FilterDefinition;
 use Flatpack\Schema\Lists\FilterProcessor;
 use Flatpack\Schema\Lists\Normalization\ReorderColumnResolver;
@@ -14,6 +15,7 @@ use Flatpack\Schema\Lists\SchemaInspector;
 use Flatpack\Schema\Lists\SearchApplier;
 use Flatpack\Schema\Lists\SortingProcessor;
 use Flatpack\Services\Lists\Dto\ListQueryParams;
+use Flatpack\Services\Uploads\FileUploadBrowserUrl;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -27,6 +29,10 @@ use Illuminate\Pagination\LengthAwarePaginator;
  */
 final readonly class ListRecordsLoader
 {
+    public function __construct(
+        private FileUploadBrowserUrl $fileUploadBrowserUrl,
+    ) {}
+
     /**
      * @return array{
      *     records: list<array<string, mixed>>,
@@ -60,6 +66,7 @@ final readonly class ListRecordsLoader
         ?string $modelClass,
         ?array $schema,
         ListQueryParams $params,
+        ?array $formSchema = null,
     ): array {
         $page = $params->page;
         $perPage = $params->perPage;
@@ -120,8 +127,17 @@ final readonly class ListRecordsLoader
             page: $page,
         );
 
+        $mergedForm = $formSchema !== null
+            ? FormCompositionMergeForPersistence::merge($formSchema, null)
+            : null;
+        $records = $this->enrichImageColumnBrowseUrls(
+            $paginatorPayload['records'],
+            $schema,
+            $mergedForm,
+        );
+
         return [
-            'records' => $paginatorPayload['records'],
+            'records' => $records,
             'pagination' => $paginatorPayload['pagination'],
             'filters' => $serializedFilterDefinitions,
             'filter_values' => $built['normalizedFilterValues'],
@@ -362,5 +378,87 @@ final readonly class ListRecordsLoader
             },
             $baseColumns,
         );
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $records
+     * @param  array<string, mixed>|null  $listSchema
+     * @param  array<string, mixed>|null  $mergedFormSchema
+     * @return list<array<string, mixed>>
+     */
+    private function enrichImageColumnBrowseUrls(
+        array $records,
+        ?array $listSchema,
+        ?array $mergedFormSchema,
+    ): array {
+        $map = SchemaInspector::imageColumnFileUploadDefinitions(
+            $listSchema,
+            $mergedFormSchema,
+        );
+        if ($map === []) {
+            return $records;
+        }
+
+        $browser = $this->fileUploadBrowserUrl;
+
+        return array_map(
+            function (array $row) use ($map, $browser): array {
+                foreach ($map as $attr => $fieldDefinition) {
+                    if (! array_key_exists($attr, $row)) {
+                        continue;
+                    }
+                    $row[$attr] = $this->resolveListImageCellBrowseValue(
+                        $browser,
+                        $fieldDefinition,
+                        $row[$attr],
+                    );
+                }
+
+                return $row;
+            },
+            $records,
+        );
+    }
+
+    /**
+     * @param  array<string, mixed>  $fieldDefinition
+     */
+    private function resolveListImageCellBrowseValue(
+        FileUploadBrowserUrl $browser,
+        array $fieldDefinition,
+        mixed $raw,
+    ): mixed {
+        if ($raw === null) {
+            return null;
+        }
+
+        if (is_string($raw)) {
+            $trimmed = trim($raw);
+            if ($trimmed === '') {
+                return $raw;
+            }
+
+            if (preg_match('#^https?://#i', $trimmed)) {
+                return $raw;
+            }
+
+            $decoded = json_decode($trimmed, true);
+            if (is_array($decoded)) {
+                return $this->resolveListImageCellBrowseValue($browser, $fieldDefinition, $decoded);
+            }
+
+            return $browser->resolveBrowseUrlForField($fieldDefinition, $trimmed);
+        }
+
+        if (is_array($raw)) {
+            $disk = trim((string) ($raw['disk'] ?? ''));
+            $path = trim((string) ($raw['path'] ?? ''));
+
+            if ($disk !== '' && $path !== '') {
+                return $browser->ensureFragmentBrowseUrl($raw, $fieldDefinition);
+            }
+        }
+
+        return $raw;
     }
 }

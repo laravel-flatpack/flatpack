@@ -145,3 +145,53 @@ it('returns sortable column ids', function (): void {
 
     expect(SchemaInspector::sortableColumnIds($schema))->toBe(['title']);
 });
+
+it('maps image columns to file-upload field definitions from list or merged form', function (): void {
+    $listWithInline = [
+        'columns' => [
+            [
+                'id' => 'cover',
+                'type' => 'image',
+                'label' => 'Cover',
+                'edit_form_field' => [
+                    'type' => 'file-upload',
+                    'mode' => 'image',
+                ],
+            ],
+        ],
+    ];
+
+    expect(SchemaInspector::imageColumnFileUploadDefinitions($listWithInline, null))
+        ->toBe([
+            'cover' => [
+                'type' => 'file-upload',
+                'mode' => 'image',
+            ],
+        ]);
+
+    $form = [
+        'fields' => [
+            'avatar' => [
+                'id' => 'avatar',
+                'type' => 'file-upload',
+                'mode' => 'image',
+                'target_column' => 'profile_image',
+            ],
+        ],
+    ];
+
+    $listImage = [
+        'columns' => [
+            [
+                'id' => 'profile_image',
+                'type' => 'image',
+                'label' => 'Photo',
+            ],
+        ],
+    ];
+
+    expect(SchemaInspector::imageColumnFileUploadDefinitions($listImage, $form))
+        ->toBe([
+            'profile_image' => $form['fields']['avatar'],
+        ]);
+});

@@ -16,6 +16,13 @@ export type FlatpackDataTableColumnOption = {
     icon?: string;
 };
 
+/** Display options for `type: image` list columns (see list schema `columnImageOptions`). */
+export type FlatpackDataTableColumnImageOptions = {
+    width?: number;
+    height?: number;
+    aspect_ratio?: number | string;
+};
+
 export type FlatpackDataTableColumnMeta = {
     label: string;
 };
@@ -88,7 +95,9 @@ export type FlatpackDataTableColumn = {
     relation?: string;
     relationName?: string;
     relationValue?: string;
-    options?: FlatpackDataTableColumnOption[];
+    options?:
+        | FlatpackDataTableColumnOption[]
+        | FlatpackDataTableColumnImageOptions;
     actions?: FlatpackDataTableActionButton[];
     format?: string;
     timezone?: string;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Flatpack\Schema\Lists;
 
+use Flatpack\Schema\Forms\FormFieldType;
 use Flatpack\Schema\Generated\CompositionSchemaKeys;
 use Flatpack\Schema\YamlSchemaHelper;
 
@@ -168,6 +169,102 @@ final class SchemaInspector
         }
 
         return $out;
+    }
+
+    /**
+     * For {@code type: image} list columns, resolves {@code file-upload} definitions used by
+     * {@see \Flatpack\Services\Uploads\FileUploadBrowserUrl} to emit temporary / signed browse URLs.
+     *
+     * Definitions come from the list column {@code edit_form_field} when present, otherwise from
+     * the merged entity {@code form.yaml} fields ({@code id} or {@code target_column} match).
+     *
+     * @param  array<string, mixed>|null  $listSchema
+     * @param  array<string, mixed>|null  $mergedFormSchema  Output-shaped form schema with merged {@code fields}.
+     * @return array<string, array<string, mixed>>
+     */
+    public static function imageColumnFileUploadDefinitions(
+        ?array $listSchema,
+        ?array $mergedFormSchema,
+    ): array {
+        $out = [];
+        foreach (self::normalizedColumnsById($listSchema) as $id => $column) {
+            if (self::normalizedColumnType($column) !== 'image') {
+                continue;
+            }
+
+            $edit = self::listColumnInlineEditFormField($column);
+            if ($edit !== null && self::isFileUploadFieldDefinition($edit)) {
+                $out[$id] = $edit;
+
+                continue;
+            }
+
+            if ($mergedFormSchema !== null) {
+                $fromForm = self::findFormFileUploadFieldForAttribute($mergedFormSchema, $id);
+                if ($fromForm !== null) {
+                    $out[$id] = $fromForm;
+                }
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * @param  array<string, mixed>  $mergedFormSchema
+     */
+    private static function findFormFileUploadFieldForAttribute(
+        array $mergedFormSchema,
+        string $attributeKey,
+    ): ?array {
+        $fields = $mergedFormSchema['fields'] ?? null;
+        if (! is_array($fields)) {
+            return null;
+        }
+
+        foreach ($fields as $yamlKey => $definition) {
+            if (! is_array($definition)) {
+                continue;
+            }
+
+            if (! self::isFileUploadFieldDefinition($definition)) {
+                continue;
+            }
+
+            $fieldId = trim((string) ($definition['id'] ?? (is_string($yamlKey) ? $yamlKey : '')));
+            $targetColumn = trim((string) ($definition['target_column'] ?? ''));
+
+            if ($fieldId === $attributeKey || $targetColumn === $attributeKey) {
+                return $definition;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param  array<string, mixed>  $column
+     * @return array<string, mixed>|null
+     */
+    private static function listColumnInlineEditFormField(array $column): ?array
+    {
+        foreach (['edit_form_field', 'editFormField'] as $key) {
+            if (isset($column[$key]) && is_array($column[$key])) {
+                return $column[$key];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param  array<string, mixed>  $fieldDefinition
+     */
+    private static function isFileUploadFieldDefinition(array $fieldDefinition): bool
+    {
+        $type = FormFieldType::normalizeYamlType(trim((string) ($fieldDefinition['type'] ?? '')));
+
+        return $type === 'file-upload';
     }
 
     /**

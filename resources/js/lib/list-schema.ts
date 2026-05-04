@@ -1,4 +1,7 @@
-import { normalizeColumnTruncate } from '@/lib/data-table-utils';
+import {
+    normalizeColumnTruncate,
+    parseImageColumnOptions,
+} from '@/lib/data-table-utils';
 import {
     BUTTON_VARIANT_UI_VALUES,
     FORM_FIELD_TYPES_CANONICAL,
@@ -166,9 +169,26 @@ function normalizeColumnRecord(
     );
     const rel = pickRelationColumnFields(col);
     const actions = normalizeColumnActions(rawActions);
-    const optionsList = Object.hasOwn(col, 'options')
-        ? normalizeColumnOptions(rawOptions)
-        : null;
+
+    let resolvedOptions: FlatpackDataTableColumn['options'] | undefined;
+
+    if (Object.hasOwn(col, 'options')) {
+        if (type === 'image') {
+            const imageOpts = parseImageColumnOptions(rawOptions);
+            if (
+                imageOpts.width !== undefined ||
+                imageOpts.height !== undefined ||
+                imageOpts.aspect_ratio !== undefined
+            ) {
+                resolvedOptions = imageOpts;
+            }
+        } else {
+            const optionsList = normalizeColumnOptions(rawOptions);
+            if (optionsList.length > 0) {
+                resolvedOptions = optionsList;
+            }
+        }
+    }
 
     return {
         ...rest,
@@ -178,9 +198,7 @@ function normalizeColumnRecord(
         ...(editFormField !== undefined ? { editFormField } : {}),
         ...(rel !== null ? rel : {}),
         ...(actions.length > 0 ? { actions } : {}),
-        ...(optionsList !== null && optionsList.length > 0
-            ? { options: optionsList }
-            : {}),
+        ...(resolvedOptions !== undefined ? { options: resolvedOptions } : {}),
     } as FlatpackDataTableColumn;
 }
 
