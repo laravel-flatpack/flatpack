@@ -12,6 +12,7 @@ import type { PlateElementProps } from 'platejs/react';
 import { PlateElement, useEditorPlugin, withHOC } from 'platejs/react';
 import * as React from 'react';
 import { useFilePicker } from 'use-file-picker';
+import { useEditorMediaUpload } from '@/components/editor/editor-media-upload-context';
 import { useUploadFile } from '@/hooks/use-upload-file';
 import { cn } from '@/lib/utils';
 
@@ -49,6 +50,7 @@ export const PlaceholderElement = withHOC(
     PlaceholderProvider,
     function PlaceholderElement(props: PlateElementProps<TPlaceholderElement>) {
         const { editor, element } = props;
+        const editorMediaUpload = useEditorMediaUpload();
 
         const { api } = useEditorPlugin(PlaceholderPlugin);
 
@@ -58,7 +60,12 @@ export const PlaceholderElement = withHOC(
             uploadedFile,
             uploadFile,
             uploadingFile,
-        } = useUploadFile();
+        } = useUploadFile({
+            config: editorMediaUpload.requestConfig,
+            onUploadError: () => {
+                api.placeholder.removeUploadingFile(element.id as string);
+            },
+        });
 
         const loading = isUploading && uploadingFile;
 
@@ -69,7 +76,10 @@ export const PlaceholderElement = withHOC(
         const imageRef = React.useRef<HTMLImageElement>(null);
 
         const { openFilePicker } = useFilePicker({
-            accept: currentContent.accept,
+            accept: normalizeAccept(
+                editorMediaUpload.upload?.accept,
+                currentContent.accept,
+            ),
             multiple: true,
             onFilesSelected: ({ plainFiles: updatedFiles }) => {
                 const firstFile = updatedFiles[0];
@@ -87,8 +97,10 @@ export const PlaceholderElement = withHOC(
 
         const replaceCurrentPlaceholder = React.useCallback(
             (file: File) => {
-                void uploadFile(file);
                 api.placeholder.addUploadingFile(element.id as string, file);
+                void uploadFile(file).catch(() => {
+                    api.placeholder.removeUploadingFile(element.id as string);
+                });
             },
             [api.placeholder, element.id, uploadFile],
         );
@@ -276,4 +288,21 @@ function formatBytes(
             ? (accurateSizes[i] ?? 'Bytest')
             : (sizes[i] ?? 'Bytes')
     }`;
+}
+
+function normalizeAccept(
+    accept: string | string[] | undefined,
+    fallback: string[],
+): string[] {
+    if (typeof accept === 'string') {
+        const trimmed = accept.trim();
+        return trimmed === '' ? fallback : [trimmed];
+    }
+    if (Array.isArray(accept)) {
+        const tokens = accept
+            .map((token) => token.trim())
+            .filter((token) => token.length > 0);
+        return tokens.length > 0 ? tokens : fallback;
+    }
+    return fallback;
 }

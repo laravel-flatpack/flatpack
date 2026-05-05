@@ -393,6 +393,7 @@ describe('FlatpackFormPage', () => {
                             type: 'file-upload',
                             mode: 'url',
                             label: 'Avatar',
+                            upload: {},
                         },
                     },
                 }}

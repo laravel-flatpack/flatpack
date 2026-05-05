@@ -97,7 +97,7 @@ export function emptyValueForField(field: FormFieldProps): unknown {
         case 'combobox':
             return field.multiple ? [] : null;
         case 'file-upload':
-            return field.multiple ? [] : null;
+            return field.upload.multiple ? [] : null;
         case 'table':
             return [];
         case 'repeater':

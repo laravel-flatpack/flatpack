@@ -196,6 +196,16 @@ export type FlatpackFormCompositionFieldRichTextYaml = {
     rules?: FlatpackFormCompositionValidationRulesYaml;
     value?: unknown;
     toolbar?: boolean;
+    upload?: {
+        multiple?: boolean;
+        max_files?: number;
+        max_size_kb?: number;
+        accept?: string | string[];
+        directory?: string;
+        disk?: string;
+        visibility?: 'public' | 'private';
+        collection?: string;
+    };
     trigger?: FormFieldTrigger;
 };
 
@@ -209,6 +219,16 @@ export type FlatpackFormCompositionFieldBlockEditorYaml = {
     rules?: FlatpackFormCompositionValidationRulesYaml;
     value?: unknown;
     toolbar?: boolean;
+    upload?: {
+        multiple?: boolean;
+        max_files?: number;
+        max_size_kb?: number;
+        accept?: string | string[];
+        directory?: string;
+        disk?: string;
+        visibility?: 'public' | 'private';
+        collection?: string;
+    };
     trigger?: FormFieldTrigger;
 };
 
@@ -221,16 +241,18 @@ export type FlatpackFormCompositionFieldFileUploadYaml = {
     rules?: FlatpackFormCompositionValidationRulesYaml;
     value?: unknown;
     mode: 'relation' | 'url' | 'image' | 'file';
-    multiple?: boolean;
-    max_files?: number;
-    max_size_kb?: number;
-    accept?: string | string[];
-    directory?: string;
-    disk?: string;
-    visibility?: 'public' | 'private';
+    upload: {
+        multiple?: boolean;
+        max_files?: number;
+        max_size_kb?: number;
+        accept?: string | string[];
+        directory?: string;
+        disk?: string;
+        visibility?: 'public' | 'private';
+        collection?: string;
+    };
     relation?: string;
     callback?: string;
-    collection?: string;
     target_column?: string;
     persist_as?: 'string' | 'json';
     trigger?: FormFieldTrigger;

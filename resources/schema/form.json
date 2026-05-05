@@ -1412,6 +1412,9 @@
                 "toolbar": {
                     "type": "boolean"
                 },
+                "upload": {
+                    "$ref": "#/$defs/editorUpload"
+                },
                 "span": {
                     "$ref": "#/$defs/spanValue"
                 },
@@ -1461,6 +1464,9 @@
                 "toolbar": {
                     "type": "boolean"
                 },
+                "upload": {
+                    "$ref": "#/$defs/editorUpload"
+                },
                 "span": {
                     "$ref": "#/$defs/spanValue"
                 },
@@ -1495,37 +1501,9 @@
             ],
             "description": "How URL mode persists values when `multiple` is true."
         },
-        "fieldFileUpload": {
+        "editorUpload": {
             "type": "object",
-            "required": [
-                "type",
-                "label",
-                "mode"
-            ],
             "properties": {
-                "type": {
-                    "const": "file-upload"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "label": {
-                    "type": "string",
-                    "minLength": 1
-                },
-                "helperText": {
-                    "type": "string"
-                },
-                "required": {
-                    "type": "boolean"
-                },
-                "rules": {
-                    "$ref": "#/$defs/validationRules"
-                },
-                "value": {},
-                "mode": {
-                    "$ref": "#/$defs/fileUploadMode"
-                },
                 "multiple": {
                     "type": "boolean"
                 },
@@ -1568,15 +1546,54 @@
                         "private"
                     ]
                 },
+                "collection": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Optional collection/group identifier stored in upload metadata."
+                }
+            },
+            "additionalProperties": false,
+            "description": "Upload settings for rich-text and block-editor media insertion; stored URLs are embedded in editor JSON."
+        },
+        "fieldFileUpload": {
+            "type": "object",
+            "required": [
+                "type",
+                "label",
+                "mode",
+                "upload"
+            ],
+            "properties": {
+                "type": {
+                    "const": "file-upload"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "helperText": {
+                    "type": "string"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "rules": {
+                    "$ref": "#/$defs/validationRules"
+                },
+                "value": {},
+                "mode": {
+                    "$ref": "#/$defs/fileUploadMode"
+                },
+                "upload": {
+                    "$ref": "#/$defs/editorUpload"
+                },
                 "relation": {
                     "type": "string",
                     "minLength": 1,
                     "description": "Relation name used for relation mode persistence."
-                },
-                "collection": {
-                    "type": "string",
-                    "minLength": 1,
-                    "description": "Optional collection/group identifier for relation-backed media records."
                 },
                 "callback": {
                     "type": "string",

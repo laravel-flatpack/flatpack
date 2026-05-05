@@ -7,11 +7,13 @@ import {
     ensureDocumentHasBlock,
     ensureTrailingParagraphAfterVoid,
 } from '@/components/editor/ensure-document-block';
+import { EditorMediaUploadProvider } from '@/components/editor/editor-media-upload-context';
 import { RichTextEditorKit } from '@/components/editor/plugins/rich-text-editor-kit';
 import { RichTextToolbar } from '@/components/editor/rich-text-toolbar';
 import { Editor, EditorContainer } from '@/components/ui/editor';
 import { sanitizePlateValue } from '@/lib/plate-value-sanitize';
 import { cn } from '@/lib/utils';
+import type { EditorFieldUploadConfig } from '@/types/form-fields';
 
 const emptyDoc: Value = [{ type: 'p', children: [{ text: '' }] }];
 
@@ -21,6 +23,9 @@ export type RichTextEditorProps = {
     placeholder?: string;
     readOnly?: boolean;
     toolbar?: boolean;
+    upload?: EditorFieldUploadConfig;
+    uploadEndpoint?: string;
+    uploadFieldId?: string;
     initialValue?: Value;
     onValueChange?: (value: Value) => void;
 };
@@ -31,6 +36,9 @@ export function RichTextEditor({
     placeholder = 'Type / for commands…',
     readOnly,
     toolbar = false,
+    upload,
+    uploadEndpoint,
+    uploadFieldId,
     initialValue,
     onValueChange,
 }: RichTextEditorProps) {
@@ -47,7 +55,23 @@ export function RichTextEditor({
     });
 
     return (
-        <Plate
+        <EditorMediaUploadProvider
+            value={{
+                requestConfig:
+                    typeof uploadEndpoint === 'string' &&
+                    uploadEndpoint.trim() !== '' &&
+                    typeof uploadFieldId === 'string' &&
+                    uploadFieldId.trim() !== ''
+                        ? {
+                              fieldId: uploadFieldId,
+                              uploadEndpoint,
+                              maxSizeKb: upload?.max_size_kb,
+                          }
+                        : undefined,
+                upload,
+            }}
+        >
+            <Plate
             editor={editor}
             readOnly={readOnly}
             onValueChange={({ editor: ed, value: next }) => {
@@ -67,8 +91,8 @@ export function RichTextEditor({
                 }
                 onValueChange?.(next);
             }}
-        >
-            {toolbar ? (
+            >
+                {toolbar ? (
                 <div
                     className={cn(
                         'flex flex-col overflow-hidden rounded-md border border-input bg-background ring-offset-background',
@@ -88,7 +112,7 @@ export function RichTextEditor({
                         />
                     </EditorContainer>
                 </div>
-            ) : (
+                ) : (
                 <EditorContainer
                     variant="select"
                     className={cn('min-h-[220px] max-h-[480px]', className)}
@@ -99,7 +123,8 @@ export function RichTextEditor({
                         aria-labelledby={labelId}
                     />
                 </EditorContainer>
-            )}
-        </Plate>
+                )}
+            </Plate>
+        </EditorMediaUploadProvider>
     );
 }

@@ -186,10 +186,12 @@ describe('mapFormFieldPropsToComponentProps', () => {
             type: 'file-upload',
             label: 'Avatar',
             mode: 'url',
-            multiple: true,
-            max_files: 3,
-            max_size_kb: 2048,
-            accept: ['image/png'],
+            upload: {
+                multiple: true,
+                max_files: 3,
+                max_size_kb: 2048,
+                accept: ['image/png'],
+            },
         };
         const out = mapFormFieldPropsToComponentProps(props, {
             ...context,
@@ -211,7 +213,9 @@ describe('mapFormFieldPropsToComponentProps', () => {
             type: 'file-upload',
             label: 'Cover',
             mode: 'image',
-            multiple: false,
+            upload: {
+                multiple: false,
+            },
             target_column: 'cover_url',
         };
         const out = mapFormFieldPropsToComponentProps(props, {
@@ -229,7 +233,9 @@ describe('mapFormFieldPropsToComponentProps', () => {
             type: 'file-upload',
             label: 'Attachment',
             mode: 'file',
-            multiple: false,
+            upload: {
+                multiple: false,
+            },
             target_column: 'attachment_path',
         };
         const out = mapFormFieldPropsToComponentProps(props, {
@@ -247,9 +253,11 @@ describe('mapFormFieldPropsToComponentProps', () => {
             type: 'file-upload',
             label: 'Docs',
             mode: 'url' as const,
-            multiple: true,
-            maxFiles: 6,
-            maxSizeKb: 5120,
+            upload: {
+                multiple: true,
+                max_files: 6,
+                max_size_kb: 5120,
+            },
         } as FormFieldProps;
         const out = mapFormFieldPropsToComponentProps(props, {
             ...context,

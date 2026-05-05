@@ -1,9 +1,11 @@
 import * as React from 'react';
 import { toast } from 'sonner';
 import { z } from 'zod';
+import { messageFrom422Body } from '@/lib/file-storage';
 import type { UploadedFile, UseUploadFileProps } from '@/types/upload';
 
 export function useUploadFile({
+    config,
     onUploadComplete,
     onUploadError,
 }: UseUploadFileProps = {}) {
@@ -12,26 +14,70 @@ export function useUploadFile({
     const [progress, setProgress] = React.useState(0);
     const [isUploading, setIsUploading] = React.useState(false);
 
+    const maxSizeKb = config?.maxSizeKb;
+    const fieldId = config?.fieldId?.trim() ?? '';
+    const uploadEndpoint = config?.uploadEndpoint?.trim() ?? '';
+
     async function uploadFile(file: File) {
+        if (uploadEndpoint === '' || fieldId === '') {
+            const err = new Error('Editor upload is not configured for this field.');
+            toast.error(err.message);
+            onUploadError?.(err);
+            throw err;
+        }
+
+        if (typeof maxSizeKb === 'number' && maxSizeKb > 0) {
+            const maxBytes = maxSizeKb * 1024;
+            if (file.size > maxBytes) {
+                const err = new Error(`Each file must be at most ${maxSizeKb} KB.`);
+                toast.error(err.message);
+                onUploadError?.(err);
+                throw err;
+            }
+        }
+
         setIsUploading(true);
         setUploadingFile(file);
+        setProgress(15);
 
         try {
-            const objectUrl = URL.createObjectURL(file);
-            const result: UploadedFile = {
-                key: `local-${file.name}-${String(file.lastModified)}`,
-                name: file.name,
-                size: file.size,
-                type: file.type,
-                url: objectUrl,
-                appUrl: objectUrl,
-            };
+            const formData = new FormData();
+            formData.append('field', fieldId);
+            formData.append('files[]', file);
 
-            let p = 0;
-            while (p < 100) {
-                await new Promise((r) => setTimeout(r, 40));
-                p += 8;
-                setProgress(Math.min(p, 100));
+            const response = await fetch(uploadEndpoint, {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    ...(csrfToken() !== ''
+                        ? { 'X-CSRF-TOKEN': csrfToken() }
+                        : {}),
+                },
+                body: formData,
+            });
+
+            if (!response.ok) {
+                let errMsg = 'Upload failed. Please try again.';
+                if (response.status === 422) {
+                    try {
+                        const errBody = (await response.json()) as unknown;
+                        errMsg = messageFrom422Body(errBody) ?? errMsg;
+                    } catch {
+                        /* keep errMsg */
+                    }
+                }
+                throw new Error(errMsg);
+            }
+
+            setProgress(100);
+            const payload = (await response.json()) as {
+                files?: UploadedFile[];
+            };
+            const uploaded = Array.isArray(payload.files) ? payload.files : [];
+            const result = uploaded[0];
+            if (result == null) {
+                throw new Error('Upload failed. Please try again.');
             }
 
             setUploadedFile(result);
@@ -60,6 +106,15 @@ export function useUploadFile({
         uploadFile,
         uploadingFile,
     };
+}
+
+function csrfToken(): string {
+    return (
+        document
+            .querySelector('meta[name="csrf-token"]')
+            ?.getAttribute('content')
+            ?.trim() ?? ''
+    );
 }
 
 export function getErrorMessage(err: unknown) {

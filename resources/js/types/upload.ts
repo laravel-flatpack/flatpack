@@ -1,13 +1,15 @@
-export type UploadedFile = {
-    key: string;
-    name: string;
-    size: number;
-    type: string;
-    url: string;
-    appUrl?: string;
+import type { FileUploadStoredFile } from '@/types/form-fields';
+
+export type UploadedFile = FileUploadStoredFile;
+
+export type EditorUploadRequestConfig = {
+    fieldId: string;
+    uploadEndpoint: string;
+    maxSizeKb?: number;
 };
 
 export type UseUploadFileProps = {
+    config?: EditorUploadRequestConfig;
     onUploadComplete?: (file: UploadedFile) => void;
     onUploadError?: (error: unknown) => void;
 };

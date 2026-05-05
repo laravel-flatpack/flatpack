@@ -136,7 +136,12 @@ describe('componentValueProps', () => {
         const value = [{ url: '/a.png', path: 'users/a.png' }];
         expect(
             componentValueProps(
-                { type: 'file-upload', label: 'Avatar', mode: 'url' },
+                {
+                    type: 'file-upload',
+                    label: 'Avatar',
+                    mode: 'url',
+                    upload: {},
+                },
                 value,
             ),
         ).toEqual({ value });

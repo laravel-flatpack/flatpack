@@ -85,6 +85,7 @@ final class FormFieldDefinitionNormalizer
             'table' => $this->normalizeTableField($fieldDefinition, $yamlKey, $log),
             'toolbar' => $this->normalizeToolbarField($fieldDefinition, $yamlKey, $log),
             'select', 'combobox' => $this->normalizeChoiceField($fieldDefinition),
+            'rich-text', 'block-editor' => $this->normalizeEditorUpload($fieldDefinition, $yamlKey, $log),
             'file-upload' => $this->normalizeFileUploadField($fieldDefinition, $yamlKey, $log),
             default => $fieldDefinition,
         };
@@ -231,20 +232,24 @@ final class FormFieldDefinitionNormalizer
         string $yamlKey,
         ?CompositionDebugLog $log,
     ): ?array {
+        $upload = $fieldDefinition['upload'] ?? null;
+        if (! is_array($upload)) {
+            return $this->omitFieldWithLog(
+                $fieldDefinition,
+                $yamlKey,
+                $log,
+                'file-upload requires upload object',
+            );
+        }
+
         $mode = $this->readTrimmedString($fieldDefinition, 'mode', 'url');
         if (! in_array($mode, ['relation', 'url', 'image', 'file'], true)) {
             $mode = 'url';
         }
         $fieldDefinition['mode'] = $mode;
-        $fieldDefinition['multiple'] = ($fieldDefinition['multiple'] ?? false) === true;
-
-        if (isset($fieldDefinition['max_files']) && (int) $fieldDefinition['max_files'] > 0) {
-            $fieldDefinition['max_files'] = (int) $fieldDefinition['max_files'];
-        }
-
-        if (isset($fieldDefinition['max_size_kb']) && (int) $fieldDefinition['max_size_kb'] > 0) {
-            $fieldDefinition['max_size_kb'] = (int) $fieldDefinition['max_size_kb'];
-        }
+        $normalizedUpload = $this->normalizeUploadConfig($upload);
+        $fieldDefinition['upload'] = $normalizedUpload;
+        $fieldDefinition = array_merge($fieldDefinition, $normalizedUpload);
 
         if ($mode === 'relation') {
             if ($this->readTrimmedString($fieldDefinition, 'relation') === '') {
@@ -273,6 +278,117 @@ final class FormFieldDefinitionNormalizer
 
         if ($this->readTrimmedString($fieldDefinition, 'target_column') === '') {
             $fieldDefinition['target_column'] = $this->fieldDisplayLabel($fieldDefinition, $yamlKey);
+        }
+
+        return $fieldDefinition;
+    }
+
+    /**
+     * @param  array<string, mixed>  $fieldDefinition
+     * @return array<string, mixed>
+     */
+    private function normalizeEditorUpload(
+        array $fieldDefinition,
+        string $yamlKey,
+        ?CompositionDebugLog $log,
+    ): array {
+        if (! array_key_exists('upload', $fieldDefinition)) {
+            return $fieldDefinition;
+        }
+
+        $upload = $fieldDefinition['upload'];
+        if (! is_array($upload)) {
+            $log?->add(sprintf(
+                'Form field "%s": removed invalid upload (expected object).',
+                $this->fieldDisplayLabel($fieldDefinition, $yamlKey),
+            ));
+            unset($fieldDefinition['upload']);
+
+            return $fieldDefinition;
+        }
+
+        $normalized = $this->normalizeUploadConfig($upload);
+        unset(
+            $normalized['mode'],
+            $normalized['relation'],
+            $normalized['callback'],
+            $normalized['target_column'],
+            $normalized['persist_as'],
+        );
+
+        if (isset($normalized['accept'])) {
+            if (is_string($normalized['accept'])) {
+                $accept = trim($normalized['accept']);
+                if ($accept === '') {
+                    unset($normalized['accept']);
+                } else {
+                    $normalized['accept'] = $accept;
+                }
+            } elseif (is_array($normalized['accept'])) {
+                $tokens = [];
+                foreach ($normalized['accept'] as $token) {
+                    if (! is_string($token)) {
+                        continue;
+                    }
+                    $trimmed = trim($token);
+                    if ($trimmed !== '') {
+                        $tokens[] = $trimmed;
+                    }
+                }
+                if ($tokens === []) {
+                    unset($normalized['accept']);
+                } else {
+                    $normalized['accept'] = array_values(array_unique($tokens));
+                }
+            } else {
+                unset($normalized['accept']);
+            }
+        }
+
+        foreach (['disk', 'directory', 'collection'] as $key) {
+            if (! array_key_exists($key, $normalized)) {
+                continue;
+            }
+            $value = trim((string) $normalized[$key]);
+            if ($value === '') {
+                unset($normalized[$key]);
+                continue;
+            }
+            $normalized[$key] = $value;
+        }
+
+        if (array_key_exists('visibility', $normalized)) {
+            $visibility = trim((string) $normalized['visibility']);
+            if ($visibility !== 'public' && $visibility !== 'private') {
+                unset($normalized['visibility']);
+            } else {
+                $normalized['visibility'] = $visibility;
+            }
+        }
+
+        $fieldDefinition['upload'] = $normalized;
+
+        return $fieldDefinition;
+    }
+
+    /**
+     * @param  array<string, mixed>  $fieldDefinition
+     * @return array<string, mixed>
+     */
+    private function normalizeUploadConfig(array $fieldDefinition): array
+    {
+        $fieldDefinition['multiple'] = ($fieldDefinition['multiple'] ?? false) === true;
+
+        if (isset($fieldDefinition['max_files']) && (int) $fieldDefinition['max_files'] > 0) {
+            $fieldDefinition['max_files'] = (int) $fieldDefinition['max_files'];
+        } else {
+            unset($fieldDefinition['max_files']);
+        }
+
+        if (isset($fieldDefinition['max_size_kb']) && (int) $fieldDefinition['max_size_kb'] > 0) {
+            $fieldDefinition['max_size_kb'] = (int) $fieldDefinition['max_size_kb'];
+        } else {
+            unset($fieldDefinition['max_size_kb']);
         }
 
         return $fieldDefinition;

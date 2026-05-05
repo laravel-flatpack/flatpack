@@ -1,7 +1,7 @@
 import type { Value } from 'platejs';
 import { lazy, Suspense } from 'react';
 import { resolveFormFieldLabelLayout } from '@/lib/form-field-label-layout';
-import type { FormFieldLabelShow } from '@/types/form-fields';
+import type { EditorFieldUploadConfig, FormFieldLabelShow } from '@/types/form-fields';
 import { Field, FieldContent, FieldDescription, FieldTitle } from '../ui/field';
 import { PlateEditorFallback } from './plate-editor-fallback';
 
@@ -17,6 +17,9 @@ export const RichTextField = ({
     helperText,
     className,
     toolbar,
+    upload,
+    uploadEndpoint,
+    uploadFieldId,
     initialValue,
     onValueChange,
     showLabel,
@@ -27,6 +30,9 @@ export const RichTextField = ({
     helperText?: string;
     className?: string;
     toolbar?: boolean;
+    upload?: EditorFieldUploadConfig;
+    uploadEndpoint?: string;
+    uploadFieldId?: string;
     initialValue?: Value;
     onValueChange?: (value: Value) => void;
     showLabel?: FormFieldLabelShow;
@@ -53,6 +59,9 @@ export const RichTextField = ({
                         className={className}
                         placeholder={placeholder}
                         toolbar={toolbar}
+                        upload={upload}
+                        uploadEndpoint={uploadEndpoint}
+                        uploadFieldId={uploadFieldId}
                         initialValue={initialValue}
                         onValueChange={onValueChange}
                     />

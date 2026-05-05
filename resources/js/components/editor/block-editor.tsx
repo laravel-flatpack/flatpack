@@ -8,11 +8,13 @@ import {
     ensureDocumentHasBlock,
     ensureTrailingParagraphAfterVoid,
 } from '@/components/editor/ensure-document-block';
+import { EditorMediaUploadProvider } from '@/components/editor/editor-media-upload-context';
 import { BlockEditorKit } from '@/components/editor/plugins/block-editor-kit';
 import { RichTextToolbar } from '@/components/editor/rich-text-toolbar';
 import { Editor, EditorContainer } from '@/components/ui/editor';
 import { sanitizePlateValue } from '@/lib/plate-value-sanitize';
 import { cn } from '@/lib/utils';
+import type { EditorFieldUploadConfig } from '@/types/form-fields';
 
 const emptyDoc: Value = [{ type: 'p', children: [{ text: '' }] }];
 
@@ -22,6 +24,9 @@ export type BlockEditorProps = {
     placeholder?: string;
     readOnly?: boolean;
     toolbar?: boolean;
+    upload?: EditorFieldUploadConfig;
+    uploadEndpoint?: string;
+    uploadFieldId?: string;
     initialValue?: Value;
     onValueChange?: (value: Value) => void;
 };
@@ -31,6 +36,9 @@ export function BlockEditor({
     placeholder = 'Type / for commands, or use + and drag ⋮⋮…',
     readOnly,
     toolbar = false,
+    upload,
+    uploadEndpoint,
+    uploadFieldId,
     initialValue,
     onValueChange,
 }: BlockEditorProps) {
@@ -47,7 +55,23 @@ export function BlockEditor({
     });
 
     return (
-        <Plate
+        <EditorMediaUploadProvider
+            value={{
+                requestConfig:
+                    typeof uploadEndpoint === 'string' &&
+                    uploadEndpoint.trim() !== '' &&
+                    typeof uploadFieldId === 'string' &&
+                    uploadFieldId.trim() !== ''
+                        ? {
+                              fieldId: uploadFieldId,
+                              uploadEndpoint,
+                              maxSizeKb: upload?.max_size_kb,
+                          }
+                        : undefined,
+                upload,
+            }}
+        >
+            <Plate
             editor={editor}
             readOnly={readOnly}
             onValueChange={({ editor: ed, value: next }) => {
@@ -67,9 +91,9 @@ export function BlockEditor({
                 }
                 onValueChange?.(next);
             }}
-        >
-            <BlockSelectionShadowInputA11y />
-            {toolbar ? (
+            >
+                <BlockSelectionShadowInputA11y />
+                {toolbar ? (
                 <div
                     className={cn(
                         'flex flex-col overflow-hidden rounded-md border border-input bg-background ring-offset-background',
@@ -92,7 +116,7 @@ export function BlockEditor({
                         />
                     </EditorContainer>
                 </div>
-            ) : (
+                ) : (
                 <div
                     className={cn(
                         'overflow-visible rounded-md border border-input bg-background ring-offset-background',
@@ -114,7 +138,8 @@ export function BlockEditor({
                         />
                     </EditorContainer>
                 </div>
-            )}
-        </Plate>
+                )}
+            </Plate>
+        </EditorMediaUploadProvider>
     );
 }

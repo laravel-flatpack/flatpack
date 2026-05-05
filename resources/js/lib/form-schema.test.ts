@@ -188,12 +188,17 @@ describe('buildInitialValues', () => {
                 sel: { id: 'sel', type: 'select' },
                 combo: { id: 'combo', type: 'combobox' },
                 multi: { id: 'multi', type: 'combobox', multiple: true },
-                avatar: { id: 'avatar', type: 'file-upload', mode: 'url' },
+                avatar: {
+                    id: 'avatar',
+                    type: 'file-upload',
+                    mode: 'url',
+                    upload: {},
+                },
                 docs: {
                     id: 'docs',
                     type: 'file-upload',
                     mode: 'relation',
-                    multiple: true,
+                    upload: { multiple: true },
                 },
             },
         });

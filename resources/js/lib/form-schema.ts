@@ -80,7 +80,7 @@ function defaultValueForField(field: FormFieldProps): unknown {
         case 'combobox':
             return field.multiple ? [] : null;
         case 'file-upload':
-            return field.multiple ? [] : null;
+            return field.upload.multiple ? [] : null;
         case 'repeater': {
             const minRaw = (field as { minItems?: unknown }).minItems;
             const min =

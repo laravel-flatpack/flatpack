@@ -138,13 +138,25 @@ type CheckboxFieldProps = FormFieldBase & {
 type SwitchFieldProps = FormFieldBase & {
     defaultChecked?: boolean;
 };
+export type EditorFieldUploadConfig = {
+    multiple?: boolean;
+    max_files?: number;
+    max_size_kb?: number;
+    accept?: string | string[];
+    directory?: string;
+    disk?: string;
+    visibility?: 'public' | 'private';
+    collection?: string;
+};
 type RichTextFieldProps = FormFieldBase &
     WithPlaceholder & {
         toolbar?: boolean;
+        upload?: EditorFieldUploadConfig;
     };
 type BlockEditorFieldProps = FormFieldBase &
     WithPlaceholder & {
         toolbar?: boolean;
+        upload?: EditorFieldUploadConfig;
     };
 type WidgetFormFieldProps = FormFieldBase & {
     /** Widget definitions keyed by id; runtime payloads merged from the form page `widgets` prop. */
@@ -162,17 +174,10 @@ export type FileUploadStoredFile = {
 };
 type FileUploadFieldProps = FormFieldBase & {
     mode: 'relation' | 'url' | 'image' | 'file';
-    multiple?: boolean;
-    max_files?: number;
-    max_size_kb?: number;
-    accept?: string | string[];
-    directory?: string;
-    disk?: string;
-    visibility?: 'public' | 'private';
+    upload: EditorFieldUploadConfig;
     relation?: string;
     /** Relation mode: public method name on the entity model (receives upload metadata rows). */
     callback?: string;
-    collection?: string;
     target_column?: string;
     persist_as?: 'string' | 'json';
 };

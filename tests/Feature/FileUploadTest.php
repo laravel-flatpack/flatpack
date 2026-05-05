@@ -29,6 +29,7 @@ fields:
     id: attachment
     label: Attachment
     type: file-upload
+    upload: {}
 YAML);
         config()->set('flatpack.composition.path', $tempPath);
 
@@ -71,7 +72,8 @@ fields:
     id: attachment
     label: Attachment
     type: file-upload
-    max_size_kb: 2
+    upload:
+      max_size_kb: 2
 YAML);
         config()->set('flatpack.composition.path', $tempPath);
         config()->set('flatpack.uploads.max_size_kb', 10240);
@@ -108,6 +110,7 @@ fields:
     id: attachment
     label: Attachment
     type: file-upload
+    upload: {}
 YAML);
         config()->set('flatpack.composition.path', $tempPath);
 
@@ -144,8 +147,9 @@ fields:
     id: attachment
     label: Attachment
     type: file-upload
-    accept:
-      - application/pdf
+    upload:
+      accept:
+        - application/pdf
 YAML);
         config()->set('flatpack.composition.path', $tempPath);
 
@@ -162,6 +166,83 @@ YAML);
 
         $response->assertUnprocessable();
         $response->assertJsonValidationErrors(['files']);
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
+test('flatpack entity upload accepts rich-text editor field upload settings', function () {
+    $disk = (string) config('flatpack.uploads.file_disk');
+    Storage::fake($disk);
+    $tempPath = sys_get_temp_dir() . '/flatpack-upload-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/form.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+fields:
+  body:
+    id: body
+    label: Body
+    type: rich-text
+    upload:
+      accept:
+        - image/*
+      max_size_kb: 2048
+YAML);
+        config()->set('flatpack.composition.path', $tempPath);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+        $image = UploadedFile::fake()->image('cover.png');
+
+        $response = actingAs($user)->post(
+            route('flatpack.entities.upload', ['entity' => 'posts']),
+            [
+                'field' => 'body',
+                'files' => [$image],
+            ],
+        );
+
+        $response->assertOk();
+        $response->assertJsonPath('mode', 'url');
+        $response->assertJsonPath('files.0.name', 'cover.png');
+    } finally {
+        File::deleteDirectory($tempPath);
+    }
+});
+
+test('flatpack entity upload rejects rich-text field without upload settings', function () {
+    Storage::fake((string) config('flatpack.uploads.file_disk'));
+    $tempPath = sys_get_temp_dir() . '/flatpack-upload-' . uniqid('', true);
+
+    try {
+        File::ensureDirectoryExists($tempPath . '/posts');
+        File::put($tempPath . '/posts/form.yaml', <<<'YAML'
+name: Posts
+model: Flatpack\Tests\Models\Post
+fields:
+  body:
+    id: body
+    label: Body
+    type: rich-text
+YAML);
+        config()->set('flatpack.composition.path', $tempPath);
+
+        /** @var User $user */
+        $user = User::factory()->createOne();
+        $file = UploadedFile::fake()->create('a.pdf', 1, 'application/pdf');
+
+        $response = actingAs($user)->withHeaders([
+            'Accept' => 'application/json',
+        ])->post(route('flatpack.entities.upload', ['entity' => 'posts']), [
+            'field' => 'body',
+            'files' => [$file],
+        ]);
+
+        $response->assertUnprocessable();
+        $response->assertJsonValidationErrors(['field']);
     } finally {
         File::deleteDirectory($tempPath);
     }

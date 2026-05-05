@@ -114,9 +114,13 @@ function mapRichBlock(props: FormFieldProps, ctx: FormFieldRenderContext) {
         FormFieldProps,
         { type: 'rich-text' | 'block-editor' }
     >;
+    const entity = typeof ctx.entity === 'string' ? ctx.entity.trim() : '';
     return {
         ...rest,
         id: ctx.fieldId,
+        uploadEndpoint:
+            entity !== '' ? route('flatpack.entities.upload', { entity }) : '',
+        uploadFieldId: ctx.fieldId,
         onValueChange: ctx.onValueChange,
     };
 }
@@ -195,7 +199,8 @@ function mapTimePicker(props: FormFieldProps, ctx: FormFieldRenderContext) {
 
 function mapFileUpload(props: FormFieldProps, ctx: FormFieldRenderContext) {
     const p = props as Extract<FormFieldProps, { type: 'file-upload' }>;
-    const raw = p as Record<string, unknown>;
+    const upload = p.upload ?? {};
+    const rawUpload = upload as Record<string, unknown>;
     const entity = typeof ctx.entity === 'string' ? ctx.entity.trim() : '';
     return {
         id: ctx.fieldId,
@@ -203,10 +208,10 @@ function mapFileUpload(props: FormFieldProps, ctx: FormFieldRenderContext) {
         showLabel: p.showLabel,
         helperText: p.helperText,
         mode: p.mode,
-        multiple: p.multiple ?? false,
-        maxFiles: raw.max_files ?? raw.maxFiles,
-        maxSizeKb: raw.max_size_kb ?? raw.maxSizeKb,
-        accept: p.accept,
+        multiple: upload.multiple ?? false,
+        maxFiles: rawUpload.max_files,
+        maxSizeKb: rawUpload.max_size_kb,
+        accept: upload.accept,
         uploadEndpoint:
             entity !== '' ? route('flatpack.entities.upload', { entity }) : '',
         fieldId: ctx.fieldId,
