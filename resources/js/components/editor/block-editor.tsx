@@ -111,7 +111,7 @@ export function BlockEditor({
                         <Editor
                             variant="select"
                             placeholder={placeholder}
-                            className="overflow-x-visible py-2 pl-14 pr-3"
+                            className="overflow-x-visible py-2 pl-14 pr-6"
                             aria-labelledby={labelId}
                         />
                     </EditorContainer>
