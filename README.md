@@ -8,229 +8,161 @@
 
 # Flatpack
 
-📦 Administration panel for Laravel, ready to assemble.
-
-- Quickly create a CMS for your Eloquent models.
-- Define components with simple and declarative YAML files.
-- Build a complete administration panel for your Laravel app in seconds.
+YAML-driven admin panel for Laravel.
+React and Inertia UI, declarative `form.yaml` and `list.yaml` compositions per entity.
 
 📕 [Official Documentation](https://laravel-flatpack.com)
-
-[Flatpack](https://laravel-flatpack.com) makes building fully functional user interfaces for admin panels easier than ever: as easy as editing few lines of a YAML file.
-
-Besides providing a rich set of already built components and a solid stack to build a secure and intuitive experience for the users, it offers a fast and flexible solution for developers who want to have fun, try out new things and save precious time building up the an administration panels.
-
-Flatpack is a reactive full-stack app, built with [TALL stack](https://tallstack.dev/).
 
 ![Demo](.github/demo.gif)
 
 ---
 
-## Quick Install
+## Requirements
 
-Install the package via composer:
+- PHP ^8.3
+- Laravel 12 or 13
+- [Inertia.js for Laravel](https://inertiajs.com/) in the host application (middleware, root view, and Vite setup)
+- Composer
+
+## Installation
+
+**1. Install the package**
 
 ```bash
 composer require flatpack/flatpack
 ```
 
-Publish the config file and compiled assets:
+**2. Publish config and assets**
 
 ```bash
-php artisan vendor:publish --tag="flatpack"
+php artisan vendor:publish --tag=flatpack
 ```
 
-Note: To make sure that the public assets are always up-to-date, remember to add this command to the `post-update-cmd` list in your `composer.json` file.
+Keep published assets in sync after updates (recommended in `composer.json`):
 
 ```json
-  "post-update-cmd": [
-      "@php artisan vendor:publish --tag=flatpack"
-  ],
+"post-update-cmd": [
+    "@php artisan vendor:publish --tag=flatpack --force"
+]
 ```
 
-## Securing your panel
+**3. Gate panel access on your `User` model**
 
-Flatpack gates access with Laravel policies and optional `canAccessFlatpack()` on the authenticated user model (see `config/flatpack.php` under `security.authorization`).
+```php
+class User extends Authenticatable
+{
+    public function canAccessFlatpack(): bool
+    {
+        return true; // tighten for your app (role, admin flag, etc.)
+    }
+}
+```
 
-- **Default (`allow_when_policy_missing` = true):** If no policy is registered for a model Flatpack is about to authorize, access is still allowed when the user may access the panel. In **production**, Flatpack logs a warning so you notice missing policies.
-- **Strict (`allow_when_policy_missing` = false):** Every Eloquent model exposed in your compositions must have a registered policy (or explicit gate rules). Missing policies deny authorization. Use this once you have full policy coverage and want fail-closed behavior.
+**4. Register a Laravel policy for every model you expose in Flatpack**
 
-**Recommended migration path:** start with the default in development, register policies for each managed model, watch production logs for warnings, then set `FLATPACK_SECURITY_ALLOW_WHEN_POLICY_MISSING=false` (or the config key) when you are confident nothing is missing.
-
-## Usage
-
-Generating Flatpack composition files for `App\Models\Post` model...
+Flatpack authorizes list, form, row, and bulk actions through standard model policies (`viewAny`, `view`, `create`, `update`, `delete`, and soft-delete abilities when used).
 
 ```bash
-php artisan make:flatpack Post
+php artisan make:policy PostPolicy --model=Post
 ```
 
-This command will create two files:
+Register the policy in `AppServiceProvider` (or rely on Laravel’s policy discovery).
 
-- A form template `/flatpack/posts/form.yaml`, that defines the posts form.
-- A list template `/flatpack/posts/list.yaml`, that defines the posts table with pagination.
+**5. Generate your first entity**
 
-Let's check the result, visit [/backend/posts](http://localhost/backend/posts).
+```bash
+php artisan flatpack:make Post
+```
 
-Now start assembling, grab the generated files and map your model's attributes as you need.
+This writes `flatpack/posts/form.yaml` and `flatpack/posts/list.yaml` under `config('flatpack.composition.path')` (default: `base_path('flatpack')`).
+
+Visit `/flatpack/posts` (prefix is `config('flatpack.http.prefix')`, default `flatpack`).
+
+Further host setup (composition path, login override, env keys): [`.docs/host-installation.md`](.docs/host-installation.md).
+
+## Security
+
+Panel access requires `canAccessFlatpack()` on the authenticated user.
+
+**Model policies are required in non-local environments.** If a model has no registered policy, authorization denies the action unless `allow_when_policy_missing` is enabled.
+
+| Setting                                       | Default                                        | Meaning                                           |
+| --------------------------------------------- | ---------------------------------------------- | ------------------------------------------------- |
+| `allow_when_policy_missing`                   | `true` when `APP_ENV=local`, otherwise `false` | Allow panel users to act on models with no policy |
+| `FLATPACK_SECURITY_ALLOW_WHEN_POLICY_MISSING` | Overrides the config value in any environment  |                                                   |
+
+In production, when `allow_when_policy_missing` is `true`, Flatpack logs a warning for each missing-policy check.
 
 ## Examples
 
-Defining a form:
+Minimal list (`flatpack/posts/list.yaml`):
 
 ```yaml
-title: Post
+name: Posts
 model: App\Models\Post
 icon: book-open
-
-toolbar:
-    save:
-        type: button
-        label: Save
-        action: save
-        style: primary
-        shortcut: s
-
-main:
-    title:
-        label: Post Title
-        placeholder: Your Post Title
-        type: text
-
-    body:
-        type: block-editor
-
-sidebar:
-    created_at:
-        label: Created
-        type: datetime-picker
-
-    updated_at:
-        label: Updated
-        type: datetime-picker
-```
-
-Defining a list:
-
-```yaml
-title: Post
-model: App\Models\Post
-icon: book-open
-nav_order: 1
-
-toolbar:
-    create:
-        label: New Post
-        icon: plus
-        link: create
-        style: primary
-        shortcut: enter
-
 columns:
-    id:
-        label: ID
-        sortable: true
-        invisible: true
-
     title:
         label: Title
-        sortable: true
+        type: text
         searchable: true
-
-    created_at:
-        label: Created
-        type: datetime
-        format: "Y-m-d H:i:s"
-        sortable: true
-
-    updated_at:
-        label: Updated
-        type: datetime
-        format: "Y-m-d H:i:s"
-        sortable: true
 ```
 
-⚙️ You can customise the yaml composition files by mapping your model's attributes, using components of differnt types and features: Data tables, text inputs, rich text editors, date pickers, tag pickers, searchable select menus, image upload, toggles and more.
+Minimal form (`flatpack/posts/form.yaml`):
 
-📖 [Check out the documentation](https://laravel-flatpack.com/reference)
+```yaml
+name: Posts
+model: App\Models\Post
+fields:
+    title:
+        label: Title
+        type: text
+    body:
+        label: Body
+        type: block-editor
+```
 
-## Current Schema Support (Snapshot)
+Full key reference: [`.docs/yaml-reference/`](.docs/yaml-reference/README.md) · [laravel-flatpack.com](https://laravel-flatpack.com/reference)
 
-This section is a quick reference for what is currently supported in Flatpack schema configuration.
-It is intended for contributors and package developers and should be updated when new schema types are introduced.
+## Schema snapshot
 
-### Supported Form Field Types
+Quick reference for supported schema types (see YAML reference for the full contract).
 
-Current `type` values for form fields:
+**Form field `type` values:** `text`, `textarea`, `select`, `combobox`, `date-picker`, `date-range-picker`, `time-picker`, `checkbox`, `switch`, `rich-text`, `block-editor`, `table`, `file-upload`, `toolbar`, and others in [form-field-types.md](.docs/yaml-reference/form-field-types.md).
 
-- `text`
-- `textarea`
-- `select`
-- `combobox`
-- `date-picker`
-- `date-range-picker`
-- `time-picker`
-- `checkbox`
-- `switch`
-- `rich-text`
-- `block-editor`
-- `table`
+**List column `type` values:** `text`, `select`, `date`, `datetime`, `actions`, `badge`, `relation` — see [list-columns.md](.docs/yaml-reference/list-columns.md).
 
-Optional **`span`** on any field (and on dashboard **`widgets`**) controls responsive grid width:
+**Dashboard widget `type` values:** `metric`, `card`, `status`, `chart`, `table`, `grid` — see [widgets.md](.docs/yaml-reference/widgets.md).
 
-- Named: `full`, `half`, `two_thirds`, `third`, `quarter`
-- Aliases: `1/2`, `2/3`, `1/3`, `1/4` (normalized server-side to the named tokens above)
-
-### Supported Table Column Types
-
-Current `type` values for list/table columns:
-
-- `text`
-- `select`
-- `date`/`datetime`
-- `actions`
-- `badge`
-- `relation`
-
-Relation columns require:
-
-- `relation`
-- `relation_name` or `relationName`
-- `relation_value` or `relationValue`
-
-### Dashboard Widgets
-
-Supported widget `type` values include `metric`, `card`, `status`, `chart`, and `table` (see package docs). Optional **`span`** uses the same values as form fields for dashboard grid layout.
+Optional **`span`** on fields and widgets: `full`, `half`, `two_thirds`, `third`, `quarter` (aliases `1/2`, `2/3`, `1/3`, `1/4`).
 
 ## AI-assisted YAML authoring
-
-Copy the Agent Skill (YAML compositions helper) into your app's `.ai/skills/`:
 
 ```bash
 php artisan vendor:publish --tag=flatpack-ai
 ```
 
-[Laravel Boost](https://github.com/laravel/boost): install Boost as a dev dependency and run `php artisan boost:install` so IDE agents can load skills shipped under `resources/boost/skills/` inside this package. Activate **`flatpack-yaml-authoring`** when editing `flatpack/**` YAML.
+[Laravel Boost](https://github.com/laravel/boost): after `php artisan boost:install`, enable **`flatpack-yaml-authoring`** when editing composition YAML.
 
-Package development (clone of this repo) uses contributor rules under **`.agents/`** — these are not published into Composer installs by default.
+## Package development
 
-## Requirements
+Clone this repository and read [`.docs/README.md`](.docs/README.md). Before opening a PR:
 
-- PHP 8.x
-- Composer
-- Laravel 9.x
+```bash
+composer run check
+```
 
 ## Changelog
 
-Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
+See [CHANGELOG](CHANGELOG.md).
 
 ## Contributing
 
-Contributions are welcome! Please see [CONTRIBUTING](.github/CONTRIBUTING.md) for details.
+See [CONTRIBUTING](.github/CONTRIBUTING.md).
 
-## Security Vulnerabilities
+## Security vulnerabilities
 
-Please review [our security policy](../../security/policy) on how to report security vulnerabilities.
+See the [security policy](../../security/policy).
 
 ## Credits
 
@@ -239,4 +171,4 @@ Please review [our security policy](../../security/policy) on how to report secu
 
 ## License
 
-The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
+MIT — see [LICENSE.md](LICENSE.md).
