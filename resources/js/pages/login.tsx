@@ -5,7 +5,12 @@ import { PasswordInput } from '@/components/shell/auth/password-input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Field, FieldGroup, FieldTitle } from '@/components/ui/field';
+import {
+    Field,
+    FieldGroup,
+    FieldLabel,
+    FieldTitle,
+} from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Spinner } from '@/components/ui/spinner';
 import { route } from '@/lib/route';
@@ -59,18 +64,13 @@ const LoginForm = ({
                         <InputError message={errors.password} />
                     </Field>
                     <div className="flex items-center space-x-3">
-                        <Checkbox
-                            id="remember"
-                            name="remember"
-                            tabIndex={3}
-                            aria-labelledby="remember-label"
-                        />
-                        <FieldTitle
-                            id="remember-label"
-                            className="font-normal text-muted-foreground"
+                        <Checkbox id="remember" name="remember" tabIndex={3} />
+                        <FieldLabel
+                            htmlFor="remember"
+                            className="cursor-pointer font-normal text-muted-foreground"
                         >
                             Remember me
-                        </FieldTitle>
+                        </FieldLabel>
                     </div>
                     <Field className="mt-4">
                         <Button
