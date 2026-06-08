@@ -1,7 +1,10 @@
 import type { Value } from 'platejs';
 import { lazy, Suspense } from 'react';
 import { resolveFormFieldLabelLayout } from '@/lib/form-field-label-layout';
-import type { EditorFieldUploadConfig, FormFieldLabelShow } from '@/types/form-fields';
+import type {
+    EditorFieldUploadConfig,
+    FormFieldLabelShow,
+} from '@/types/form-fields';
 import { Field, FieldContent, FieldDescription, FieldTitle } from '../ui/field';
 import { PlateEditorFallback } from './plate-editor-fallback';
 

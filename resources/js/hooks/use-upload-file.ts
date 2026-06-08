@@ -20,7 +20,9 @@ export function useUploadFile({
 
     async function uploadFile(file: File) {
         if (uploadEndpoint === '' || fieldId === '') {
-            const err = new Error('Editor upload is not configured for this field.');
+            const err = new Error(
+                'Editor upload is not configured for this field.',
+            );
             toast.error(err.message);
             onUploadError?.(err);
             throw err;
@@ -29,7 +31,9 @@ export function useUploadFile({
         if (typeof maxSizeKb === 'number' && maxSizeKb > 0) {
             const maxBytes = maxSizeKb * 1024;
             if (file.size > maxBytes) {
-                const err = new Error(`Each file must be at most ${maxSizeKb} KB.`);
+                const err = new Error(
+                    `Each file must be at most ${maxSizeKb} KB.`,
+                );
                 toast.error(err.message);
                 onUploadError?.(err);
                 throw err;

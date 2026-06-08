@@ -18,9 +18,7 @@ export function absoluteImageSrcForDisplay(src: string): string {
         if (src.startsWith('//')) {
             return new URL(src, window.location.origin).href;
         }
-        const path = src.startsWith('/')
-            ? src
-            : `/${src.replace(/^\/+/, '')}`;
+        const path = src.startsWith('/') ? src : `/${src.replace(/^\/+/, '')}`;
         return new URL(path, window.location.origin).href;
     } catch {
         return src;
