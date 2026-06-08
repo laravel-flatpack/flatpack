@@ -578,6 +578,10 @@ test('flatpack list action route resolves configured create handler', function (
         File::put($tempPath . '/posts/list.yaml', <<<'YAML'
 name: Posts
 model: Flatpack\Tests\Models\Post
+actions:
+  create:
+    label: Create
+    action: create
 columns:
   id:
     label: ID
@@ -610,6 +614,10 @@ test('flatpack entity action route requires configured action handlers', functio
         File::put($tempPath . '/posts/list.yaml', <<<'YAML'
 name: Posts
 model: Flatpack\Tests\Models\Post
+actions:
+  create:
+    label: Create
+    action: create
 columns:
   id:
     label: ID
@@ -625,12 +633,14 @@ YAML);
         $user = User::factory()->createOne();
 
         actingAs($user)
+            ->withHeaders(['Accept' => 'application/json'])
             ->post(route('flatpack.entities.action', [
                 'entity' => 'posts',
             ]), [
                 'action' => 'create',
             ])
-            ->assertNotFound();
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['action']);
     } finally {
         File::deleteDirectory($tempPath);
     }
@@ -1101,6 +1111,11 @@ columns:
   title:
     label: Title
     type: text
+  actions:
+    type: actions
+    actions:
+      - label: Delete
+        action: delete
 YAML);
         config()->set('flatpack.composition.path', $tempPath);
 
@@ -1137,6 +1152,10 @@ test('flatpack bulk delete rejects when policy denies delete', function () {
         File::put($tempPath . '/posts/list.yaml', <<<'YAML'
 name: Posts
 model: Flatpack\Tests\Models\Post
+bulk_actions:
+  delete:
+    label: Delete
+    action: delete
 columns:
   title:
     label: Title
@@ -1911,6 +1930,10 @@ test('flatpack entity list JSON bulk delete removes selected ids', function () {
         File::put($tempPath . '/posts/list.yaml', <<<'YAML'
 name: Posts
 model: Flatpack\Tests\Models\Post
+bulk_actions:
+  delete:
+    label: Delete
+    action: delete
 columns:
   id:
     label: ID
@@ -1952,6 +1975,10 @@ test('flatpack bulk action denies when model policy is missing by default', func
         File::put($tempPath . '/posts/list.yaml', <<<'YAML'
 name: Posts
 model: Flatpack\Tests\Models\PostBySlug
+bulk_actions:
+  delete:
+    label: Delete
+    action: delete
 columns:
   slug:
     label: Slug
@@ -2045,6 +2072,11 @@ model: Flatpack\Tests\Models\Post
 columns:
   title:
     label: Title
+  actions:
+    type: actions
+    actions:
+      - label: Restore
+        action: restore
 YAML);
         config()->set('flatpack.composition.path', $tempPath);
         Gate::policy(Post::class, AllowRestoreForceDeletePostPolicy::class);
@@ -2082,6 +2114,11 @@ model: Flatpack\Tests\Models\Post
 columns:
   title:
     label: Title
+  actions:
+    type: actions
+    actions:
+      - label: Force delete
+        action: force_delete
 YAML);
         config()->set('flatpack.composition.path', $tempPath);
         Gate::policy(Post::class, AllowRestoreForceDeletePostPolicy::class);
@@ -2116,6 +2153,10 @@ test('flatpack entity bulk restore action restores selected soft deleted records
         File::put($tempPath . '/posts/list.yaml', <<<'YAML'
 name: Posts
 model: Flatpack\Tests\Models\Post
+bulk_actions:
+  restore:
+    label: Restore
+    action: restore
 columns:
   title:
     label: Title
@@ -2157,6 +2198,10 @@ test('flatpack entity bulk force_delete action permanently removes selected soft
         File::put($tempPath . '/posts/list.yaml', <<<'YAML'
 name: Posts
 model: Flatpack\Tests\Models\Post
+bulk_actions:
+  force_delete:
+    label: Force delete
+    action: force_delete
 columns:
   title:
     label: Title
@@ -2198,6 +2243,10 @@ test('flatpack entity list JSON bulk delete supports select_all with filters', f
         File::put($tempPath . '/posts/list.yaml', <<<'YAML'
 name: Posts
 model: Flatpack\Tests\Models\Post
+bulk_actions:
+  delete:
+    label: Delete
+    action: delete
 columns:
   id:
     label: ID
@@ -2252,6 +2301,10 @@ test('flatpack bulk delete only deletes rows authorized by policy', function () 
         File::put($tempPath . '/posts/list.yaml', <<<'YAML'
 name: Posts
 model: Flatpack\Tests\Models\Post
+bulk_actions:
+  delete:
+    label: Delete
+    action: delete
 columns:
   id:
     label: ID

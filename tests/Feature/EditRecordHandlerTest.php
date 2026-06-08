@@ -23,6 +23,11 @@ model: Flatpack\Tests\Models\Post
 columns:
   title:
     label: Title
+  actions:
+    type: actions
+    actions:
+      - label: Edit
+        action: edit
 YAML);
         config()->set('flatpack.composition.path', $tempPath);
 
