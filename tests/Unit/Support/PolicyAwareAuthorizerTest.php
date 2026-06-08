@@ -14,7 +14,30 @@ uses(TestCase::class)->afterEach(function (): void {
     $this->app['env'] = 'testing';
 });
 
-test('allows returns true for user with panel access when no policy is registered and flag is true', function (): void {
+test('allows returns false in testing when no policy is registered and flag uses v2 default', function (): void {
+    $user = User::factory()->make();
+    $authorizer = new PolicyAwareAuthorizer;
+
+    $result = $authorizer->allows($user, 'viewAny', GuineaPigModel::class);
+
+    expect($result)->toBeFalse();
+});
+
+test('allows returns true in local when no policy is registered and flag uses local default', function (): void {
+    $this->app['env'] = 'local';
+    config(['flatpack.security.authorization.allow_when_policy_missing' => true]);
+
+    $user = User::factory()->make();
+    $authorizer = new PolicyAwareAuthorizer;
+
+    $result = $authorizer->allows($user, 'viewAny', GuineaPigModel::class);
+
+    expect($result)->toBeTrue();
+});
+
+test('allows returns true when no policy is registered and flag is explicitly true', function (): void {
+    config(['flatpack.security.authorization.allow_when_policy_missing' => true]);
+
     $user = User::factory()->make();
     $authorizer = new PolicyAwareAuthorizer;
 
@@ -50,6 +73,21 @@ test('logs a warning when allow_when_policy_missing is true in production and no
     $authorizer->allows($user, 'viewAny', GuineaPigModel::class);
 
     expect($handler->hasWarningThatContains('GuineaPigModel'))->toBeTrue();
+});
+
+test('does not log a warning in local when allow_when_policy_missing is true', function (): void {
+    $this->app->offsetUnset(Illuminate\Console\OutputStyle::class);
+    $this->app['env'] = 'local';
+    config(['flatpack.security.authorization.allow_when_policy_missing' => true]);
+
+    $handler = new TestHandler;
+    Illuminate\Support\Facades\Log::driver()->getLogger()->pushHandler($handler);
+
+    $user = User::factory()->make();
+    $authorizer = new PolicyAwareAuthorizer;
+    $authorizer->allows($user, 'viewAny', GuineaPigModel::class);
+
+    expect($handler->hasWarnings())->toBeFalse();
 });
 
 test('does not log a warning when allow_when_policy_missing is false', function (): void {

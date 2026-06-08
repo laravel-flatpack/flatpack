@@ -1974,19 +1974,18 @@ test('flatpack bulk action denies when model policy is missing by default', func
         File::ensureDirectoryExists($tempPath . '/posts');
         File::put($tempPath . '/posts/list.yaml', <<<'YAML'
 name: Posts
-model: Flatpack\Tests\Models\PostBySlug
+model: Flatpack\Tests\Models\UnregisteredPolicyPost
 bulk_actions:
   delete:
     label: Delete
     action: delete
 columns:
-  slug:
-    label: Slug
+  id:
+    label: ID
 YAML);
         config()->set('flatpack.composition.path', $tempPath);
-        config()->set('flatpack.security.authorization.allow_when_policy_missing', false);
 
-        Post::factory()->create(['slug' => 'one', 'title' => 'Keep me']);
+        $post = Post::factory()->create(['title' => 'Keep me']);
 
         /** @var User $user */
         $user = User::factory()->createOne();
@@ -1997,11 +1996,11 @@ YAML);
                 'entity' => 'posts',
             ]), [
                 'action' => 'delete',
-                'selection' => ['one'],
+                'selection' => [(string) $post->getKey()],
             ])
             ->assertForbidden();
 
-        expect(Post::query()->where('slug', 'one')->exists())->toBeTrue();
+        expect(Post::query()->whereKey($post->getKey())->exists())->toBeTrue();
     } finally {
         File::deleteDirectory($tempPath);
     }

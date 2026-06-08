@@ -37,8 +37,8 @@ final class PolicyAwareAuthorizer implements FlatpackAuthorizer
         $target = $model ?? new $modelClass;
 
         if (Gate::getPolicyFor($target) === null) {
-            $allowWhenMissing = (bool) config('flatpack.security.authorization.allow_when_policy_missing', true);
-            if ($allowWhenMissing && app()->isProduction()) {
+            $allowWhenMissing = (bool) config('flatpack.security.authorization.allow_when_policy_missing', false);
+            if ($allowWhenMissing && app()->isProduction() && ! app()->environment('local')) {
                 Log::warning(sprintf(
                     'Flatpack: no policy registered for [%s] and allow_when_policy_missing=true in production. Register a policy or set FLATPACK_SECURITY_ALLOW_WHEN_POLICY_MISSING=false.',
                     $target::class,

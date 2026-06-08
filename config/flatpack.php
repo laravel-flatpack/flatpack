@@ -71,18 +71,15 @@ return [
 
         'authorization' => [
             /*
-            |   When true, any authenticated user that passes canAccessFlatpack() is
-            |   allowed to perform any action on a model that has NO Laravel policy
-            |   registered. This is intentionally permissive so that new projects work
-            |   out of the box, but it means unregistered models are unprotected in
-            |   production.
-            |
-            |   Set to false (FLATPACK_SECURITY_ALLOW_WHEN_POLICY_MISSING=false) once
-            |   every model that should be access-controlled has a registered policy.
-            |   A WARNING is logged on every missing-policy check when this is true and
-            |   APP_ENV=production.
+            | Allow panel users to act on models with no registered policy.
+            | Default: true when APP_ENV=local, false otherwise.
+            | Override: FLATPACK_SECURITY_ALLOW_WHEN_POLICY_MISSING.
+            | Logs a warning in production when true.
             */
-            'allow_when_policy_missing' => env('FLATPACK_SECURITY_ALLOW_WHEN_POLICY_MISSING', true),
+            'allow_when_policy_missing' => env(
+                'FLATPACK_SECURITY_ALLOW_WHEN_POLICY_MISSING',
+                env('APP_ENV', 'production') === 'local',
+            ),
         ],
     ],
 
