@@ -8,22 +8,21 @@ use Flatpack\Http\Requests\Concerns\AuthorizesRelationOptions;
 use Flatpack\Services\Forms\RelationOptionsAuthorizer;
 use Illuminate\Foundation\Http\FormRequest;
 
-final class EmbeddedTableColumnRelationOptionsRequest extends FormRequest
+final class DashboardWidgetRelationOptionsRequest extends FormRequest
 {
     use AuthorizesRelationOptions;
 
     public function authorize(): bool
     {
-        $entity = trim((string) $this->route('entity', ''));
-        $tableFieldId = trim((string) $this->query('table_field', ''));
+        $widget = trim((string) $this->route('widget', ''));
         $columnId = trim((string) $this->query('column_id', ''));
-        if ($entity === '' || $tableFieldId === '' || $columnId === '') {
+        if ($widget === '' || $columnId === '') {
             return true;
         }
 
         $relatedModelClass = $this->container
             ->make(RelationOptionsAuthorizer::class)
-            ->relatedModelClassForEmbeddedTableColumn($entity, $tableFieldId, $columnId);
+            ->relatedModelClassForDashboardWidgetColumn($widget, $columnId);
 
         return $this->authorizeRelationOptionsForRelatedModel($this->user(), $relatedModelClass);
     }
@@ -34,7 +33,6 @@ final class EmbeddedTableColumnRelationOptionsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'table_field' => ['required', 'string', 'max:255'],
             'column_id' => ['required', 'string', 'max:255'],
             'q' => ['sometimes', 'nullable', 'string'],
             'selected' => ['sometimes', 'nullable', 'string'],

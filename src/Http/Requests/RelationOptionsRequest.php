@@ -4,13 +4,27 @@ declare(strict_types=1);
 
 namespace Flatpack\Http\Requests;
 
+use Flatpack\Http\Requests\Concerns\AuthorizesRelationOptions;
+use Flatpack\Services\Forms\RelationOptionsAuthorizer;
 use Illuminate\Foundation\Http\FormRequest;
 
 final class RelationOptionsRequest extends FormRequest
 {
+    use AuthorizesRelationOptions;
+
     public function authorize(): bool
     {
-        return true;
+        $entity = trim((string) $this->route('entity', ''));
+        $fieldId = trim((string) $this->query('field', ''));
+        if ($entity === '' || $fieldId === '') {
+            return true;
+        }
+
+        $relatedModelClass = $this->container
+            ->make(RelationOptionsAuthorizer::class)
+            ->relatedModelClassForFormComboboxField($entity, $fieldId);
+
+        return $this->authorizeRelationOptionsForRelatedModel($this->user(), $relatedModelClass);
     }
 
     /**

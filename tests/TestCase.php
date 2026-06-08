@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace Flatpack\Tests;
 
 use Flatpack\Providers\FlatpackServiceProvider;
+use Flatpack\Tests\Models\Category;
 use Flatpack\Tests\Models\Post;
 use Flatpack\Tests\Models\PostBySlug;
 use Flatpack\Tests\Models\User;
+use Flatpack\Tests\Policies\CategoryPolicy;
+use Flatpack\Tests\Policies\FlatpackUserPolicy;
 use Flatpack\Tests\Policies\PostBySlugPolicy;
 use Flatpack\Tests\Policies\PostPolicy;
 use Illuminate\Auth\SessionGuard;
@@ -27,6 +30,8 @@ abstract class TestCase extends Orchestra
 
         Gate::policy(Post::class, PostPolicy::class);
         Gate::policy(PostBySlug::class, PostBySlugPolicy::class);
+        Gate::policy(Category::class, CategoryPolicy::class);
+        Gate::policy(User::class, FlatpackUserPolicy::class);
 
         Factory::guessFactoryNamesUsing(
             fn (string $modelName): string => 'Flatpack\\Tests\\Database\\Factories\\' . class_basename($modelName) . 'Factory'

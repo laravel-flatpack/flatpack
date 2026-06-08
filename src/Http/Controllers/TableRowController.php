@@ -10,6 +10,7 @@ use Flatpack\Actions\BulkActionContext;
 use Flatpack\Contracts\Composition\CompositionQuery;
 use Flatpack\Facades\Flatpack;
 use Flatpack\Http\Requests\BulkActionRequest;
+use Flatpack\Http\Requests\DashboardWidgetRelationOptionsRequest;
 use Flatpack\Http\Requests\ListActionRequest;
 use Flatpack\Http\Response\FlatpackErrorPayload;
 use Flatpack\Http\Response\RelationOptionsPayload;
@@ -171,8 +172,10 @@ final readonly class TableRowController
         ]);
     }
 
-    public function dashboardWidgetRelationOptions(Request $request, string $widget): JsonResponse
-    {
+    public function dashboardWidgetRelationOptions(
+        DashboardWidgetRelationOptionsRequest $request,
+        string $widget,
+    ): JsonResponse {
         /** @var array<string, mixed>|null $schema */
         $schema = $this->compositions->optional(Flatpack::dashboardEntity(), 'list');
         $normalized = $this->widgetSchemaNormalizer->normalize($schema);
@@ -188,10 +191,7 @@ final readonly class TableRowController
             return FlatpackErrorPayload::notFound('Flatpack dashboard widget is not model-backed.');
         }
 
-        $validated = $request->validate([
-            'column_id' => ['required', 'string'],
-        ]);
-        $columnId = trim((string) $validated['column_id']);
+        $columnId = trim((string) $request->validated('column_id'));
         $columns = $definition['columns'] ?? null;
         if (! is_array($columns) || $columns === []) {
             return FlatpackErrorPayload::notFound('Flatpack dashboard widget columns are not configured.');
