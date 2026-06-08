@@ -57,6 +57,7 @@ it('hydrates image-mode file-upload from target_column like url mode', function 
             'hero' => [
                 'type' => 'file-upload',
                 'mode' => 'image',
+                'upload' => [],
                 'target_column' => 'picture',
                 'label' => 'Hero',
             ],
@@ -83,6 +84,7 @@ it('hydrates url-mode file-upload from target_column for a single file', functio
             'avatar' => [
                 'type' => 'file-upload',
                 'mode' => 'url',
+                'upload' => [],
                 'target_column' => 'picture',
                 'label' => 'Avatar',
             ],
@@ -112,6 +114,7 @@ it('hydrates url-mode file-upload with persist_as json arrays', function (): voi
             'gallery' => [
                 'type' => 'file-upload',
                 'mode' => 'url',
+                'upload' => ['multiple' => true],
                 'target_column' => 'picture',
                 'multiple' => true,
                 'persist_as' => 'json',
@@ -141,6 +144,7 @@ it('hydrates url-mode file-upload with persist_as string csv values', function (
             'gallery' => [
                 'type' => 'file-upload',
                 'mode' => 'url',
+                'upload' => ['multiple' => true],
                 'target_column' => 'picture',
                 'multiple' => true,
                 'persist_as' => 'string',

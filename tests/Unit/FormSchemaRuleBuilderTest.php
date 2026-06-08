@@ -152,6 +152,7 @@ it('uses array rule for file-upload fields', function (): void {
                 'type' => 'file-upload',
                 'label' => 'Cover',
                 'mode' => 'url',
+                'upload' => [],
             ],
         ],
     ], Post::class);

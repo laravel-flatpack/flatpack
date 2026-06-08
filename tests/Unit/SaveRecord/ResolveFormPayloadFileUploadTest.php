@@ -17,6 +17,7 @@ it('maps url-mode file-upload to target column attribute', function (): void {
                 'avatar' => [
                     'type' => 'file-upload',
                     'mode' => 'url',
+                    'upload' => [],
                     'target_column' => 'picture',
                     'label' => 'Avatar',
                 ],
@@ -48,6 +49,7 @@ it('maps image-mode file-upload to target column like url mode', function (): vo
                 'cover' => [
                     'type' => 'file-upload',
                     'mode' => 'image',
+                    'upload' => [],
                     'target_column' => 'picture',
                     'label' => 'Cover',
                 ],
@@ -79,6 +81,7 @@ it('maps file-mode file-upload to target column like url mode', function (): voi
                 'attachment' => [
                     'type' => 'file-upload',
                     'mode' => 'file',
+                    'upload' => [],
                     'target_column' => 'picture',
                     'label' => 'Attachment',
                 ],
@@ -110,6 +113,7 @@ it('marks relation-mode file-upload as deferred relation payload', function (): 
                 'gallery' => [
                     'type' => 'file-upload',
                     'mode' => 'relation',
+                    'upload' => ['multiple' => true],
                     'relation' => 'comments',
                     'callback' => 'processGalleryFiles',
                     'label' => 'Gallery',
