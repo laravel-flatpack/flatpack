@@ -352,6 +352,7 @@ final class FormFieldDefinitionNormalizer
             $value = trim((string) $normalized[$key]);
             if ($value === '') {
                 unset($normalized[$key]);
+
                 continue;
             }
             $normalized[$key] = $value;
