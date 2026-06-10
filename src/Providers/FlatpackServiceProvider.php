@@ -6,6 +6,7 @@ namespace Flatpack\Providers;
 
 use Closure;
 use Flatpack\Console\Commands\GenerateCompositionSchemaKeysCommand;
+use Flatpack\Console\Commands\InstallFlatpackCommand;
 use Flatpack\Console\Commands\MakeCompositionCommand;
 use Flatpack\Contracts\Authorization\FlatpackAuthorizer;
 use Flatpack\Flatpack;
@@ -153,6 +154,7 @@ final class FlatpackServiceProvider extends ServiceProvider
     {
         $this->commands([
             GenerateCompositionSchemaKeysCommand::class,
+            InstallFlatpackCommand::class,
             MakeCompositionCommand::class,
         ]);
     }

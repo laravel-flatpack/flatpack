@@ -32,11 +32,13 @@ React and Inertia UI, declarative `form.yaml` and `list.yaml` compositions per e
 composer require flatpack/flatpack
 ```
 
-**2. Publish config and assets**
+**2. Run the install command**
 
 ```bash
-php artisan vendor:publish --tag=flatpack
+php artisan flatpack:install
 ```
+
+This publishes config and compiled panel assets (`--tag=flatpack`), optionally publishes the AI YAML skill, and can add `canAccessFlatpack()` to your `User` model when you confirm.
 
 Keep published assets in sync after updates (recommended in `composer.json`):
 
@@ -44,6 +46,12 @@ Keep published assets in sync after updates (recommended in `composer.json`):
 "post-update-cmd": [
     "@php artisan vendor:publish --tag=flatpack --force"
 ]
+```
+
+**Manual publish** (equivalent to the first install step):
+
+```bash
+php artisan vendor:publish --tag=flatpack
 ```
 
 **3. Gate panel access on your `User` model**
