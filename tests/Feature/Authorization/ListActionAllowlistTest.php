@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 use Flatpack\Tests\Models\Post;
 use Flatpack\Tests\Models\User;
+use Flatpack\Tests\TestCase;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
 
-uses(Flatpack\Tests\TestCase::class);
+use function Pest\Laravel\actingAs;
+
+uses(TestCase::class, RefreshDatabase::class);
 
 test('flatpack list header action rejects undeclared action with 422', function () {
     $tempPath = sys_get_temp_dir() . '/flatpack-list-allowlist-header-' . uniqid('', true);

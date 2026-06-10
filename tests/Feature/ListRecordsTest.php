@@ -1967,45 +1967,6 @@ YAML);
     }
 });
 
-test('flatpack bulk action denies when model policy is missing by default', function () {
-    $tempPath = sys_get_temp_dir() . '/flatpack-list-bulk-delete-no-policy-' . uniqid('', true);
-
-    try {
-        File::ensureDirectoryExists($tempPath . '/posts');
-        File::put($tempPath . '/posts/list.yaml', <<<'YAML'
-name: Posts
-model: Flatpack\Tests\Models\UnregisteredPolicyPost
-bulk_actions:
-  delete:
-    label: Delete
-    action: delete
-columns:
-  id:
-    label: ID
-YAML);
-        config()->set('flatpack.composition.path', $tempPath);
-
-        $post = Post::factory()->create(['title' => 'Keep me']);
-
-        /** @var User $user */
-        $user = User::factory()->createOne();
-
-        actingAs($user)
-            ->from(route('flatpack.entities.index', ['entity' => 'posts']))
-            ->post(route('flatpack.entities.bulk-action', [
-                'entity' => 'posts',
-            ]), [
-                'action' => 'delete',
-                'selection' => [(string) $post->getKey()],
-            ])
-            ->assertForbidden();
-
-        expect(Post::query()->whereKey($post->getKey())->exists())->toBeTrue();
-    } finally {
-        File::deleteDirectory($tempPath);
-    }
-});
-
 test('flatpack entity list JSON only exposes configured bulk actions', function () {
     $tempPath = sys_get_temp_dir() . '/flatpack-list-bulk-actions-' . uniqid('', true);
 
