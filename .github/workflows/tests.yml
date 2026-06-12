@@ -35,12 +35,15 @@ jobs:
           coverage: xdebug
 
       - name: Setup Node
+        if: matrix.php-version == '8.3'
         uses: actions/setup-node@v6
         with:
           node-version: '22'
+          cache: npm
 
       - name: Install Node Dependencies
-        run: npm i
+        if: matrix.php-version == '8.3'
+        run: npm ci
 
       - name: Install Dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
@@ -52,7 +55,12 @@ jobs:
         run: php artisan key:generate
 
       - name: Build Assets
+        if: matrix.php-version == '8.3'
         run: npm run build
+
+      - name: Verify committed build assets
+        if: matrix.php-version == '8.3'
+        run: node ./scripts/assets-check.mjs
 
       - name: Tests (with coverage)
         if: matrix.php-version == '8.3'

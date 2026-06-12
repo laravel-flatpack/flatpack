@@ -1,0 +1,1 @@
+import{t as e}from"./plate-editor-fallback-DLZ0gLCW.js";export{e as PlateEditorFallback};

@@ -69,7 +69,8 @@ test('flatpack:install publishes flatpack config and assets', function () {
         ->expectsOutputToContain('Flatpack is installed.');
 
     expect(is_file($configPath))->toBeTrue()
-        ->and(is_dir($assetsPath))->toBeTrue();
+        ->and(is_dir($assetsPath))->toBeTrue()
+        ->and(is_file($assetsPath . '/build/manifest.json'))->toBeTrue();
 });
 
 test('flatpack:install overwrites published config when force is passed', function () {

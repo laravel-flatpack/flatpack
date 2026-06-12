@@ -77,14 +77,27 @@ When `FLATPACK_PUBLIC_DEST` points **outside** this package’s `public/`, each 
 
 The Vite config uses **`inertia({ ssr: false })`**. Flatpack is **client-rendered** only; Inertia’s Vite SSR dev endpoint is disabled so `react-dom/client` is not evaluated in Node during `npm run dev`.
 
+### Shipping build assets
+
+Production Vite output under **`public/build/`** is **committed** to the repository (manifest + hashed chunks under `public/build/assets/`). Packagist installs and `vendor:publish --tag=flatpack` rely on that tree; host applications do not run `npm` for the panel.
+
+When you change `resources/js`, `resources/css`, or `vite.config.ts`:
+
+1. Use **Node 22** locally (matches CI).
+2. Run **`npm run build`** (or **`npm run assets:check`**, which builds then verifies git is clean under `public/build/`).
+3. Commit the updated `public/build/` files in the same PR.
+
+CI on PHP 8.3 runs `npm run build` and **`scripts/assets-check.mjs`** — PRs fail if committed assets are stale.
+
 ### Scripts
 
-| Command             | Use case                                                                                                                                                                              |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **`npm run dev`**   | Vite dev server + HMR. Prefer this while editing UI. Requires `FLATPACK_PUBLIC_DEST` aimed at the host’s `public/vendor/flatpack` if the host should load the dev server (via `hot`). |
-| **`npm run watch`** | `vite build --watch`. Rebuilds production bundles on save. Use when the host must read **on-disk** assets from `vendor/flatpack/build` without running the Vite server.               |
-| **`npm run build`** | One-off production build (release, CI, or refreshing `public/build` before commit).                                                                                                   |
-| **`npm run clean`** | Deletes the configured `build/` output (and this package’s `public/build`) without compiling.                                                                                         |
+| Command                  | Use case                                                                                                                                                                              |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`npm run dev`**        | Vite dev server + HMR. Prefer this while editing UI. Requires `FLATPACK_PUBLIC_DEST` aimed at the host’s `public/vendor/flatpack` if the host should load the dev server (via `hot`). |
+| **`npm run watch`**      | `vite build --watch`. Rebuilds production bundles on save. Use when the host must read **on-disk** assets from `vendor/flatpack/build` without running the Vite server.               |
+| **`npm run build`**      | One-off production build (release, CI, or refreshing `public/build` before commit).                                                                                                   |
+| **`npm run assets:check`** | Production build plus drift check — fails if `public/build/` does not match git.                                                                                                    |
+| **`npm run clean`**      | Deletes the configured `build/` output (and this package’s `public/build`) without compiling.                                                                                         |
 
 `npm run build` and `npm run watch` run a **clean** of the relevant `build/` directories at the start of each compile so old hashed chunks are not left behind.
 

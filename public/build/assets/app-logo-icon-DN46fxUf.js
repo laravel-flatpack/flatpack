@@ -1,0 +1,1 @@
+import{ur as e}from"./vendor-plate-Dy3e0BIz.js";var t=e();function n(e){return(0,t.jsx)(`div`,{className:`logo ${e.className??``}`,style:{maskImage:`url(${e.src})`}})}export{n as t};

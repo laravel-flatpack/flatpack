@@ -21,7 +21,6 @@ React and Inertia UI, declarative `form.yaml` and `list.yaml` compositions per e
 
 - PHP ^8.3
 - Laravel 12 or 13
-- [Inertia.js for Laravel](https://inertiajs.com/) in the host application (middleware, root view, and Vite setup)
 - Composer
 
 ## Installation
@@ -47,6 +46,8 @@ Keep published assets in sync after updates (recommended in `composer.json`):
     "@php artisan vendor:publish --tag=flatpack --force"
 ]
 ```
+
+After a Flatpack upgrade, republish with `--force` so hashed Vite asset files in `public/vendor/flatpack/build/` stay in sync with the package (stale chunks are not removed automatically).
 
 **Manual publish** (equivalent to the first install step):
 
@@ -88,19 +89,19 @@ Visit `/flatpack/posts` (prefix is `config('flatpack.http.prefix')`, default `fl
 
 ## Host configuration
 
-Flatpack ships Inertia pages and compiled frontend assets. The host app must already run [Inertia for Laravel](https://inertiajs.com/server-side-setup) (`HandleInertiaRequests`, root Blade view, Vite). Flatpack registers its own routes and does not replace your app’s frontend entrypoint.
+Flatpack bundles the Inertia + React admin UI and ships pre-built frontend assets. `flatpack:install` (or `vendor:publish --tag=flatpack`) copies them to `public/vendor/flatpack/`. Your Laravel app does not need a separate Inertia or Vite setup for the panel, Flatpack registers panel routes, middleware, and its own root view for Flatpack URLs. Your app’s frontend entrypoint is unchanged.
 
 Re-publish after package updates (`--force` in `post-update-cmd` is recommended).
 
-| Variable | Config key | Notes |
-| --- | --- | --- |
-| `FLATPACK_COMPOSITION_PATH` | `composition.path` | Entity folders (`form.yaml`, `list.yaml`). Default: `base_path('flatpack')`. |
-| `FLATPACK_COMPOSITION_DASHBOARD_ENTITY` | `composition.dashboard_entity` | Slug for dashboard `list.yaml`. Default: `dashboard`. |
-| `FLATPACK_HTTP_PREFIX` | `http.prefix` | URL prefix for panel routes. Default: `flatpack`. |
-| `FLATPACK_SECURITY_GUARD` | `security.guard` | Auth guard for panel middleware. Default: `web`. |
-| `FLATPACK_SECURITY_ALLOW_WHEN_POLICY_MISSING` | `security.authorization.allow_when_policy_missing` | Overrides fail-closed behavior outside `local`. |
-| `FLATPACK_HTTP_LOGIN_THROTTLE` | `http.login.throttle` | Throttle middleware for login POST. |
-| `FLATPACK_HTTP_REGISTER_JSON_EXCEPTION_HANDLER` | `http.register_json_exception_handler` | Redirect unauthenticated JSON requests to login. |
+| Variable                                        | Config key                                         | Notes                                                                        |
+| ----------------------------------------------- | -------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `FLATPACK_COMPOSITION_PATH`                     | `composition.path`                                 | Entity folders (`form.yaml`, `list.yaml`). Default: `base_path('flatpack')`. |
+| `FLATPACK_COMPOSITION_DASHBOARD_ENTITY`         | `composition.dashboard_entity`                     | Slug for dashboard `list.yaml`. Default: `dashboard`.                        |
+| `FLATPACK_HTTP_PREFIX`                          | `http.prefix`                                      | URL prefix for panel routes. Default: `flatpack`.                            |
+| `FLATPACK_SECURITY_GUARD`                       | `security.guard`                                   | Auth guard for panel middleware. Default: `web`.                             |
+| `FLATPACK_SECURITY_ALLOW_WHEN_POLICY_MISSING`   | `security.authorization.allow_when_policy_missing` | Overrides fail-closed behavior outside `local`.                              |
+| `FLATPACK_HTTP_LOGIN_THROTTLE`                  | `http.login.throttle`                              | Throttle middleware for login POST.                                          |
+| `FLATPACK_HTTP_REGISTER_JSON_EXCEPTION_HANDLER` | `http.register_json_exception_handler`             | Redirect unauthenticated JSON requests to login.                             |
 
 See `config/flatpack.php` for uploads, navigation, and action handler maps.
 

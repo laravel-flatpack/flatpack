@@ -12,7 +12,6 @@
 npm-debug.log*
 pnpm-debug.log*
 yarn-error.log*
-build
 composer.lock
 coverage
 clover.xml
@@ -22,6 +21,6 @@ vendor
 node_modules
 flatpack-bundle-stats.html
 .php-cs-fixer.cache
-/public/build/*
+/public/hot
 /CLAUDE.md
 /local/

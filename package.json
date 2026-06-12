@@ -6,6 +6,7 @@
         "dev": "vite",
         "clean": "node ./scripts/clean-build.mjs",
         "build": "vite build",
+        "assets:check": "npm run build && node ./scripts/assets-check.mjs",
         "build:analyze": "FLATPACK_BUNDLE_ANALYZE=1 vite build",
         "watch": "vite build --watch",
         "lint": "biome check resources/js resources/css",
