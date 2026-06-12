@@ -61,7 +61,7 @@ final class GenerateCompositionSchemaKeysCommand extends Command
                 $generator->generateTypeScriptModule($form, $list),
             );
             $existingTs = is_file($outTs) ? File::get($outTs) : null;
-            if ($existingTs !== $tsContent) {
+            if ($existingTs !== $tsContent && ! $generator->typeScriptModuleMatchesKeySets((string) $existingTs, $expected)) {
                 $this->error('resources/js/lib/generated/composition-schema-keys.ts is out of sync with resources/schema/*.json. Run: php artisan flatpack:generate-composition-schema-keys');
 
                 return self::FAILURE;

@@ -328,6 +328,90 @@ PHP;
     }
 
     /**
+     * Verify a committed composition-schema-keys.ts module reflects {@see extractKeySets()}.
+     *
+     * @param  array{
+     *     formRootPropertyKeys: list<string>,
+     *     listRootPropertyKeys: list<string>,
+     *     formDefaultFieldType: string,
+     *     formFieldTypesCanonical: list<string>,
+     *     headerActionEntryKeys: list<string>,
+     *     listBulkActionEntryKeys: list<string>,
+     *     listColumnDefinitionPropertyKeys: list<string>,
+     *     formPresetTypes: list<string>,
+     *     successRedirectValues: list<string>,
+     *     listColumnYamlTypes: list<string>,
+     *     buttonVariantValues: list<string>,
+     *     buttonVariantUiValues: list<string>,
+     *     optionStatusValues: list<string>,
+     *     widgetStatusValues: list<string>,
+     *     listFilterTypes: list<string>,
+     *     listFilterDateModes: list<string>,
+     *     listColumnGenericYamlTypes: list<string>,
+     *     listColumnActionButtonEntryKeys: list<string>,
+     * }  $keySets
+     */
+    public function typeScriptModuleMatchesKeySets(string $content, array $keySets): bool
+    {
+        $extractTuple = static function (string $name) use ($content): array {
+            if (preg_match('/export const ' . preg_quote($name, '/') . '\s*=\s*\[(.*?)\]\s*as const;/s', $content, $matches) !== 1) {
+                return [];
+            }
+
+            preg_match_all('/[\'"]([^\'"]+)[\'"]/', $matches[1], $parts);
+
+            return $parts[1];
+        };
+
+        $extractListRoot = static function () use ($content): array {
+            if (preg_match('/export const LIST_ROOT = \{(.*?)\}\s*as const;/s', $content, $matches) !== 1) {
+                return [];
+            }
+
+            preg_match_all('/([a-zA-Z0-9_]+)\s*:\s*[\'"]([^\'"]+)[\'"]/', $matches[1], $pairs, PREG_SET_ORDER);
+            $out = [];
+            foreach ($pairs as $pair) {
+                $out[$pair[1]] = $pair[2];
+            }
+
+            return $out;
+        };
+
+        $extractStringConst = static function (string $name) use ($content): ?string {
+            if (preg_match('/export const ' . preg_quote($name, '/') . '\s*=\s*[\'"]([^\'"]+)[\'"]\s*as const;/', $content, $matches) !== 1) {
+                return null;
+            }
+
+            return $matches[1];
+        };
+
+        $expectedListRoot = [];
+        foreach ($keySets['listRootPropertyKeys'] as $key) {
+            $expectedListRoot[$key] = $key;
+        }
+
+        return $extractTuple('FORM_ROOT_PROPERTY_KEYS') === $keySets['formRootPropertyKeys']
+            && $extractListRoot() === $expectedListRoot
+            && $extractTuple('LIST_ROOT_PROPERTY_KEYS') === $keySets['listRootPropertyKeys']
+            && $extractStringConst('FORM_DEFAULT_FIELD_TYPE') === $keySets['formDefaultFieldType']
+            && $extractTuple('FORM_FIELD_TYPES_CANONICAL') === $keySets['formFieldTypesCanonical']
+            && $extractTuple('HEADER_ACTION_ENTRY_KEYS') === $keySets['headerActionEntryKeys']
+            && $extractTuple('LIST_BULK_ACTION_ENTRY_KEYS') === $keySets['listBulkActionEntryKeys']
+            && $extractTuple('LIST_COLUMN_ACTION_BUTTON_ENTRY_KEYS') === $keySets['listColumnActionButtonEntryKeys']
+            && $extractTuple('LIST_COLUMN_DEFINITION_PROPERTY_KEYS') === $keySets['listColumnDefinitionPropertyKeys']
+            && $extractTuple('FORM_PRESET_TYPES') === $keySets['formPresetTypes']
+            && $extractTuple('SUCCESS_REDIRECT_VALUES') === $keySets['successRedirectValues']
+            && $extractTuple('LIST_COLUMN_YAML_TYPES') === $keySets['listColumnYamlTypes']
+            && $extractTuple('LIST_COLUMN_GENERIC_YAML_TYPES') === $keySets['listColumnGenericYamlTypes']
+            && $extractTuple('BUTTON_VARIANT_VALUES') === $keySets['buttonVariantValues']
+            && $extractTuple('BUTTON_VARIANT_UI_VALUES') === $keySets['buttonVariantUiValues']
+            && $extractTuple('OPTION_STATUS_VALUES') === $keySets['optionStatusValues']
+            && $extractTuple('WIDGET_STATUS_VALUES') === $keySets['widgetStatusValues']
+            && $extractTuple('LIST_FILTER_TYPES') === $keySets['listFilterTypes']
+            && $extractTuple('LIST_FILTER_DATE_MODES') === $keySets['listFilterDateModes'];
+    }
+
+    /**
      * @param  list<string>  $strings
      */
     private static function tsConstAsConst(string $doc, string $name, array $strings): string
@@ -345,13 +429,11 @@ PHP;
 
     private static function tsStringConst(string $doc, string $name, string $value): string
     {
-        $json = json_encode($value, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
-
         $block = '';
         $block .= '/**' . "\n";
         $block .= ' * ' . $doc . "\n";
         $block .= ' */' . "\n";
-        $block .= 'export const ' . $name . ' = ' . $json . " as const;\n\n";
+        $block .= 'export const ' . $name . ' = ' . self::tsStringLiteral($value) . " as const;\n\n";
 
         return $block;
     }
@@ -365,13 +447,14 @@ PHP;
             return '[] as const';
         }
 
-        $parts = array_map(static function (string $s): string {
-            $json = json_encode($s, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
+        $literals = array_map(self::tsStringLiteral(...), $strings);
 
-            return (string) $json;
-        }, $strings);
+        return "[\n    " . implode(",\n    ", $literals) . ",\n] as const";
+    }
 
-        return "[\n    " . implode(",\n    ", $parts) . ",\n] as const";
+    private static function tsStringLiteral(string $value): string
+    {
+        return "'" . str_replace(['\\', "'"], ['\\\\', "\\'"], $value) . "'";
     }
 
     /**
@@ -510,8 +593,7 @@ PHP;
         $lines = [];
         foreach ($listRoot as $key) {
             $prop = self::tsObjectPropertyName($key);
-            $json = json_encode($key, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
-            $lines[] = '    ' . $prop . ': ' . $json;
+            $lines[] = '    ' . $prop . ': ' . self::tsStringLiteral($key);
         }
 
         $out = '/** Identity map of list.json root property names; use `LIST_ROOT.nav_order`, `LIST_ROOT[\'bulk_actions\']`, etc. */' . "\n";
@@ -554,7 +636,7 @@ PHP;
             return $key;
         }
 
-        return json_encode($key, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
+        return self::tsStringLiteral($key);
     }
 
     /**

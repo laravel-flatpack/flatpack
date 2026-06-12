@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Flatpack\Tests\TestCase;
 use Illuminate\Support\Facades\File;
+use Symfony\Component\Yaml\Yaml;
 
 uses(TestCase::class);
 
@@ -180,17 +181,19 @@ test('flatpack:make can disable generated actions and guessed schema sections', 
             '--without-auto-columns' => true,
         ])->assertSuccessful();
 
-        $form = File::get($tempPath . '/guinea_pig_models/form.yaml');
-        $list = File::get($tempPath . '/guinea_pig_models/list.yaml');
+        $form = Yaml::parse(File::get($tempPath . '/guinea_pig_models/form.yaml'));
+        $list = Yaml::parse(File::get($tempPath . '/guinea_pig_models/list.yaml'));
 
-        expect($form)->toContain('actions: {  }')
-            ->toContain('fields: {  }')
-            ->not->toContain('action: save');
+        expect($form)->toBeArray()
+            ->and($form['actions'] ?? null)->toBe([])
+            ->and($form['fields'] ?? null)->toBe([])
+            ->and(File::get($tempPath . '/guinea_pig_models/form.yaml'))->not->toContain('action: save');
 
-        expect($list)->toContain('actions: {  }')
-            ->toContain('bulk_actions: {  }')
-            ->toContain('columns: {  }')
-            ->not->toContain('action: create');
+        expect($list)->toBeArray()
+            ->and($list['actions'] ?? null)->toBe([])
+            ->and($list['bulk_actions'] ?? null)->toBe([])
+            ->and($list['columns'] ?? null)->toBe([])
+            ->and(File::get($tempPath . '/guinea_pig_models/list.yaml'))->not->toContain('action: create');
     } finally {
         File::deleteDirectory($tempPath);
     }
