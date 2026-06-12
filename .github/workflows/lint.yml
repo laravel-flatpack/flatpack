@@ -26,9 +26,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          # Pint's mb_str_functions rule is PHP-version-sensitive (e.g. trim -> mb_trim on 8.4).
-          # Lint on the package minimum so local and CI agree and code stays 8.3-compatible.
-          php-version: '8.3'
+          php-version: "8.3"
 
       - name: Install Dependencies
         run: |
