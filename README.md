@@ -4,26 +4,62 @@
 [![License](https://img.shields.io/github/license/laravel-flatpack/flatpack)](LICENSE.md)
 [![Test Coverage](.github/badge-coverage.svg)](https://github.com/laravel-flatpack/flatpack/actions/workflows/tests.yml)
 [![GitHub Tests Status](https://img.shields.io/github/actions/workflow/status/laravel-flatpack/flatpack/tests.yml)](https://github.com/laravel-flatpack/flatpack/actions/workflows/tests.yml)
-[![GitHub Code Style Status](https://img.shields.io/github/actions/workflow/status/laravel-flatpack/flatpack/php-cs-fixer.yml?label=code%20style)](https://github.com/laravel-flatpack/flatpack/actions/workflows/php-cs-fixer.yml)
+[![GitHub Code Style Status](https://img.shields.io/github/actions/workflow/status/laravel-flatpack/flatpack/lint.yml?label=code%20style)](https://github.com/laravel-flatpack/flatpack/actions/workflows/lint.yml)
 
 # Flatpack
 
-YAML-driven admin panel for Laravel.
-React and Inertia UI, declarative `form.yaml` and `list.yaml` compositions per entity.
+Declare your admin panel in YAML. Laravel + Inertia/React UI included.
 
 📕 [Official Documentation](https://laravel-flatpack.com)
 
 ![Demo](.github/demo.gif)
 
----
+Here are a few short examples of what you can do.
 
-## Requirements
+A list page — searchable columns, icons, the works:
 
-- PHP ^8.3
-- Laravel 12 or 13
-- Composer
+```yaml
+# flatpack/posts/list.yaml
+name: Posts
+model: App\Models\Post
+icon: book-open
+columns:
+    title:
+        label: Title
+        type: text
+        searchable: true
+    actions:
+        type: actions
+        actions:
+            - label: Edit
+              action: edit
+```
+
+A form — fields, rich text, done:
+
+```yaml
+# flatpack/posts/form.yaml
+name: Posts
+model: App\Models\Post
+fields:
+    title:
+        label: Title
+        placeholder: Enter a post title
+        type: text
+    body:
+        label: Body
+        type: block-editor
+```
+
+Scaffold a `Post` entity and visit `/flatpack/posts` to see it live.
+
+## Documentation
+
+You'll find the full guide at **[laravel-flatpack.com](https://laravel-flatpack.com)** — installation, field types, list columns, widgets, actions, and the complete YAML reference at [laravel-flatpack.com/reference](https://laravel-flatpack.com/reference).
 
 ## Installation
+
+Requires PHP ^8.3 and Laravel 12 or 13.
 
 **1. Install the package**
 
@@ -37,22 +73,14 @@ composer require flatpack/flatpack
 php artisan flatpack:install
 ```
 
-This publishes config and compiled panel assets (`--tag=flatpack`), optionally publishes the AI YAML skill, and can add `canAccessFlatpack()` to your `User` model when you confirm.
+This publishes config and compiled panel assets, optionally publishes the AI YAML skill, and can add `canAccessFlatpack()` to your `User` model.
 
-Keep published assets in sync after updates (recommended in `composer.json`):
+Keep published assets in sync after updates — add this to your `composer.json`:
 
 ```json
 "post-update-cmd": [
     "@php artisan vendor:publish --tag=flatpack --force"
 ]
-```
-
-After a Flatpack upgrade, republish with `--force` so hashed Vite asset files in `public/vendor/flatpack/build/` stay in sync with the package (stale chunks are not removed automatically).
-
-**Manual publish** (equivalent to the first install step):
-
-```bash
-php artisan vendor:publish --tag=flatpack
 ```
 
 **3. Gate panel access on your `User` model**
@@ -67,139 +95,79 @@ class User extends Authenticatable
 }
 ```
 
-**4. Register a Laravel policy for every model you expose in Flatpack**
+## Scaffolding
 
-Flatpack authorizes list, form, row, and bulk actions through standard model policies (`viewAny`, `view`, `create`, `update`, `delete`, and soft-delete abilities when used).
-
-```bash
-php artisan make:policy PostPolicy --model=Post
-```
-
-Register the policy in `AppServiceProvider` (or rely on Laravel’s policy discovery).
-
-**5. Generate your first entity**
+Generate your first entity:
 
 ```bash
 php artisan flatpack:make Post
 ```
 
-This writes `flatpack/posts/form.yaml` and `flatpack/posts/list.yaml` under `config('flatpack.composition.path')` (default: `base_path('flatpack')`).
+You get `flatpack/posts/form.yaml` and `flatpack/posts/list.yaml` under `config('flatpack.composition.path')` (default: `flatpack/`). Open `/flatpack/posts` to use the panel.
 
-Visit `/flatpack/posts` (prefix is `config('flatpack.http.prefix')`, default `flatpack`).
+Useful flags: `--model=`, `--entity=`, `--without-auto-fields`, and more — run `php artisan flatpack:make --help`.
 
-## Host configuration
+Flatpack ships pre-built frontend assets. Your Laravel app does not need a separate Inertia or Vite setup for the panel.
 
-Flatpack bundles the Inertia + React admin UI and ships pre-built frontend assets. `flatpack:install` (or `vendor:publish --tag=flatpack`) copies them to `public/vendor/flatpack/`. Your Laravel app does not need a separate Inertia or Vite setup for the panel, Flatpack registers panel routes, middleware, and its own root view for Flatpack URLs. Your app’s frontend entrypoint is unchanged.
+## Configuration
 
-Re-publish after package updates (`--force` in `post-update-cmd` is recommended).
+The knobs most apps touch:
 
-| Variable                                        | Config key                                         | Notes                                                                        |
-| ----------------------------------------------- | -------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `FLATPACK_COMPOSITION_PATH`                     | `composition.path`                                 | Entity folders (`form.yaml`, `list.yaml`). Default: `base_path('flatpack')`. |
-| `FLATPACK_COMPOSITION_DASHBOARD_ENTITY`         | `composition.dashboard_entity`                     | Slug for dashboard `list.yaml`. Default: `dashboard`.                        |
-| `FLATPACK_HTTP_PREFIX`                          | `http.prefix`                                      | URL prefix for panel routes. Default: `flatpack`.                            |
-| `FLATPACK_SECURITY_GUARD`                       | `security.guard`                                   | Auth guard for panel middleware. Default: `web`.                             |
-| `FLATPACK_SECURITY_ALLOW_WHEN_POLICY_MISSING`   | `security.authorization.allow_when_policy_missing` | Overrides fail-closed behavior outside `local`.                              |
-| `FLATPACK_HTTP_LOGIN_THROTTLE`                  | `http.login.throttle`                              | Throttle middleware for login POST.                                          |
-| `FLATPACK_HTTP_REGISTER_JSON_EXCEPTION_HANDLER` | `http.register_json_exception_handler`             | Redirect unauthenticated JSON requests to login.                             |
+- `FLATPACK_COMPOSITION_PATH` — where your YAML compositions live (default: `flatpack/`)
+- `FLATPACK_HTTP_PREFIX` — URL prefix for panel routes (default: `flatpack`)
+- `FLATPACK_SECURITY_GUARD` — auth guard for panel middleware (default: `web`)
 
-See `config/flatpack.php` for uploads, navigation, and action handler maps.
+See [`config/flatpack.php`](config/flatpack.php) and the [host configuration docs](https://laravel-flatpack.com) for uploads, navigation, and login customization.
 
-**Custom login** — default POST is `Flatpack\Http\Controllers\SessionController@store` (`config('flatpack.http.login.store')`). To use [Laravel Fortify](https://fortify.laravel.com/) or another flow:
-
-```php
-'store' => [\Laravel\Fortify\Http\Controllers\AuthenticatedSessionController::class, 'store'],
-```
-
-Panel routes still use `auth:{guard}` and `EnsureFlatpackAccess` (which calls `canAccessFlatpack()`).
-
-`flatpack:make` options: `--model=`, `--entity=`, `--menu=`, `--icon=`, `--nav-order=`, and toggles such as `--without-auto-fields`. Run `php artisan flatpack:make --help`.
+For AI-assisted YAML authoring, run `php artisan vendor:publish --tag=flatpack-ai` or pass `--with-ai` to `flatpack:install`.
 
 ## Security
 
 Panel access requires `canAccessFlatpack()` on the authenticated user.
 
-**Model policies are required in non-local environments.** If a model has no registered policy, authorization denies the action unless `allow_when_policy_missing` is enabled.
+If you discover a security vulnerability, email hello@faustoquaggia.com instead of using the issue tracker. See the [security policy](https://github.com/laravel-flatpack/flatpack/security/policy).
 
-| Setting                                       | Default                                        | Meaning                                           |
-| --------------------------------------------- | ---------------------------------------------- | ------------------------------------------------- |
-| `allow_when_policy_missing`                   | `true` when `APP_ENV=local`, otherwise `false` | Allow panel users to act on models with no policy |
-| `FLATPACK_SECURITY_ALLOW_WHEN_POLICY_MISSING` | Overrides the config value in any environment  |                                                   |
+## Testing
 
-In production, when `allow_when_policy_missing` is `true`, Flatpack logs a warning for each missing-policy check.
-
-## Examples
-
-Minimal list (`flatpack/posts/list.yaml`):
-
-```yaml
-name: Posts
-model: App\Models\Post
-icon: book-open
-columns:
-    title:
-        label: Title
-        type: text
-        searchable: true
-```
-
-Minimal form (`flatpack/posts/form.yaml`):
-
-```yaml
-name: Posts
-model: App\Models\Post
-fields:
-    title:
-        label: Title
-        type: text
-    body:
-        label: Body
-        type: block-editor
-```
-
-Full key reference: [laravel-flatpack.com/reference](https://laravel-flatpack.com/reference)
-
-## Schema snapshot
-
-Quick reference for supported schema types (see the [official docs](https://laravel-flatpack.com/reference) for the full contract).
-
-**Form field `type` values:** `text`, `textarea`, `select`, `combobox`, `date-picker`, `date-range-picker`, `time-picker`, `checkbox`, `switch`, `rich-text`, `block-editor`, `table`, `file-upload`, `toolbar`, and others — see [form field types](https://laravel-flatpack.com/reference).
-
-**List column `type` values:** `text`, `select`, `date`, `datetime`, `actions`, `badge`, `relation` — see [list columns](https://laravel-flatpack.com/reference).
-
-**Dashboard widget `type` values:** `metric`, `card`, `status`, `chart`, `table`, `grid` — see [widgets](https://laravel-flatpack.com/reference).
-
-Optional **`span`** on fields and widgets: `full`, `half`, `two_thirds`, `third`, `quarter` (aliases `1/2`, `2/3`, `1/3`, `1/4`).
-
-## AI-assisted YAML authoring
+You can run the tests with:
 
 ```bash
-php artisan vendor:publish --tag=flatpack-ai
+composer run test
 ```
 
-[Laravel Boost](https://github.com/laravel/boost): after `php artisan boost:install`, enable **`flatpack-host-yaml-authoring`** when editing composition YAML.
-
-Or pass **`--with-ai`** to `flatpack:install` in non-interactive mode.
-
-## Package development
-
-Clone this repository and read [`.github/DEVELOPMENT.md`](.github/DEVELOPMENT.md). Before opening a PR:
+Coverage (requires Xdebug):
 
 ```bash
-composer run check
+composer run test-coverage
 ```
+
+Before opening a PR, run the full gate:
+
+```bash
+npm run check:All
+```
+
+CI runs on PHP 8.3, 8.4, and 8.5 via [`.github/workflows/tests.yml`](.github/workflows/tests.yml). The [coverage badge](.github/badge-coverage.svg) is updated on the PHP 8.3 job. Frontend components in `resources/js/` are covered by Vitest.
+
+Clone this repository and read [`.github/DEVELOPMENT.md`](.github/DEVELOPMENT.md) for local Vite, schema keys, and test ownership.
+
+## Upgrading
+
+After `composer update`, republish panel assets so hashed Vite files in `public/vendor/flatpack/build/` stay in sync:
+
+```bash
+php artisan vendor:publish --tag=flatpack --force
+```
+
+The `post-update-cmd` hook above is the easiest way to keep this automatic. Stale asset chunks are not removed on republish — use `--force` after every upgrade.
 
 ## Changelog
 
-See [CHANGELOG](CHANGELOG.md).
+Please see [CHANGELOG](CHANGELOG.md) for recent changes.
 
 ## Contributing
 
-See [CONTRIBUTING](.github/CONTRIBUTING.md).
-
-## Security vulnerabilities
-
-See the [security policy](../../security/policy).
+Please see [CONTRIBUTING](.github/CONTRIBUTING.md) for details.
 
 ## Credits
 
@@ -208,4 +176,4 @@ See the [security policy](../../security/policy).
 
 ## License
 
-MIT — see [LICENSE.md](LICENSE.md).
+The MIT License (MIT). Please see [LICENSE.md](LICENSE.md) for more information.
