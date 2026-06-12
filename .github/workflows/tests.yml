@@ -21,7 +21,7 @@ jobs:
       contents: write
     strategy:
       matrix:
-        php-version: ['8.3', '8.4', '8.5']
+        php-version: ["8.3", "8.4", "8.5"]
 
     steps:
       - name: Checkout code
@@ -38,7 +38,7 @@ jobs:
         if: matrix.php-version == '8.3'
         uses: actions/setup-node@v6
         with:
-          node-version: '22'
+          node-version: "22"
           cache: npm
 
       - name: Install Node Dependencies
@@ -66,18 +66,16 @@ jobs:
 
       - name: Tests (with coverage)
         if: matrix.php-version == '8.3'
-        env:
-          XDEBUG_MODE: coverage
-        run: ./vendor/bin/pest --coverage-clover clover.xml
+        run: composer run test-coverage
 
       - name: Tests
         if: matrix.php-version != '8.3'
-        run: ./vendor/bin/pest
+        run: composer run test:parallel
 
       - name: Generate test coverage badge
         if: matrix.php-version == '8.3'
         uses: timkrase/phpunit-coverage-badge@v1.2.1
         with:
-          coverage_badge_path: '.github/badge-coverage.svg'
+          coverage_badge_path: ".github/badge-coverage.svg"
           push_badge: true
           repo_token: ${{ secrets.GITHUB_TOKEN }}
