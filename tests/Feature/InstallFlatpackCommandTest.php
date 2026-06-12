@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
+use Flatpack\Tests\InstallFlatpackTestCase;
 use Flatpack\Tests\Models\User;
-use Flatpack\Tests\TestCase;
 use Illuminate\Support\Facades\File;
 
-uses(TestCase::class);
+uses(InstallFlatpackTestCase::class);
 
 const FLATPACK_REINSTALL_CONFIRMATION = 'Flatpack looks already installed. Would you like to re-install? This will overwrite existing config files.';
 
