@@ -87,7 +87,7 @@ abstract class ActionHandler implements FlatpackAction
             return null;
         }
 
-        $trimmed = trim($record);
+        $trimmed = mb_trim($record);
 
         return $trimmed === '' ? null : $trimmed;
     }
@@ -122,7 +122,7 @@ abstract class ActionHandler implements FlatpackAction
      */
     protected function callAction(string $actionName, ActionContext $context): mixed
     {
-        $actionName = trim($actionName);
+        $actionName = mb_trim($actionName);
         if ($actionName === '') {
             throw new InvalidArgumentException('Flatpack nested action name must not be empty.');
         }
