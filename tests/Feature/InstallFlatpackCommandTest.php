@@ -235,7 +235,24 @@ test('flatpack:install next steps output includes panel url and flatpack make hi
         ->assertSuccessful()
         ->expectsOutputToContain('Open the panel: /admin')
         ->expectsOutputToContain('php artisan flatpack:make Post')
-        ->expectsOutputToContain('.docs/host-installation.md');
+        ->expectsOutputToContain('https://laravel-flatpack.com');
+});
+
+test('flatpack:install with-ai publishes skill without interaction', function () {
+    $skillPath = base_path('.ai/skills/flatpack-host-yaml-authoring');
+
+    if (is_dir($skillPath)) {
+        File::deleteDirectory($skillPath);
+    }
+
+    $this->artisan('flatpack:install', [
+        '--no-interaction' => true,
+        '--with-ai' => true,
+    ])->assertSuccessful();
+
+    expect(is_dir($skillPath))->toBeTrue();
+    expect(is_file($skillPath . '/SKILL.md'))->toBeTrue();
+    expect(is_dir($skillPath . '/rules'))->toBeTrue();
 });
 
 test('flatpack:install output does not mention inertia policies or composition path creation', function () {

@@ -99,3 +99,40 @@ The Vite config uses **`inertia({ ssr: false })`**. Flatpack is **client-rendere
 npm run lint
 npm run types:check
 ```
+
+## Vitest (frontend)
+
+Requires Node dependencies (`npm install`). Coverage uses **`@vitest/coverage-v8`** (`vitest.config.ts`).
+
+| Command | Purpose |
+| --- | --- |
+| `npm run test` | Run all Vitest specs once. |
+| `npm run test:coverage` | Same with V8 coverage (terminal summary + HTML under `coverage/vitest/`). |
+| `npm run test:coverage:watch` | Watch mode with coverage. |
+
+## Composer checks
+
+| Command | Purpose |
+| --- | --- |
+| `composer run test` | Full Pest suite. |
+| `composer run check` | Lint (Pint), Rector dry-run, PHPStan, schema keys verify, Pest. |
+| `composer run lint` | Laravel Pint. |
+| `composer run phpstan` | PHPStan (`512M` memory limit). |
+| `composer run schema:contract:strict` | `CompositionSchemaContractTest` only. |
+| `composer run test-coverage` | Pest with Clover (`clover.xml`; requires Xdebug coverage mode). |
+| `composer run test-coverage-html` | Same + HTML under `coverage/`. |
+
+## Test ownership
+
+Use one canonical test layer per behavior — avoid duplicating the same assertion in feature and unit tests.
+
+| Behavior family | Canonical location |
+| --- | --- |
+| Schema shape / key validity | `tests/Unit/CompositionSchemaContractTest.php` |
+| HTTP endpoint semantics | `tests/Feature/*` |
+| Authorization HTTP contracts | `tests/Feature/Authorization/*` |
+| Parser / runtime coercion | `resources/js/lib/*.test.ts` |
+| UI interaction behavior | `resources/js/components/**/*.test.tsx` |
+
+- Do not reassert full parser normalization payloads in feature tests unless the endpoint contract depends on them.
+- Keep feature tests focused on externally observable behavior: status codes, response envelopes, persistence effects, redirects.

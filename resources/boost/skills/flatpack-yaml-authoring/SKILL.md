@@ -14,23 +14,34 @@ You are working in an application that uses **`flatpack/flatpack`**. Entity beha
 - Wiring **relations**, **actions**, or **widgets** in YAML.
 - Adjusting **Flatpack config** (`config/flatpack.php`) for the panel.
 
+## Rules index
+
+| Topic | File |
+|-------|------|
+| Composition shape, naming, entity sections | `rules/structure.md` |
+| Field hygiene, relations, `type: table` pointer | `rules/fields-relations.md` |
+| List/header/bulk actions, runtime compatibility | `rules/actions-runtime.md` |
+| Pre-merge checks, schema contracts | `rules/validation-workflow.md` |
+| Embedded `type: table` (toolbar, relation gate, row drawer) | `rules/embedded-form-table.md` |
+
 ## Normative reference (read these, do not guess keys)
 
-On GitHub, browse the package repository’s **`.docs`** tree (YAML reference). If you have the package source locally, see:
-
-- **YAML reference index:** `vendor/flatpack/flatpack/.docs/yaml-reference/README.md` may be absent from Composer installs (`.docs` is often dev-only in archives). Prefer published docs at **https://laravel-flatpack.com** or the GitHub repo’s `.docs` folder.
+- **Official docs:** https://laravel-flatpack.com/reference
 - **JSON contracts shipped with the package:** `vendor/flatpack/flatpack/resources/schema/form.json` and `list.json` — authoritative allowed keys for IDE/schema tooling.
 
 ## Practices
 
 - Prefer **snake_case** keys in YAML as documented; camelCase aliases exist for compatibility where noted in schema/normalizers.
-- After changing composition shape in a **fork or local package dev**, JSON schema and codegen may apply — that workflow belongs to package contributors ([`.github/DEVELOPMENT.md`](https://github.com/laravel-flatpack/flatpack/blob/main/.github/DEVELOPMENT.md)), not typical host-app installs.
 - Use **`?json=true`** on Flatpack pages only for **debugging** normalized props — not as the primary runtime API.
 
-## Laravel Boost
+## Install this skill
 
-If you use [Laravel Boost](https://github.com/laravel/boost), run `php artisan boost:install` so skills from installed packages are available; activate this skill when editing Flatpack YAML. Alternatively copy this skill into **`.ai/skills/`** via:
+**Laravel Boost:** run `php artisan boost:install` so skills from installed packages are available; activate **`flatpack-host-yaml-authoring`** when editing Flatpack YAML.
+
+**Without Boost**, copy into `.ai/skills/`:
 
 ```bash
 php artisan vendor:publish --tag=flatpack-ai
 ```
+
+Or confirm during `php artisan flatpack:install` (interactive), or pass `--with-ai` with `--no-interaction`.

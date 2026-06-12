@@ -23,4 +23,4 @@ node_modules
 flatpack-bundle-stats.html
 .php-cs-fixer.cache
 /public/build/*
-/.docs/review/*
+/local/

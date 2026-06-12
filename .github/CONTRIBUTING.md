@@ -22,13 +22,11 @@ When requesting or submitting new features, first consider whether it might be u
 source projects are used by many developers, who may have entirely different needs to your own. Think about
 whether or not your feature is likely to be used by other users of the project.
 
-## Documentation and agent skills
+## Development workflow
 
-- **Product reference** (YAML contracts, architecture prose): repository **`.docs/`** — read [`.docs/README.md`](../.docs/README.md) for the index.
-- **Contributor agent rules** (merge gates, code style, ADRs): **`.agents/`** — entry point [`flatpack-best-practices/SKILL.md`](../.agents/skills/flatpack-best-practices/SKILL.md); ordered doc tour [`flatpack-docs-reading-order/SKILL.md`](../.agents/skills/flatpack-docs-reading-order/SKILL.md).
-- **Development workflow** (Vite, schema keys): [`.github/DEVELOPMENT.md`](DEVELOPMENT.md).
-
-Files under `.docs/` (except `.docs/review/`) do not link back to `.agents/` — keep product docs consumer-neutral.
+- **Local setup, Vite, schema keys, test ownership:** [`.github/DEVELOPMENT.md`](DEVELOPMENT.md)
+- **YAML reference for end users:** [laravel-flatpack.com](https://laravel-flatpack.com/reference)
+- **Pre-merge gate:** `composer run check`
 
 ## Procedure
 

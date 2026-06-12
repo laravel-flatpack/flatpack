@@ -13,7 +13,7 @@ use function Laravel\Prompts\confirm;
 #[AsCommand(name: 'flatpack:install')]
 final class InstallFlatpackCommand extends Command
 {
-    protected $signature = 'flatpack:install {--force : Overwrite published files}';
+    protected $signature = 'flatpack:install {--force : Overwrite published files} {--with-ai : Publish the AI YAML authoring skill (non-interactive)}';
 
     protected $description = 'Publish Flatpack config and assets, with optional User access setup';
 
@@ -82,6 +82,15 @@ final class InstallFlatpackCommand extends Command
             return;
         }
 
+        if ($this->option('with-ai')) {
+            $this->call('vendor:publish', [
+                '--tag' => 'flatpack-ai',
+                '--force' => (bool) $this->option('force'),
+            ]);
+
+            return;
+        }
+
         if ($this->input->isInteractive() && ! confirm(
             label: 'Publish Flatpack AI YAML authoring skill?',
             default: false,
@@ -139,7 +148,7 @@ final class InstallFlatpackCommand extends Command
         $this->components->info('Flatpack is installed.');
         $this->line('Open the panel: /' . trim($prefix, '/'));
         $this->line('Create your first entity: php artisan flatpack:make Post');
-        $this->line('Host setup guide: .docs/host-installation.md');
+        $this->line('Documentation: https://laravel-flatpack.com');
 
         if ($this->userAccessReminder) {
             $this->line('Add canAccessFlatpack() to your User model before visiting the panel.');

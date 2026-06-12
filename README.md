@@ -86,7 +86,33 @@ This writes `flatpack/posts/form.yaml` and `flatpack/posts/list.yaml` under `con
 
 Visit `/flatpack/posts` (prefix is `config('flatpack.http.prefix')`, default `flatpack`).
 
-Further host setup (composition path, login override, env keys): [`.docs/host-installation.md`](.docs/host-installation.md).
+## Host configuration
+
+Flatpack ships Inertia pages and compiled frontend assets. The host app must already run [Inertia for Laravel](https://inertiajs.com/server-side-setup) (`HandleInertiaRequests`, root Blade view, Vite). Flatpack registers its own routes and does not replace your app’s frontend entrypoint.
+
+Re-publish after package updates (`--force` in `post-update-cmd` is recommended).
+
+| Variable | Config key | Notes |
+| --- | --- | --- |
+| `FLATPACK_COMPOSITION_PATH` | `composition.path` | Entity folders (`form.yaml`, `list.yaml`). Default: `base_path('flatpack')`. |
+| `FLATPACK_COMPOSITION_DASHBOARD_ENTITY` | `composition.dashboard_entity` | Slug for dashboard `list.yaml`. Default: `dashboard`. |
+| `FLATPACK_HTTP_PREFIX` | `http.prefix` | URL prefix for panel routes. Default: `flatpack`. |
+| `FLATPACK_SECURITY_GUARD` | `security.guard` | Auth guard for panel middleware. Default: `web`. |
+| `FLATPACK_SECURITY_ALLOW_WHEN_POLICY_MISSING` | `security.authorization.allow_when_policy_missing` | Overrides fail-closed behavior outside `local`. |
+| `FLATPACK_HTTP_LOGIN_THROTTLE` | `http.login.throttle` | Throttle middleware for login POST. |
+| `FLATPACK_HTTP_REGISTER_JSON_EXCEPTION_HANDLER` | `http.register_json_exception_handler` | Redirect unauthenticated JSON requests to login. |
+
+See `config/flatpack.php` for uploads, navigation, and action handler maps.
+
+**Custom login** — default POST is `Flatpack\Http\Controllers\SessionController@store` (`config('flatpack.http.login.store')`). To use [Laravel Fortify](https://fortify.laravel.com/) or another flow:
+
+```php
+'store' => [\Laravel\Fortify\Http\Controllers\AuthenticatedSessionController::class, 'store'],
+```
+
+Panel routes still use `auth:{guard}` and `EnsureFlatpackAccess` (which calls `canAccessFlatpack()`).
+
+`flatpack:make` options: `--model=`, `--entity=`, `--menu=`, `--icon=`, `--nav-order=`, and toggles such as `--without-auto-fields`. Run `php artisan flatpack:make --help`.
 
 ## Security
 
@@ -130,17 +156,17 @@ fields:
         type: block-editor
 ```
 
-Full key reference: [`.docs/yaml-reference/`](.docs/yaml-reference/README.md) · [laravel-flatpack.com](https://laravel-flatpack.com/reference)
+Full key reference: [laravel-flatpack.com/reference](https://laravel-flatpack.com/reference)
 
 ## Schema snapshot
 
-Quick reference for supported schema types (see YAML reference for the full contract).
+Quick reference for supported schema types (see the [official docs](https://laravel-flatpack.com/reference) for the full contract).
 
-**Form field `type` values:** `text`, `textarea`, `select`, `combobox`, `date-picker`, `date-range-picker`, `time-picker`, `checkbox`, `switch`, `rich-text`, `block-editor`, `table`, `file-upload`, `toolbar`, and others in [form-field-types.md](.docs/yaml-reference/form-field-types.md).
+**Form field `type` values:** `text`, `textarea`, `select`, `combobox`, `date-picker`, `date-range-picker`, `time-picker`, `checkbox`, `switch`, `rich-text`, `block-editor`, `table`, `file-upload`, `toolbar`, and others — see [form field types](https://laravel-flatpack.com/reference).
 
-**List column `type` values:** `text`, `select`, `date`, `datetime`, `actions`, `badge`, `relation` — see [list-columns.md](.docs/yaml-reference/list-columns.md).
+**List column `type` values:** `text`, `select`, `date`, `datetime`, `actions`, `badge`, `relation` — see [list columns](https://laravel-flatpack.com/reference).
 
-**Dashboard widget `type` values:** `metric`, `card`, `status`, `chart`, `table`, `grid` — see [widgets.md](.docs/yaml-reference/widgets.md).
+**Dashboard widget `type` values:** `metric`, `card`, `status`, `chart`, `table`, `grid` — see [widgets](https://laravel-flatpack.com/reference).
 
 Optional **`span`** on fields and widgets: `full`, `half`, `two_thirds`, `third`, `quarter` (aliases `1/2`, `2/3`, `1/3`, `1/4`).
 
@@ -150,11 +176,13 @@ Optional **`span`** on fields and widgets: `full`, `half`, `two_thirds`, `third`
 php artisan vendor:publish --tag=flatpack-ai
 ```
 
-[Laravel Boost](https://github.com/laravel/boost): after `php artisan boost:install`, enable **`flatpack-yaml-authoring`** when editing composition YAML.
+[Laravel Boost](https://github.com/laravel/boost): after `php artisan boost:install`, enable **`flatpack-host-yaml-authoring`** when editing composition YAML.
+
+Or pass **`--with-ai`** to `flatpack:install` in non-interactive mode.
 
 ## Package development
 
-Clone this repository and read [`.docs/README.md`](.docs/README.md). Before opening a PR:
+Clone this repository and read [`.github/DEVELOPMENT.md`](.github/DEVELOPMENT.md). Before opening a PR:
 
 ```bash
 composer run check
