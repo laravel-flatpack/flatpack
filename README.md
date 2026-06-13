@@ -14,7 +14,7 @@ Flatpack is a Laravel package for building internal admin panels from YAML compo
 
 Official documentation: **[laravel-flatpack.com](https://laravel-flatpack.com)**
 
-![Demo](.github/demo.gif)
+![Demo](.github/preview.gif)
 
 ## Why Flatpack?
 
