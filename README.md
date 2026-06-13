@@ -93,13 +93,14 @@ php artisan flatpack:make --help
 Flatpack only allows authenticated users whose model exposes `canAccessFlatpack()`.
 
 ```php
-public function canAccessFlatpack(): bool
+class User extends Authenticatable
 {
-    return $this->is_admin;
+    public function canAccessFlatpack(): bool
+    {
+        return $this->is_admin;
+    }
 }
 ```
-
-`flatpack:install` can inject a stub returning `true` for local development.
 
 ## Configuration
 
@@ -132,6 +133,12 @@ You can run the tests with:
 
 ```bash
 composer run test
+```
+
+Run tests with coverage:
+
+```bash
+composer run test-coverage
 ```
 
 Clone this repository and see [`.github/DEVELOPMENT.md`](.github/DEVELOPMENT.md) for local development setup.
