@@ -1,0 +1,1 @@
+import{ur as e}from"./vendor-plate-Dy3e0BIz.js";import{t}from"./utils-Ciqc1JmS.js";var n=e();function r({className:e,...r}){return(0,n.jsx)(`div`,{"data-slot":`skeleton`,className:t(`animate-pulse rounded-2xl bg-muted`,e),...r})}export{r as t};

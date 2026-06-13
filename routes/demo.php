@@ -1,0 +1,17 @@
+<?php
+
+declare(strict_types=1);
+
+use Flatpack\Http\Controllers\DemoController;
+use Flatpack\Http\Controllers\SchemaController;
+use Illuminate\Support\Facades\Route;
+
+if (config('flatpack.features.demo')) {
+    // Components catalog
+    Route::get('/demo', [DemoController::class, 'index'])->name('demo.components');
+
+    // Schema documentation
+    Route::get('/demo/schema', [SchemaController::class, 'form'])->name('schema.index');
+    Route::get('/demo/schema/form', [SchemaController::class, 'form'])->name('schema.form');
+    Route::get('/demo/schema/list', [SchemaController::class, 'list'])->name('schema.list');
+}

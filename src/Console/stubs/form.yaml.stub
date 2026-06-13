@@ -1,0 +1,12 @@
+model: {{ DummyModel }}
+name: {{ DummyFormTitle }}
+icon: {{ DummyIcon }}
+nav_order: {{ DummyNavOrder }}
+
+# Top level actions
+
+{{ DummyFormActionsDefinition }}
+
+# Form fields
+
+{{ DummyFieldsDefinition }}

@@ -1,0 +1,791 @@
+import {
+    cleanup,
+    fireEvent,
+    render as rtlRender,
+    screen,
+    waitFor,
+} from '@testing-library/react';
+import type { ReactElement, ReactNode } from 'react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
+const { routerGet, routerPost, routeMock } = vi.hoisted(() => ({
+    routerGet: vi.fn(),
+    routerPost: vi.fn(),
+    routeMock: vi.fn(
+        (
+            name: string,
+            params?: {
+                entity?: string;
+                record?: string;
+            },
+        ) => {
+            const entity = params?.entity ?? 'posts';
+            const record = params?.record;
+
+            switch (name) {
+                case 'flatpack.entities.edit':
+                    return `/flatpack/${entity}/${record}/edit`;
+                case 'flatpack.entities.index':
+                    return `/flatpack/${entity}`;
+                case 'flatpack.entities.bulk-action':
+                    return `/flatpack/${entity}/bulk`;
+                case 'flatpack.entities.row-action':
+                    return `/flatpack/${entity}/${record}/action`;
+                case 'flatpack.entities.action':
+                    return `/flatpack/${entity}/action`;
+                case 'flatpack.entities.update':
+                    return `/flatpack/${entity}/${record}`;
+                default:
+                    return '/flatpack';
+            }
+        },
+    ),
+}));
+
+vi.mock('@/layouts/flatpack-layout', () => ({
+    default: ({ children }: { children: ReactNode }) => <>{children}</>,
+}));
+
+vi.mock('@/lib/route', () => ({
+    route: routeMock,
+}));
+
+vi.mock('@/hooks/use-is-mac-platform', () => ({
+    useIsMacPlatform: () => false,
+}));
+
+vi.mock('@inertiajs/react', () => ({
+    Head: ({ title }: { title: string }) => <title>{title}</title>,
+    Link: ({
+        children,
+        href,
+        className,
+    }: {
+        children: ReactNode;
+        href: string;
+        className?: string;
+    }) => (
+        <a href={href} className={className}>
+            {children}
+        </a>
+    ),
+    router: {
+        get: routerGet,
+        post: routerPost,
+    },
+    usePage: () => ({
+        props: {
+            flatpack: {
+                showActionShortcutHints: false,
+            },
+        },
+    }),
+}));
+
+import { FlatpackShortcutsProvider } from '@/contexts/flatpack-shortcuts-registry';
+import FlatpackListPage from '@/pages/list';
+
+function render(page: ReactElement) {
+    return rtlRender(page, {
+        wrapper: ({ children }) => (
+            <FlatpackShortcutsProvider>{children}</FlatpackShortcutsProvider>
+        ),
+    });
+}
+
+describe('FlatpackListPage', () => {
+    afterEach(() => {
+        cleanup();
+        routerGet.mockReset();
+        routerPost.mockReset();
+        routeMock.mockClear();
+    });
+
+    it('uses entity for heading and list title when name is omitted', () => {
+        render(<FlatpackListPage entity="posts" />);
+
+        expect(
+            screen.getByRole('heading', { name: 'posts' }),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText(/Define columns or tabs in/i),
+        ).toBeInTheDocument();
+        expect(screen.getByText('/posts/list.yaml')).toBeInTheDocument();
+        expect(screen.getByText(/to render this table\./i)).toBeInTheDocument();
+        expect(document.querySelector('title')?.textContent).toBe('posts list');
+    });
+
+    it('prefers name over entity for heading and page title', () => {
+        render(<FlatpackListPage entity="posts" name="Blog posts" />);
+
+        expect(
+            screen.getByRole('heading', { name: 'Blog posts' }),
+        ).toBeInTheDocument();
+        expect(document.querySelector('title')?.textContent).toBe(
+            'Blog posts list',
+        );
+    });
+
+    it('omits Head and h1 when there is no display name', () => {
+        render(<FlatpackListPage entity="" />);
+
+        expect(screen.getByRole('heading', { name: '' })).toBeInTheDocument();
+        expect(document.querySelector('title')?.textContent).toBe('');
+        expect(
+            screen.getByText(/Define columns or tabs in/i),
+        ).toBeInTheDocument();
+        expect(screen.getByText('//list.yaml')).toBeInTheDocument();
+        expect(screen.getByText(/to render this table\./i)).toBeInTheDocument();
+    });
+
+    it('renders a data table when list schema defines columns', () => {
+        render(
+            <FlatpackListPage
+                entity="posts"
+                name="Posts"
+                schema={{
+                    columns: {
+                        id: { label: 'ID', sortable: true },
+                        title: {
+                            label: 'Title',
+                            searchable: true,
+                        },
+                    },
+                }}
+                records={[]}
+            />,
+        );
+
+        expect(screen.getByRole('table')).toBeInTheDocument();
+        expect(screen.getByText('No results.')).toBeInTheDocument();
+    });
+
+    it('renders list widgets above the table when widgets prop is provided', () => {
+        render(
+            <FlatpackListPage
+                entity="posts"
+                name="Posts"
+                schema={{
+                    columns: {
+                        id: { label: 'ID', sortable: true },
+                    },
+                }}
+                records={[]}
+                widgets={{
+                    welcome: {
+                        type: 'card',
+                        label: 'Welcome',
+                        provider: 'welcome',
+                        data: { value: 'Hello' },
+                    },
+                }}
+            />,
+        );
+
+        expect(screen.getByText('Welcome')).toBeInTheDocument();
+        expect(screen.getByRole('table')).toBeInTheDocument();
+    });
+
+    it('passes server data through to the table', () => {
+        render(
+            <FlatpackListPage
+                entity="posts"
+                schema={{
+                    columns: {
+                        id: { label: 'ID' },
+                        title: { label: 'Title' },
+                    },
+                }}
+                records={[{ id: 1, title: 'Hello' }]}
+            />,
+        );
+
+        expect(screen.getByRole('cell', { name: 'Hello' })).toBeInTheDocument();
+    });
+
+    it('hides pagination controls by default on a single page', () => {
+        render(
+            <FlatpackListPage
+                entity="posts"
+                schema={{
+                    columns: {
+                        id: { label: 'ID' },
+                        title: { label: 'Title' },
+                    },
+                }}
+                records={[{ id: 1, title: 'Hello' }]}
+            />,
+        );
+
+        expect(screen.queryByText('Rows per page')).not.toBeInTheDocument();
+        expect(screen.queryByText(/Page 1 of 1/i)).not.toBeInTheDocument();
+    });
+
+    it('shows pagination controls when schema pagination is true', () => {
+        render(
+            <FlatpackListPage
+                entity="posts"
+                schema={{
+                    pagination: true,
+                    columns: {
+                        id: { label: 'ID' },
+                        title: { label: 'Title' },
+                    },
+                }}
+                records={[{ id: 1, title: 'Hello' }]}
+            />,
+        );
+
+        expect(screen.getByText('Rows per page')).toBeInTheDocument();
+        expect(screen.getByText(/Page 1 of 1/i)).toBeInTheDocument();
+    });
+
+    it('hides pagination controls when schema pagination is false', () => {
+        render(
+            <FlatpackListPage
+                entity="posts"
+                schema={{
+                    pagination: false,
+                    columns: {
+                        id: { label: 'ID' },
+                        title: { label: 'Title' },
+                    },
+                }}
+                records={[{ id: 1, title: 'Hello' }]}
+                pagination={{
+                    current_page: 1,
+                    last_page: 2,
+                    per_page: 10,
+                    total: 20,
+                    from: 1,
+                    to: 10,
+                }}
+            />,
+        );
+
+        expect(screen.queryByText('Rows per page')).not.toBeInTheDocument();
+        expect(screen.queryByText(/Page 1 of 2/i)).not.toBeInTheDocument();
+    });
+
+    it('renders list tab triggers when schema includes tab_panels', () => {
+        render(
+            <FlatpackListPage
+                entity="posts"
+                name="Posts"
+                active_tab="records"
+                schema={{
+                    columns: {
+                        id: { label: 'ID' },
+                        title: { label: 'Title' },
+                    },
+                    tab_panels: [
+                        {
+                            id: 'records',
+                            label: 'All records',
+                            column_ids: ['id', 'title'],
+                        },
+                        {
+                            id: 'trash',
+                            label: 'Trash',
+                            column_ids: ['id', 'title'],
+                        },
+                    ],
+                }}
+                records={[{ id: 1, title: 'Hello' }]}
+            />,
+        );
+
+        expect(
+            screen.getByRole('tab', { name: 'All records' }),
+        ).toBeInTheDocument();
+        expect(screen.getByRole('tab', { name: 'Trash' })).toBeInTheDocument();
+    });
+
+    it('switching tabs sends only tab query param', async () => {
+        render(
+            <FlatpackListPage
+                entity="posts"
+                name="Posts"
+                active_tab="records"
+                schema={{
+                    columns: {
+                        id: { label: 'ID' },
+                        title: { label: 'Title' },
+                    },
+                    tab_panels: [
+                        {
+                            id: 'records',
+                            label: 'All records',
+                            column_ids: ['id', 'title'],
+                        },
+                        {
+                            id: 'trash',
+                            label: 'Trash',
+                            column_ids: ['id', 'title'],
+                        },
+                    ],
+                }}
+                records={[{ id: 1, title: 'Hello' }]}
+                pagination={{
+                    current_page: 1,
+                    last_page: 1,
+                    per_page: 10,
+                    total: 1,
+                    from: 1,
+                    to: 1,
+                }}
+                search_term=""
+                filter_values={{
+                    status: null,
+                    published_at: null,
+                    created_at: null,
+                }}
+                sorting={{
+                    sort_by: 'sorting_order',
+                    sort_direction: 'asc',
+                }}
+            />,
+        );
+
+        const trashTab = screen.getByRole('tab', { name: 'Trash' });
+        fireEvent.mouseDown(trashTab);
+        fireEvent.click(trashTab);
+
+        await waitFor(() => {
+            expect(routerGet).toHaveBeenCalled();
+        });
+        const lastCall = routerGet.mock.calls.at(-1);
+        expect(lastCall?.[0]).toBe('/flatpack/posts');
+        expect(lastCall?.[1]).toEqual({ tab: 'trash' });
+    });
+
+    it('shows row and header selection checkboxes when bulk actions are present', () => {
+        render(
+            <FlatpackListPage
+                entity="posts"
+                bulk_actions={[
+                    { id: 'delete', label: 'Delete', action: 'delete' },
+                ]}
+                schema={{
+                    columns: {
+                        id: { label: 'ID' },
+                        title: { label: 'Title' },
+                    },
+                }}
+                records={[{ id: 1, title: 'Hello' }]}
+            />,
+        );
+
+        expect(
+            screen.getByRole('checkbox', { name: 'Select all' }),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('checkbox', { name: 'Select row' }),
+        ).toBeInTheDocument();
+    });
+
+    it('shows drag-and-drop reorder column when schema has reorderable true', () => {
+        render(
+            <FlatpackListPage
+                entity="posts"
+                schema={{
+                    reorderable: true,
+                    columns: {
+                        id: { label: 'ID' },
+                        title: { label: 'Title' },
+                    },
+                }}
+                records={[{ id: 1, title: 'Hello' }]}
+            />,
+        );
+
+        expect(
+            screen.getByRole('columnheader', { name: 'Reorder' }),
+        ).toBeInTheDocument();
+    });
+
+    it('shows drag-and-drop reorder column when schema has reorderable as a string column id', () => {
+        render(
+            <FlatpackListPage
+                entity="posts"
+                schema={{
+                    reorderable: 'my_column',
+                    columns: {
+                        id: { label: 'ID' },
+                        title: { label: 'Title' },
+                    },
+                }}
+                records={[{ id: 1, title: 'Hello', my_column: 1 }]}
+            />,
+        );
+
+        expect(
+            screen.getByRole('columnheader', { name: 'Reorder' }),
+        ).toBeInTheDocument();
+    });
+
+    it('does not show reorder column when schema has reorderable false', () => {
+        render(
+            <FlatpackListPage
+                entity="posts"
+                schema={{
+                    reorderable: false,
+                    columns: {
+                        id: { label: 'ID' },
+                        title: { label: 'Title' },
+                    },
+                }}
+                records={[{ id: 1, title: 'Hello' }]}
+            />,
+        );
+
+        expect(
+            screen.queryByRole('columnheader', { name: 'Reorder' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('navigates to edit route when row_click is edit_page', () => {
+        render(
+            <FlatpackListPage
+                entity="posts"
+                schema={{
+                    row_click: 'edit_page',
+                    columns: {
+                        id: { label: 'ID' },
+                        title: { label: 'Title' },
+                    },
+                }}
+                records={[{ id: 1234567, title: 'Hello' }]}
+            />,
+        );
+
+        fireEvent.click(screen.getByRole('cell', { name: 'Hello' }));
+
+        expect(routerGet).toHaveBeenCalledWith('/flatpack/posts/1234567/edit');
+    });
+
+    it('uses model_key for edit route record when row_click is edit_page', () => {
+        render(
+            <FlatpackListPage
+                entity="posts"
+                model_key="uuid"
+                schema={{
+                    row_click: 'edit_page',
+                    columns: {
+                        id: { label: 'ID' },
+                        title: { label: 'Title' },
+                    },
+                }}
+                records={[{ uuid: 'abc-123', title: 'Hello' }]}
+            />,
+        );
+
+        fireEvent.click(screen.getByRole('cell', { name: 'Hello' }));
+
+        expect(routerGet).toHaveBeenCalledWith('/flatpack/posts/abc-123/edit');
+    });
+
+    it('search request omits empty filters and unset sorting params', async () => {
+        render(
+            <FlatpackListPage
+                entity="posts"
+                schema={{
+                    columns: {
+                        id: { label: 'ID' },
+                        title: { label: 'Title', searchable: true },
+                    },
+                }}
+                records={[{ id: 42, title: 'Hello' }]}
+                pagination={{
+                    current_page: 1,
+                    last_page: 1,
+                    per_page: 10,
+                    total: 1,
+                    from: 1,
+                    to: 1,
+                }}
+                search_term=""
+                filter_values={{
+                    status: null,
+                    published_at: null,
+                    created_at: null,
+                }}
+                sorting={{
+                    sort_by: null,
+                    sort_direction: null,
+                }}
+            />,
+        );
+
+        fireEvent.change(screen.getByPlaceholderText('Search…'), {
+            target: { value: 'hello' },
+        });
+
+        await waitFor(() => {
+            expect(routerGet).toHaveBeenCalled();
+        });
+        const lastCall = routerGet.mock.calls.at(-1);
+        expect(lastCall?.[0]).toBe('/flatpack/posts');
+        expect(lastCall?.[1]).toEqual({
+            page: 1,
+            per_page: 10,
+            search: 'hello',
+        });
+    });
+
+    it('navigates to edit route when row_click is omitted (defaults to edit_page)', () => {
+        render(
+            <FlatpackListPage
+                entity="posts"
+                schema={{
+                    columns: {
+                        id: { label: 'ID' },
+                        title: { label: 'Title' },
+                    },
+                }}
+                records={[{ id: 42, title: 'Hello' }]}
+            />,
+        );
+
+        fireEvent.click(screen.getByRole('cell', { name: 'Hello' }));
+
+        expect(routerGet).toHaveBeenCalledWith('/flatpack/posts/42/edit');
+    });
+
+    it('does not navigate on row click when row_click is none', () => {
+        render(
+            <FlatpackListPage
+                entity="posts"
+                schema={{
+                    row_click: 'none',
+                    columns: {
+                        id: { label: 'ID' },
+                        title: { label: 'Title' },
+                    },
+                }}
+                records={[{ id: 42, title: 'Hello' }]}
+            />,
+        );
+
+        fireEvent.click(screen.getByRole('cell', { name: 'Hello' }));
+
+        expect(routerGet).not.toHaveBeenCalled();
+    });
+
+    it('opens row drawer on row click when row_click is edit_drawer', async () => {
+        render(
+            <FlatpackListPage
+                entity="posts"
+                schema={{
+                    row_click: 'edit_drawer',
+                    columns: {
+                        id: { label: 'ID' },
+                        title: { label: 'Title', editable: true },
+                    },
+                }}
+                records={[{ id: 42, title: 'Hello' }]}
+            />,
+        );
+
+        fireEvent.click(screen.getByRole('cell', { name: 'Hello' }));
+
+        await waitFor(() => {
+            expect(
+                screen.getByText('Edit row fields and save your changes.'),
+            ).toBeInTheDocument();
+        });
+        expect(routerGet).not.toHaveBeenCalled();
+    });
+
+    it('renders header href actions as links', () => {
+        render(
+            <FlatpackListPage
+                entity="posts"
+                name="Posts"
+                list_actions={[
+                    {
+                        id: 'create',
+                        label: 'Create',
+                        href: '/posts/create',
+                    },
+                ]}
+            />,
+        );
+
+        expect(screen.getByRole('link', { name: 'Create' })).toHaveAttribute(
+            'href',
+            '/posts/create',
+        );
+    });
+
+    it('posts header actions to the list action endpoint', () => {
+        render(
+            <FlatpackListPage
+                entity="posts"
+                name="Posts"
+                list_actions={[
+                    {
+                        id: 'create',
+                        label: 'Create',
+                        action: 'create',
+                    },
+                ]}
+            />,
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: 'Create' }));
+
+        expect(routerPost).toHaveBeenCalledWith(
+            '/flatpack/posts/action',
+            { action: 'create' },
+            expect.objectContaining({
+                preserveState: true,
+                preserveScroll: true,
+            }),
+        );
+    });
+
+    it('keeps list actions inactive until search condition is met', () => {
+        render(
+            <FlatpackListPage
+                entity="posts"
+                name="Posts"
+                list_actions={[
+                    {
+                        id: 'export',
+                        label: 'Export',
+                        action: 'create',
+                        enabled_if: {
+                            any: [{ 'list.search_present': true }],
+                        },
+                    },
+                ]}
+            />,
+        );
+
+        expect(screen.getByRole('button', { name: 'Export' })).toBeDisabled();
+        expect(routerPost).not.toHaveBeenCalled();
+    });
+
+    it('enables list actions when enabled_if search condition is met', () => {
+        render(
+            <FlatpackListPage
+                entity="posts"
+                name="Posts"
+                search_term="hello"
+                list_actions={[
+                    {
+                        id: 'export',
+                        label: 'Export',
+                        action: 'create',
+                        enabled_if: {
+                            any: [{ 'list.search_present': true }],
+                        },
+                    },
+                ]}
+            />,
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: 'Export' }));
+
+        expect(routerPost).toHaveBeenCalledWith(
+            '/flatpack/posts/action',
+            { action: 'create' },
+            expect.objectContaining({
+                preserveState: true,
+                preserveScroll: true,
+            }),
+        );
+    });
+
+    it('hides list actions while visible_if condition is unmet', () => {
+        render(
+            <FlatpackListPage
+                entity="posts"
+                name="Posts"
+                list_actions={[
+                    {
+                        id: 'export',
+                        label: 'Export',
+                        action: 'create',
+                        visible_if: {
+                            any: [{ 'list.search_present': true }],
+                        },
+                    },
+                ]}
+            />,
+        );
+
+        expect(
+            screen.queryByRole('button', { name: 'Export' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('triggers list action shortcut for non-confirm actions', async () => {
+        render(
+            <FlatpackListPage
+                entity="posts"
+                name="Posts"
+                list_actions={[
+                    {
+                        id: 'create',
+                        label: 'Create',
+                        action: 'create',
+                        shortcut: 'mod+k',
+                    },
+                ]}
+            />,
+        );
+
+        fireEvent.keyDown(window, { key: 'k', ctrlKey: true });
+
+        await waitFor(() => {
+            expect(routerPost).toHaveBeenCalledWith(
+                '/flatpack/posts/action',
+                { action: 'create' },
+                expect.objectContaining({
+                    preserveState: true,
+                    preserveScroll: true,
+                }),
+            );
+        });
+    });
+
+    it('opens confirm dialog for shortcut on confirm list action', async () => {
+        render(
+            <FlatpackListPage
+                entity="posts"
+                name="Posts"
+                list_actions={[
+                    {
+                        id: 'delete',
+                        label: 'Delete',
+                        action: 'delete',
+                        confirm: true,
+                        shortcut: 'mod+d',
+                    },
+                ]}
+            />,
+        );
+
+        fireEvent.keyDown(window, { key: 'd', ctrlKey: true });
+
+        await waitFor(() => {
+            expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+        });
+        expect(routerPost).not.toHaveBeenCalled();
+
+        fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+
+        await waitFor(() => {
+            expect(routerPost).toHaveBeenCalledWith(
+                '/flatpack/posts/action',
+                { action: 'delete' },
+                expect.objectContaining({
+                    preserveState: true,
+                    preserveScroll: true,
+                }),
+            );
+        });
+    });
+});

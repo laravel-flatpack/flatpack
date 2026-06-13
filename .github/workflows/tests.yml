@@ -1,0 +1,81 @@
+name: tests
+
+on:
+  push:
+    branches:
+      - develop
+      - main
+      - master
+      - workos
+  pull_request:
+    branches:
+      - develop
+      - main
+      - master
+      - workos
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    strategy:
+      matrix:
+        php-version: ["8.3", "8.4", "8.5"]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          tools: composer:v2
+          coverage: xdebug
+
+      - name: Setup Node
+        if: matrix.php-version == '8.3'
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install Node Dependencies
+        if: matrix.php-version == '8.3'
+        run: npm ci
+
+      - name: Install Dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Copy Environment File
+        if: matrix.php-version == '8.3'
+        run: cp -f .env.example .env
+
+      - name: Verify schema keys
+        if: matrix.php-version == '8.3'
+        run: composer run schema:keys
+
+      - name: Build Assets
+        if: matrix.php-version == '8.3'
+        run: npm run build
+
+      - name: Verify committed build assets
+        if: matrix.php-version == '8.3'
+        run: node ./scripts/assets-check.mjs
+
+      - name: Tests (with coverage)
+        if: matrix.php-version == '8.3'
+        run: composer run test-coverage
+
+      - name: Tests
+        if: matrix.php-version != '8.3'
+        run: composer run test:parallel
+
+      - name: Generate test coverage badge
+        if: matrix.php-version == '8.3'
+        uses: timkrase/phpunit-coverage-badge@v1.2.1
+        with:
+          coverage_badge_path: ".github/badge-coverage.svg"
+          push_badge: true
+          repo_token: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,17 @@
+model: {{ DummyModel }}
+name: {{ DummyListTitle }}
+icon: {{ DummyIcon }}
+nav_order: {{ DummyNavOrder }}
+menu: {{ DummyMenu }}
+
+# Top level actions
+
+{{ DummyListActionsDefinition }}
+
+# Table Bulk-Actions
+
+{{ DummyBulkActionsDefinition }}
+
+# Table Columns
+
+{{ DummyColumnsDefinition }}

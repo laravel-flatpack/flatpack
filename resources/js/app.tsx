@@ -1,0 +1,29 @@
+import '../css/app.css';
+
+import { createInertiaApp } from '@inertiajs/react';
+import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
+import type { ComponentType } from 'react';
+import { createRoot } from 'react-dom/client';
+import { registerInertiaHttpExceptionToast } from '@/lib/inertia-http-error';
+
+const appName = import.meta.env.FLATPACK_APP_NAME || 'Flatpack';
+const pages = import.meta.glob<{ default: ComponentType }>([
+    './pages/**/*.tsx',
+    '!./pages/**/*.test.tsx',
+]);
+
+createInertiaApp({
+    title: (title) => (title ? `${title} — ${appName}` : appName),
+    resolve: (name) =>
+        resolvePageComponent(`./pages/${name}.tsx`, pages).then(
+            (module) => module.default,
+        ),
+    setup({ el, App, props }) {
+        registerInertiaHttpExceptionToast();
+        const root = createRoot(el);
+        root.render(<App {...props} />);
+    },
+    progress: {
+        color: '#4B5563',
+    },
+});

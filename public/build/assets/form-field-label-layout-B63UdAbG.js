@@ -1,0 +1,1 @@
+function e(e,t){return e===`none`?{orientation:t===`inline`?`horizontal`:`vertical`,labelClassName:`sr-only`}:e===`inline`?{orientation:`horizontal`}:e===`stacked`?{orientation:`vertical`}:{orientation:t===`inline`?`horizontal`:`vertical`}}export{e as t};

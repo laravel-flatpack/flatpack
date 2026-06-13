@@ -1,0 +1,140 @@
+/**
+ * Data table layout shell. Table behavior and invariants: `useDataTableController`.
+ */
+import { ConfirmDialog } from '@/components/actions/confirm-dialog';
+import { DATA_TABLE_LABEL } from '@/components/table/data-table-constants';
+import { DataTableRowDrawerPanel } from '@/components/table/data-table-row-drawer';
+import { DataTableToolbar } from '@/components/table/data-table-toolbar';
+import { useDataTableController } from '@/hooks/use-data-table-controller';
+import { cn } from '@/lib/utils';
+import type { DataTableProps } from '@/types/data-table';
+
+export { buildDataTableColumnDefs } from '@/components/list-columns/column-defs';
+export type { DataTableController } from '@/hooks/use-data-table-controller';
+export { useDataTableController } from '@/hooks/use-data-table-controller';
+export type {
+    DataTableProps,
+    DataTableRowDrawerAttachBodyRenderContext,
+    DataTableRowDrawerBodyVariant,
+    FlatpackListServerPagination,
+    FlatpackTableRelationType,
+} from '@/types/data-table';
+
+export function DataTable(props: DataTableProps) {
+    const {
+        className,
+        tableRelationType,
+        flatpackEntity,
+        flatpackTableFieldId,
+        flatpackWidgetId,
+        regionLabelledBy,
+        ...tableProps
+    } = props;
+    const c = useDataTableController({
+        ...tableProps,
+        flatpackWidgetId,
+    });
+    const hasToolbarContent =
+        Boolean(tableProps.toolbarStart) ||
+        c.hasToolbarActions ||
+        c.hasBulkActions ||
+        c.hasSearchableColumns ||
+        c.hasFilters ||
+        c.showColumnsVisibility;
+
+    const ariaLabelledBy = regionLabelledBy ?? c.tableLabelId;
+
+    return (
+        <div
+            className={cn(
+                'flex w-full flex-col',
+                hasToolbarContent ? 'gap-4' : 'gap-0',
+                className,
+            )}
+            role="region"
+            aria-labelledby={ariaLabelledBy}
+            {...(tableRelationType !== undefined
+                ? {
+                      'data-flatpack-table-relation-type': tableRelationType,
+                  }
+                : {})}
+        >
+            {regionLabelledBy == null ? (
+                <span id={c.tableLabelId} className="sr-only">
+                    {DATA_TABLE_LABEL}
+                </span>
+            ) : null}
+            <DataTableToolbar
+                id={c.id}
+                table={c.table}
+                hasToolbarActions={c.hasToolbarActions}
+                toolbarActions={c.toolbarActions}
+                onToolbarAction={c.handleToolbarActionClick}
+                toolbarActionsDisabled={c.toolbarActionsDisabled}
+                toolbarActionsDisabledTitle={c.toolbarActionsDisabledTitle}
+                hasBulkActions={c.hasBulkActions}
+                selectedRowCount={c.selectedRowCount}
+                isAllRowsSelected={c.isAllRowsSelected}
+                totalRowCount={c.totalRowCount}
+                onSelectAllRows={c.handleSelectAllRows}
+                onDeselectAllRows={c.handleDeselectAllRows}
+                bulkActions={c.bulkActions}
+                onBulkAction={c.handleBulkActionClick}
+                hasSearchableColumns={c.hasSearchableColumns}
+                hasFilters={c.hasFilters}
+                showColumnsVisibility={c.showColumnsVisibility}
+                globalFilter={c.globalFilter}
+                onGlobalFilterChange={c.setGlobalFilter}
+                serverFilters={c.serverFilters}
+                serverFilterState={c.serverFilterState}
+                onSetSingleFilter={c.setSingleServerFilter}
+                onToggleMultiFilterValue={c.toggleMultiServerFilterValue}
+                onSetDateFilter={c.setDateServerFilter}
+                toolbarStart={tableProps.toolbarStart}
+            />
+            {c.tableAndFooter}
+            {c.rowDetailDrawer &&
+            c.detailDrawerOpen &&
+            c.detailDrawerRow != null &&
+            c.detailDrawerTitleColumn != null &&
+            c.detailDrawerRowId != null ? (
+                <DataTableRowDrawerPanel
+                    open={c.detailDrawerOpen}
+                    onOpenChange={c.handleDetailDrawerOpenChange}
+                    row={c.detailDrawerRow}
+                    rowId={c.detailDrawerRowId}
+                    schemaColumns={c.schemaColumns}
+                    titleColumn={c.detailDrawerTitleColumn}
+                    onRowReplace={c.handleRowReplace}
+                    bodyVariant={c.detailDrawerBodyVariant}
+                    renderAttachBody={c.renderRowDrawerAttachBody}
+                    flatpackEntity={flatpackEntity}
+                    flatpackTableFieldId={flatpackTableFieldId}
+                    flatpackWidgetId={flatpackWidgetId}
+                    columnValidationErrorsById={
+                        c.rowValidationFieldErrorsById[c.detailDrawerRowId] ??
+                        {}
+                    }
+                />
+            ) : null}
+            <ConfirmDialog
+                open={c.pendingEmbeddedRowConfirm !== null}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        c.dismissPendingRowActionConfirm();
+                    }
+                }}
+                title={c.pendingEmbeddedRowConfirm?.button?.label ?? 'Confirm'}
+                continueVariant={
+                    c.pendingEmbeddedRowConfirm?.button?.variant ===
+                    'destructive'
+                        ? 'destructive'
+                        : 'default'
+                }
+                onContinue={() => {
+                    c.confirmPendingRowAction();
+                }}
+            />
+        </div>
+    );
+}

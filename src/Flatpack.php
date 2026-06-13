@@ -1,215 +1,142 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Flatpack;
 
-use Flatpack\Exceptions\ConfigurationException;
-use Flatpack\Exceptions\EntityNotFoundException;
-use Flatpack\Exceptions\ModelNotFoundException;
-use Flatpack\Exceptions\TemplateNotFoundException;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Str;
-use Symfony\Component\Yaml\Yaml;
+use Composer\InstalledVersions;
+use Flatpack\Navigation\BreadcrumbsBuilder;
+use Flatpack\Navigation\MenuBuilder;
+use Flatpack\Navigation\MenuItem;
+use Illuminate\Contracts\Config\Repository;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Throwable;
 
-class Flatpack
+/**
+ * Internal package façade for shared config and navigation (resolved as a singleton). Prefer
+ * {@see Facades\Flatpack} for static access inside the package (`Flatpack::method()`).
+ *
+ * Host applications should rely on routes, published config, and documented contracts rather than
+ * resolving this type directly.
+ *
+ * @internal
+ */
+final readonly class Flatpack
 {
-    public const VERSION = "1.0";
+    public function __construct(
+        private MenuBuilder $menuBuilder,
+        private BreadcrumbsBuilder $breadcrumbsBuilder,
+        private Repository $config,
+        private string $version,
+    ) {}
 
-    /**
-     * The configuration files path.
-     *
-     * @var string
-     */
-    protected $path;
-
-    /**
-     * The configuration files.
-     *
-     * @var \Symfony\Component\Finder\SplFileInfo[]
-     */
-    protected $files;
-
-    /**
-     * The configuration data.
-     *
-     * @var array
-     */
-    protected $composition;
-
-    /**
-     * Create a new Flatpack class instance.
-     *
-     * @return void
-     */
-    public function __construct()
+    public static function composerPackageVersion(): string
     {
-        $this->composition = [];
-        $this->path = $this->getDirectory();
-    }
-
-    /**
-     * Load composition data and return Flatpack instance.
-     *
-     * @return self
-     */
-    public function loadComposition()
-    {
-        // TODO: cache the composition data.
-
-        $this->files = $this->loadCompositionFiles();
-
-        $composition = $this->parseCompositionFiles();
-
-        $this->setComposition($composition);
-
-        return $this;
-    }
-
-    /**
-     * Set composition data.
-     *
-     * @return void
-     */
-    private function setComposition($value)
-    {
-        ksort($value);
-        $this->composition = $value;
-    }
-
-    /**
-     * Get composition data.
-     *
-     * @return array
-     */
-    public function getComposition()
-    {
-        return $this->composition;
-    }
-
-    /**
-     * Load Flatpack composition Yaml files.
-     *
-     * @return \Symfony\Component\Finder\SplFileInfo[]
-     */
-    protected function loadCompositionFiles()
-    {
-        $files = collect(File::allFiles($this->path));
-
-        return $files
-            ->filter(fn ($file) => ! empty($file->getRelativePath()))
-            ->filter(fn ($file) => $file->getExtension() === 'yaml');
-    }
-
-    /**
-     * Parse Flatpack composition Yaml files and return the data.
-     *
-     * @return array
-     */
-    protected function parseCompositionFiles()
-    {
-        $config = [];
-
-        foreach ($this->files as $file) {
-            $entity = $file->getRelativePath();
-            $config[$entity][$file->getFilename()] = Yaml::parseFile($file->getPathname());
+        if (! class_exists(InstalledVersions::class)) {
+            return 'dev';
         }
 
-        return $config;
-    }
+        try {
+            $pretty = InstalledVersions::getPrettyVersion('flatpack/flatpack');
+            if ($pretty !== null && $pretty !== '') {
+                return $pretty;
+            }
 
-    /**
-     * Get the entity name by the model class name.
-     *
-     * @param  string $name
-     * @return string
-     */
-    public function entityName($name = ''): string
-    {
-        $name = collect(explode('\\', $name))->last();
-
-        return Str::of($name)->plural()->lower()->toString();
-    }
-
-    /**
-     * Get the model class name by the entity name.
-     *
-     * @param  string $name
-     * @return string
-     */
-    public function modelName($name = ''): string
-    {
-        return Str::of($name)->singular()->studly()->toString();
-    }
-
-    public function getModelsDirectory()
-    {
-        return config('flatpack.models');
-    }
-
-    /**
-     * Get the model class by the entity name.
-     *
-     * @param  string $name
-     * @throws ModelNotFoundException
-     * @return string
-     */
-    public function guessModelClass($name = ''): string
-    {
-        $modelClass = Str::finish($this->getModelsDirectory(), '\\') . $this->modelName($name);
-
-        if (! class_exists($modelClass)) {
-            throw new ModelNotFoundException("Model '{$modelClass}' not found.", $name, $this->modelName($name));
+            $full = InstalledVersions::getVersion('flatpack/flatpack');
+            if ($full !== null && $full !== '') {
+                return $full;
+            }
+        } catch (Throwable) {
+            // Package not present in InstalledVersions (e.g. non-Composer installs).
         }
 
-        return $modelClass;
+        return 'dev';
     }
 
     /**
-     * Get the directory path of the Flatpack templates.
-     *
-     * @throws ConfigurationException
-     * @return string
+     * @return list<MenuItem>
      */
-    public function getDirectory(): string
+    public function menu(): array
     {
-        return (app()->environment('testing')) ?
-            (__DIR__ . '/../tests/__mocks__') :
-            base_path(config('flatpack.directory', 'flatpack'));
+        return $this->sharedNavigation()['main'];
     }
 
     /**
-     * Get the template files for the given entity.
-     *
-     * @param  string $entity
-     * @return array
+     * @return list<array{label: string, href: string|null}>
      */
-    private function getTemplates($entity)
+    public function breadcrumbs(Request $request): array
     {
-        if (! isset($this->composition[$entity])) {
-            throw new EntityNotFoundException("Entity '{$entity}' not found.", $entity, $this->modelName($entity));
-        }
-
-        return $this->composition[$entity];
+        return $this->breadcrumbsBuilder->forRequest($request);
     }
 
     /**
-     * Get template file composition structure.
-     *
-     * @param  string $entity
-     * @param  string $template
-     * @return array
+     * Resolved Composer version when the package is installed as `flatpack/flatpack`, else `dev`.
      */
-    public function getTemplateComposition($entity, $template = 'list.yaml')
+    public function version(): string
     {
-        $templates = $this->getTemplates($entity);
+        return $this->version;
+    }
 
-        if (! isset($templates[$template])) {
-            throw new TemplateNotFoundException(
-                "Template '{$template}' not found.",
-                $entity,
-                $this->modelName($entity)
-            );
-        }
+    public function routePrefix(): string
+    {
+        return trim((string) $this->config->get('flatpack.http.prefix', 'flatpack'), '/');
+    }
 
-        return $templates[$template];
+    public function dashboardEntity(): string
+    {
+        return (string) $this->config->get('flatpack.composition.dashboard_entity', 'dashboard');
+    }
+
+    /**
+     * Directory containing entity compositions (see `flatpack.composition.path`). Prefer {@see YamlCompositionLoader}
+     * construction from config when avoiding circular references with the menu stack.
+     */
+    public function compositionPath(): string
+    {
+        return (string) $this->config->get('flatpack.composition.path', base_path('flatpack'));
+    }
+
+    public function defaultListPerPage(): int
+    {
+        return (int) $this->config->get('flatpack.lists.per_page', 10);
+    }
+
+    public function maxListPerPage(): int
+    {
+        return (int) $this->config->get('flatpack.lists.max_per_page', 100);
+    }
+
+    public function authGuard(): string
+    {
+        return (string) $this->config->get('flatpack.security.guard', 'web');
+    }
+
+    public function showActionShortcutHints(): bool
+    {
+        return (bool) $this->config->get('flatpack.ui.show_action_shortcut_hints', false);
+    }
+
+    public function quickAction(): mixed
+    {
+        return $this->config->get('flatpack.ui.quick_action');
+    }
+
+    public function secondaryMenu(): mixed
+    {
+        return $this->sharedNavigation()['secondary'];
+    }
+
+    public function bottomMenu(): mixed
+    {
+        return $this->sharedNavigation()['bottom'];
+    }
+
+    /**
+     * @return array{main: list<MenuItem>, secondary: mixed, bottom: mixed}
+     */
+    private function sharedNavigation(): array
+    {
+        return once(fn (): array => $this->menuBuilder->resolveSharedNavigation(Auth::user()));
     }
 }

@@ -1,0 +1,1 @@
+import{ur as e}from"./vendor-plate-Dy3e0BIz.js";import{t}from"./loader-circle-_HcmBZY-.js";import{t as n}from"./utils-Ciqc1JmS.js";var r=e();function i({className:e,...i}){return(0,r.jsx)(t,{role:`status`,"aria-label":`Loading`,className:n(`size-4 animate-spin`,e),...i})}export{i as t};

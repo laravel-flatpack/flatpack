@@ -12,7 +12,7 @@ trim_trailing_whitespace = true
 trim_trailing_whitespace = false
 
 [*.{js,css,scss}]
-indent_size = 2
+indent_size = 4
 
 [*.{yml,yaml}]
 indent_size = 2

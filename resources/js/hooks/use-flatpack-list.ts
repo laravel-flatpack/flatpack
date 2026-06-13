@@ -1,0 +1,564 @@
+import { router } from '@inertiajs/react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
+import { useFlatpackPage } from '@/hooks/use-flatpack-page';
+import { firstErrorMessage } from '@/lib/form-errors';
+import {
+    inertiaPatchMutation,
+    inertiaPostMutation,
+} from '@/lib/inertia-mutation';
+import {
+    listYamlColumnsToDataTableColumns,
+    listYamlFiltersToDataTableFilters,
+} from '@/lib/list-schema';
+import { route } from '@/lib/route';
+import type {
+    DataTableBulkDeletePayload,
+    DataTableRowActionPayload,
+    FlatpackActionVariant,
+} from '@/types/data-table';
+import type {
+    FlatpackListCompositionColumnsYaml,
+    FlatpackListTabPanelLayout,
+} from '@/types/list-composition';
+import type {
+    FlatpackListHeaderAction,
+    FlatpackListPageProps,
+} from '@/types/pages/flatpack';
+
+function isListTabPanel(value: unknown): value is FlatpackListTabPanelLayout {
+    if (value === null || typeof value !== 'object') {
+        return false;
+    }
+    const o = value as Record<string, unknown>;
+    if (typeof o.id !== 'string' || o.id.trim() === '') {
+        return false;
+    }
+    if (typeof o.label !== 'string' || o.label.trim() === '') {
+        return false;
+    }
+
+    return Array.isArray(o.column_ids);
+}
+
+function isColumnsYaml(
+    value: unknown,
+): value is FlatpackListCompositionColumnsYaml {
+    return (
+        Array.isArray(value) || (value !== null && typeof value === 'object')
+    );
+}
+
+type ListQuerySorting = {
+    sort_by: string | null;
+    sort_direction: 'asc' | 'desc' | null;
+};
+
+type ListRowClickBehavior = 'none' | 'edit_page' | 'edit_drawer';
+
+function normalizeListRowClickBehavior(raw: unknown): ListRowClickBehavior {
+    if (raw === 'none' || raw === 'edit_page' || raw === 'edit_drawer') {
+        return raw;
+    }
+
+    return 'edit_page';
+}
+
+function sanitizeQueryFilters(
+    filters?: Record<string, string | string[] | null>,
+): Record<string, string | string[] | null> | undefined {
+    if (filters == null) {
+        return undefined;
+    }
+    const entries = Object.entries(filters).filter(([, value]) => {
+        if (value == null) {
+            return false;
+        }
+        if (Array.isArray(value)) {
+            return value.length > 0;
+        }
+        return value.trim() !== '';
+    });
+    if (entries.length === 0) {
+        return undefined;
+    }
+
+    return Object.fromEntries(entries);
+}
+
+function buildListQueryParams({
+    page,
+    perPage,
+    search,
+    filters,
+    sorting,
+    tab,
+}: {
+    page?: number;
+    perPage?: number;
+    search?: string;
+    filters?: Record<string, string | string[] | null>;
+    sorting?: ListQuerySorting;
+    tab?: string | null;
+}): Record<string, unknown> {
+    const payload: Record<string, unknown> = {};
+    if (page != null) {
+        payload.page = page;
+    }
+    if (perPage != null) {
+        payload.per_page = perPage;
+    }
+    const normalizedSearch = search?.trim() ?? '';
+    if (normalizedSearch !== '') {
+        payload.search = normalizedSearch;
+    }
+    const normalizedFilters = sanitizeQueryFilters(filters);
+    if (normalizedFilters != null) {
+        payload.filters = normalizedFilters;
+    }
+    if (sorting?.sort_by != null && sorting.sort_by.trim() !== '') {
+        payload.sort_by = sorting.sort_by;
+    }
+    if (
+        sorting?.sort_direction != null &&
+        (sorting.sort_direction === 'asc' || sorting.sort_direction === 'desc')
+    ) {
+        payload.sort_direction = sorting.sort_direction;
+    }
+    if (tab != null && tab.trim() !== '') {
+        payload.tab = tab;
+    }
+
+    return payload;
+}
+
+export function useFlatpackList(props: FlatpackListPageProps) {
+    useFlatpackPage(props);
+    const {
+        entity,
+        name,
+        model_key: modelKey,
+        schema,
+        records = [],
+        pagination,
+        search_term: searchTerm = '',
+        active_tab: serverActiveTab = null,
+        filters: serverFilters = [],
+        filter_values: serverFilterValues = {},
+        sorting: serverSorting = { sort_by: null, sort_direction: null },
+        list_actions: listActions = [],
+        bulk_actions: bulkActions = [],
+        widgets,
+        widgets_schema: widgetsSchema,
+    } = props;
+    const displayName = name ?? entity ?? '';
+    const pageTitle = displayName ? `${displayName} list` : '';
+
+    const allColumns = useMemo(
+        () => listYamlColumnsToDataTableColumns(schema?.columns),
+        [schema],
+    );
+
+    const listTabPanels = useMemo((): FlatpackListTabPanelLayout[] => {
+        const raw = schema?.tab_panels;
+        if (!Array.isArray(raw)) {
+            return [];
+        }
+        return raw.filter(isListTabPanel);
+    }, [schema]);
+
+    const [listActiveTabId, setListActiveTabId] = useState<string | null>(
+        serverActiveTab,
+    );
+
+    useEffect(() => {
+        if (listTabPanels.length === 0) {
+            if (listActiveTabId !== null) {
+                setListActiveTabId(null);
+            }
+            return;
+        }
+        if (
+            serverActiveTab !== null &&
+            listTabPanels.some((p) => p.id === serverActiveTab) &&
+            serverActiveTab !== listActiveTabId
+        ) {
+            setListActiveTabId(serverActiveTab);
+            return;
+        }
+        if (listTabPanels.length > 0) {
+            if (
+                listActiveTabId === null ||
+                !listTabPanels.some((p) => p.id === listActiveTabId)
+            ) {
+                setListActiveTabId(listTabPanels[0].id);
+            }
+        }
+    }, [listActiveTabId, listTabPanels, serverActiveTab]);
+
+    const columns = useMemo(() => {
+        if (listTabPanels.length === 0) {
+            return allColumns;
+        }
+        const activeId = listActiveTabId ?? listTabPanels[0]?.id ?? '';
+        const panel = listTabPanels.find((p) => p.id === activeId);
+        if (panel === undefined) {
+            return allColumns;
+        }
+        if (
+            isColumnsYaml(panel.columns) &&
+            (Array.isArray(panel.columns)
+                ? panel.columns.length > 0
+                : Object.keys(panel.columns).length > 0)
+        ) {
+            return listYamlColumnsToDataTableColumns(panel.columns);
+        }
+        const allowed = new Set(panel.column_ids);
+        return allColumns.filter((c) => allowed.has(c.id));
+    }, [allColumns, listActiveTabId, listTabPanels]);
+
+    const handleListTabChange = useCallback(
+        (tabId: string) => {
+            if (tabId === '') {
+                return;
+            }
+            setListActiveTabId(tabId);
+            router.get(
+                route('flatpack.entities.index', { entity }),
+                buildListQueryParams({
+                    tab: tabId,
+                }) as never,
+                {
+                    preserveState: true,
+                    preserveScroll: true,
+                    onError: (errors) => {
+                        toast.error(
+                            firstErrorMessage(errors) ?? 'Invalid tab scope',
+                        );
+                        setListActiveTabId(
+                            serverActiveTab ?? listTabPanels[0]?.id ?? null,
+                        );
+                    },
+                },
+            );
+        },
+        [entity, listTabPanels, serverActiveTab],
+    );
+
+    const filterDefinitions = useMemo(
+        () =>
+            serverFilters.length > 0
+                ? serverFilters
+                : listYamlFiltersToDataTableFilters(
+                      allColumns,
+                      schema?.filters,
+                  ),
+        [allColumns, schema?.filters, serverFilters],
+    );
+
+    const reorderable =
+        typeof schema?.reorderableColumn === 'string'
+            ? schema.reorderableColumn
+            : typeof schema?.reorderable === 'string'
+              ? schema.reorderable
+              : schema?.reorderable === true;
+    const rowClickBehavior = normalizeListRowClickBehavior(schema?.row_click);
+    const isRowClickEditPage = rowClickBehavior === 'edit_page';
+    const isRowClickEditDrawer = rowClickBehavior === 'edit_drawer';
+    const paginationVisibility =
+        typeof schema?.pagination === 'boolean' ? schema.pagination : undefined;
+    const showColumnsVisibility =
+        typeof schema?.showColumnsVisibility === 'boolean'
+            ? schema.showColumnsVisibility
+            : true;
+    const rowClickRecordKey = modelKey || 'id';
+
+    const [pendingListConfirm, setPendingListConfirm] = useState<
+        (FlatpackListHeaderAction & { action: string }) | null
+    >(null);
+    const [pendingRowActionConfirm, setPendingRowActionConfirm] = useState<{
+        action: string;
+        row: Record<string, unknown>;
+        label: string;
+        variant?: FlatpackActionVariant;
+        success_message?: string;
+    } | null>(null);
+
+    const handleRowClick = useCallback(
+        (row: Record<string, unknown>) => {
+            if (!isRowClickEditPage) {
+                return;
+            }
+            const record = row[rowClickRecordKey];
+            if (record == null || record === '') {
+                return;
+            }
+            router.get(
+                route('flatpack.entities.edit', {
+                    entity,
+                    record: String(record),
+                }),
+            );
+        },
+        [entity, isRowClickEditPage, rowClickRecordKey],
+    );
+
+    const handleServerPaginationChange = useCallback(
+        (
+            page: number,
+            perPage: number,
+            search?: string,
+            filters?: Record<string, string | string[] | null>,
+            sorting?: {
+                sort_by: string | null;
+                sort_direction: 'asc' | 'desc' | null;
+            },
+        ) => {
+            router.get(
+                route('flatpack.entities.index', { entity }),
+                buildListQueryParams({
+                    page,
+                    perPage,
+                    search,
+                    filters,
+                    sorting,
+                    tab: listActiveTabId,
+                }) as never,
+                {
+                    preserveState: true,
+                    preserveScroll: true,
+                },
+            );
+        },
+        [entity, listActiveTabId],
+    );
+
+    const handleBulkAction = useCallback(
+        async (payload: DataTableBulkDeletePayload) => {
+            const cfg = bulkActions.find((a) => a.action === payload.action);
+            await inertiaPostMutation(
+                route('flatpack.entities.bulk-action', { entity }),
+                {
+                    action: payload.action,
+                    selection: payload.selection,
+                    search: payload.search,
+                    filters: payload.filters,
+                    sort_by: payload.sorting.sort_by,
+                    sort_direction: payload.sorting.sort_direction,
+                },
+                {
+                    errorMessage: 'Bulk action failed',
+                    successMessage: cfg?.success_message,
+                },
+            );
+        },
+        [bulkActions, entity],
+    );
+
+    const executeRowAction = useCallback(
+        async (opts: {
+            action: string;
+            row: Record<string, unknown>;
+            success_message?: string;
+        }) => {
+            const record = opts.row[modelKey || 'id'];
+            if (record == null || record === '') {
+                throw new Error('Record key is missing');
+            }
+            try {
+                await inertiaPostMutation(
+                    route('flatpack.entities.row-action', {
+                        entity,
+                        record: String(record),
+                    }),
+                    { action: opts.action },
+                    {
+                        errorMessage: 'Row action failed',
+                        successMessage: opts.success_message,
+                    },
+                );
+            } catch (error) {
+                toast.error((error as Error).message);
+                throw error;
+            }
+        },
+        [entity, modelKey],
+    );
+
+    const handleRowAction = useCallback(
+        async (payload: DataTableRowActionPayload) => {
+            const { action, row, button } = payload;
+            if (button?.confirm === true) {
+                setPendingRowActionConfirm({
+                    action,
+                    row,
+                    label: button.label,
+                    variant: button.variant,
+                    success_message: button.success_message,
+                });
+                return;
+            }
+            await executeRowAction({
+                action,
+                row,
+                success_message: button?.success_message,
+            });
+        },
+        [executeRowAction],
+    );
+
+    const executeListAction = useCallback(
+        async (config: FlatpackListHeaderAction & { action: string }) => {
+            const { action } = config;
+            try {
+                await inertiaPostMutation(
+                    route('flatpack.entities.action', { entity }),
+                    { action },
+                    {
+                        errorMessage: 'List action failed',
+                        successMessage: config.success_message,
+                    },
+                );
+            } catch (error) {
+                toast.error((error as Error).message);
+                throw error;
+            }
+        },
+        [entity],
+    );
+
+    const handleCellUpdate = useCallback(
+        async ({
+            row,
+            columnId,
+            value,
+        }: {
+            row: Record<string, unknown>;
+            columnId: string;
+            value: unknown;
+        }) => {
+            const record = row[modelKey || 'id'];
+            if (record == null || record === '') {
+                throw new Error('Record key is missing');
+            }
+            try {
+                await inertiaPatchMutation(
+                    route('flatpack.entities.update', {
+                        entity,
+                        record: String(record),
+                    }),
+                    {
+                        field: columnId,
+                        value,
+                    },
+                    {
+                        errorMessage: 'Record update failed',
+                        successMessage: 'Record updated',
+                    },
+                );
+            } catch (error) {
+                toast.error((error as Error).message);
+                throw error;
+            }
+        },
+        [entity, modelKey],
+    );
+
+    const handleRowUpdate = useCallback(
+        async ({ row }: { row: Record<string, unknown> }) => {
+            const record = row[modelKey || 'id'];
+            if (record == null || record === '') {
+                throw new Error('Record key is missing');
+            }
+            try {
+                await inertiaPatchMutation(
+                    route('flatpack.entities.update', {
+                        entity,
+                        record: String(record),
+                    }),
+                    { values: row },
+                    {
+                        errorMessage: 'Record update failed',
+                        successMessage: 'Record updated',
+                    },
+                );
+            } catch (error) {
+                toast.error((error as Error).message);
+                throw error;
+            }
+        },
+        [entity, modelKey],
+    );
+
+    const reorderEndpoint = useCallback(
+        (item: Record<string, unknown>) => {
+            const record = item[modelKey || 'id'];
+            if (record == null || record === '') {
+                return '';
+            }
+            const endpoint = route('flatpack.entities.row-reorder', {
+                entity,
+                record: String(record),
+            });
+            const tab = listActiveTabId?.trim() ?? '';
+            if (tab === '') {
+                return endpoint;
+            }
+
+            return `${endpoint}?tab=${encodeURIComponent(tab)}`;
+        },
+        [entity, listActiveTabId, modelKey],
+    );
+
+    const handleReorderError = useCallback(() => {
+        toast.error('Reorder failed');
+    }, []);
+
+    const noContentMessage = !displayName
+        ? 'Nothing to list yet.'
+        : allColumns.length === 0
+          ? 'Define columns in list.yaml to render this table.'
+          : null;
+
+    return {
+        displayName,
+        pageTitle,
+        noContentMessage,
+        columns,
+        allColumns,
+        listTabPanels,
+        listActiveTabId,
+        handleListTabChange,
+        filterDefinitions,
+        reorderable,
+        isRowClickEditPage,
+        isRowClickEditDrawer,
+        pendingListConfirm,
+        pendingRowActionConfirm,
+        setPendingListConfirm,
+        setPendingRowActionConfirm,
+        executeRowAction,
+        handleRowClick,
+        handleServerPaginationChange,
+        handleBulkAction,
+        handleRowAction,
+        executeListAction,
+        handleCellUpdate,
+        handleRowUpdate,
+        reorderEndpoint,
+        handleReorderError,
+        records,
+        pagination,
+        paginationVisibility,
+        showColumnsVisibility,
+        searchTerm,
+        serverFilterValues,
+        serverSorting,
+        bulkActions,
+        listActions,
+        entity,
+        modelKey,
+        widgets,
+        widgetsSchema,
+    };
+}

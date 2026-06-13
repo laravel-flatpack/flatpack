@@ -1,3 +1,0 @@
-{{-- Chart Widget --}}
-
-@dump($data)

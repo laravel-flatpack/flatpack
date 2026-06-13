@@ -1,0 +1,3147 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "Flatpack form composition",
+    "description": "Contract for `form.yaml` (JSON-decoded). Defines form layout, action payloads, and field unions used by normalization and UI rendering.",
+    "type": "object",
+    "properties": {
+        "name": {
+            "type": "string",
+            "description": "Display name for the entity."
+        },
+        "model": {
+            "type": "string",
+            "description": "Fully qualified Eloquent model class name."
+        },
+        "icon": {
+            "type": "string",
+            "description": "Lucide icon name for navigation and headers."
+        },
+        "fields": {
+            "type": "object",
+            "description": "Top-level field map. Fields only defined here render above tabs when tabs are present.",
+            "additionalProperties": {
+                "$ref": "#/$defs/fieldDefinition"
+            }
+        },
+        "tabs": {
+            "type": "object",
+            "minProperties": 1,
+            "description": "Tab panel map keyed by tab id. Tab fields merge with root fields into one values payload.",
+            "additionalProperties": {
+                "$ref": "#/$defs/formTabPanel"
+            }
+        },
+        "sidebar": {
+            "description": "Secondary column: extra fields and/or widgets. Inline map of field definitions, explicit `{ fields, widgets }`, or a relative YAML fragment path under the entity directory.",
+            "oneOf": [
+                {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Relative path to a YAML file (e.g. sidebar.yaml) beside form.yaml."
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "fields": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "$ref": "#/$defs/fieldDefinition"
+                            },
+                            "description": "Sidebar-only fields merged into the main values payload."
+                        },
+                        "widgets": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "$ref": "#/$defs/widgetDefinition"
+                            },
+                            "description": "Dashboard-style widgets rendered in the sidebar column."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "description": "Explicit fields and/or widgets blocks."
+                },
+                {
+                    "type": "object",
+                    "minProperties": 1,
+                    "additionalProperties": {
+                        "$ref": "#/$defs/fieldDefinition"
+                    },
+                    "description": "Shorthand: map of field id → field definition (fields only)."
+                }
+            ]
+        },
+        "actions": {
+            "$ref": "#/$defs/formActionsBlock",
+            "description": "Top-level form actions map keyed by action id."
+        }
+    },
+    "additionalProperties": false,
+    "$defs": {
+        "formActionsBlock": {
+            "type": "object",
+            "description": "Named form actions map keyed by action id.",
+            "additionalProperties": {
+                "$ref": "#/$defs/headerActionDefinition"
+            }
+        },
+        "formTabPanel": {
+            "type": "object",
+            "required": [
+                "label",
+                "fields"
+            ],
+            "properties": {
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "icon": {
+                    "type": "string"
+                },
+                "fields": {
+                    "type": "object",
+                    "minProperties": 1,
+                    "additionalProperties": {
+                        "$ref": "#/$defs/fieldDefinition"
+                    }
+                }
+            },
+            "additionalProperties": false,
+            "description": "Form tab panel definition with label, optional icon, and field map."
+        },
+        "headerActionDefinition": {
+            "type": "object",
+            "required": [
+                "label"
+            ],
+            "properties": {
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "action": {
+                    "type": "string"
+                },
+                "href": {
+                    "type": "string"
+                },
+                "icon": {
+                    "type": "string"
+                },
+                "variant": {
+                    "$ref": "#/$defs/buttonVariant"
+                },
+                "success_message": {
+                    "type": "string"
+                },
+                "confirm": {
+                    "type": "boolean"
+                },
+                "success_redirect": {
+                    "$ref": "#/$defs/successRedirect"
+                },
+                "enabled_if": {
+                    "$ref": "#/$defs/actionInactiveUntil"
+                },
+                "visible_if": {
+                    "$ref": "#/$defs/actionInactiveUntil"
+                },
+                "primary": {
+                    "type": "boolean",
+                    "description": "When true, this action is the default for implicit form submit (Enter / primary CTA). If multiple are primary, the first in YAML order wins."
+                },
+                "submit": {
+                    "type": "boolean",
+                    "description": "When true, clicking this action submits current form values to the form submit endpoint. When false or omitted, it runs as a record action without posting form values."
+                },
+                "shortcut": {
+                    "type": "string"
+                }
+            },
+            "oneOf": [
+                {
+                    "required": [
+                        "action"
+                    ],
+                    "not": {
+                        "required": [
+                            "href"
+                        ]
+                    }
+                },
+                {
+                    "required": [
+                        "href"
+                    ],
+                    "not": {
+                        "required": [
+                            "action"
+                        ]
+                    }
+                }
+            ],
+            "additionalProperties": false,
+            "description": "Header action definition for form pages. Requires exactly one of `action` or `href`."
+        },
+        "buttonVariant": {
+            "type": "string",
+            "enum": [
+                "default",
+                "outline",
+                "secondary",
+                "ghost",
+                "destructive",
+                "link",
+                "primary"
+            ],
+            "description": "Supported button style variants. `primary` is accepted and normalized to `default` in UI code."
+        },
+        "successRedirect": {
+            "oneOf": [
+                {
+                    "type": "string",
+                    "enum": [
+                        "list",
+                        "edit",
+                        "create",
+                        "show",
+                        "back",
+                        "previous",
+                        "current",
+                        "stay"
+                    ]
+                },
+                {
+                    "type": "boolean",
+                    "enum": [
+                        true
+                    ],
+                    "description": "Alias for list (redirect to entity index after success)."
+                }
+            ],
+            "description": "Post-action redirect target keyword, or `true` as alias for `list`."
+        },
+        "actionInactiveUntil": {
+            "type": "object",
+            "description": "Action gating definition that disables actions until predicates pass.",
+            "properties": {
+                "all": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/$defs/actionInactivePredicate"
+                    }
+                },
+                "any": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/$defs/actionInactivePredicate"
+                    }
+                },
+                "message": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "anyOf": [
+                {
+                    "required": [
+                        "all"
+                    ]
+                },
+                {
+                    "required": [
+                        "any"
+                    ]
+                }
+            ],
+            "additionalProperties": false
+        },
+        "actionInactivePredicate": {
+            "oneOf": [
+                {
+                    "type": "object",
+                    "required": [
+                        "form.dirty"
+                    ],
+                    "properties": {
+                        "form.dirty": {
+                            "type": "boolean"
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "required": [
+                        "form.mode_in"
+                    ],
+                    "properties": {
+                        "form.mode_in": {
+                            "type": "array",
+                            "minItems": 1,
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "create",
+                                    "edit"
+                                ]
+                            }
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "required": [
+                        "list.selection.min"
+                    ],
+                    "properties": {
+                        "list.selection.min": {
+                            "type": "integer",
+                            "minimum": 0
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "required": [
+                        "list.search_present"
+                    ],
+                    "properties": {
+                        "list.search_present": {
+                            "type": "boolean"
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "required": [
+                        "list.filters_applied"
+                    ],
+                    "properties": {
+                        "list.filters_applied": {
+                            "type": "boolean"
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "required": [
+                        "form.field_eq"
+                    ],
+                    "properties": {
+                        "form.field_eq": {
+                            "type": "object",
+                            "required": [
+                                "field",
+                                "value"
+                            ],
+                            "properties": {
+                                "field": {
+                                    "type": "string",
+                                    "minLength": 1
+                                },
+                                "value": {
+                                    "description": "Compared with deep equality to the live form value for that field.",
+                                    "oneOf": [
+                                        {
+                                            "type": "null"
+                                        },
+                                        {
+                                            "type": "boolean"
+                                        },
+                                        {
+                                            "type": "number"
+                                        },
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "array"
+                                        },
+                                        {
+                                            "type": "object"
+                                        }
+                                    ]
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "required": [
+                        "form.field_in"
+                    ],
+                    "properties": {
+                        "form.field_in": {
+                            "type": "object",
+                            "required": [
+                                "field",
+                                "values"
+                            ],
+                            "properties": {
+                                "field": {
+                                    "type": "string",
+                                    "minLength": 1
+                                },
+                                "values": {
+                                    "type": "array",
+                                    "minItems": 1,
+                                    "items": {
+                                        "oneOf": [
+                                            {
+                                                "type": "null"
+                                            },
+                                            {
+                                                "type": "boolean"
+                                            },
+                                            {
+                                                "type": "number"
+                                            },
+                                            {
+                                                "type": "string"
+                                            }
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "required": [
+                        "form.field_truthy"
+                    ],
+                    "properties": {
+                        "form.field_truthy": {
+                            "type": "object",
+                            "required": [
+                                "field"
+                            ],
+                            "properties": {
+                                "field": {
+                                    "type": "string",
+                                    "minLength": 1
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "required": [
+                        "form.field_present"
+                    ],
+                    "properties": {
+                        "form.field_present": {
+                            "type": "object",
+                            "required": [
+                                "field"
+                            ],
+                            "properties": {
+                                "field": {
+                                    "type": "string",
+                                    "minLength": 1
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "type": "object",
+                    "required": [
+                        "form.field_null"
+                    ],
+                    "properties": {
+                        "form.field_null": {
+                            "type": "object",
+                            "required": [
+                                "field"
+                            ],
+                            "properties": {
+                                "field": {
+                                    "type": "string",
+                                    "minLength": 1
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    },
+                    "additionalProperties": false
+                }
+            ],
+            "description": "Single predicate used by `enabled_if` or `visible_if` gating rules."
+        },
+        "yamlFormFieldType": {
+            "type": "string",
+            "description": "Raw YAML field types before normalization. `date` is normalized to `date-picker`.",
+            "enum": [
+                "text",
+                "textarea",
+                "select",
+                "combobox",
+                "date",
+                "date-picker",
+                "date-range-picker",
+                "time-picker",
+                "checkbox",
+                "switch",
+                "rich-text",
+                "block-editor",
+                "file-upload",
+                "table",
+                "widget",
+                "repeater",
+                "toolbar"
+            ]
+        },
+        "toolbarFieldAlign": {
+            "type": "string",
+            "enum": [
+                "left",
+                "right",
+                "center",
+                "start",
+                "end",
+                "spaced"
+            ],
+            "description": "Toolbar row alignment on the main axis. spaced uses equal space between items (flex justify-between)."
+        },
+        "repeaterDisplayMode": {
+            "type": "string",
+            "enum": ["accordion", "builder"],
+            "description": "accordion uses collapsible rows; builder uses an alternate stacked editing layout."
+        },
+        "repeaterFieldsYamlPath": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Relative path to a YAML fragment under the entity composition directory that defines repeater item fields (resolved when loading compositions)."
+        },
+        "repeaterGroupDefinition": {
+            "type": "object",
+            "required": ["label", "fields"],
+            "description": "One selectable template group when the repeater runs in group mode.",
+            "properties": {
+                "key": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Stable id written to each item (see `groupKeyFrom`). If omitted, the map key may be used when `groups` is an object."
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "icon": {
+                    "type": "string",
+                    "description": "Optional Lucide icon name for the group picker."
+                },
+                "fields": {
+                    "type": "object",
+                    "minProperties": 1,
+                    "additionalProperties": {
+                        "$ref": "#/$defs/fieldDefinition"
+                    }
+                }
+            },
+            "additionalProperties": false
+        },
+        "repeaterInlineFieldsMap": {
+            "type": "object",
+            "minProperties": 1,
+            "additionalProperties": {
+                "$ref": "#/$defs/fieldDefinition"
+            },
+            "description": "Per-item field definitions inlined on the repeater. Mutually exclusive with `form` (path string)."
+        },
+        "repeaterGroupsReferenceOrInline": {
+            "description": "Group definitions as a path, ordered list, or keyed map.",
+            "oneOf": [
+                {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Path to a YAML file defining groups (array or map of group definitions)."
+                },
+                {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/$defs/repeaterGroupDefinition"
+                    }
+                },
+                {
+                    "type": "object",
+                    "minProperties": 1,
+                    "additionalProperties": {
+                        "$ref": "#/$defs/repeaterGroupDefinition"
+                    }
+                }
+            ]
+        },
+        "selectOption": {
+            "type": "object",
+            "required": [
+                "value",
+                "label"
+            ],
+            "properties": {
+                "value": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "status": {
+                    "$ref": "#/$defs/optionStatus"
+                },
+                "icon": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Select option object with value, label, and optional status or icon."
+        },
+        "optionStatus": {
+            "type": "string",
+            "enum": [
+                "success",
+                "pending",
+                "warning",
+                "error",
+                "info"
+            ],
+            "description": "Status token used by option badges and chips."
+        },
+        "selectOptions": {
+            "oneOf": [
+                {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/selectOption"
+                    }
+                },
+                {
+                    "type": "object",
+                    "minProperties": 1,
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                }
+            ],
+            "description": "Select options as an array of option objects or keyed map form."
+        },
+        "validationRules": {
+            "oneOf": [
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            ],
+            "description": "Laravel validation rules as a pipe-delimited string or string array."
+        },
+        "preset": {
+            "type": "object",
+            "required": [
+                "field",
+                "type"
+            ],
+            "properties": {
+                "field": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Source field id to copy from"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "exact",
+                        "slug",
+                        "url",
+                        "camel",
+                        "file"
+                    ]
+                }
+            },
+            "additionalProperties": false,
+            "description": "Preset source definition for copying values from another field."
+        },
+        "fieldTriggerCondition": {
+            "oneOf": [
+                {
+                    "type": "string",
+                    "enum": [
+                        "checked",
+                        "unchecked"
+                    ]
+                },
+                {
+                    "type": "string",
+                    "pattern": "^value\\[[^\\]]+\\]$"
+                }
+            ],
+            "description": "Condition expression used by dynamic field trigger rules."
+        },
+        "fieldTrigger": {
+            "type": "object",
+            "required": [
+                "action",
+                "field",
+                "condition"
+            ],
+            "properties": {
+                "action": {
+                    "type": "string",
+                    "enum": [
+                        "show",
+                        "hide",
+                        "enable",
+                        "disable",
+                        "empty"
+                    ]
+                },
+                "field": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "condition": {
+                    "$ref": "#/$defs/fieldTriggerCondition"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Trigger rule definition for conditional field behavior."
+        },
+        "spanValue": {
+            "type": "string",
+            "description": "Responsive grid span: named token or fraction alias; normalized to named form server-side.",
+            "enum": [
+                "full",
+                "half",
+                "1/2",
+                "two_thirds",
+                "2/3",
+                "third",
+                "1/3",
+                "quarter",
+                "1/4"
+            ]
+        },
+        "showLabelOption": {
+            "type": "string",
+            "enum": ["stacked", "inline", "none"],
+            "description": "Label placement relative to the control: stacked (default when omitted for most fields), inline (label beside control), or none (visually hidden; still exposed to assistive tech)."
+        },
+        "fieldsetLabelString": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Optional section title: adjacent fields with the same normalized label and variant are grouped together."
+        },
+        "fieldsetObject": {
+            "type": "object",
+            "required": [
+                "label"
+            ],
+            "properties": {
+                "label": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200,
+                    "description": "Section title for grouped fields."
+                },
+                "icon": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80,
+                    "description": "Lucide icon key (kebab-case or snake_case), resolved via the menu icon registry."
+                },
+                "variant": {
+                    "type": "string",
+                    "enum": [
+                        "card",
+                        "minimal",
+                        "plain",
+                        "none"
+                    ],
+                    "description": "Visual style for the section: card (default), minimal and plain are lighter chrome; none hides the title visually (screen-reader legend only)."
+                },
+                "collapsed": {
+                    "type": "boolean",
+                    "description": "When present, the section is collapsible: true starts collapsed, false starts expanded. Omit for a non-collapsible section. Cannot be combined with variant none (stripped server-side)."
+                }
+            },
+            "additionalProperties": false,
+            "description": "Section title, optional icon, optional layout variant, and optional collapsible behavior for grouped fields."
+        },
+        "fieldsetInput": {
+            "description": "Plain string label or explicit title, optional icon, and optional layout variant.",
+            "oneOf": [
+                {
+                    "$ref": "#/$defs/fieldsetLabelString"
+                },
+                {
+                    "$ref": "#/$defs/fieldsetObject"
+                }
+            ]
+        },
+        "fieldDefinition": {
+            "description": "Discriminated field union keyed by `type`.",
+            "oneOf": [
+                {
+                    "$ref": "#/$defs/fieldText"
+                },
+                {
+                    "$ref": "#/$defs/fieldTextarea"
+                },
+                {
+                    "$ref": "#/$defs/fieldSelect"
+                },
+                {
+                    "$ref": "#/$defs/fieldCombobox"
+                },
+                {
+                    "$ref": "#/$defs/fieldDate"
+                },
+                {
+                    "$ref": "#/$defs/fieldDatePicker"
+                },
+                {
+                    "$ref": "#/$defs/fieldDateRangePicker"
+                },
+                {
+                    "$ref": "#/$defs/fieldTimePicker"
+                },
+                {
+                    "$ref": "#/$defs/fieldCheckbox"
+                },
+                {
+                    "$ref": "#/$defs/fieldSwitch"
+                },
+                {
+                    "$ref": "#/$defs/fieldRichText"
+                },
+                {
+                    "$ref": "#/$defs/fieldBlockEditor"
+                },
+                {
+                    "$ref": "#/$defs/fieldFileUpload"
+                },
+                {
+                    "$ref": "#/$defs/fieldTable"
+                },
+                {
+                    "$ref": "#/$defs/fieldWidget"
+                },
+                {
+                    "$ref": "#/$defs/fieldToolbar"
+                },
+                {
+                    "$ref": "#/$defs/fieldRepeater"
+                }
+            ]
+        },
+        "fieldText": {
+            "type": "object",
+            "required": [
+                "type",
+                "label"
+            ],
+            "properties": {
+                "type": {
+                    "const": "text"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "helperText": {
+                    "type": "string"
+                },
+                "placeholder": {
+                    "type": "string"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "rules": {
+                    "$ref": "#/$defs/validationRules"
+                },
+                "value": {},
+                "preset": {
+                    "$ref": "#/$defs/preset"
+                },
+                "format": {
+                    "type": "string",
+                    "enum": [
+                        "slug",
+                        "url",
+                        "camel",
+                        "file"
+                    ]
+                },
+                "span": {
+                    "$ref": "#/$defs/spanValue"
+                },
+                "fieldset": {
+                    "$ref": "#/$defs/fieldsetInput"
+                },
+                "showLabel": {
+                    "$ref": "#/$defs/showLabelOption"
+                },
+                "trigger": {
+                    "$ref": "#/$defs/fieldTrigger"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Text input field definition."
+        },
+        "fieldTextarea": {
+            "type": "object",
+            "required": [
+                "type",
+                "label"
+            ],
+            "properties": {
+                "type": {
+                    "const": "textarea"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "helperText": {
+                    "type": "string"
+                },
+                "placeholder": {
+                    "type": "string"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "rules": {
+                    "$ref": "#/$defs/validationRules"
+                },
+                "value": {},
+                "rows": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "preset": {
+                    "$ref": "#/$defs/preset"
+                },
+                "span": {
+                    "$ref": "#/$defs/spanValue"
+                },
+                "fieldset": {
+                    "$ref": "#/$defs/fieldsetInput"
+                },
+                "showLabel": {
+                    "$ref": "#/$defs/showLabelOption"
+                },
+                "trigger": {
+                    "$ref": "#/$defs/fieldTrigger"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Textarea field definition."
+        },
+        "fieldSelect": {
+            "type": "object",
+            "required": [
+                "type",
+                "label",
+                "options"
+            ],
+            "properties": {
+                "type": {
+                    "const": "select"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "helperText": {
+                    "type": "string"
+                },
+                "placeholder": {
+                    "type": "string"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "rules": {
+                    "$ref": "#/$defs/validationRules"
+                },
+                "value": {},
+                "options": {
+                    "$ref": "#/$defs/selectOptions"
+                },
+                "span": {
+                    "$ref": "#/$defs/spanValue"
+                },
+                "fieldset": {
+                    "$ref": "#/$defs/fieldsetInput"
+                },
+                "showLabel": {
+                    "$ref": "#/$defs/showLabelOption"
+                },
+                "trigger": {
+                    "$ref": "#/$defs/fieldTrigger"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Select field definition with static or relation-backed options."
+        },
+        "fieldCombobox": {
+            "type": "object",
+            "required": [
+                "type",
+                "label"
+            ],
+            "properties": {
+                "type": {
+                    "const": "combobox"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "helperText": {
+                    "type": "string"
+                },
+                "placeholder": {
+                    "type": "string"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "rules": {
+                    "$ref": "#/$defs/validationRules"
+                },
+                "value": {},
+                "options": {
+                    "$ref": "#/$defs/selectOptions"
+                },
+                "multiple": {
+                    "type": "boolean"
+                },
+                "relation": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Eloquent relation method for remote options; use type combobox + relation instead of obsolete type relation."
+                },
+                "relation_name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Label column on related model for relation-options / chips"
+                },
+                "relation_value": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Value column on related model (often id)"
+                },
+                "remote": {
+                    "type": "boolean"
+                },
+                "span": {
+                    "$ref": "#/$defs/spanValue"
+                },
+                "fieldset": {
+                    "$ref": "#/$defs/fieldsetInput"
+                },
+                "showLabel": {
+                    "$ref": "#/$defs/showLabelOption"
+                },
+                "trigger": {
+                    "$ref": "#/$defs/fieldTrigger"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Combobox field definition with optional relation-backed options."
+        },
+        "fieldDate": {
+            "type": "object",
+            "required": [
+                "type",
+                "label"
+            ],
+            "properties": {
+                "type": {
+                    "const": "date"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "helperText": {
+                    "type": "string"
+                },
+                "placeholder": {
+                    "type": "string"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "rules": {
+                    "$ref": "#/$defs/validationRules"
+                },
+                "value": {},
+                "span": {
+                    "$ref": "#/$defs/spanValue"
+                },
+                "fieldset": {
+                    "$ref": "#/$defs/fieldsetInput"
+                },
+                "showLabel": {
+                    "$ref": "#/$defs/showLabelOption"
+                },
+                "trigger": {
+                    "$ref": "#/$defs/fieldTrigger"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Legacy date field alias definition."
+        },
+        "fieldDatePicker": {
+            "type": "object",
+            "required": [
+                "type",
+                "label"
+            ],
+            "properties": {
+                "type": {
+                    "const": "date-picker"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "helperText": {
+                    "type": "string"
+                },
+                "placeholder": {
+                    "type": "string"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "rules": {
+                    "$ref": "#/$defs/validationRules"
+                },
+                "value": {},
+                "span": {
+                    "$ref": "#/$defs/spanValue"
+                },
+                "fieldset": {
+                    "$ref": "#/$defs/fieldsetInput"
+                },
+                "showLabel": {
+                    "$ref": "#/$defs/showLabelOption"
+                },
+                "trigger": {
+                    "$ref": "#/$defs/fieldTrigger"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Date picker field definition."
+        },
+        "fieldDateRangePicker": {
+            "type": "object",
+            "required": [
+                "type",
+                "label"
+            ],
+            "properties": {
+                "type": {
+                    "const": "date-range-picker"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "helperText": {
+                    "type": "string"
+                },
+                "placeholder": {
+                    "type": "string"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "rules": {
+                    "$ref": "#/$defs/validationRules"
+                },
+                "value": {},
+                "span": {
+                    "$ref": "#/$defs/spanValue"
+                },
+                "fieldset": {
+                    "$ref": "#/$defs/fieldsetInput"
+                },
+                "showLabel": {
+                    "$ref": "#/$defs/showLabelOption"
+                },
+                "trigger": {
+                    "$ref": "#/$defs/fieldTrigger"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Date range picker field definition."
+        },
+        "fieldTimePicker": {
+            "type": "object",
+            "required": [
+                "type",
+                "label"
+            ],
+            "properties": {
+                "type": {
+                    "const": "time-picker"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "helperText": {
+                    "type": "string"
+                },
+                "placeholder": {
+                    "type": "string"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "rules": {
+                    "$ref": "#/$defs/validationRules"
+                },
+                "value": {},
+                "dateLabel": {
+                    "type": "string"
+                },
+                "datePlaceholder": {
+                    "type": "string"
+                },
+                "timeLabel": {
+                    "type": "string"
+                },
+                "timeDefaultValue": {
+                    "type": "string"
+                },
+                "span": {
+                    "$ref": "#/$defs/spanValue"
+                },
+                "fieldset": {
+                    "$ref": "#/$defs/fieldsetInput"
+                },
+                "showLabel": {
+                    "$ref": "#/$defs/showLabelOption"
+                },
+                "trigger": {
+                    "$ref": "#/$defs/fieldTrigger"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Time picker field definition."
+        },
+        "fieldCheckbox": {
+            "type": "object",
+            "required": [
+                "type",
+                "label"
+            ],
+            "properties": {
+                "type": {
+                    "const": "checkbox"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "helperText": {
+                    "type": "string"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "rules": {
+                    "$ref": "#/$defs/validationRules"
+                },
+                "value": {},
+                "defaultChecked": {
+                    "type": "boolean"
+                },
+                "span": {
+                    "$ref": "#/$defs/spanValue"
+                },
+                "fieldset": {
+                    "$ref": "#/$defs/fieldsetInput"
+                },
+                "showLabel": {
+                    "$ref": "#/$defs/showLabelOption"
+                },
+                "trigger": {
+                    "$ref": "#/$defs/fieldTrigger"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Checkbox field definition."
+        },
+        "fieldSwitch": {
+            "type": "object",
+            "required": [
+                "type",
+                "label"
+            ],
+            "properties": {
+                "type": {
+                    "const": "switch"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "helperText": {
+                    "type": "string"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "rules": {
+                    "$ref": "#/$defs/validationRules"
+                },
+                "value": {},
+                "defaultChecked": {
+                    "type": "boolean"
+                },
+                "span": {
+                    "$ref": "#/$defs/spanValue"
+                },
+                "fieldset": {
+                    "$ref": "#/$defs/fieldsetInput"
+                },
+                "showLabel": {
+                    "$ref": "#/$defs/showLabelOption"
+                },
+                "trigger": {
+                    "$ref": "#/$defs/fieldTrigger"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Switch field definition."
+        },
+        "fieldRichText": {
+            "type": "object",
+            "required": [
+                "type",
+                "label"
+            ],
+            "properties": {
+                "type": {
+                    "const": "rich-text"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "helperText": {
+                    "type": "string"
+                },
+                "placeholder": {
+                    "type": "string"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "rules": {
+                    "$ref": "#/$defs/validationRules"
+                },
+                "value": {},
+                "toolbar": {
+                    "type": "boolean"
+                },
+                "upload": {
+                    "$ref": "#/$defs/editorUpload"
+                },
+                "span": {
+                    "$ref": "#/$defs/spanValue"
+                },
+                "fieldset": {
+                    "$ref": "#/$defs/fieldsetInput"
+                },
+                "showLabel": {
+                    "$ref": "#/$defs/showLabelOption"
+                },
+                "trigger": {
+                    "$ref": "#/$defs/fieldTrigger"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Rich text editor field definition."
+        },
+        "fieldBlockEditor": {
+            "type": "object",
+            "required": [
+                "type",
+                "label"
+            ],
+            "properties": {
+                "type": {
+                    "const": "block-editor"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "helperText": {
+                    "type": "string"
+                },
+                "placeholder": {
+                    "type": "string"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "rules": {
+                    "$ref": "#/$defs/validationRules"
+                },
+                "value": {},
+                "toolbar": {
+                    "type": "boolean"
+                },
+                "upload": {
+                    "$ref": "#/$defs/editorUpload"
+                },
+                "span": {
+                    "$ref": "#/$defs/spanValue"
+                },
+                "fieldset": {
+                    "$ref": "#/$defs/fieldsetInput"
+                },
+                "showLabel": {
+                    "$ref": "#/$defs/showLabelOption"
+                },
+                "trigger": {
+                    "$ref": "#/$defs/fieldTrigger"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Block editor field definition."
+        },
+        "fileUploadMode": {
+            "type": "string",
+            "enum": [
+                "relation",
+                "url",
+                "image",
+                "file"
+            ],
+            "description": "Persistence strategy for uploaded files: related records or URL(s) in model attributes. `image` matches URL persistence but shows image previews in the form UI. `file` matches URL persistence but shows a file-card preview (icon, name, size) instead of a bare filename row."
+        },
+        "fileUploadPersistAs": {
+            "type": "string",
+            "enum": [
+                "string",
+                "json"
+            ],
+            "description": "How URL mode persists values when `multiple` is true."
+        },
+        "editorUpload": {
+            "type": "object",
+            "properties": {
+                "multiple": {
+                    "type": "boolean"
+                },
+                "max_files": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "max_size_kb": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "accept": {
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "minLength": 1
+                        },
+                        {
+                            "type": "array",
+                            "minItems": 1,
+                            "items": {
+                                "type": "string",
+                                "minLength": 1
+                            }
+                        }
+                    ]
+                },
+                "directory": {
+                    "type": "string"
+                },
+                "disk": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Laravel filesystem disk name, or the reserved token `media` (maps to config `flatpack.uploads.media_disk`). When omitted, uploads use `flatpack.uploads.file_disk`."
+                },
+                "visibility": {
+                    "type": "string",
+                    "enum": [
+                        "public",
+                        "private"
+                    ]
+                },
+                "collection": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Optional collection/group identifier stored in upload metadata."
+                }
+            },
+            "additionalProperties": false,
+            "description": "Upload settings for rich-text and block-editor media insertion; stored URLs are embedded in editor JSON."
+        },
+        "fieldFileUpload": {
+            "type": "object",
+            "required": [
+                "type",
+                "label",
+                "mode",
+                "upload"
+            ],
+            "properties": {
+                "type": {
+                    "const": "file-upload"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "helperText": {
+                    "type": "string"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "rules": {
+                    "$ref": "#/$defs/validationRules"
+                },
+                "value": {},
+                "mode": {
+                    "$ref": "#/$defs/fileUploadMode"
+                },
+                "upload": {
+                    "$ref": "#/$defs/editorUpload"
+                },
+                "relation": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Relation name used for relation mode persistence."
+                },
+                "callback": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "When `mode: relation`, name of a public method on the entity model invoked with the list of upload metadata arrays (persist related records in application code)."
+                },
+                "target_column": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Model attribute receiving URL(s) in url mode."
+                },
+                "persist_as": {
+                    "$ref": "#/$defs/fileUploadPersistAs"
+                },
+                "span": {
+                    "$ref": "#/$defs/spanValue"
+                },
+                "fieldset": {
+                    "$ref": "#/$defs/fieldsetInput"
+                },
+                "showLabel": {
+                    "$ref": "#/$defs/showLabelOption"
+                },
+                "trigger": {
+                    "$ref": "#/$defs/fieldTrigger"
+                }
+            },
+            "allOf": [
+                {
+                    "if": {
+                        "properties": {
+                            "mode": {
+                                "const": "relation"
+                            }
+                        },
+                        "required": [
+                            "mode"
+                        ]
+                    },
+                    "then": {
+                        "required": [
+                            "relation",
+                            "callback"
+                        ]
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "mode": {
+                                "const": "url"
+                            }
+                        },
+                        "required": [
+                            "mode"
+                        ]
+                    },
+                    "then": {
+                        "required": [
+                            "target_column"
+                        ]
+                    }
+                },
+                {
+                    "if": {
+                        "properties": {
+                            "mode": {
+                                "const": "file"
+                            }
+                        },
+                        "required": [
+                            "mode"
+                        ]
+                    },
+                    "then": {
+                        "required": [
+                            "target_column"
+                        ]
+                    }
+                }
+            ],
+            "additionalProperties": false,
+            "description": "File upload field definition supporting relation-backed attachments or URL persistence."
+        },
+        "fieldTableActionEntry": {
+            "type": "object",
+            "description": "Embedded table toolbar action definition.",
+            "required": [
+                "label",
+                "action"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "action": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Built-in: `create` and `add` open a blank draft row in the row detail drawer (same UX path). Other values are custom and use host onToolbarAction when wired."
+                },
+                "icon": {
+                    "type": "string"
+                },
+                "variant": {
+                    "type": "string",
+                    "enum": [
+                        "default",
+                        "destructive",
+                        "outline",
+                        "secondary",
+                        "ghost",
+                        "link",
+                        "primary"
+                    ]
+                }
+            },
+            "additionalProperties": false
+        },
+        "fieldWidget": {
+            "type": "object",
+            "required": [
+                "type",
+                "label",
+                "widget"
+            ],
+            "properties": {
+                "type": {
+                    "const": "widget"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "helperText": {
+                    "type": "string"
+                },
+                "widget": {
+                    "type": "object",
+                    "minProperties": 1,
+                    "description": "Single-widget map keyed by widget id and resolved by widget runtime.",
+                    "additionalProperties": {
+                        "$ref": "#/$defs/widgetDefinition"
+                    }
+                },
+                "span": {
+                    "$ref": "#/$defs/spanValue"
+                },
+                "fieldset": {
+                    "$ref": "#/$defs/fieldsetInput"
+                },
+                "showLabel": {
+                    "$ref": "#/$defs/showLabelOption"
+                },
+                "trigger": {
+                    "$ref": "#/$defs/fieldTrigger"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Read-only widget field definition rendered inside forms."
+        },
+        "fieldToolbar": {
+            "type": "object",
+            "required": [
+                "type",
+                "actions"
+            ],
+            "properties": {
+                "type": {
+                    "const": "toolbar"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "helperText": {
+                    "type": "string"
+                },
+                "actions": {
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/formActionsBlock"
+                        },
+                        {
+                            "type": "object",
+                            "minProperties": 1
+                        }
+                    ],
+                    "description": "Same map shape as top-level form `actions` (action id → header action definition)."
+                },
+                "align": {
+                    "$ref": "#/$defs/toolbarFieldAlign"
+                },
+                "span": {
+                    "$ref": "#/$defs/spanValue"
+                },
+                "fieldset": {
+                    "$ref": "#/$defs/fieldsetInput"
+                },
+                "showLabel": {
+                    "$ref": "#/$defs/showLabelOption"
+                },
+                "trigger": {
+                    "$ref": "#/$defs/fieldTrigger"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Toolbar row of header-style actions (publish, links, etc.). Not persisted as form values."
+        },
+        "fieldRepeater": {
+            "type": "object",
+            "required": ["type", "label"],
+            "description": "Repeating block of sub-fields persisted as an array of objects. Use `groups` for group mode, or for a single template use top-level `fields` (inline) or `form` (string path to a YAML fragment only).",
+            "properties": {
+                "type": {
+                    "const": "repeater"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "helperText": {
+                    "type": "string"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "rules": {
+                    "$ref": "#/$defs/validationRules"
+                },
+                "value": {},
+                "fields": {
+                    "$ref": "#/$defs/repeaterInlineFieldsMap",
+                    "description": "Inline item field map. Mutually exclusive with `form` (path string)."
+                },
+                "form": {
+                    "$ref": "#/$defs/repeaterFieldsYamlPath"
+                },
+                "prompt": {
+                    "type": "string",
+                    "description": "Label for the control that adds a new item. Default: Add new item."
+                },
+                "displayMode": {
+                    "$ref": "#/$defs/repeaterDisplayMode",
+                    "description": "Default: accordion."
+                },
+                "itemsExpanded": {
+                    "type": "boolean",
+                    "description": "When `displayMode` is accordion, whether items start expanded. Default: true."
+                },
+                "titleFrom": {
+                    "description": "Item attribute key used as the collapsed row title. Use boolean false with minItems and maxItems both 1 to omit the per-row title bar.",
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "minLength": 1
+                        },
+                        {
+                            "type": "boolean",
+                            "enum": [false]
+                        }
+                    ]
+                },
+                "minItems": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Minimum rows; may pre-render empty rows when not using groups (e.g. minItems: 1 shows one row)."
+                },
+                "maxItems": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Maximum number of items allowed."
+                },
+                "groups": {
+                    "$ref": "#/$defs/repeaterGroupsReferenceOrInline"
+                },
+                "groupKeyFrom": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Attribute on each saved item that stores the selected group key. Default: _group."
+                },
+                "showReorder": {
+                    "type": "boolean",
+                    "description": "Show reorder / sort controls. Default: true."
+                },
+                "showDuplicate": {
+                    "type": "boolean",
+                    "description": "Show duplicate-row control. Default: true."
+                },
+                "span": {
+                    "$ref": "#/$defs/spanValue"
+                },
+                "fieldset": {
+                    "$ref": "#/$defs/fieldsetInput"
+                },
+                "showLabel": {
+                    "$ref": "#/$defs/showLabelOption"
+                },
+                "trigger": {
+                    "$ref": "#/$defs/fieldTrigger"
+                }
+            },
+            "additionalProperties": false,
+            "allOf": [
+                {
+                    "oneOf": [
+                        {
+                            "allOf": [
+                                {
+                                    "required": ["groups"]
+                                },
+                                {
+                                    "not": {
+                                        "required": ["form"]
+                                    }
+                                },
+                                {
+                                    "not": {
+                                        "required": ["fields"]
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "allOf": [
+                                {
+                                    "required": ["form"]
+                                },
+                                {
+                                    "not": {
+                                        "required": ["groups"]
+                                    }
+                                },
+                                {
+                                    "not": {
+                                        "required": ["fields"]
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "allOf": [
+                                {
+                                    "required": ["fields"]
+                                },
+                                {
+                                    "not": {
+                                        "required": ["groups"]
+                                    }
+                                },
+                                {
+                                    "not": {
+                                        "required": ["form"]
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        "fieldTableActions": {
+            "description": "Embedded table toolbar actions as keyed map or ordered array.",
+            "oneOf": [
+                {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/$defs/fieldTableActionEntry"
+                    }
+                },
+                {
+                    "type": "object",
+                    "minProperties": 1,
+                    "additionalProperties": {
+                        "$ref": "#/$defs/fieldTableActionEntry"
+                    }
+                }
+            ]
+        },
+        "fieldTable": {
+            "type": "object",
+            "required": [
+                "type",
+                "label",
+                "columns"
+            ],
+            "description": "Embedded table field definition with columns, row behavior, and optional relation hydration.",
+            "properties": {
+                "type": {
+                    "const": "table"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "helperText": {
+                    "type": "string"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "rules": {
+                    "$ref": "#/$defs/validationRules"
+                },
+                "value": {},
+                "columns": {
+                    "description": "Same shapes as list.yaml columns: array of column definitions, or map of columnId -> definition. Embedded table columns may set `edit_form_field` (full form-field shape) to override row-drawer rendering.",
+                    "oneOf": [
+                        {
+                            "type": "array",
+                            "minItems": 1,
+                            "items": {
+                                "$ref": "#/$defs/embeddedTableColumnDefinition"
+                            }
+                        },
+                        {
+                            "type": "object",
+                            "minProperties": 1,
+                            "additionalProperties": {
+                                "$ref": "#/$defs/embeddedTableColumnDefinition"
+                            }
+                        }
+                    ]
+                },
+                "data": {
+                    "type": "array"
+                },
+                "bulkActions": {
+                    "type": "array"
+                },
+                "actions": {
+                    "$ref": "#/$defs/fieldTableActions",
+                    "description": "Toolbar buttons. If both `actions` and `toolbar` are set, `actions` is used."
+                },
+                "toolbar": {
+                    "$ref": "#/$defs/fieldTableActions",
+                    "description": "Alias for `actions` (same shape). Ignored when `actions` is present."
+                },
+                "toolbar_actions": {
+                    "$ref": "#/$defs/fieldTableActions",
+                    "description": "Legacy list-style key; same shape as `actions`. Used only when `actions` and `toolbar` are absent."
+                },
+                "toolbarActions": {
+                    "$ref": "#/$defs/fieldTableActions",
+                    "description": "Legacy camelCase key; same shape as `actions`. Lowest precedence among toolbar sources."
+                },
+                "reorderable": {
+                    "oneOf": [
+                        {
+                            "type": "boolean"
+                        },
+                        {
+                            "type": "string"
+                        }
+                    ]
+                },
+                "default_sort": {
+                    "$ref": "#/$defs/defaultSort",
+                    "description": "Default local sort used when row table first renders."
+                },
+                "pagination": {
+                    "type": "boolean",
+                    "description": "Pagination visibility override: true always shows controls, false always hides controls."
+                },
+                "showColumnsVisibility": {
+                    "type": "boolean",
+                    "description": "Show or hide the column visibility dropdown in the table toolbar."
+                },
+                "row_detail_drawer": {
+                    "type": "boolean",
+                    "description": "When false, clicking a data row does not open the row detail drawer; toolbar `create` still uses the drawer for new rows (`add`/other may share that drawer when wired)."
+                },
+                "relation": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Eloquent relation method name on the parent model; when present, table is relation-backed (hydration + sync)."
+                },
+                "model": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Model class name for immediate row persistence from the embedded table drawer."
+                },
+                "relation_value": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Related model key attribute for RelationRow identity (default id)."
+                },
+                "limit": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Max related rows to hydrate (capped also by config flatpack.forms)."
+                },
+                "table_relation_type": {
+                    "type": "string",
+                    "enum": [
+                        "belongs_to_many",
+                        "has_many",
+                        "morph_many",
+                        "morph_to_many",
+                        "has_one",
+                        "unknown"
+                    ],
+                    "description": "Eloquent relation class for this table field, usually derived from the parent form model. Authors may set this in YAML to override auto-detection."
+                },
+                "span": {
+                    "$ref": "#/$defs/spanValue"
+                },
+                "fieldset": {
+                    "$ref": "#/$defs/fieldsetInput"
+                },
+                "showLabel": {
+                    "$ref": "#/$defs/showLabelOption"
+                },
+                "trigger": {
+                    "$ref": "#/$defs/fieldTrigger"
+                }
+            },
+            "oneOf": [
+                {
+                    "required": [
+                        "relation"
+                    ],
+                    "not": {
+                        "required": [
+                            "model"
+                        ]
+                    }
+                },
+                {
+                    "required": [
+                        "model"
+                    ],
+                    "not": {
+                        "required": [
+                            "relation"
+                        ]
+                    }
+                },
+                {
+                    "not": {
+                        "anyOf": [
+                            {
+                                "required": [
+                                    "model"
+                                ]
+                            },
+                            {
+                                "required": [
+                                    "relation"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ],
+            "additionalProperties": false
+        },
+        "embeddedTableColumnEditFormFieldDefinition": {
+            "type": "object",
+            "required": [
+                "type"
+            ],
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "text",
+                        "textarea",
+                        "select",
+                        "combobox",
+                        "date-picker",
+                        "date-range-picker",
+                        "time-picker",
+                        "checkbox",
+                        "switch",
+                        "rich-text",
+                        "block-editor",
+                        "table"
+                    ]
+                },
+                "span": {
+                    "$ref": "#/$defs/spanValue"
+                },
+                "fieldset": {
+                    "$ref": "#/$defs/fieldsetInput"
+                },
+                "showLabel": {
+                    "$ref": "#/$defs/showLabelOption"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Inline row-drawer edit field override for embedded table columns."
+        },
+        "defaultSort": {
+            "type": "object",
+            "required": [
+                "key",
+                "direction"
+            ],
+            "properties": {
+                "key": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "direction": {
+                    "type": "string",
+                    "enum": [
+                        "asc",
+                        "desc"
+                    ]
+                }
+            },
+            "additionalProperties": false
+        },
+        "embeddedTableColumnDefinition": {
+            "type": "object",
+            "required": [
+                "label"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "text",
+                        "select",
+                        "date",
+                        "datetime",
+                        "actions",
+                        "badge",
+                        "status",
+                        "relation"
+                    ]
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "options": {
+                    "$ref": "#/$defs/selectOptions"
+                },
+                "actions": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/$defs/fieldTableActionEntry"
+                    }
+                },
+                "relation": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "relation_name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "relation_value": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "relationName": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "relationValue": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "format": {
+                    "type": "string"
+                },
+                "timezone": {
+                    "type": "string"
+                },
+                "sortable": {
+                    "type": "boolean"
+                },
+                "searchable": {
+                    "type": "boolean"
+                },
+                "editable": {
+                    "type": "boolean"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "rules": {
+                    "$ref": "#/$defs/validationRules"
+                },
+                "detailDrawer": {
+                    "type": "boolean"
+                },
+                "invisible": {
+                    "type": "boolean"
+                },
+                "truncate": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "edit_form_field": {
+                    "$ref": "#/$defs/embeddedTableColumnEditFormFieldDefinition"
+                },
+                "editFormField": {
+                    "$ref": "#/$defs/embeddedTableColumnEditFormFieldDefinition"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Embedded table column definition with optional edit field override."
+        },
+        "widgetDefinition": {
+            "description": "Discriminated widget union keyed by `type`.",
+            "oneOf": [
+                {
+                    "$ref": "#/$defs/metricWidget"
+                },
+                {
+                    "$ref": "#/$defs/cardWidget"
+                },
+                {
+                    "$ref": "#/$defs/statusWidget"
+                },
+                {
+                    "$ref": "#/$defs/chartWidget"
+                },
+                {
+                    "$ref": "#/$defs/tableWidgetProviderBacked"
+                },
+                {
+                    "$ref": "#/$defs/tableWidgetModelBacked"
+                },
+                {
+                    "$ref": "#/$defs/gridWidgetProviderBacked"
+                },
+                {
+                    "$ref": "#/$defs/gridWidgetModelBacked"
+                }
+            ]
+        },
+        "tableWidgetPagination": {
+            "oneOf": [
+                {
+                    "type": "boolean",
+                    "description": "Pagination visibility override: true always shows controls, false always hides controls."
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "per_page": {
+                            "type": "integer",
+                            "minimum": 1
+                        },
+                        "page_sizes": {
+                            "type": "array",
+                            "minItems": 1,
+                            "items": {
+                                "type": "integer",
+                                "minimum": 1
+                            }
+                        }
+                    },
+                    "additionalProperties": false
+                }
+            ]
+        },
+        "tableWidgetEmptyState": {
+            "type": "object",
+            "properties": {
+                "title": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false
+        },
+        "tableWidgetColumns": {
+            "type": "object",
+            "minProperties": 1,
+            "additionalProperties": {
+                "$ref": "#/$defs/embeddedTableColumnDefinition"
+            }
+        },
+        "tableWidgetProviderBacked": {
+            "type": "object",
+            "required": [
+                "type",
+                "provider"
+            ],
+            "properties": {
+                "type": {
+                    "const": "table"
+                },
+                "provider": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "description": {
+                    "type": "string"
+                },
+                "icon": {
+                    "type": "string"
+                },
+                "columns": {
+                    "$ref": "#/$defs/tableWidgetColumns",
+                    "description": "Optional YAML column definitions. When present, take precedence over any columns returned by the widget provider at runtime."
+                },
+                "actions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/fieldTableActionEntry"
+                    }
+                },
+                "filters": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "object",
+                        "additionalProperties": true
+                    }
+                },
+                "pagination": {
+                    "$ref": "#/$defs/tableWidgetPagination"
+                },
+                "showColumnsVisibility": {
+                    "type": "boolean",
+                    "description": "Show or hide the column visibility dropdown in the widget table toolbar."
+                },
+                "empty_state": {
+                    "$ref": "#/$defs/tableWidgetEmptyState"
+                },
+                "default_sort": {
+                    "$ref": "#/$defs/defaultSort"
+                },
+                "data": {
+                    "$ref": "#/$defs/tableWidgetResolvedData"
+                },
+                "span": {
+                    "$ref": "#/$defs/spanValue"
+                }
+            },
+            "additionalProperties": false
+        },
+        "tableWidgetModelBacked": {
+            "type": "object",
+            "required": [
+                "type",
+                "model",
+                "columns"
+            ],
+            "properties": {
+                "type": {
+                    "const": "table"
+                },
+                "model": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "description": {
+                    "type": "string"
+                },
+                "icon": {
+                    "type": "string"
+                },
+                "columns": {
+                    "$ref": "#/$defs/tableWidgetColumns"
+                },
+                "actions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/fieldTableActionEntry"
+                    }
+                },
+                "filters": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "object",
+                        "additionalProperties": true
+                    }
+                },
+                "pagination": {
+                    "$ref": "#/$defs/tableWidgetPagination"
+                },
+                "paginate": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Model-backed only: rows per server page. Defaults to 5 when omitted. If `pagination` is an object with `per_page`, that value takes precedence."
+                },
+                "showColumnsVisibility": {
+                    "type": "boolean",
+                    "description": "Show or hide the column visibility dropdown in the widget table toolbar."
+                },
+                "empty_state": {
+                    "$ref": "#/$defs/tableWidgetEmptyState"
+                },
+                "default_sort": {
+                    "$ref": "#/$defs/defaultSort"
+                },
+                "data": {
+                    "$ref": "#/$defs/tableWidgetResolvedData"
+                },
+                "span": {
+                    "$ref": "#/$defs/spanValue"
+                }
+            },
+            "additionalProperties": false
+        },
+        "tableWidgetResolvedData": {
+            "type": "object",
+            "properties": {
+                "rows": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                    }
+                },
+                "sorting": {
+                    "$ref": "#/$defs/defaultSort"
+                }
+            },
+            "additionalProperties": false
+        },
+        "gridCardSlotMap": {
+            "type": "object",
+            "description": "Optional card slot map for `type: grid` widgets. Keys reference column ids on the widget. When omitted, slots auto-derive from columns.",
+            "properties": {
+                "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Column id used as the card title."
+                },
+                "subtitle": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Column id used as the card subtitle."
+                },
+                "image": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Column id whose value is rendered as the card media (URL or path)."
+                },
+                "badges": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "description": "Column ids rendered as badge chips on the card."
+                },
+                "body": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "description": "Column ids rendered as label/value pairs in the card body."
+                },
+                "footer_actions": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Column id of an `actions` column rendered in the card footer."
+                }
+            },
+            "additionalProperties": false
+        },
+        "gridMediaCardSlotMap": {
+            "type": "object",
+            "description": "Card slot map for grid widgets that emphasize image/media columns. Currently matches `gridCardSlotMap`; may gain media-specific keys later.",
+            "properties": {
+                "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Column id used as the card title."
+                },
+                "subtitle": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Column id used as the card subtitle."
+                },
+                "image": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Column id whose value is rendered as the card media (URL or path)."
+                },
+                "badges": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "description": "Column ids rendered as badge chips on the card."
+                },
+                "body": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "description": "Column ids rendered as label/value pairs in the card body."
+                },
+                "footer_actions": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Column id of an `actions` column rendered in the card footer."
+                }
+            },
+            "additionalProperties": false
+        },
+        "gridWidgetProviderBacked": {
+            "type": "object",
+            "required": [
+                "type",
+                "provider"
+            ],
+            "description": "Provider-backed grid widget: same options as `tableWidgetProviderBacked` but rendered as a responsive card grid.",
+            "properties": {
+                "type": {
+                    "const": "grid"
+                },
+                "provider": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "description": {
+                    "type": "string"
+                },
+                "icon": {
+                    "type": "string"
+                },
+                "columns": {
+                    "$ref": "#/$defs/tableWidgetColumns",
+                    "description": "Optional YAML column definitions. When present, take precedence over any columns returned by the widget provider at runtime."
+                },
+                "actions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/fieldTableActionEntry"
+                    }
+                },
+                "filters": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "object",
+                        "additionalProperties": true
+                    }
+                },
+                "pagination": {
+                    "$ref": "#/$defs/tableWidgetPagination"
+                },
+                "showColumnsVisibility": {
+                    "type": "boolean",
+                    "description": "Show or hide the column visibility dropdown in the widget grid toolbar."
+                },
+                "empty_state": {
+                    "$ref": "#/$defs/tableWidgetEmptyState"
+                },
+                "default_sort": {
+                    "$ref": "#/$defs/defaultSort"
+                },
+                "data": {
+                    "$ref": "#/$defs/tableWidgetResolvedData"
+                },
+                "card": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/gridCardSlotMap"
+                        },
+                        {
+                            "$ref": "#/$defs/gridMediaCardSlotMap"
+                        }
+                    ]
+                },
+                "span": {
+                    "$ref": "#/$defs/spanValue"
+                }
+            },
+            "additionalProperties": false
+        },
+        "gridWidgetModelBacked": {
+            "type": "object",
+            "required": [
+                "type",
+                "model",
+                "columns"
+            ],
+            "description": "Model-backed grid widget: same options as `tableWidgetModelBacked` but rendered as a responsive card grid.",
+            "properties": {
+                "type": {
+                    "const": "grid"
+                },
+                "model": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "description": {
+                    "type": "string"
+                },
+                "icon": {
+                    "type": "string"
+                },
+                "columns": {
+                    "$ref": "#/$defs/tableWidgetColumns"
+                },
+                "actions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/fieldTableActionEntry"
+                    }
+                },
+                "filters": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "object",
+                        "additionalProperties": true
+                    }
+                },
+                "pagination": {
+                    "$ref": "#/$defs/tableWidgetPagination"
+                },
+                "paginate": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Model-backed only: cards per server page. Defaults to 6 when omitted. If `pagination` is an object with `per_page`, that value takes precedence."
+                },
+                "showColumnsVisibility": {
+                    "type": "boolean",
+                    "description": "Show or hide the column visibility dropdown in the widget grid toolbar."
+                },
+                "empty_state": {
+                    "$ref": "#/$defs/tableWidgetEmptyState"
+                },
+                "default_sort": {
+                    "$ref": "#/$defs/defaultSort"
+                },
+                "data": {
+                    "$ref": "#/$defs/tableWidgetResolvedData"
+                },
+                "card": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/gridCardSlotMap"
+                        },
+                        {
+                            "$ref": "#/$defs/gridMediaCardSlotMap"
+                        }
+                    ]
+                },
+                "span": {
+                    "$ref": "#/$defs/spanValue"
+                }
+            },
+            "additionalProperties": false
+        },
+        "metricWidget": {
+            "type": "object",
+            "required": [
+                "type",
+                "provider",
+                "label",
+                "value_format",
+                "period"
+            ],
+            "properties": {
+                "type": {
+                    "const": "metric"
+                },
+                "provider": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Key in config `flatpack.widget_providers` used to resolve runtime data."
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "description": {
+                    "type": "string"
+                },
+                "value_format": {
+                    "$ref": "#/$defs/metricValueFormat"
+                },
+                "period": {
+                    "$ref": "#/$defs/metricPeriod"
+                },
+                "trend": {
+                    "$ref": "#/$defs/metricTrendOptions"
+                },
+                "span": {
+                    "$ref": "#/$defs/spanValue"
+                }
+            },
+            "additionalProperties": false
+        },
+        "cardWidget": {
+            "type": "object",
+            "required": [
+                "type",
+                "provider",
+                "label"
+            ],
+            "properties": {
+                "type": {
+                    "const": "card"
+                },
+                "provider": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "description": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/$defs/cardWidgetData"
+                },
+                "span": {
+                    "$ref": "#/$defs/spanValue"
+                }
+            },
+            "additionalProperties": false
+        },
+        "statusWidget": {
+            "type": "object",
+            "required": [
+                "type",
+                "provider",
+                "label"
+            ],
+            "properties": {
+                "type": {
+                    "const": "status"
+                },
+                "provider": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "description": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/$defs/cardWidgetData"
+                },
+                "span": {
+                    "$ref": "#/$defs/spanValue"
+                }
+            },
+            "additionalProperties": false
+        },
+        "chartWidgetSeries": {
+            "type": "object",
+            "required": [
+                "key",
+                "label"
+            ],
+            "properties": {
+                "key": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "color": {
+                    "description": "Series stroke/fill: an `optionStatus` token (same as select option badges) or any CSS color string.",
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/optionStatus"
+                        },
+                        {
+                            "type": "string",
+                            "minLength": 1
+                        }
+                    ]
+                }
+            },
+            "additionalProperties": false
+        },
+        "chartWidgetTimeRange": {
+            "type": "object",
+            "required": [
+                "id",
+                "label"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Client filter token (e.g. 90d, 30d, 7d)."
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "additionalProperties": false
+        },
+        "chartWidgetConfig": {
+            "type": "object",
+            "required": [
+                "series"
+            ],
+            "properties": {
+                "x_key": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Optional data key for the X axis (dates or categories). Defaults to date."
+                },
+                "mode": {
+                    "type": "string",
+                    "enum": [
+                        "area",
+                        "bar",
+                        "line"
+                    ],
+                    "description": "Chart render mode. Defaults to area when omitted."
+                },
+                "variant": {
+                    "type": "string",
+                    "enum": [
+                        "area_stacked",
+                        "area"
+                    ],
+                    "description": "Area-only variant. area_stacked is the default when mode is area."
+                },
+                "series": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/$defs/chartWidgetSeries"
+                    }
+                },
+                "time_ranges": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/chartWidgetTimeRange"
+                    },
+                    "description": "Optional range filters. When omitted, range controls are hidden and all points are shown."
+                }
+            },
+            "additionalProperties": false
+        },
+        "chartWidget": {
+            "type": "object",
+            "required": [
+                "type",
+                "provider",
+                "label",
+                "chart"
+            ],
+            "properties": {
+                "type": {
+                    "const": "chart"
+                },
+                "provider": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Key in config `flatpack.widget_providers` used to resolve runtime data."
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "description": {
+                    "type": "string"
+                },
+                "chart": {
+                    "$ref": "#/$defs/chartWidgetConfig"
+                },
+                "data": {
+                    "$ref": "#/$defs/chartWidgetResolvedData",
+                    "description": "Populated at runtime from the widget provider; omitted in YAML."
+                },
+                "span": {
+                    "$ref": "#/$defs/spanValue"
+                }
+            },
+            "additionalProperties": false
+        },
+        "chartWidgetResolvedData": {
+            "type": "object",
+            "description": "Shape returned from a WidgetPayload provider (merged into the widget as `data`; table widgets also merge `columns` from the provider onto the widget definition).",
+            "properties": {
+                "points": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                    },
+                    "description": "Time series or category rows; each point must include `chart.x_key` and series value keys."
+                }
+            },
+            "additionalProperties": false
+        },
+        "cardWidgetData": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "$ref": "#/$defs/widgetStatus"
+                },
+                "value": {
+                    "oneOf": [
+                        {
+                            "type": "number"
+                        },
+                        {
+                            "type": "string"
+                        }
+                    ]
+                },
+                "context": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false
+        },
+        "widgetStatus": {
+            "type": "string",
+            "enum": [
+                "default",
+                "error",
+                "info",
+                "success",
+                "warning"
+            ],
+            "description": "Card widget status token used by status badges."
+        },
+        "metricValueFormat": {
+            "type": "object",
+            "required": [
+                "kind"
+            ],
+            "properties": {
+                "kind": {
+                    "type": "string",
+                    "enum": [
+                        "number",
+                        "currency",
+                        "percentage"
+                    ]
+                },
+                "currency": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 3
+                },
+                "minimumFractionDigits": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 6
+                },
+                "maximumFractionDigits": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 6
+                }
+            },
+            "additionalProperties": false
+        },
+        "metricPeriod": {
+            "type": "object",
+            "required": [
+                "kind"
+            ],
+            "properties": {
+                "kind": {
+                    "type": "string",
+                    "enum": [
+                        "day",
+                        "week",
+                        "month",
+                        "quarter",
+                        "year",
+                        "custom"
+                    ]
+                },
+                "lookback": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "label": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "additionalProperties": false
+        },
+        "metricTrendOptions": {
+            "type": "object",
+            "properties": {
+                "precision": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 4
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}

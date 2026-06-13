@@ -1,17 +1,27 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Flatpack\Tests\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Post extends Model
+final class Post extends Model
 {
     use HasFactory;
     use SoftDeletes;
+
+    /**
+     * @var bool
+     */
+    public $timestamps = true;
 
     /**
      * The table associated with the model.
@@ -21,17 +31,13 @@ class Post extends Model
     protected $table = 'posts';
 
     /**
-     * @var bool
-     */
-    public $timestamps = true;
-
-    /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
     protected $fillable = [
         'id',
+        'category_id',
         'title',
         'slug',
         'body',
@@ -39,9 +45,11 @@ class Post extends Model
         'status',
     ];
 
-    /**
-     * @return BelongsTo
-     */
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
+    }
+
     public function author(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
@@ -50,18 +58,37 @@ class Post extends Model
     /**
      * Post Categories
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     * @return BelongsToMany
      */
     public function categories()
     {
         return $this->belongsToMany(Category::class, 'posts_categories');
     }
 
-    /**
-     * @return BelongsToMany
-     */
-    public function tags(): BelongsToMany
+    public function comments(): MorphMany
     {
-        return $this->belongsToMany(Tag::class, 'posts_tags');
+        return $this->morphMany(PostComment::class, 'commentable');
     }
+
+    public function meta(): HasOne
+    {
+        return $this->hasOne(PostMeta::class, 'post_id');
+    }
+
+    public function scopeDraftOnly(Builder $query): Builder
+    {
+        return $query->where('status', 'draft');
+    }
+
+    public function scopeTrashed(Builder $query): Builder
+    {
+        return $query
+            ->withoutGlobalScopes()
+            ->whereNotNull($this->qualifyColumn('deleted_at'));
+    }
+
+    // public function tags(): BelongsToMany
+    // {
+    //     return $this->belongsToMany(Tag::class, 'posts_tags');
+    // }
 }

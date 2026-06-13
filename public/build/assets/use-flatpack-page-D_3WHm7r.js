@@ -1,0 +1,1 @@
+import{r as e}from"./rolldown-runtime-XQCOJYun.js";import{l as t}from"./vendor-inertia-DARfpF0c.js";var n=e(t(),1);function r(e){(0,n.useEffect)(()=>{if(!(e===void 0||e.length===0))for(let t of e)console.warn(`📦 ${t}`)},[e])}function i(e){r(e.composition_debug)}export{i as t};

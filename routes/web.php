@@ -1,28 +1,76 @@
 <?php
 
-use Flatpack\Http\Controllers\ApiController;
-use Flatpack\Http\Controllers\Auth\AuthenticatedSessionController;
+declare(strict_types=1);
+
+use Flatpack\Http\Controllers\DashboardController;
+use Flatpack\Http\Controllers\EntityActionController;
+use Flatpack\Http\Controllers\FileUploadController;
+use Flatpack\Http\Controllers\FileUploadServeController;
 use Flatpack\Http\Controllers\FormController;
-use Flatpack\Http\Controllers\HomeController;
 use Flatpack\Http\Controllers\ListController;
-use Flatpack\Http\Controllers\UploadController;
+use Flatpack\Http\Controllers\RelationOptionsController;
+use Flatpack\Http\Controllers\SessionController;
+use Flatpack\Http\Controllers\TableRowController;
+use Flatpack\Http\Middleware\EnsureFlatpackAccess;
 use Illuminate\Support\Facades\Route;
 
-Route::name('flatpack.')->group(function () {
-    Route::middleware('guest')->group(function () {
-        Route::get('login', [AuthenticatedSessionController::class, 'create'])->name('login');
-        Route::post('login', [AuthenticatedSessionController::class, 'store'])->name('login.action');
-    });
+require __DIR__ . '/demo.php';
+require __DIR__ . '/guest.php';
 
-    Route::middleware('flatpack-auth')->group(function () {
-        Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
+/*
+|--------------------------------------------------------------------------
+| Flatpack routes
+|--------------------------------------------------------------------------
+|
+| This file contains the authenticated routes for the Flatpack dashboard.
+|
+*/
+Route::middleware(['auth:' . config('flatpack.security.guard', 'web'), EnsureFlatpackAccess::class])->group(function () {
+    /** Signed URL stream for private-disk uploads (used by {@code FileUploadBrowserUrl}). */
+    Route::get('files/serve', FileUploadServeController::class)->name('uploads.serve');
 
-        Route::middleware('flatpack')->group(function () {
-            Route::get('/api/suggestions/{entity}', [ApiController::class,'suggestions'])->name('api.suggestions');
-            Route::post('/{entity}/{id}/upload', [UploadController::class, 'store'])->name('upload');
-            Route::get('/{entity}/{id}', [FormController::class, 'index'])->name('form');
-            Route::get('/{entity}', [ListController::class, 'index'])->name('list');
-            Route::get('/', [HomeController::class, 'index'])->name('home');
-        });
-    });
+    /** Ends the current authenticated Flatpack session. */
+    Route::post('logout', [SessionController::class, 'destroy'])->name('logout');
+
+    /** Renders the Flatpack dashboard landing page. */
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    /** Persists row drawer edits for model-backed dashboard table widgets. */
+    Route::patch('dashboard/widgets/{widget}/{record}', [TableRowController::class, 'updateDashboardWidgetRow'])->name('dashboard.widgets.update-row');
+    /** Executes a row action for model-backed dashboard table widgets. */
+    Route::post('dashboard/widgets/{widget}/{record}/action', [TableRowController::class, 'rowActionDashboardWidgetRow'])->name('dashboard.widgets.row-action');
+    /** Executes bulk action for model-backed dashboard table widgets. */
+    Route::post('dashboard/widgets/{widget}/bulk', [TableRowController::class, 'bulkDashboardWidgetRows'])->name('dashboard.widgets.bulk-action');
+    /** Returns paginated relation options for dashboard widget table relation columns. */
+    Route::get('dashboard/widgets/{widget}/relation-options', [TableRowController::class, 'dashboardWidgetRelationOptions'])->name('dashboard.widgets.relation-options');
+
+    /** Executes a bulk action against selected list records. */
+    Route::post('{entity}/bulk', [EntityActionController::class, 'bulkAction'])->name('entities.bulk-action');
+    /** Executes a list-level action without a specific record target. */
+    Route::post('{entity}/action', [EntityActionController::class, 'listAction'])->name('entities.action');
+    /** Executes a row-level action against a specific record. */
+    Route::post('{entity}/{record}/action', [EntityActionController::class, 'rowAction'])->name('entities.row-action');
+    /** Persists drag-and-drop record ordering in one request. */
+    Route::patch('{entity}/{record}/reorder', [EntityActionController::class, 'reorderRecord'])->name('entities.row-reorder');
+    /** Persists inline edits for a specific list record. */
+    Route::patch('{entity}/{record}', [EntityActionController::class, 'updateRecord'])->name('entities.update');
+    /** Persists row drawer edits for model-backed form table fields. */
+    Route::patch('{entity}/table-fields/{field}/{record}', [TableRowController::class, 'updateFormTableRow'])->name('entities.table-fields.update-row');
+
+    /** Renders the create form page for an entity. */
+    Route::get('{entity}/create', [FormController::class, 'create'])->name('entities.create');
+    /** Submits the form (create or update); pass {@code record} in the body for edits. */
+    Route::post('{entity}/submit', [FormController::class, 'submit'])->name('entities.form.submit');
+    /** Stores file blobs for `type: file-upload` fields and returns persisted file metadata. */
+    Route::post('{entity}/upload', [FileUploadController::class, 'upload'])->name('entities.upload');
+
+    /** Renders the edit form page for an existing record. */
+    Route::get('{entity}/{record}/edit', [FormController::class, 'edit'])->name('entities.edit');
+
+    /** Returns paginated relation options for remote `type: combobox` fields. */
+    Route::get('{entity}/relation-options', [RelationOptionsController::class, 'field'])->name('entities.relation-options');
+    /** Returns paginated options for a `type: relation` column inside an embedded `type: table` field. */
+    Route::get('{entity}/embedded-table-relation-options', [RelationOptionsController::class, 'embeddedTableColumn'])->name('entities.embedded-table-relation-options');
+
+    /** Renders the entity list page with schema-driven records. */
+    Route::get('{entity}', [ListController::class, 'index'])->name('entities.index');
 });

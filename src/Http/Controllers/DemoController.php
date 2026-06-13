@@ -1,0 +1,36 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Flatpack\Http\Controllers;
+
+use Flatpack\Http\FlatpackResponse;
+use Flatpack\Support\Demo\CatalogFactory;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Inertia\Response;
+
+/**
+ * Inertia demo/catalog page for Flatpack UI primitives.
+ *
+ * Field entries for {@code catalog=fields} (including repeater, table, …) are defined in
+ * {@see DemoCatalogFactory::fieldsCatalog()}.
+ */
+final readonly class DemoController
+{
+    public function __construct(
+        private CatalogFactory $catalogFactory,
+
+    ) {}
+
+    public function index(Request $request): Response|JsonResponse
+    {
+        $catalogId = $this->catalogFactory->normalizeCatalogId($request->query('catalog'));
+
+        return FlatpackResponse::inertia('demo/catalog', [
+            'catalogId' => $catalogId,
+            'query' => $request->query(),
+            'document' => $this->catalogFactory->buildDocument($catalogId),
+        ]);
+    }
+}

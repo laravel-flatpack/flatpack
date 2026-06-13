@@ -1,0 +1,59 @@
+'use client';
+
+import { Link } from '@inertiajs/react';
+import type * as React from 'react';
+import { LucideIconByName } from '@/components/icons/icons';
+import {
+    SidebarGroup,
+    SidebarGroupContent,
+    SidebarGroupLabel,
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
+} from '@/components/ui/sidebar';
+import { isEntityListNavActive } from '@/lib/utils';
+import type { FlatpackMenuItem } from '@/types/flatpack';
+
+export function NavSettings({
+    label,
+    items,
+    currentPath,
+    ...props
+}: {
+    label?: string;
+    items?: FlatpackMenuItem[];
+    currentPath: string;
+} & React.ComponentPropsWithoutRef<typeof SidebarGroup>) {
+    if (items && items.length === 0) {
+        return null;
+    }
+
+    return (
+        <SidebarGroup {...props}>
+            <SidebarGroupContent>
+                {label && <SidebarGroupLabel>{label}</SidebarGroupLabel>}
+                {items && (
+                    <SidebarMenu>
+                        {items.map((item) => (
+                            <SidebarMenuItem key={item.url}>
+                                <SidebarMenuButton
+                                    tooltip={item.name}
+                                    asChild
+                                    isActive={isEntityListNavActive(
+                                        currentPath,
+                                        item.url,
+                                    )}
+                                >
+                                    <Link href={item.url}>
+                                        <LucideIconByName name={item.icon} />
+                                        <span>{item.name}</span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        ))}
+                    </SidebarMenu>
+                )}
+            </SidebarGroupContent>
+        </SidebarGroup>
+    );
+}
