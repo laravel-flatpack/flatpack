@@ -25,12 +25,16 @@ Official documentation: **[laravel-flatpack.com](https://laravel-flatpack.com)**
 
 ## Quick start
 
+Install and setup the package
+
 ```bash
-# Install and setup the package
 composer require flatpack/flatpack
 php artisan flatpack:install
+```
 
-# Create your first Flatpack panel
+Create your first Flatpack panel
+
+```bash
 php artisan flatpack:make
 ```
 
