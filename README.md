@@ -8,15 +8,35 @@
 
 # Flatpack
 
-Declare your admin panel in YAML. Laravel + Inertia/React UI included.
+Declare your admin panel in YAML. Flatpack lets you build Laravel admin panels by describing resources, lists, forms, and actions in YAML instead of hand-coding CRUD screens.
 
-📕 [Official Documentation](https://laravel-flatpack.com)
+Flatpack is a Laravel package for building internal admin panels from YAML compositions. It ships with a ready-to-use Inertia/React interface, so your app only needs to define what the panel should expose.
+
+Official documentation: **[laravel-flatpack.com](https://laravel-flatpack.com)**
 
 ![Demo](.github/demo.gif)
 
-Here are a few short examples of what you can do.
+## Why Flatpack?
 
-A list page — searchable columns, icons, the works:
+- Build internal CRUD panels quickly.
+- Keep admin configuration close to your Laravel app.
+- Describe lists and forms declaratively in YAML files.
+- Use the included panel UI without building a separate frontend.
+
+## Quick start
+
+```bash
+# Install and setup the package
+composer require flatpack/flatpack
+php artisan flatpack:install
+
+# Create your first Flatpack panel
+php artisan flatpack:make
+```
+
+## Example
+
+A list composition defines the index table for an entity:
 
 ```yaml
 # flatpack/posts/list.yaml
@@ -35,7 +55,7 @@ columns:
               action: edit
 ```
 
-A form — fields, rich text, done:
+A form composition defines create/edit fields:
 
 ```yaml
 # flatpack/posts/form.yaml
@@ -51,63 +71,35 @@ fields:
         type: block-editor
 ```
 
-Scaffold a `Post` entity and visit `/flatpack/posts` to see it live.
-
-## Documentation
-
-You'll find the full guide at **[laravel-flatpack.com](https://laravel-flatpack.com)** — installation, field types, list columns, widgets, actions, and the complete YAML reference at [laravel-flatpack.com/reference](https://laravel-flatpack.com/reference).
-
 ## Installation
 
-Requires PHP ^8.3 and Laravel 12 or 13.
-
-**1. Install the package**
+**Requirements:** PHP ^8.3 and Laravel 12 or 13.
 
 ```bash
 composer require flatpack/flatpack
-```
-
-**2. Run the install command**
-
-```bash
 php artisan flatpack:install
 ```
 
-This publishes config and compiled panel assets, optionally publishes the AI YAML skill, and can add `canAccessFlatpack()` to your `User` model.
+`flatpack:install` publishes `config/flatpack.php` and compiled panel assets, optionally publishes the AI YAML skill (`--with-ai` or interactive prompt), and can add `canAccessFlatpack()` to your User model.
 
-Keep published assets in sync after updates — add this to your `composer.json`:
+For more scaffolding options, run:
 
-```json
-"post-update-cmd": [
-    "@php artisan vendor:publish --tag=flatpack --force"
-]
+```bash
+php artisan flatpack:make --help
 ```
 
-**3. Gate panel access on your `User` model**
+## Access control
+
+Flatpack only allows authenticated users whose model exposes `canAccessFlatpack()`.
 
 ```php
-class User extends Authenticatable
+public function canAccessFlatpack(): bool
 {
-    public function canAccessFlatpack(): bool
-    {
-        return true; // tighten for your app (role, admin flag, etc.)
-    }
+    return $this->is_admin;
 }
 ```
 
-## Scaffolding
-
-Generate your first entity:
-
-```bash
-php artisan flatpack:make Post
-```
-
-You get `flatpack/posts/form.yaml` and `flatpack/posts/list.yaml` under `config('flatpack.composition.path')` (default: `flatpack/`). Open `/flatpack/posts` to use the panel.
-
-Useful flags: `--model=`, `--entity=`, `--without-auto-fields`, and more — run `php artisan flatpack:make --help`.
-
-Flatpack ships pre-built frontend assets. Your Laravel app does not need a separate Inertia or Vite setup for the panel.
+`flatpack:install` can inject a stub returning `true` for local development.
 
 ## Configuration
 
@@ -115,17 +107,24 @@ The knobs most apps touch:
 
 - `FLATPACK_COMPOSITION_PATH` — where your YAML compositions live (default: `flatpack/`)
 - `FLATPACK_HTTP_PREFIX` — URL prefix for panel routes (default: `flatpack`)
-- `FLATPACK_SECURITY_GUARD` — auth guard for panel middleware (default: `web`)
 
-See [`config/flatpack.php`](config/flatpack.php) and the [host configuration docs](https://laravel-flatpack.com) for uploads, navigation, and login customization.
+See [`config/flatpack.php`](config/flatpack.php) and the [documentation site](https://laravel-flatpack.com) for uploads, navigation, login customization, and more.
 
-For AI-assisted YAML authoring, run `php artisan vendor:publish --tag=flatpack-ai` or pass `--with-ai` to `flatpack:install`.
+## Updating
 
-## Security
+Flatpack ships compiled panel assets. After updating the package, republish them:
 
-Panel access requires `canAccessFlatpack()` on the authenticated user.
+```bash
+php artisan vendor:publish --tag=flatpack --force
+```
 
-If you discover a security vulnerability, email hello@faustoquaggia.com instead of using the issue tracker. See the [security policy](https://github.com/laravel-flatpack/flatpack/security/policy).
+To keep assets in sync automatically, add this to your `composer.json`:
+
+```json
+"post-update-cmd": [
+    "@php artisan vendor:publish --tag=flatpack --force"
+]
+```
 
 ## Testing
 
@@ -135,31 +134,7 @@ You can run the tests with:
 composer run test
 ```
 
-Coverage (requires Xdebug):
-
-```bash
-composer run test-coverage
-```
-
-Before opening a PR, run the full gate:
-
-```bash
-npm run check:All
-```
-
-CI runs on PHP 8.3, 8.4, and 8.5 via [`.github/workflows/tests.yml`](.github/workflows/tests.yml). The [coverage badge](.github/badge-coverage.svg) is updated on the PHP 8.3 job. Frontend components in `resources/js/` are covered by Vitest.
-
-Clone this repository and read [`.github/DEVELOPMENT.md`](.github/DEVELOPMENT.md) for local Vite, schema keys, and test ownership.
-
-## Upgrading
-
-After `composer update`, republish panel assets so hashed Vite files in `public/vendor/flatpack/build/` stay in sync:
-
-```bash
-php artisan vendor:publish --tag=flatpack --force
-```
-
-The `post-update-cmd` hook above is the easiest way to keep this automatic. Stale asset chunks are not removed on republish — use `--force` after every upgrade.
+Clone this repository and see [`.github/DEVELOPMENT.md`](.github/DEVELOPMENT.md) for local development setup.
 
 ## Changelog
 
@@ -168,6 +143,10 @@ Please see [CHANGELOG](CHANGELOG.md) for recent changes.
 ## Contributing
 
 Please see [CONTRIBUTING](.github/CONTRIBUTING.md) for details.
+
+## Security
+
+If you discover a security vulnerability, email [fausto.quaggia@gmail.com](mailto:fausto.quaggia@gmail.com?subject=Flatpack%20Security%20Issue) instead of using the issue tracker. See [SECURITY](.github/SECURITY.md) for details.
 
 ## Credits
 
